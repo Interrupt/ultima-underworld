@@ -208,9 +208,6 @@ void populate_debug_panel(void)
   dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
   dbgui_field_toggle("pick_diag", &g_uw_debug_pick_diag);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
-  /* Unset means graphics.c's built-in 64; seed it so the field shows (and steps from) the live value. */
-  if (!UW_OPT_ISSET(g_opts.ambient_bias_reduction)) g_opts.ambient_bias_reduction = 64;
-  dbgui_field_int("amb_bias", &g_opts.ambient_bias_reduction, 8);
   dbgui_end();
 }
 

@@ -355,6 +355,21 @@ static void test_dos_bias_clamps_before_initial_shade_and_uses_all_sixteen_rows(
     TEST_ASSERT_EQUAL_HEX16(far, draw_at_world_point(1200, 140, 80));
     TEST_ASSERT_EQUAL_HEX16(far, draw_at_world_point(1200, 141, 80));
 }
+/* A distance at which the shade falls between two brightness steps, so the two dither thresholds
+   round the RGB channels differently. */
+static int fractional_shade_reciprocal(void)
+{
+    const char *dither = "1";
+    options_set("dither", dither);
+    for (int depth = 100; depth < 4000; depth += 4) {
+        int reciprocal = (int)(16384.0f / (depth / 1500.0f));
+        if (lighting_draw_texel(reciprocal, 140, 80) != lighting_draw_texel(reciprocal, 141, 80))
+            return reciprocal;
+    }
+    TEST_FAIL_MESSAGE("no distance dithers");
+    return 0;
+}
+
 static void test_dither_defaults_on_and_zero_or_empty_disables_it_in_both_modes(void)
 {
     use_real_palette();
@@ -364,7 +379,7 @@ static void test_dither_defaults_on_and_zero_or_empty_disables_it_in_both_modes(
         g_palette_rgb565_backing[88] = 0xffff;
         DAT_0025063c = 64;
         DAT_002506dc = DAT_0025064c = 0;
-        int reciprocal = (int)(16384.0f / (272.0f / 1500.0f));
+        int reciprocal = fractional_shade_reciprocal();
         options_set("dither", "0");
         ushort first = lighting_draw_texel(reciprocal, 140, 80);
         ushort second = lighting_draw_texel(reciprocal, 141, 80);
@@ -392,7 +407,7 @@ static void test_arm_dithers_rgb565_fractional_channels_with_stable_row_parity(v
     DAT_0025063c = 64;
     DAT_002506dc = DAT_0025064c = 0;
     /* A fractional shade gives fractional RGB channels, so the two thresholds disagree. */
-    int reciprocal = (int)(16384.0f / (272.0f / 1500.0f));
+    int reciprocal = fractional_shade_reciprocal();
     ushort a = lighting_draw_texel(reciprocal, 140, 80);
     ushort b = lighting_draw_texel(reciprocal, 141, 80);
     TEST_ASSERT_NOT_EQUAL(a, b);

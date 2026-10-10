@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 /* ---- Extra lights (--extralights) --------------------------------------------------------------
    Small point lights around campfires, glowing rocks, lit torches on the floor and magic
@@ -107,14 +108,13 @@ void extra_lights_transform_to_eye(void)
 
 /* ARM mode takes its brightness from the DOS shade table so the two modes light the same: row r of
    LIGHT.DAT/MONO.DAT is a darker version of every palette colour, so its average luminance relative
-   to row 0 is how bright the row is. The ARM path interpolates between those per-row factors (4096 =
-   full) by the fractional DOS shade, which keeps its smooth per-channel gradient. Rebuilt after the
-   table is (re)loaded (update_fullbright_palette_mask sets the flag). */
+   to row 0 is how bright the row is. Those 16 factors (4096 = full) are fitted with
+   A * (1 - x/D)^k, x being the fractional DOS shade, which keeps the smooth per-channel gradient and
+   falls off to black at x = D instead of holding the table's darkest row. Refitted after the table is
+   (re)loaded (update_fullbright_palette_mask sets the flag). */
 int g_shade_rows_dirty = 1;
-/* Brightness (0..4096) at each row's shade, plus a final point where the fade reaches black. */
-static double g_shade_row_factor[17] = {0};
-static double g_shade_row_tangent[17] = {0};
-static double g_shade_end = 16.0; /* shade value of the black end point */
+static double g_shade_row_factor[16] = {0};
+static double g_fit_a = 4096.0, g_fit_d = 16.0, g_fit_k = 1.0;
 
 static int palette_luminance(int texel)
 {
@@ -123,16 +123,33 @@ static int palette_luminance(int texel)
   return (int)(r * 8 * 77 + g * 4 * 150 + b * 8 * 29);
 }
 
-/* x of point i: the row number, except the last point which sits at g_shade_end. */
-static double shade_point_x(int i)
+/* Least-squares fit of A, D and k to the row factors by grid search over D and k (A is closed form). */
+static void fit_formula_to_rows(void)
 {
-  return i == 16 ? g_shade_end : (double)i;
+  double best = 1e30, d, k;
+  int row;
+  for (d = 15.5; d <= 28.0; d += 0.25) {
+    for (k = 0.4; k <= 4.0; k += 0.05) {
+      double num = 0.0, den = 0.0, a, err = 0.0;
+      for (row = 0; row < 16; row++) {
+        double b = pow(1.0 - row / d, k);
+        num += b * g_shade_row_factor[row];
+        den += b * b;
+      }
+      a = num / den;
+      if (a > 4096.0) a = 4096.0;
+      for (row = 0; row < 16; row++) {
+        double e = a * pow(1.0 - row / d, k) - g_shade_row_factor[row];
+        err += e * e;
+      }
+      if (err < best) { best = err; g_fit_a = a; g_fit_d = d; g_fit_k = k; }
+    }
+  }
 }
 
 static void rebuild_shade_row_factors(void)
 {
   long total[16];
-  double secant[16];
   int row, texel;
   g_shade_rows_dirty = 0;
   for (row = 0; row < 16; row++) {
@@ -146,53 +163,19 @@ static void rebuild_shade_row_factors(void)
     if (row > 0 && f > g_shade_row_factor[row - 1]) f = g_shade_row_factor[row - 1];
     g_shade_row_factor[row] = f;
   }
-  /* DOS holds its darkest row past the end of its range, which would leave a dim plateau. Carry the
-     fade on to black instead, over as many extra rows as the last step's slope would take (so the tail
-     does not drop faster than the table did), and ease out of it. */
-  {
-    double last_step = g_shade_row_factor[14] - g_shade_row_factor[15];
-    double tail = last_step > 1.0 ? g_shade_row_factor[15] / last_step : 4.0;
-    if (tail < 1.0) tail = 1.0;
-    if (tail > 4.0) tail = 4.0;
-    g_shade_end = 15.0 + tail;
-  }
-  g_shade_row_factor[16] = 0.0;
-  /* A monotone cubic (Fritsch-Carlson / PCHIP) through the points: a piecewise Bezier that follows the
-     table's own steps without overshooting or bumping back up. */
-  for (row = 0; row < 16; row++)
-    secant[row] = (g_shade_row_factor[row + 1] - g_shade_row_factor[row]) / (shade_point_x(row + 1) - shade_point_x(row));
-  g_shade_row_tangent[0] = secant[0];
-  for (row = 1; row < 16; row++) {
-    if (secant[row - 1] * secant[row] <= 0.0) {
-      g_shade_row_tangent[row] = 0.0;
-    } else {
-      double h0 = shade_point_x(row) - shade_point_x(row - 1), h1 = shade_point_x(row + 1) - shade_point_x(row);
-      double w1 = 2.0 * h1 + h0, w2 = h1 + 2.0 * h0;
-      g_shade_row_tangent[row] = (w1 + w2) / (w1 / secant[row - 1] + w2 / secant[row]);
-    }
-  }
-  g_shade_row_tangent[16] = 0.0; /* reaches black with a level tangent */
+  fit_formula_to_rows();
 }
 
-/* Brightness factor (0..4096) for a fixed-point 8.8 DOS shade, on the curve through the table rows. */
+/* Brightness factor (0..4096) for a fixed-point 8.8 DOS shade. */
 static int dos_shade_factor(int shade_fixed)
 {
-  double x, h, t, t2, t3;
-  int k;
+  double x, f;
   if (g_shade_rows_dirty) rebuild_shade_row_factors();
   if (shade_fixed < 0) shade_fixed = 0;
   x = shade_fixed / 256.0;
-  if (x >= g_shade_end) return 0;
-  k = x >= 15.0 ? 15 : (int)x;
-  h = shade_point_x(k + 1) - shade_point_x(k);
-  t = (x - shade_point_x(k)) / h;
-  t2 = t * t;
-  t3 = t2 * t;
-  x = (2 * t3 - 3 * t2 + 1) * g_shade_row_factor[k] + (t3 - 2 * t2 + t) * h * g_shade_row_tangent[k] +
-      (-2 * t3 + 3 * t2) * g_shade_row_factor[k + 1] + (t3 - t2) * h * g_shade_row_tangent[k + 1];
-  if (x < 0.0) x = 0.0;
-  if (x > 4096.0) x = 4096.0;
-  return (int)x;
+  if (x >= g_fit_d) return 0;
+  f = g_fit_a * pow(1.0 - x / g_fit_d, g_fit_k);
+  return f > 4096.0 ? 4096 : (int)f;
 }
 
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
