@@ -105,6 +105,54 @@ void extra_lights_transform_to_eye(void)
   }
 }
 
+/* ARM mode takes its brightness from the DOS shade table so the two modes light the same: row r of
+   LIGHT.DAT/MONO.DAT is a darker version of every palette colour, so its average luminance relative
+   to row 0 is how bright the row is. The ARM path interpolates between those per-row factors (4096 =
+   full) by the fractional DOS shade, which keeps its smooth per-channel gradient. Rebuilt after the
+   table is (re)loaded (update_fullbright_palette_mask sets the flag). */
+int g_shade_rows_dirty = 1;
+static int g_shade_row_factor[17] = {0}; /* [16] is black: the fade continues past the last row */
+
+static int palette_luminance(int texel)
+{
+  unsigned int c = (unsigned short)(&g_palette_rgb565)[texel];
+  unsigned int r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+  return (int)(r * 8 * 77 + g * 4 * 150 + b * 8 * 29);
+}
+
+static void rebuild_shade_row_factors(void)
+{
+  long total[16];
+  int row, texel;
+  g_shade_rows_dirty = 0;
+  for (row = 0; row < 16; row++) {
+    total[row] = 0;
+    for (texel = 1; texel < 256; texel++)
+      total[row] += palette_luminance((byte)DAT_0024fa2c[row * 256 + texel]);
+  }
+  for (row = 0; row < 16; row++) {
+    long f = total[0] > 0 ? total[row] * 4096 / total[0] : 4096;
+    if (f > 4096) f = 4096;
+    if (row > 0 && f > g_shade_row_factor[row - 1]) f = g_shade_row_factor[row - 1];
+    g_shade_row_factor[row] = (int)f;
+  }
+  /* DOS holds its darkest row past the end of its range, which here would leave a dim plateau; ARM
+     keeps falling to black one row further on. */
+  g_shade_row_factor[16] = 0;
+}
+
+/* Brightness factor (0..4096) for a fixed-point 8.8 DOS shade, interpolating between table rows. */
+static int dos_shade_factor(int shade_fixed)
+{
+  int row, frac;
+  if (g_shade_rows_dirty) rebuild_shade_row_factors();
+  if (shade_fixed < 0) shade_fixed = 0;
+  if (shade_fixed >= 16 * 256) return 0;
+  row = shade_fixed >> 8;
+  frac = shade_fixed & 255;
+  return (g_shade_row_factor[row] * (256 - frac) + g_shade_row_factor[row + 1] * frac) >> 8;
+}
+
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
    (ray_x, ray_y) is the pixel's offset from screen centre in focal-length units. With --extralights off
    (or an empty light list) this is exactly the player's light: the DOS shade table when `dos_light_mode`,
@@ -166,15 +214,17 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     return (unsigned short)(&g_palette_rgb565)[texel];
   }
   else {
-    int index = ((light_distance >> 4) + (int)DAT_000842b0) * 0x10000 >> 0x10;
+    /* The DOS brightness and light distance (the same shade the DOS branch picks its row from, kept
+       fractional) applied as a smooth RGB scale. */
+    int shade_fixed = (int)((int64_t)light_distance * 1500 * DAT_0025063c / 32768) + (int)DAT_002506dc * 256;
     unsigned int colour;
     int factor;
     int round;
     int red, green, blue;
-    if (index < 0) index = 0;
+    if (shade_fixed < 0) shade_fixed = 0;
+    shade_fixed += (int)DAT_0025064c * 256;
     colour = (unsigned int)(unsigned short)(&g_palette_rgb565)[texel];
-    if (0x9f < (short)index) index = 0x9f;
-    factor = (int)(&DAT_000b5638)[(short)index];
+    factor = DAT_0024fa2c ? dos_shade_factor(shade_fixed) : 4096;
     if (use_extra) {
       /* Same falloff table, indexed by the distance to each light scaled so that the table's last
          entry lands on the light's radius; the contributions add up, capped at full brightness. */

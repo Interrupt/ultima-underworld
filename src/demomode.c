@@ -994,6 +994,19 @@ static void demo_exec_line(char *p, Uint32 now) {
             g_demo_next_tick = now;
             return;
         }
+        if (demo_match_cmd(p, "LIGHTLEVEL", &arg)) {
+            /* LIGHTLEVEL <n> -- set_ambient_bias_with_light(n), the call a light-level change makes. */
+            char *end;
+            long level = arg ? strtol(arg, &end, 0) : 0;
+            if (!arg || end == arg) {
+                demo_printf("[demo] usage: LIGHTLEVEL <n>\n");
+            } else {
+                set_ambient_bias_with_light((char)level);
+                demo_printf("[demo] light level %d\n", (int)(char)level);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
         if (demo_match_cmd(p, "NOCLIP", &arg)) {
             /* NOCLIP [on|off] -- fly mode on, and the player ignores walls/objects. Turning it off
                puts collisions back and drops fly only if NOCLIP was what turned it on. */
@@ -1027,6 +1040,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "world: TELEPORT <x> <y> [level] | GOTOLEVEL <level>\n"
                     "  OPENMAP | REVEAL | REVEALALL\n"
                     "  FLY | FARSIGHT | NOCLIP  (each takes optional on/off)\n"
+                    "  LIGHTLEVEL <n>\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
                     "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"
