@@ -170,6 +170,21 @@ static void test_arm_surfaces_scale_rgb_by_the_dos_shade(void)
     options_set("light-mode", "unknown");
     TEST_ASSERT_EQUAL_HEX16(mid, draw_one_texel(512));
 }
+static void test_arm_falloff_never_brightens_with_distance_and_ends_in_black(void)
+{
+    use_real_palette();
+    g_palette_rgb565_backing[88] = 0xffff;
+    load_shading_level_config(4);
+    ushort last = 0xffff;
+    int first_black = -1;
+    for (int depth = 128; depth < 20000; depth += 16) {
+        ushort c = draw_one_texel(depth);
+        TEST_ASSERT_TRUE(c <= last);
+        if (c == 0 && first_black < 0) first_black = depth;
+        last = c;
+    }
+    TEST_ASSERT_TRUE(first_black > 0);
+}
 static void test_arm_surfaces_are_smoother_than_dos_rows(void)
 {
     use_real_palette();
@@ -557,6 +572,7 @@ int main(void)
     RUN_TEST(test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid);
     RUN_TEST(test_arm_surfaces_scale_rgb_by_the_dos_shade);
     RUN_TEST(test_arm_surfaces_are_smoother_than_dos_rows);
+    RUN_TEST(test_arm_falloff_never_brightens_with_distance_and_ends_in_black);
     RUN_TEST(test_ambient_bias_calibration_restores_default_and_env_override);
     RUN_TEST(test_arm_light_types_step_bias_by_sixteen_and_keep_calibration);
     RUN_TEST(test_fullbright_mask_is_the_indices_light_dat_never_changes);

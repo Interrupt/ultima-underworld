@@ -111,7 +111,10 @@ void extra_lights_transform_to_eye(void)
    full) by the fractional DOS shade, which keeps its smooth per-channel gradient. Rebuilt after the
    table is (re)loaded (update_fullbright_palette_mask sets the flag). */
 int g_shade_rows_dirty = 1;
-static int g_shade_row_factor[17] = {0}; /* [16] is black: the fade continues past the last row */
+/* Brightness (0..4096) at each row's shade, plus a final point where the fade reaches black. */
+static double g_shade_row_factor[17] = {0};
+static double g_shade_row_tangent[17] = {0};
+static double g_shade_end = 16.0; /* shade value of the black end point */
 
 static int palette_luminance(int texel)
 {
@@ -120,9 +123,16 @@ static int palette_luminance(int texel)
   return (int)(r * 8 * 77 + g * 4 * 150 + b * 8 * 29);
 }
 
+/* x of point i: the row number, except the last point which sits at g_shade_end. */
+static double shade_point_x(int i)
+{
+  return i == 16 ? g_shade_end : (double)i;
+}
+
 static void rebuild_shade_row_factors(void)
 {
   long total[16];
+  double secant[16];
   int row, texel;
   g_shade_rows_dirty = 0;
   for (row = 0; row < 16; row++) {
@@ -131,26 +141,58 @@ static void rebuild_shade_row_factors(void)
       total[row] += palette_luminance((byte)DAT_0024fa2c[row * 256 + texel]);
   }
   for (row = 0; row < 16; row++) {
-    long f = total[0] > 0 ? total[row] * 4096 / total[0] : 4096;
-    if (f > 4096) f = 4096;
+    double f = total[0] > 0 ? (double)total[row] * 4096.0 / (double)total[0] : 4096.0;
+    if (f > 4096.0) f = 4096.0;
     if (row > 0 && f > g_shade_row_factor[row - 1]) f = g_shade_row_factor[row - 1];
-    g_shade_row_factor[row] = (int)f;
+    g_shade_row_factor[row] = f;
   }
-  /* DOS holds its darkest row past the end of its range, which here would leave a dim plateau; ARM
-     keeps falling to black one row further on. */
-  g_shade_row_factor[16] = 0;
+  /* DOS holds its darkest row past the end of its range, which would leave a dim plateau. Carry the
+     fade on to black instead, over as many extra rows as the last step's slope would take (so the tail
+     does not drop faster than the table did), and ease out of it. */
+  {
+    double last_step = g_shade_row_factor[14] - g_shade_row_factor[15];
+    double tail = last_step > 1.0 ? g_shade_row_factor[15] / last_step : 4.0;
+    if (tail < 1.0) tail = 1.0;
+    if (tail > 4.0) tail = 4.0;
+    g_shade_end = 15.0 + tail;
+  }
+  g_shade_row_factor[16] = 0.0;
+  /* A monotone cubic (Fritsch-Carlson / PCHIP) through the points: a piecewise Bezier that follows the
+     table's own steps without overshooting or bumping back up. */
+  for (row = 0; row < 16; row++)
+    secant[row] = (g_shade_row_factor[row + 1] - g_shade_row_factor[row]) / (shade_point_x(row + 1) - shade_point_x(row));
+  g_shade_row_tangent[0] = secant[0];
+  for (row = 1; row < 16; row++) {
+    if (secant[row - 1] * secant[row] <= 0.0) {
+      g_shade_row_tangent[row] = 0.0;
+    } else {
+      double h0 = shade_point_x(row) - shade_point_x(row - 1), h1 = shade_point_x(row + 1) - shade_point_x(row);
+      double w1 = 2.0 * h1 + h0, w2 = h1 + 2.0 * h0;
+      g_shade_row_tangent[row] = (w1 + w2) / (w1 / secant[row - 1] + w2 / secant[row]);
+    }
+  }
+  g_shade_row_tangent[16] = 0.0; /* reaches black with a level tangent */
 }
 
-/* Brightness factor (0..4096) for a fixed-point 8.8 DOS shade, interpolating between table rows. */
+/* Brightness factor (0..4096) for a fixed-point 8.8 DOS shade, on the curve through the table rows. */
 static int dos_shade_factor(int shade_fixed)
 {
-  int row, frac;
+  double x, h, t, t2, t3;
+  int k;
   if (g_shade_rows_dirty) rebuild_shade_row_factors();
   if (shade_fixed < 0) shade_fixed = 0;
-  if (shade_fixed >= 16 * 256) return 0;
-  row = shade_fixed >> 8;
-  frac = shade_fixed & 255;
-  return (g_shade_row_factor[row] * (256 - frac) + g_shade_row_factor[row + 1] * frac) >> 8;
+  x = shade_fixed / 256.0;
+  if (x >= g_shade_end) return 0;
+  k = x >= 15.0 ? 15 : (int)x;
+  h = shade_point_x(k + 1) - shade_point_x(k);
+  t = (x - shade_point_x(k)) / h;
+  t2 = t * t;
+  t3 = t2 * t;
+  x = (2 * t3 - 3 * t2 + 1) * g_shade_row_factor[k] + (t3 - 2 * t2 + t) * h * g_shade_row_tangent[k] +
+      (-2 * t3 + 3 * t2) * g_shade_row_factor[k + 1] + (t3 - t2) * h * g_shade_row_tangent[k + 1];
+  if (x < 0.0) x = 0.0;
+  if (x > 4096.0) x = 4096.0;
+  return (int)x;
 }
 
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
