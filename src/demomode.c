@@ -170,9 +170,13 @@ static int demo_translate_sdlkey(const char *name) {
     return 0;
 }
 
-/* The console's black covers part of the inventory panel; repaint it (no-op off the compass HUD). */
+/* A debug window closing: don't trust its saved pixels (the game redraws the HUD underneath while
+   it is open) -- force a full HUD/inventory repaint and flag the whole screen dirty. */
 static void demomode_console_closed(void) {
+    redraw_hud_panels();
     redraw_container_icon_slot();
+    set_pending_update_flags(0x7ffe);
+    dirty_rect_union(0, 200, 0, 0x140);
 }
 
 void demomode_init(void) {

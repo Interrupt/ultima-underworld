@@ -92,8 +92,9 @@ static void dbgui_restore_backing()
     memcpy(&fb[fy * DBGUI_FB_STRIDE + DBGUI_PANEL_X], &g_saved_px[y * DBGUI_PANEL_W],
            DBGUI_PANEL_W * sizeof(unsigned short));
   }
-  dirty_rect_union(DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W,
-                    DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H);
+  /* dirty_rect_union takes (y0, y1, x0, x1), as bitmap.c's own callers pass it -- not (x0, x1, y0, y1). */
+  dirty_rect_union(DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H,
+                    DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W);
   g_saved_valid = 0;
 }
 
@@ -112,10 +113,18 @@ static void dbgui_restore_backing()
    this region afterward. Call this whenever the caller is about to
    switch content and the panel was already visible (not on a fresh
    open -- dbgui_toggle's own save already started it clean then). */
+static void dbgui_con_close_redraw(void);
+
 void dbgui_invalidate_region(void)
 {
   dbgui_restore_backing();
+  /* The saved pixels can be stale (the game redraws under the panel), so also have the game repaint
+     the HUD for the old panel's area -- matters when the new content is smaller. */
+  dbgui_con_close_redraw();
   dbgui_save_backing();
+  /* The old panel's rows are gone from the framebuffer now, so dbgui_draw's fill must not keep
+     covering max(old, new) rows -- that painted the old height as a gray block over the restored HUD. */
+  g_last_rows = 0;
 }
 
 /* SDL_Keycode values duplicated here (not #include <SDL.h>) to keep
@@ -195,7 +204,8 @@ void dbgui_console_set_close_hook(void (*hook)(void))
   g_con_close_hook = hook;
 }
 
-/* The saved pixels were captured when the console opened, so anything the game redrew underneath
+/* Debug-window redraw hook (registered by the owner via dbgui_console_set_close_hook): runs when
+   the console closes or the panel switches content. The saved pixels were captured when the console opened, so anything the game redrew underneath
    since (the inventory panel above all) would come back stale or black -- let the game repaint the
    region it owns. */
 static void dbgui_con_close_redraw(void)

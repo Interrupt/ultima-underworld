@@ -559,7 +559,9 @@ void uw_pump_events(void) {
                             dbgui_feed_mouse_down(landscape_x, landscape_y);
                         }
                     }
-                    return;
+                    /* Clicks belong to the debug UI, but plain motion still goes to the game so its
+                       software cursor follows the mouse (nothing else redraws it). */
+                    if (ev.type != SDL_MOUSEMOTION) return;
                 }
                 int portrait_x = landscape_y;
                 int portrait_y = (HW_H - 1) - landscape_x;

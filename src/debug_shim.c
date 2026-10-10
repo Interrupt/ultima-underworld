@@ -206,7 +206,6 @@ void populate_debug_panel(void)
      chrome, confirmed by eye). */
   dbgui_field_toggle("3d_objects", &g_uw_3d_objects_enabled);
   dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
-  dbgui_field_toggle("pick_diag", &g_uw_debug_pick_diag);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
   dbgui_end();
 }
