@@ -3,7 +3,7 @@
 
 /* The DOS asset set's 3D object models, read out of UW.EXE.
  *
- * The Pocket PC port ships its models as DATA3D/*.E -- Looking Glass's ASCII
+ * The Pocket PC port ships its models as DATA3D/<name>.E -- Looking Glass's ASCII
  * authoring format (BEGIN / POINTS / PARTS / END), which models.c's
  * parse_e_model_file reads. An original DOS install has no DATA3D directory
  * and not one byte of .E text anywhere in UW.EXE: DOS kept the models

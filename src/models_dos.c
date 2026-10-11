@@ -41,8 +41,8 @@
  *
  * ---- Coordinates, and how this was verified --------------------------------
  *
- * The decoder was checked against the port's own DATA3D/*.E files, which are
- * the same models in ASCII. With the port's model slot i taken as DOS model
+ * The decoder was checked against the port's own DATA3D/<name>.E files,
+ * which are the same models in ASCII. With the port's model slot i taken as DOS model
  * i+1 (the order load_3d_object_models uses), and with the file's (x, y, z)
  * emitted as (x, z, y), SIX models come out with every vertex identical to
  * the shipped .E file at 1:1 scale, no translation: the small boulder (20
@@ -74,14 +74,33 @@
  * count is skipped over and every face is emitted; the port's renderer does
  * its own back-face work.
  *
- * Colour and texture: the colour operand is a data-segment offset that
- * indexes a per-model auxiliary palette elsewhere in the executable, and the
- * texture operands reference tmobj.gr. Neither is resolved here -- every face
- * is emitted with the .E files' own ordinary flat colour, FF04 -- so DOS
- * models render in the port's default model shading rather than their
- * original per-model palette. That is a visible difference, not a crash, and
- * is the obvious next increment.
- */
+ * Texture: the texture operands reference tmobj.gr and are not resolved here;
+ * every face is emitted with the .E files' own ordinary flat colour marker,
+ * FF04. The COLOUR operand is resolved, but out of band -- the script has no
+ * way to say it -- via uw_dos_model_face_colour, which models.c reads per
+ * face. See that function's comment for the auxiliary-palette mapping.
+ *
+ * ---- Draw order, and what is still wrong -----------------------------------
+ *
+ * The port has no depth buffer and does not sort a model's faces: they are
+ * painted in the order the parts list gives, so that order IS the painter's
+ * algorithm. It also never uses a BSP -- parse_e_model_file reads the .E
+ * NODES block into DAT_000c9540 and nothing in the tree ever reads that table
+ * back. The shipped .E files are consistent with that: measured across every
+ * DATA3D/<name>.E, not one contains a branch node, only a single `L,0` leaf
+ * (or no nodes at all), so the exporter had already flattened the tree away.
+ *
+ * This decoder flattens the DOS tree too -- left sub-list, right sub-list,
+ * then the node's own tail -- which is NOT the order the .E files use. On the
+ * small boulder, the one rock whose .E matches vertex for vertex, 31 of 33
+ * faces are the same triangles but only ONE is at the same position in the
+ * list. The visible result is that farther faces sometimes paint over nearer
+ * ones. Reordering the sort node's three parts does not fix it: all six
+ * permutations were measured against ROCKSMAL.E and score 0.77-0.80 by
+ * adjacent-pair order, i.e. no better than what is here. A real fix has to
+ * sort against the camera, which the original DOS engine did with the plane
+ * data in each sort node (skipped here), and which would mean reordering at
+ * draw time rather than at load time. */
 
 #include "headers/models_dos.h"
 #include "headers/debug.h"
@@ -98,17 +117,44 @@
  * model comes close -- the largest is the shrine at 80 vertices and 51 faces.
  *
  * DOS_MAX_FACE_VERTS is the largest face in the DOS data: the shrine's ankh
- * outline is a genuine, concave 24-gon. Worth knowing that the port's part
- * record holds a count plus only 23 index slots (stride 0x60, indices from
- * +4), so a 24th index lands on the NEXT part's count field. That is a
- * PRE-EXISTING limitation, not something the DOS path introduces: the port's
- * own shipped .E files have faces of up to 50 vertices (ROCKBIG.E,
- * 40LOTUS.E), twice over the limit. It is harmless in both cases only because
- * parse_e_model_file writes each part's indices before its count and works
- * through parts in order, so the next part restores whatever the previous one
- * trampled -- and the shrine's 24-gon is not its last face. Raising the real
- * limit means widening the part record, which is the renderer's business and
- * deliberately out of scope here. */
+ * outline is a genuine, concave 24-gon. The port's part record holds a count
+ * plus only 23 index slots (stride 0x60, count at 0xc14 + p*0x60, indices
+ * from 0xc18), so a face's 24th index lands at 0xc18 + p*0x60 + 23*4, which
+ * is exactly the NEXT record's count field.
+ *
+ * That does NOT corrupt the neighbour, though, and an earlier version of this
+ * comment claiming it did was wrong: parse_e_model_file writes a part's
+ * indices before its count and works through parts in ascending order, so the
+ * next part's own count write restores the slot. Verified by scanning the
+ * parsed shrine buffer with the split disabled -- every record reads back a
+ * sane count except the 24-gon's own, which is legitimately 24.
+ *
+ * The real cost is at DRAW time: that face's 24th index IS the neighbouring
+ * count field, so the polygon is drawn with one corner taken from a small
+ * integer (3 or 4) used as a vertex number. One visibly wrong corner on that
+ * face, not wreckage spread across the model.
+ *
+ *
+ * An earlier version of this comment also claimed the port's own .E files
+ * carry faces of up to 50 vertices (ROCKBIG.E, 40LOTUS.E). That was wrong,
+ * and it is corrected here because it sent one debugging pass down the wrong
+ * path. Measured across every shipped DATA3D/<name>.E: the widest face
+ * anywhere is FIVE vertices (one in CHAIRSIM.E); ROCKBIG.E is 52 faces all of
+ * which are triangles, and 40LOTUS.E is 6 quads. The 50 came from a scan that
+ * matched the 50-entry CLUSTERS list rather than a PARTS line.
+ *
+ * So the renderer has only ever been handed quads and triangles, and the DOS
+ * path is the first thing to give it anything wider. uw_dos_model_script
+ * therefore splits every face wider than a QUAD, not merely those over 23.
+ * Only the over-23 case is a correctness bug; 5..23 is split as well because
+ * emit_catalog_object gives a face UVs and shading from its first FOUR
+ * vertices only (it reads _face_rec + 4/8/0xc/0x10 and caps its shade loop at
+ * _ci < 4), so a wider face is lit from a part of itself. Splitting keeps DOS
+ * output inside the envelope the port's renderer was actually built against,
+ * and gives the painter's-order sort in emit_catalog_object finer granularity
+ * to work with. The cost is face count -- the boulder goes 61 -> 65 and the
+ * shrine 51 -> 118 -- which is why that sort's silent 64-face cutoff had to
+ * go; see its comment in models.c. */
 #define DOS_MAX_VERTS 256
 #define DOS_MAX_FACES 128
 #define DOS_MAX_FACE_VERTS 24
@@ -212,7 +258,7 @@ static void dos_models_open(void)
 
   FILE *f = (FILE *)uw_file_fopen("\\UW.EXE", "rb");
   if (!f) {
-    DEBUG(INFO, "[models] no DOS UW.EXE in the data directory -- using the DATA3D/*.E models\n");
+    DEBUG(INFO, "[models] no DOS UW.EXE in the data directory -- using the DATA3D/<name>.E models\n");
     return;
   }
   if (fseek(f, 0, SEEK_END) != 0) {
@@ -719,6 +765,135 @@ static int dos_model_x_offset(int dos_index)
  
    Compares squared to avoid a square root: dev > T becomes
    dot(n,v)^2 > T^2 * dot(n,n). */
+static int face_is_planar(const int (*pts)[3], int n);
+
+/* Split a face into triangles, as local 0..n-1 index triples in `tris`;
+ * returns how many it wrote (n - 2 for a clean polygon).
+ *
+ * A fan from one vertex is only correct for a CONVEX polygon. The DOS data is
+ * full of concave ones -- the shrine's 24- and 23-vertex rings, every rock's
+ * base -- and fanning those emits triangles whose winding is opposite the
+ * face's, so they face the wrong way and are culled or lit as backfaces. So
+ * ear clipping: repeatedly take a corner that turns the same way as the
+ * polygon and holds no other vertex, which keeps every triangle on the face's
+ * own winding whether it is convex or not.
+ *
+ * A non-planar face has no single plane to clip in, so those keep the plain
+ * fan -- they are split only to make each piece planar, not for shape. */
+static int triangulate_face(const int (*pts)[3], int n, int tris[][3])
+{
+  if (n < 3) {
+    return 0;
+  }
+  if (n == 3) {
+    tris[0][0] = 0; tris[0][1] = 1; tris[0][2] = 2;
+    return 1;
+  }
+
+  int fan_only = !face_is_planar(pts, n);
+
+  /* Newell's normal, so the projection below keeps the polygon's winding. */
+  double nx = 0.0, ny = 0.0, nz = 0.0;
+  for (int k = 0; k < n; k++) {
+    const int *a = pts[k];
+    const int *b = pts[(k + 1) % n];
+    nx += (double)(a[1] - b[1]) * (a[2] + b[2]);
+    ny += (double)(a[2] - b[2]) * (a[0] + b[0]);
+    nz += (double)(a[0] - b[0]) * (a[1] + b[1]);
+  }
+
+  /* Drop the dominant axis. The surviving pair is ordered so that the 2D
+     winding matches the 3D winding seen from the +normal side. */
+  int ax, ay;
+  double adx = nx < 0 ? -nx : nx, ady = ny < 0 ? -ny : ny, adz = nz < 0 ? -nz : nz;
+  if (adx >= ady && adx >= adz)      { ax = 1; ay = 2; }
+  else if (ady >= adz)               { ax = 2; ay = 0; }
+  else                               { ax = 0; ay = 1; }
+
+  double px[DOS_MAX_FACE_VERTS], py[DOS_MAX_FACE_VERTS];
+  for (int k = 0; k < n; k++) {
+    px[k] = pts[k][ax];
+    py[k] = pts[k][ay];
+  }
+
+  /* Twice the signed area gives the polygon's turn direction. */
+  double area2 = 0.0;
+  for (int k = 0; k < n; k++) {
+    int j = (k + 1) % n;
+    area2 += px[k] * py[j] - px[j] * py[k];
+  }
+  double sign = area2 < 0 ? -1.0 : 1.0;
+  if (area2 == 0.0) {
+    fan_only = 1;                     /* degenerate: nothing sensible to clip */
+  }
+
+  if (fan_only) {
+    int count = 0;
+    for (int k = 1; k + 1 < n; k++) {
+      tris[count][0] = 0; tris[count][1] = k; tris[count][2] = k + 1;
+      count++;
+    }
+    return count;
+  }
+
+  int live[DOS_MAX_FACE_VERTS];
+  for (int k = 0; k < n; k++) {
+    live[k] = k;
+  }
+  int remaining = n, count = 0, guard = 0;
+
+  while (remaining > 3 && guard++ < DOS_MAX_FACE_VERTS * DOS_MAX_FACE_VERTS) {
+    int clipped = 0;
+    for (int i = 0; i < remaining; i++) {
+      int ip = live[(i + remaining - 1) % remaining];
+      int ic = live[i];
+      int in = live[(i + 1) % remaining];
+      double cross = (px[ic] - px[ip]) * (py[in] - py[ip])
+                   - (py[ic] - py[ip]) * (px[in] - px[ip]);
+      if (cross * sign <= 0.0) {
+        continue;                     /* reflex corner, or collinear */
+      }
+      /* An ear may not swallow any other remaining vertex. */
+      int blocked = 0;
+      for (int j = 0; j < remaining && !blocked; j++) {
+        int iv = live[j];
+        if (iv == ip || iv == ic || iv == in) {
+          continue;
+        }
+        double d0 = ((px[ic] - px[ip]) * (py[iv] - py[ip])
+                   - (py[ic] - py[ip]) * (px[iv] - px[ip])) * sign;
+        double d1 = ((px[in] - px[ic]) * (py[iv] - py[ic])
+                   - (py[in] - py[ic]) * (px[iv] - px[ic])) * sign;
+        double d2 = ((px[ip] - px[in]) * (py[iv] - py[in])
+                   - (py[ip] - py[in]) * (px[iv] - px[in])) * sign;
+        if (d0 >= 0.0 && d1 >= 0.0 && d2 >= 0.0) {
+          blocked = 1;
+        }
+      }
+      if (blocked) {
+        continue;
+      }
+      tris[count][0] = ip; tris[count][1] = ic; tris[count][2] = in;
+      count++;
+      for (int j = i; j + 1 < remaining; j++) {
+        live[j] = live[j + 1];
+      }
+      remaining--;
+      clipped = 1;
+      break;
+    }
+    if (!clipped) {
+      break;                          /* self-intersecting: fan what is left */
+    }
+  }
+
+  for (int k = 1; k + 1 < remaining; k++) {
+    tris[count][0] = live[0]; tris[count][1] = live[k]; tris[count][2] = live[k + 1];
+    count++;
+  }
+  return count;
+}
+
 static int face_is_planar(const int (*pts)[3], int n)
 {
   if (n < 4) {
@@ -864,7 +1039,28 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz)
       coords[k][2] = q->y;
     }
 
-    if (face_is_planar((const int (*)[3])coords, n)) {
+    /* Anything wider than a quad is split as well, however flat it is: the
+       port's face record holds a count plus at most 23 vertex indices in its
+       0x60-byte stride (count at 0xc14 + p*0x60, indices from 0xc18), so a
+       24-vertex face writes its last index at 0xc18 + p*0x60 + 23*4 -- which
+       is exactly where the NEXT record's count lives. The shrine does that:
+       model 0x0b has a 24- and a 23-vertex ring. The parser restores the
+       trampled count when it writes the next part's own (indices go in
+       before counts, parts in ascending order), so nothing is corrupted --
+       but at draw time that face's 24th index IS the neighbouring count
+       field, so it draws one corner from a small integer used as a vertex
+       number. Narrower n-gons avoid that entirely and are still split,
+       because a face gets UVs and shading from its first four vertices only
+       (emit_catalog_object reads _face_rec + 4/8/0xc/0x10 and caps its shade
+       loop at _ci < 4); see this file's header comment.
+
+       Splitting is what the port's own art already does: not one shipped .E
+       face exceeds five vertices (ROCKBIG.E is 52 triangles where DOS model
+       0x07 has a 7-vertex base ring), so the renderer has only ever been fed
+       quads and triangles. Only the untextured FACE opcode (0x007e) produces
+       wide faces -- checked across every model -- so no texture origin is
+       disturbed by splitting them. */
+    if (n <= 4 && face_is_planar((const int (*)[3])coords, n)) {
       if (parts >= DOS_MAX_FACES) { m->truncated = 1; break; }
       emit(out, out_sz, &pos, "0,N,%d,FF04,(", parts);
       for (int k = 0; k < n; k++) {
@@ -874,12 +1070,16 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz)
       g_face_colour[dos_index][parts] = (signed char)face->colour;
       parts++;
     } else {
-      /* Fan from the first vertex, which keeps the winding the whole face had
-         and makes every piece planar by construction. */
-      for (int k = 1; k + 1 < n; k++) {
+      int tris[DOS_MAX_FACE_VERTS][3];
+      int n_tris = triangulate_face((const int (*)[3])coords, n, tris);
+      /* Every piece keeps the winding of the ring it came from. Reversing the
+         wide ones instead was tried in play and looked worse, which fits:
+         what is actually wrong with these models is the order they are drawn
+         in, not which way they face. */
+      for (int t = 0; t < n_tris; t++) {
         if (parts >= DOS_MAX_FACES) { m->truncated = 1; break; }
         emit(out, out_sz, &pos, "0,N,%d,FF04,(%d,%d,%d);\n",
-             parts, wound[0], wound[k], wound[k + 1]);
+             parts, wound[tris[t][0]], wound[tris[t][1]], wound[tris[t][2]]);
         /* Each triangle inherits the colour of the face it came from. */
         g_face_colour[dos_index][parts] = (signed char)face->colour;
         parts++;

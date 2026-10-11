@@ -1567,24 +1567,41 @@ LAB_000640ec:
   if (!g_opts.model_no_depth_sort && DAT_0023b83c > _rec_start) {
     double _eye_x = *(float *)&DAT_000db438, _eye_y = *(float *)&DAT_000db43c, _eye_z = *(float *)&DAT_000db440;
     int _n = DAT_0023b83c - _rec_start;
-    if (_n <= 64) {
-      double _dist[64];
-      int _order[64];
+    /* This cap used to be 64, and a model with more faces than that was
+       silently left UNSORTED -- no warning, no partial sort, nothing. The
+       DOS boulder decodes to 65 faces, so it fell off this cliff and drew
+       in raw emission order, which is what "far faces in front of nearer
+       ones" looked like in play. A model can emit at most as many faces as
+       its buffer holds parts, and that is 128 ((0x3c1c - 0xc14) / 0x60), so
+       size for that with headroom rather than leaving a silent cutoff. */
+    if (_n <= 256) {
+      double _dist[256];
+      int _order[256];
       int _k;
       for (_k = 0; _k < _n; _k++) {
         int rec = _rec_start + _k;
         int rb = rec * 0x60;
-        int iv0 = *(int *)(&DAT_000acde8 + rb);
-        int iv1 = *(int *)(&DAT_000acdec + rb);
-        int iv2 = *(int *)(&DAT_000acdf0 + rb);
-        int iv3 = *(int *)(&DAT_000acdf4 + rb);
-        float *p0 = (float *)((char *)DAT_000a85d0_backing + 8 + iv0*0xc);
-        float *p1 = (float *)((char *)DAT_000a85d0_backing + 8 + iv1*0xc);
-        float *p2 = (float *)((char *)DAT_000a85d0_backing + 8 + iv2*0xc);
-        float *p3 = (float *)((char *)DAT_000a85d0_backing + 8 + iv3*0xc);
-        double cx = (p0[0]+p1[0]+p2[0]+p3[0]) * 0.25;
-        double cy = (p0[1]+p1[1]+p2[1]+p3[1]) * 0.25;
-        double cz = (p0[2]+p1[2]+p2[2]+p3[2]) * 0.25;
+        /* Average the face's OWN vertices, not four of them. An emitted
+           record is a count at +0 (tmap.c writes `(&DAT_000acde4)[..] = 4`
+           for its tile quads) followed by that many indices from +4, and
+           this sort used to read exactly four regardless. Everything the
+           tile code emits is a quad, so that was invisible -- but a model's
+           faces are not: ROCKBIG is 57 triangles out of 65, and for each of
+           those the fourth slot was never written, so it read 0 and averaged
+           model vertex 0 into the centroid. That put every triangle at the
+           wrong depth, which is exactly the "far faces drawn in front of
+           nearer ones" this sort exists to prevent. */
+        int _vc = *(int *)(&DAT_000acde4 + rb);
+        double cx = 0.0, cy = 0.0, cz = 0.0;
+        int _vi;
+        if (_vc < 3) _vc = 3;
+        if (_vc > 23) _vc = 23;          /* the record holds at most 23 */
+        for (_vi = 0; _vi < _vc; _vi++) {
+          int iv = *(int *)(&DAT_000acde8 + rb + _vi * 4);
+          float *p = (float *)((char *)DAT_000a85d0_backing + 8 + iv*0xc);
+          cx += p[0]; cy += p[1]; cz += p[2];
+        }
+        cx /= _vc; cy /= _vc; cz /= _vc;
         double dx = cx - _eye_x, dy = cy - _eye_y, dz = cz - _eye_z;
         _dist[_k] = dx*dx + dy*dy + dz*dz;
         _order[_k] = _k;
@@ -1602,7 +1619,7 @@ LAB_000640ec:
       /* Apply via cycle-sort in place, whole-record memcpy plus the
          parallel g_tile_texptr_emit[] side channel. */
       { unsigned char _tmp[0x60]; void *_tmp_tex;
-        unsigned char _done[64] = {0};
+        unsigned char _done[256] = {0};
         int _a;
         for (_a = 0; _a < _n; _a++) {
           int _cur, _src;
