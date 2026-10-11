@@ -161,7 +161,7 @@ static void populate_debug_texture_inspector(int pick)
    already started the backing clean for that case). */
 static int g_dbgui_last_kind = -1;
 
-/* The surface lighting modes the panel cycles through (--light-mode names). */
+/* The surface lighting modes the panel steps through (--light-mode names). */
 static const char *const k_light_modes[] = { "smooth", "inv-square", "dos" };
 
 static int current_light_mode_index(void)
@@ -171,8 +171,6 @@ static int current_light_mode_index(void)
   if (m && strcasecmp(m, "inv-square") == 0) return 1;
   return 0;
 }
-static const char *current_light_mode_name(void) { return k_light_modes[current_light_mode_index()]; }
-static void cycle_light_mode(void) { options_set("light-mode", k_light_modes[(current_light_mode_index() + 1) % 3]); }
 
 void populate_debug_panel(void)
 {
@@ -224,9 +222,12 @@ void populate_debug_panel(void)
   dbgui_field_toggle("pick_diag", &g_uw_debug_pick_diag);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
   {
-    static char label[32];
-    snprintf(label, sizeof label, "light-mode: %s", current_light_mode_name());
-    dbgui_field_button(label, cycle_light_mode);
+    /* --light-mode is a string, the panel field an index: apply the index when the panel changed it,
+       otherwise follow the option (it can also change from the console or the command line). */
+    static int ui_index, applied_index = -1;
+    if (applied_index >= 0 && ui_index != applied_index) options_set("light-mode", k_light_modes[ui_index]);
+    ui_index = applied_index = current_light_mode_index();
+    dbgui_field_int_names("light-mode", &ui_index, k_light_modes, 3);
   }
   dbgui_end();
 }
