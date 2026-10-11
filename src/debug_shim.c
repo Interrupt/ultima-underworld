@@ -207,10 +207,12 @@ void uw_debug_blit_pick_buffer(void)
   unsigned short *fb = (unsigned short *)g_uw_framebuffer;
   int x, y;
   if (fb == 0 || DAT_0023cca0 == 0) return;
-  for (y = 19; y < 150; y++) {
+  /* Exactly the 3D view's own clip rect (render_dungeon_view_frame): (0x34,0x13) .. +width/height. */
+  int vx0 = 0x34, vy0 = 0x13, vx1 = 0x34 + (int)DAT_0023b020, vy1 = 0x13 + (int)DAT_0023aed4;
+  for (y = vy0; y < vy1; y++) {
     const unsigned char *row = (const unsigned char *)DAT_0023cca0 + y * 0x140;
     unsigned short *frow = fb + y * 0x140;
-    for (x = 52; x < 276; x++) {
+    for (x = vx0; x < vx1; x++) {
       unsigned int v = row[x];
       unsigned short c;
       if (v == 0)                 c = 0x0008;                 /* near-black blue */
