@@ -703,12 +703,35 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
     puVar10 = (ushort *)(local_4 + iVar6 * 2);
     do {
       iVar6 = ordint_divmod(local_38,0x1000000).quot;
-      iVar12 = (local_34 >> 6) * iVar6 >> 0x12;
+      // HACK: not original behaviour -- exact texel division replaces the ARM integer-truncated path.
+      /* HACK: the original truncates the depth quotient iVar6 = 2^24/(1/w) to an integer and then
+         multiplies the (v/w)>>6 / (u/w)>>6 terms by it. Close to a wall w is small, so iVar6 is only
+         a handful of units and the texel coordinate steps in coarse, uneven jumps (a repeating
+         sawtooth along lines that should be straight). Both products are mathematically (v/w)/(1/w),
+         so divide at full precision with floor semantics instead; iVar6 stays for lighting. */
+      long long tex_u, tex_v;
+      if (local_38 > 0) {
+        long long inv = local_38;
+        long long nv = local_34, nu = iVar14;
+        tex_v = nv >= 0 ? nv / inv : -((-nv + inv - 1) / inv);
+        tex_u = nu >= 0 ? nu / inv : -((-nu + inv - 1) / inv);
+      } else {
+        tex_v = (local_34 >> 6) * iVar6 >> 0x12;
+        tex_u = (iVar14 >> 6) * iVar6 >> 0x12;
+      }
+      iVar12 = (intptr_t)tex_v;
       bVar1 = shade;
-      if ((texture_pixels != 0) && (-1 < iVar12)) {
-        for (iVar12 = (int)(iVar12) * texture_stride + ((iVar14 >> 6) * iVar6 >> 0x12); texture_size < iVar12;
+      if (texture_pixels != 0 && texture_size > 0) {
+        /* HACK: a pixel whose centre lands just outside the polygon's texture rectangle (the edges
+           round up to whole scanlines, and axis-aligned views land v/u right on the boundary) used to
+           take the flat `shade` colour for a negative row, painting a stripe along the top edge of
+           the texture, or read one byte past the end of the texture when the index hit exactly
+           texture_size. Clamp to the first texel instead and wrap with `>=`. */
+        if (iVar12 < 0) iVar12 = 0;
+        for (iVar12 = (int)(iVar12) * texture_stride + (int)tex_u; texture_size <= iVar12;
             iVar12 = iVar12 - texture_size) {
         }
+        if (iVar12 < 0) iVar12 = 0;
         bVar1 = *(byte *)(iVar12 + texture_pixels);
       }
       if (bVar1 != 0) {
@@ -1519,6 +1542,15 @@ void render_dungeon_view_frame()
   DAT_00110fc0 = DAT_00110fc0 + 1;
   set_viewport_clip_rect(0,0,DAT_0023b020 + -1,DAT_0023aed4 + -1);
   set_viewport_clip_rect(0x34,0x13,DAT_0023b020 + 0x33,DAT_0023aed4 + 0x12);
+  if (DAT_0023b830 != 0 && DAT_0023cca0 != 0) {
+    /* HACK: not original behaviour -- the ARM code only zeroes the id buffer once at startup
+       (game.c) and its viewport fill in render_dungeon_view clears colour only. A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
+       uncovered would keep the previous frame's ids (a hall-of-mirrors smear in the pick view, and
+       clicks there picking whatever used to be drawn). Clear the viewport to "nothing" first. */
+    int row;
+    for (row = 0; row < DAT_0023aed4; row++)
+      memset(DAT_0023cca0 + (0x13 + row) * 0x140 + 0x34, 0, (size_t)DAT_0023b020);
+  }
   render_dungeon_view();
   set_viewport_clip_rect(0,0,0x13f,199);
 }
