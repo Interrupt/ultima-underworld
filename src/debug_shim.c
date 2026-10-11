@@ -336,3 +336,102 @@ void uw_debug_dump_critter_sheet_once(void) {
   }
   fprintf(stderr, "[crit-sheet] sweep complete, see debug/crit/\n");
 }
+
+/* ---- Console object commands (OBJIDS / SPAWNOBJ / GIVEOBJ, demomode.c) ---- */
+
+/* Display name of object type `id` (0..0x1ff), the way look/pickup show it. Empty if the type has
+   no name. The string table's entry is copied first: format_object_display_name edits in place. */
+void dbgui_object_name(int id, char *out, size_t n)
+{
+  char copy[128];
+  const char *name = get_message_string((ushort)((id & 0x1ff) | 0x800));
+  out[0] = 0;
+  if (!name || !*name) return;
+  snprintf(copy, sizeof copy, "%s", name);
+  snprintf(out, n, "%s", (const char *)format_object_display_name((byte *)copy, 1, 0));
+}
+
+/* Create a fresh object of type `id`; critters live in the 27-byte mobile table, everything else in
+   the 8-byte one. Returns NULL if the table is full. */
+static uw_object_hdr_t *dbgui_new_object(int id)
+{
+  int critter = (id & 0x1c0) == 0x40;
+  uw_object_hdr_t *obj = spawn_new_object((uint)id, critter ? 1 : 0);
+  if (obj && critter) {
+    ((uw_mobile_object_t *)obj)->npc_hp = g_monster_type_props[id & 0x3f].max_hp;
+  }
+  return obj;
+}
+
+/* SPAWNOBJ: place a new object in a free spot about a tile in front of the player (the placement
+   search widens to neighbouring tiles if that one is blocked). Returns 1 and the tile, or 0. */
+int dbgui_spawn_object(int id, int *tile_x, int *tile_y)
+{
+  if (id < 0 || id > 0x1ff) return -1;
+  ushort x = DAT_00204880 >> 5, y = DAT_00204882 >> 5;
+  project_position_by_heading((int)DAT_00201c70 >> 8, 12, &x, &y);
+  ushort *tile = (ushort *)tilemap_lookup((int)(short)x >> 3, (int)(short)y >> 3);
+  if (!tile) return 0;
+  int height = ((*tile >> 4) & 0xf) << 3;
+  uw_object_hdr_t *obj = dbgui_new_object(id);
+  if (!obj) return 0;
+  obj->xpos = x & 7;
+  obj->ypos = y & 7;
+  obj->zpos = height & 0x7f;
+  if (find_object_placement((ushort *)obj, (short)x, (short)y, (short)height, 2) == 0) {
+    free_object_slot(obj);
+    return 0;
+  }
+  *tile_x = (short)x >> 3;
+  *tile_y = (short)y >> 3;
+  return 1;
+}
+
+/* GIVEOBJ: put a new object in the first empty top-level backpack slot (slots 0xb..0x12). Returns the
+   slot, -1 for a bad id, -2 if the backpack is full, -3 if no object could be allocated. */
+int dbgui_give_object(int id)
+{
+  int slot;
+  if (id < 0 || id > 0x1ff) return -1;
+  for (slot = 0xb; slot < 0x13; slot++) {
+    if ((*(ushort *)(&g_equipped_items + slot * 2) & 0xffc0) == 0) break;
+  }
+  if (slot >= 0x13) return -2;
+  uw_object_hdr_t *obj = dbgui_new_object(id);
+  if (!obj) return -3;
+  if (!place_held_item_in_empty_slot(obj, (short)slot)) {
+    free_object_slot(obj);
+    return -2;
+  }
+  return slot;
+}
+
+/* ALLRUNES: set every spell rune in the player's rune bitset (24 bits at status +0x44) and make sure a
+   Rune Bag (type 0x8f) is in the top-level backpack. Returns 1 if a bag was added, 0 if one was already
+   there, -2 if the backpack had no room for one (runes are still set). */
+int dbgui_all_runes(void)
+{
+  int slot, result = 0, have_bag = 0;
+  for (slot = 0xb; slot < 0x13 && !have_bag; slot++) {
+    ushort *o = (ushort *)resolve_object_link(&g_equipped_items + slot * 2);
+    if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
+  }
+  if (!have_bag) result = dbgui_give_object(0x8f) >= 0 ? 1 : -2;
+  DAT_00086df8[0x44] = (char)0xff;
+  DAT_00086df8[0x45] = (char)0xff;
+  DAT_00086df8[0x46] = (char)0xff;
+  redraw_active_hud_panel();
+  return result;
+}
+
+/* ---- CASTSPELL (demomode.c) ---- */
+#define DBGUI_SPELL_COUNT 48
+
+/* Spell i's name: the 48 spells' names are string-table page 6, ids 0x100.. in rune-table order. */
+void dbgui_spell_name(int i, char *out, size_t n)
+{
+  const char *name = get_message_string((ushort)(0xc00 | (0x100 + i)));
+  snprintf(out, n, "%s", name ? name : "");
+}
+
+int dbgui_spell_count(void) { return DBGUI_SPELL_COUNT; }

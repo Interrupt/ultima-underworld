@@ -150,10 +150,10 @@ void dbgui_invalidate_region(void)
 #define CON_ROW_H 8                       /* tighter than the panel's DBGUI_ROW_H */
 #define CON_ROWS 8                        /* log rows shown above the input row */
 #define CON_H (CON_ROW_H * (CON_ROWS + 1) + 4)
-#define CON_LOG_LINES 128
+#define CON_LOG_LINES 1024
 #define CON_LINE_MAX 120
 #define CON_INPUT_MAX 120
-#define CON_HIST_MAX 16
+#define CON_HIST_MAX 64
 
 static int g_console_open = 0;
 static char g_con_log[CON_LOG_LINES][CON_LINE_MAX];

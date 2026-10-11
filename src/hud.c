@@ -4384,6 +4384,26 @@ int cast_spell_from_rune_combo(uint circle_hint)
 }
 
 
+/* Debug console CASTSPELL (declared in debug_shim.h; lives here for the statics it shares with
+   cast_spell_from_rune_combo). */
+/* Cast spell i: the effect half of cast_spell_from_rune_combo (hud.c) -- the same power globals it
+   sets, then dispatch_special_action with the spell's table entry -- skipping its level, mana and
+   skill-roll checks. DAT_0023c3e0 (deferred mana cost, charged by the spawn-type spells) stays 0.
+   Returns dispatch_special_action's result (nonzero = took effect). */
+int dbgui_cast_spell(int i)
+{
+  if (i < 0 || i >= 48) return -1;
+  uint type = DAT_00087530_backing[i * 4] >> 3;
+  byte param = DAT_00087530_backing[i * 4 + 3];
+  DAT_002028d4 = (char)((i / 6 + 9) * 8 + *(char *)(DAT_00086df8 + 0x3d) * -4);
+  DAT_002028d8 = *(undefined4 *)(DAT_00086df8 + 0xce);
+  DAT_0023c3e0 = 0;
+  int r = dispatch_special_action(type, param, g_player_object, g_player_object);
+  if (r != 0) play_sound_effect_with_pan(0x10, 0x40, 0);
+  return r;
+}
+
+
 // was FUN_0004638c -- reloads the player's paperdoll body sprite (BODIES.GR, the frame selected by
 // gender/race bits at DAT_00086df8+100) via reload_single_grtile_entry, then clears 5 bytes of the
 // cached equipment-icon slot array (DAT_00202988+1..+5).

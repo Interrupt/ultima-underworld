@@ -999,6 +999,76 @@ static void demo_exec_line(char *p, Uint32 now) {
             g_demo_next_tick = now;
             return;
         }
+        if (demo_match_cmd(p, "OBJIDS", &arg)) {
+            /* OBJIDS -- every object type that has a name: id (hex) and name. */
+            char nm[96];
+            int id, n = 0;
+            for (id = 0; id < 0x200; id++) {
+                dbgui_object_name(id, nm, sizeof nm);
+                if (!nm[0]) continue;
+                demo_printf("0x%03x %s\n", id, nm);
+                n++;
+            }
+            demo_printf("[cmd] %d named objects\n", n);
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "SPAWNOBJ", &arg) || demo_match_cmd(p, "GIVEOBJ", &arg)) {
+            /* SPAWNOBJ <id> -- new object on a free tile in front of the player.
+               GIVEOBJ <id>  -- new object in the first free top-level backpack slot. */
+            int give = (strncasecmp(p, "GIVEOBJ", 7) == 0);
+            char *end;
+            long id = strtol(arg, &end, 0);
+            char nm[96];
+            if (*arg == '\0' || *end != '\0' || id < 0 || id > 0x1ff) {
+                demo_printf("[cmd] usage: %s <id 0-0x1ff>  (see OBJIDS)\n", give ? "GIVEOBJ" : "SPAWNOBJ");
+            } else {
+                dbgui_object_name((int)id, nm, sizeof nm);
+                if (give) {
+                    int slot = dbgui_give_object((int)id);
+                    if (slot >= 0) demo_printf("[cmd] gave 0x%03lx %s (backpack slot %d)\n", id, nm, slot - 0xb);
+                    else demo_printf("[cmd] %s\n", slot == -2 ? "no free backpack slot" : "no free object slot");
+                } else {
+                    int tx = 0, ty = 0;
+                    if (dbgui_spawn_object((int)id, &tx, &ty) == 1)
+                        demo_printf("[cmd] spawned 0x%03lx %s at tile (%d,%d)\n", id, nm, tx, ty);
+                    else demo_printf("[cmd] could not place 0x%03lx %s\n", id, nm);
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "ALLRUNES", &arg)) {
+            /* ALLRUNES -- every spell rune, plus a Rune Bag in the backpack if there isn't one. */
+            int r = dbgui_all_runes();
+            demo_printf("[cmd] all runes set%s\n", r == 1 ? ", rune bag added" :
+                        r == -2 ? " (no backpack room for a rune bag)" : "");
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "CASTSPELL", &arg)) {
+            /* CASTSPELL [id] -- no id: list the spell ids and names. With an id: cast that spell now,
+               ignoring mana cost (and the level / skill-roll checks), via dispatch_special_action. */
+            char nm[64];
+            int i;
+            if (*arg == '\0') {
+                for (i = 0; i < dbgui_spell_count(); i++) {
+                    dbgui_spell_name(i, nm, sizeof nm);
+                    demo_printf("%d %s\n", i, nm);
+                }
+            } else {
+                char *end;
+                long id = strtol(arg, &end, 0);
+                if (*end != '\0' || id < 0 || id >= dbgui_spell_count()) {
+                    demo_printf("[cmd] usage: CASTSPELL [0-%d]  (no id lists spells)\n", dbgui_spell_count() - 1);
+                } else {
+                    dbgui_spell_name((int)id, nm, sizeof nm);
+                    demo_printf("[cmd] casting %ld %s: %s\n", id, nm, dbgui_cast_spell((int)id) ? "ok" : "no effect");
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
         if (demo_match_cmd(p, "GODMODE", &arg)) {
             /* GODMODE [on|off] -- the player can't die (damage never takes the last hit point) and
                spells cost no mana. */
@@ -1115,15 +1185,12 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "debug: DUMPOBJSLOT <n> | SCANOBJTYPE <hex> | FINDOBJ <n>\n"
                     "  DUMPTILEOBJS | DUMPPLAYERINV | PICKBUFDRIFT\n"
                     "  SCREENSHOT <path>\n"
-                    "keys: <KEY> | SDLHOLD <KEY> <ticks> | HOLD <KEY> <ticks>\n"
-                    "  RAWKEY <KEY> | SDLKEYDOWN/SDLKEYUP <KEY> | TYPE <text>\n"
-                    "  WAIT <ticks> | DELAY <ms>\n"
-                    "mouse: CLICK <x> <y> | SDLCLICK/SDLRCLICK <x> <y>\n"
-                    "  SDLDOWN/SDLUP/SDLRDOWN/SDLRUP/SDLMOVE <x> <y>\n"
                     "world: TELEPORT <x> <y> [level] | GOTOLEVEL <level>\n"
                     "  OPENMAP | REVEAL | REVEALALL\n"
                     "  FLY | FARSIGHT | NOCLIP | GODMODE  (each takes optional on/off)\n"
                     "  PLAYERLEVEL <1-16> | SETSKILL <skill|all> <0-30>\n"
+                    "  OBJIDS | SPAWNOBJ <id> | GIVEOBJ <id> | ALLRUNES\n"
+                    "  CASTSPELL [id]  (no id lists spells)\n"
                     "  OPTIONS | <option> [value]\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
