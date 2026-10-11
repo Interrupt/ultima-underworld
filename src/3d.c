@@ -1543,7 +1543,8 @@ void render_dungeon_view_frame()
   set_viewport_clip_rect(0,0,DAT_0023b020 + -1,DAT_0023aed4 + -1);
   set_viewport_clip_rect(0x34,0x13,DAT_0023b020 + 0x33,DAT_0023aed4 + 0x12);
   if (DAT_0023b830 != 0 && DAT_0023cca0 != 0) {
-    /* A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
+    /* HACK: not original behaviour -- the ARM code only zeroes the id buffer once at startup
+       (game.c) and its viewport fill in render_dungeon_view clears colour only. A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
        uncovered would keep the previous frame's ids (a hall-of-mirrors smear in the pick view, and
        clicks there picking whatever used to be drawn). Clear the viewport to "nothing" first. */
     int row;
