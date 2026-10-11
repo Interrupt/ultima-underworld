@@ -53,9 +53,8 @@ static int g_selected = 0;
 static int g_editing = 0;
 static char g_edit_buf[32];
 static int g_edit_len = 0;
-/* How many rows dbgui_draw's own background fill covered last time it
-   ran -- see its own comment on why the fill has to track this instead
-   of just this frame's g_field_count. */
+/* Row count of the panel currently drawn (0 = nothing drawn); a change triggers an invalidate in
+   dbgui_draw. */
 static int g_last_rows = 0;
 
 /* Real pixel save/restore for the panel's own screen region, so closing it doesn't leave stale
@@ -520,20 +519,13 @@ void dbgui_draw()
   }
   if (!g_visible || g_field_count == 0) return;
 
-  /* The background fill below covers max(this frame's rows, last
-     frame's rows), not just this frame's -- the panel can legitimately
-     get SHORTER between one frame and the next now (toggle panel ->
-     object/texture inspector, 4 rows -> 3), and without this the newly
-     -uncovered row(s) from the taller previous panel are never
-     repainted by anything (this fill is the only thing that ever
-     touches that screen region -- see dbgui_toggle's own save/restore
-     comment), so their old text just sits there as a stale ghost row
-     forever. Confirmed live: picking a wall left a leftover
-     "pick_diag:" row below the 3-row Texture Inspector's own "desc"
-     row. Shrinks to the real size cleanly one frame later once
-     g_last_rows itself catches down to g_field_count. */
-  int fill_rows = g_field_count > g_last_rows ? g_field_count : g_last_rows;
-  int panel_h = DBGUI_ROW_H * (fill_rows + 1) + 4;
+  /* The panel's height follows g_field_count, which can change at any time (the object inspector's
+     row count differs per object type, panels switch, ...). When the drawn size differs from what
+     was drawn last, put the real pixels back and have the game repaint the HUD under the old rect
+     first, so nothing from the old size is left behind; then fill only this frame's own size.
+     g_last_rows == 0 means nothing is currently drawn (fresh open / just invalidated). */
+  if (g_last_rows != 0 && g_last_rows != g_field_count) dbgui_invalidate_region();
+  int panel_h = DBGUI_ROW_H * (g_field_count + 1) + 4;
   int x0 = DBGUI_PANEL_X, y0 = DBGUI_PANEL_Y;
   int x1 = x0 + DBGUI_PANEL_W, y1 = y0 + panel_h;
   g_last_rows = g_field_count;

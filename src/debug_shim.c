@@ -158,15 +158,6 @@ static void populate_debug_texture_inspector(int pick)
    dbgui_begin's own header comment now calls out). Add a new
    subsystem toggle here, not at a second call site -- there's exactly
    one field list live at a time. */
-/* Which of the panel's three distinct layouts populate_debug_panel
-   drew last frame (0=toggle panel, 1=object inspector, 2=texture
-   inspector), so a switch between them can be detected -- see its own
-   dbgui_invalidate_region() call below for why. -1 means "none yet /
-   panel was just (re)opened", so the very first frame after an open
-   never spuriously invalidates (dbgui_toggle's own open-time save
-   already started the backing clean for that case). */
-static int g_dbgui_last_kind = -1;
-
 void populate_debug_panel(void)
 {
   /* Closing the panel (backtick) should always land back on the base
@@ -178,24 +169,8 @@ void populate_debug_panel(void)
   if (!dbgui_visible()) {
     g_dbgui_inspect_obj = 0;
     g_dbgui_inspect_tex_pick = 0;
-    g_dbgui_last_kind = -1;
     return;
   }
-  int kind = (g_dbgui_inspect_obj != 0) ? 1 : (g_dbgui_inspect_tex_pick != 0) ? 2 : 0;
-  /* Switching which of the three layouts is showing, while the panel
-     stays open (object inspector -> back to the toggle panel, a pick
-     swapping straight from one inspector to the other, ...), can shrink
-     or reshape the panel. Put the real pixels back and re-arm the save
-     before the new layout draws, rather than trusting the new layout's
-     own fill call to correctly cover whatever the old one left behind
-     -- confirmed live this depends on redraw/flush ordering this module
-     doesn't fully control (stale "3d_objects"/"npc_tick"/"pick_diag"
-     row content survived on screen after an inspector's own "< back"
-     click despite the fill itself covering the right rect). */
-  if (g_dbgui_last_kind != -1 && g_dbgui_last_kind != kind) {
-    dbgui_invalidate_region();
-  }
-  g_dbgui_last_kind = kind;
   if (g_dbgui_inspect_obj != 0) {
     populate_debug_object_inspector(g_dbgui_inspect_obj);
     return;
