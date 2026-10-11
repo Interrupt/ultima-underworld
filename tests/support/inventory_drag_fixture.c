@@ -28,6 +28,8 @@ byte DAT_0023bf58;
 int DAT_000879ac;
 short g_movement_mode, DAT_0023bf4c;
 ushort DAT_0023c448;
+int DAT_000876c8;
+int held_key_code;
 short DAT_00201b64;
 short DAT_00201c84;
 undefined2 DAT_00201c90;
@@ -102,6 +104,11 @@ int peek_input_event(void)
     uw_service_pending_present(now_us);
     update_mouse_state();
     int buttons = poll_mouse_button_flags();
+    /* A held movement key latches its code, which then hides the button state from the poll. */
+    if (held_key_code) {
+        DAT_0023c448 = held_key_code;
+        return held_key_code;
+    }
     return buttons ? buttons : -1;
 }
 void dispatch_sticky_mode_handlers(void)
@@ -143,6 +150,7 @@ void inventory_drag_fixture_reset(void)
     memset(character, 0, sizeof(character));
     g_uw_frame_clock_units = DAT_0023bf54 = DAT_002020d4 = DAT_0023bf58 = 0;
     DAT_000879ac = 1;
+    held_key_code = DAT_000876c8 = 0;
     DAT_00201b64 = DAT_00201c90 = DAT_00201c84 = g_force_flush = 0;
 }
 void inventory_drag_fixture_dispose(void) {}

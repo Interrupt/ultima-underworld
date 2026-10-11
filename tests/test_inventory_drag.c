@@ -68,6 +68,17 @@ static void test_release_wait_in_a_modal_view_does_not_tick_the_world(void)
     TEST_ASSERT_EQUAL_INT(0, world_frames);
 }
 
+static void test_a_held_movement_key_does_not_drop_the_dragged_item(void)
+{
+    held_key_code = 0x8d;                   /* walking forward while the item is dragged */
+    release_poll = 8;
+    DAT_002506ab = 1;
+    attach_picked_up_object_to_cursor(object);
+    TEST_ASSERT_EQUAL_INT(release_poll, polls);   /* ended by the button release only */
+    TEST_ASSERT_EQUAL_INT(1, drops);
+    TEST_ASSERT_GREATER_THAN_INT(0, movement_ticks);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -78,5 +89,6 @@ int main(void)
     RUN_TEST(test_drag_ticks_and_presents_the_world_before_release);
     RUN_TEST(test_long_drag_continues_scheduled_world_animation);
     RUN_TEST(test_release_wait_in_a_modal_view_does_not_tick_the_world);
+    RUN_TEST(test_a_held_movement_key_does_not_drop_the_dragged_item);
     return UNITY_END();
 }

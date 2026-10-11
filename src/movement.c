@@ -2,41 +2,22 @@
    resolution, and the reticle object pick. Split out of uw.c (the original monolithic decompile)
    once these functions' real roles were confirmed. */
 #include "headers/movement.h"
+#include "headers/input.h"
 #include "headers/options.h"
 #include "headers/debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #define _DAT_002048c2 (*(uint*)&DAT_002048c2)
-#define _DAT_00204982 (*(uint*)&DAT_00204982)
-#define _DAT_00204986 (*(uint*)&DAT_00204986)
-#define _DAT_00204992 (*(uint*)&DAT_00204992)
 /* Sizing pass: one of 4 interchangeable collision-response-profile buffers (siblings
    DAT_00204980/990/9b0 below) -- see their own combined sizing-pass comment a few lines down for
    the full trace. Real max touched offset is 7 (8 bytes); sized to 32 for headroom. */
 undefined2 DAT_002049a0_backing[16];
-static undefined2 DAT_002048cc;
-static undefined2 DAT_002048ce;
-static undefined1 DAT_002048d7;
-static undefined2 DAT_002048fc;
-static undefined2 DAT_002048fe;
-static undefined1 DAT_00204907;
-static undefined2 DAT_0020492c;
-static undefined2 DAT_0020492e;
-static undefined1 DAT_00204937;
-static undefined2 DAT_0020495c;
-static undefined2 DAT_0020495e;
-static undefined1 DAT_00204967;
 /* Written as a 1-byte scalar but also read/written as a `uint` (4 bytes) via the _DAT_00204982
    macro below -- widened to its own real backing storage so that wider access can't spill into
    whatever global happens to follow (it used to rely on uw.c's own incidental layout). */
-static undefined DAT_00204982_backing[8];
-#define DAT_00204982 DAT_00204982_backing[0]
-static undefined2 DAT_00204984;
 /* Same wider-access-than-declared-size issue as DAT_00204982 above (see
    its comment), via the _DAT_00204986 macro below. */
-static undefined DAT_00204986_backing[8];
-#define DAT_00204986 DAT_00204986_backing[0]
 /* Sizing pass: this and its 3 siblings (DAT_00204990/9a0/9b0, and DAT_00204982/84/86/88 right above
    -- all really one struct Ghidra split into separate globals) are the 4 interchangeable collision-
    response-profile buffers npc_ai_tick selects between... */
@@ -44,21 +25,11 @@ undefined1 DAT_00204980_backing[32];
 static int (*DAT_00204988)(ushort *);
 /* Same wider-access-than-declared-size issue as DAT_00204982 above (see
    its comment), via the _DAT_00204992 macro below. */
-static undefined DAT_00204992_backing[8];
-#define DAT_00204992 DAT_00204992_backing[0]
-static undefined2 DAT_00204994;
-static undefined2 DAT_00204996;
 /* Sizing pass: sibling of DAT_00204980 above -- see its combined
    comment for the full trace. Sized to 16 elements (32 bytes). */
 undefined2 DAT_00204990_backing[16];
 static int (*DAT_00204998)(ushort *);
-static undefined2 DAT_002049a2;
-static undefined2 DAT_002049a4;
-static undefined2 DAT_002049a6;
 static int (*DAT_002049a8)(ushort *);
-static undefined2 DAT_002049b2;
-static undefined2 DAT_002049b4;
-static undefined2 DAT_002049b6;
 /* Sizing pass: sibling of DAT_00204980 above -- see its combined
    comment for the full trace. Sized to 16 elements (32 bytes). */
 undefined2 DAT_002049b0_backing[16];
@@ -1255,6 +1226,50 @@ int uw_turn_rate_accel(void) {
   return g_opts.turn_accel;
 }
 
+/* Port, DOS style (do_player_keyboard): turn the held movement keys into the forward rate
+   DAT_0023bf48, turn rate DAT_0023bf4c and movement mode, without going through the pending-key
+   slot. Turning wins over the single-direction moves; forward and a turn combine into a diagonal. */
+static void decode_held_movement_keys(void)
+{
+  ushort held = g_held_move_keys;
+  int turning = 0;
+  int forward = (held & (HELD_MOVE_RUN | HELD_MOVE_WALK)) != 0;
+  int walk_slow;
+  int accel;
+
+  if ((held & HELD_MOVE_LEFT) && !(held & HELD_MOVE_RIGHT)) {
+    turning = -1;
+  }
+  else if ((held & HELD_MOVE_RIGHT) && !(held & HELD_MOVE_LEFT)) {
+    turning = 1;
+  }
+  /* S walks: pin the accelerator below the step clamp so it is a genuine slow walk. */
+  walk_slow = (held & HELD_MOVE_WALK) && (turning != 0 || !(held & HELD_MOVE_RUN));
+  accel = walk_slow ? (int)g_opts.walk_accel : (int)DAT_0024af6c;
+
+  if (turning != 0) {
+    if (forward) {
+      DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    }
+    DAT_0023bf4c = ordint_divmod(100,(int)((long long)uw_turn_rate_accel() *
+                                           (turning < 0 ? -0x5a0000 : 0x5a0000) >> 0x10)).quot;
+    g_movement_mode = 1;
+  }
+  else if (forward) {
+    DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    g_movement_mode = 1;
+  }
+  else if (held & HELD_MOVE_BACK) {
+    g_movement_mode = 8;
+  }
+  else if ((held & HELD_MOVE_STRAFE_LEFT) && !(held & HELD_MOVE_STRAFE_RIGHT)) {
+    g_movement_mode = 9;
+  }
+  else if ((held & HELD_MOVE_STRAFE_RIGHT) && !(held & HELD_MOVE_STRAFE_LEFT)) {
+    g_movement_mode = 10;
+  }
+}
+
 // was FUN_000685e8 -- turn the latched input code (DAT_0023c448) into the analog forward rate
 // DAT_0023bf48 / turn rate DAT_0023bf4c.
 void decode_movement_command()
@@ -1281,6 +1296,10 @@ void decode_movement_command()
   if (*DAT_00087944 != '\0') {
     DAT_0023bf48 = 0;
     DAT_0023bf4c = 0;
+    return;
+  }
+  if (g_held_move_keys != 0) {
+    decode_held_movement_keys();
     return;
   }
   if (DAT_0023c448 < 0x2f) {
@@ -1604,38 +1623,52 @@ void apply_movement_tick(int elapsed)
 // and their respective callback slots...
 void init_collision_response_profiles()
 {
-  DAT_002048cc = 0;
-  DAT_002048ce = 0;
-  DAT_002048d7 = 0x80;
-  DAT_002048fc = 0;
-  DAT_002048fe = 0;
-  DAT_00204907 = 0x80;
-  DAT_0020492c = 0;
-  DAT_0020492e = 0;
-  DAT_00204937 = 0;
-  DAT_0020495c = 0;
-  DAT_0020495e = 0;
-  DAT_00204967 = 0x80;
-  _DAT_00204982 = 0x1f30;
-  DAT_00204984 = 0x1010;
-  _DAT_00204986 = 0x20;
-  _DAT_00204980 = 0;
+  /* The snapshot buffers (DAT_002048c0/f0/204920/950) and the four collision-response profiles
+     (DAT_00204980/990/9a0/9b0) are real contiguous structs, but Ghidra split every field into its
+     own global and the sizing pass then gave each split-off field its own separate storage -- so
+     the writes below used to land in dead variables and the structs npc_ai_tick actually hands to
+     the sweep stayed all zero. For NPCs that meant no response masks at all: nothing stopped land
+     walkers entering water (and the like) and swimmers never stayed in it. Write the fields into
+     the real buffers (offsets confirmed against ARM 0x2b63c). */
+#define SNAPSHOT_FIELD16(buffer, offset) (*(ushort *)((char *)(buffer) + (offset)))
+#define SNAPSHOT_FIELD8(buffer, offset) (*((byte *)(buffer) + (offset)))
+  SNAPSHOT_FIELD16(DAT_002048c0_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_002048c0_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_002048c0_backing, 0x17) = 0x80;
+  SNAPSHOT_FIELD16(DAT_002048f0_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_002048f0_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_002048f0_backing, 0x17) = 0x80;
+  SNAPSHOT_FIELD16(DAT_00204920_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_00204920_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_00204920_backing, 0x17) = 0;
+  SNAPSHOT_FIELD16(DAT_00204950_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_00204950_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_00204950_backing, 0x17) = 0x80;
+
+  /* Profile layout: +0 ignored flags, +2 response-callback trigger flags, +4 blocking flags,
+     +6 line-of-sight flags; the callback pointer is kept in the separate DAT_002049x8 variables. */
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 0) = 0;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 2) = 0x1f30;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 4) = 0x1010;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 6) = 0x20;
   DAT_00204988 = collision_response_default;
-  _DAT_00204992 = 0x700;
-  DAT_00204994 = 0x80;
-  DAT_00204996 = 0;
-  DAT_00204990 = 0x1000;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 0) = 0x1000;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 2) = 0x700;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 4) = 0x80;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 6) = 0;
   DAT_00204998 = collision_response_alt_locomotion;
-  DAT_002049a2 = 0;
-  DAT_002049a4 = 0;
-  DAT_002049a6 = 0;
-  DAT_002049a0 = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 0) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 2) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 4) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 6) = 0;
   DAT_002049a8 = collision_response_mobile_object;
-  DAT_002049b2 = 0x1728;
-  DAT_002049b4 = 0x10a8;
-  DAT_002049b6 = 0;
-  DAT_002049b0 = 0x10;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 0) = 0x10;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 2) = 0x1728;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 4) = 0x10a8;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 6) = 0;
   DAT_002049b8 = collision_response_other_locomotion;
+#undef SNAPSHOT_FIELD16
+#undef SNAPSHOT_FIELD8
 }
 
 

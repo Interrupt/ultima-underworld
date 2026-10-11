@@ -46,6 +46,8 @@ void set_pending_music_track(byte track);
 uint read_realtime_clock_units(void);
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias);
 int resolve_npc_melee_attack(void *actor, short swing, byte direction, short style, short skill);
+extern int los_calls, los_from_z, los_to_z;
+extern int thrown_weapons, thrown_offset, thrown_speed, ranged_allowed;
 void set_position(ushort *object, int x, int y);
 byte *npc_bytes(void);
 void npc_ai_fixture_reset(void);

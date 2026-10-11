@@ -10,6 +10,8 @@ extern int g_npc_tick_enabled;
 extern char DAT_00086e84;
 extern char *DAT_0008794c;
 extern undefined2 DAT_002048c0_backing[64];
+extern undefined1 DAT_002048f0_backing[128], DAT_00204950_backing[128];
+extern undefined DAT_00204920_backing[128];
 
 #define DAT_00086998  (*(signed char *)(DAT_00086998_backing + 0))
 #define DAT_00086999  (DAT_00086998_backing[1])

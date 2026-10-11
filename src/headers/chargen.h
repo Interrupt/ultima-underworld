@@ -27,6 +27,13 @@ extern char *DAT_001005c8;
 extern char *g_chargen_textfield_buf;
 
 
+/* Brings a CHRGEN.DAT buffer up to the 0x14-byte record layout the rest of
+   chargen.c indexes with, converting the DOS asset set's 0x12-byte records
+   in place; see the full write-up above the definition in chargen.c.
+   Returns the (possibly grown) size; a buffer already in the port's layout,
+   or one matching neither, is returned untouched at its original size. */
+unsigned chargen_normalize_record_stride(unsigned char *buf, unsigned size, unsigned capacity);
+
 int character_generator_start();
 int run_character_generator();
 int character_generator_loop(char *tree_data, char *scratch_data, char *field_records);

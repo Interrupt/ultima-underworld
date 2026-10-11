@@ -178,7 +178,8 @@ typedef struct __attribute__((packed)) {
         struct __attribute__((packed)) { byte status_word_low, status_word_high; };
         struct __attribute__((packed)) {
             unsigned short npc_level    : 4; /* offset 0x0d, bits 0-3 */
-            unsigned short _pad0d       : 9; /* bits 4-12: not in the wiki's own table */
+            unsigned short _pad0d       : 8; /* bits 4-11: not in the wiki's own table */
+            unsigned short npc_loot_spawned : 1; /* bit 12: death loot already spawned (byte 0xe & 0x10) */
             unsigned short npc_talkedto : 1; /* bit 13 */
             unsigned short npc_attitude : 2; /* bits 14-15 */
         };

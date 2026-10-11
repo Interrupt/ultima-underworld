@@ -56,7 +56,13 @@ long ce_rand(void)
 int encode_object_slot_index(const uw_object_hdr_t *object) { return object == player ? 1 : 2; }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot) { return slot == 1 ? player : slot == 2 ? npc : NULL; }
 void *tilemap_lookup(short x, short y) { return tile; }
-int check_fine_line_of_sight(uint from_x, uint from_y, uint from_z, short to_x, short to_y, short to_z) { (void)from_x; (void)from_y; (void)from_z; (void)to_x; (void)to_y; (void)to_z; return los_clear; }
+int los_calls, los_from_z, los_to_z;
+int check_fine_line_of_sight(uint from_x, uint from_y, uint from_z, short to_x, short to_y, short to_z)
+{
+    (void)from_x; (void)from_y; (void)to_x; (void)to_y;
+    los_calls++; los_from_z = from_z; los_to_z = to_z;
+    return los_clear;
+}
 char DAT_00101740_backing[448];
 undefined1 DAT_00101739, DAT_0010173a;
 undefined DAT_00101733;
@@ -98,7 +104,6 @@ void npc_clear_special_goal(void) {}
 int check_npc_morale_flee(uint morale_stat, uint current_hp, uint hp_margin, uint flee_threshold) { (void)morale_stat; (void)current_hp; (void)hp_margin; (void)flee_threshold; return 0; }
 int check_npc_target_alignment(int mode) { (void)mode; return 1; }
 byte tile_is_no_magic(int tile_x, int tile_y) { (void)tile_x; (void)tile_y; return 0; }
-int try_npc_special_ability_alt(void) { return 0; }
 int try_npc_special_ability_no_los(void) { return 0; }
 int try_npc_special_ability_ranged(void) { return 0; }
 void build_object_placement_snapshot(ushort *object, byte *snapshot) { (void)object; (void)snapshot;}
@@ -112,7 +117,13 @@ void drop_monster_loot(void *monster, ushort gold_nibble, ushort item_nibble) { 
 void drop_creature_inventory_on_death(void *creature) { (void)creature;}
 void free_object_slot(uw_object_hdr_t *object) { (void)object;}
 int compute_vertical_aim_offset(short has_target, int target) { (void)has_target; (void)target; return 0; }
-void spawn_npc_thrown_weapon(void *attacker, short launch_offset, short launch_flags) { (void)attacker; (void)launch_offset; (void)launch_flags; TEST_FAIL_MESSAGE("Unexpected ranged attack"); }
+int thrown_weapons, thrown_offset, thrown_speed, ranged_allowed;
+void spawn_npc_thrown_weapon(void *attacker, short launch_offset, short launch_flags)
+{
+    if (!ranged_allowed) TEST_FAIL_MESSAGE("Unexpected ranged attack");
+    TEST_ASSERT_EQUAL_PTR(npc, attacker);
+    thrown_weapons++; thrown_offset = launch_offset; thrown_speed = launch_flags;
+}
 void dispatch_tile_special_action(uint tile_type, void *actor, void *target) { (void)tile_type; (void)actor; (void)target; TEST_FAIL_MESSAGE("Unexpected special ability"); }
 byte get_current_music_track(void) { return 6; }
 void set_pending_music_track(byte track) { (void)track;}
@@ -148,6 +159,8 @@ void npc_ai_fixture_reset(void)
     TEST_ASSERT_NOT_NULL(monster_data);
     TEST_ASSERT_EQUAL_INT(0, fseek(monster_data, 2 + 0x80 + 0x30 + 0x80, SEEK_SET));
     load_monster_combat_stats(1);
+    TEST_ASSERT_EQUAL_INT(0, fseek(monster_data, 2 + 0x80, SEEK_SET));
+    TEST_ASSERT_EQUAL_UINT(sizeof g_ranged_type_props, fread(g_ranged_type_props, 1, sizeof g_ranged_type_props, monster_data));
     fclose(monster_data);
     monster_data = NULL;
     npc[0] = 0x48;
@@ -169,7 +182,7 @@ void npc_ai_fixture_reset(void)
     DAT_00101430 = 0;
     DAT_00201b68 = 1;
     random_index = 0;
-    chase_steps = attacks = 0;
+    chase_steps = attacks = thrown_weapons = ranged_allowed = los_calls = 0;
     memset(DAT_00101740_backing, 0, sizeof DAT_00101740_backing);
     DAT_00101440 = DAT_00101450 = 0;
     DAT_000853b8 = 0xffff;

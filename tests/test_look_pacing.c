@@ -63,6 +63,44 @@ static void test_pitch_limits_and_opposed_keys_are_preserved(void)
     TEST_ASSERT_EQUAL_INT16(0x1800, DAT_0023beb4);
 }
 
+extern ushort g_held_move_keys;
+
+static void test_arrow_keys_hold_the_same_movement_state_as_wasd(void)
+{
+    const struct { SDL_Scancode arrow, letter; ushort held; } pairs[] = {
+        {SDL_SCANCODE_UP, SDL_SCANCODE_W, HELD_MOVE_RUN},
+        {SDL_SCANCODE_DOWN, SDL_SCANCODE_X, HELD_MOVE_BACK},
+        {SDL_SCANCODE_LEFT, SDL_SCANCODE_A, HELD_MOVE_LEFT},
+        {SDL_SCANCODE_RIGHT, SDL_SCANCODE_D, HELD_MOVE_RIGHT},
+    };
+    for (unsigned i = 0; i < 4; i++) {
+        setUp();
+        keyboard[pairs[i].arrow] = 1;
+        look_pacing_poll(0);
+        TEST_ASSERT_EQUAL_HEX16(pairs[i].held, g_held_move_keys);
+        keyboard[pairs[i].arrow] = 0;
+        keyboard[pairs[i].letter] = 1;
+        look_pacing_poll(0);
+        TEST_ASSERT_EQUAL_HEX16(pairs[i].held, g_held_move_keys);
+    }
+}
+static void test_arrow_keys_combine_and_release(void)
+{
+    keyboard[SDL_SCANCODE_UP] = keyboard[SDL_SCANCODE_LEFT] = 1;
+    look_pacing_poll(0);
+    TEST_ASSERT_EQUAL_HEX16(HELD_MOVE_RUN | HELD_MOVE_LEFT, g_held_move_keys);
+    keyboard[SDL_SCANCODE_UP] = keyboard[SDL_SCANCODE_LEFT] = 0;
+    look_pacing_poll(0);
+    TEST_ASSERT_EQUAL_HEX16(0, g_held_move_keys);
+}
+static void test_arrow_keys_do_nothing_outside_the_3d_view(void)
+{
+    freelook = 0;
+    keyboard[SDL_SCANCODE_UP] = 1;
+    look_pacing_poll(0);
+    TEST_ASSERT_EQUAL_HEX16(0, g_held_move_keys);
+}
+
 static void test_modal_input_does_not_ramp_pitch(void)
 {
     keyboard[SDL_SCANCODE_1] = 1;
@@ -83,6 +121,9 @@ int main(void)
     RUN_TEST(test_look_speed_is_independent_of_fast_polling_rates);
     RUN_TEST(test_release_and_center_are_observed_between_frames);
     RUN_TEST(test_pitch_limits_and_opposed_keys_are_preserved);
+    RUN_TEST(test_arrow_keys_hold_the_same_movement_state_as_wasd);
+    RUN_TEST(test_arrow_keys_combine_and_release);
+    RUN_TEST(test_arrow_keys_do_nothing_outside_the_3d_view);
     RUN_TEST(test_modal_input_does_not_ramp_pitch);
     return UNITY_END();
 }

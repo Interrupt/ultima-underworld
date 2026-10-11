@@ -11,6 +11,7 @@
  * vendored code. */
 #include "headers/platform_dosmidi.h"
 #include "headers/debug.h"
+#include "headers/options.h"
 #include "headers/audio.h"
 #include "headers/file_io.h"
 #include "uw_ail.h"
@@ -63,18 +64,67 @@ static struct {
   struct { int channel, note, ticks_left, id; } sfx[4];
 } g;
 
+/* Where a DOS sound file lives. --dos-data-dir still wins, for pointing at
+   a DOS install while playing the Pocket PC assets; with it unset the file is
+   looked up in the game's own data directory, because when that directory IS
+   a DOS install there is nowhere else for it to be -- and this port takes one
+   data directory. */
+static int dos_sound_path(const char *name, char *out, unsigned int out_sz)
+{
+  const char *root = g_opts.dos_data_dir;
+  if (root && *root) {
+    int n = snprintf(out, out_sz, "%s/SOUND/%s", root, name);
+    return (n > 0 && (unsigned int)n < out_sz) ? 1 : 0;
+  }
+  char win[64];
+  snprintf(win, sizeof(win), "\\SOUND\\%s", name);
+  return uw_resolve_win_path(win, out, out_sz);
+}
+
+/* Is the GAME DATA DIRECTORY itself a DOS install, for audio purposes? UW.AD
+   is the timbre bank: a DOS SOUND directory has it, the Pocket PC one holds
+   .MOD and .wav files and no .AD at all.
+
+   Deliberately ignores --dos-data-dir. Pointing that at a DOS install is how
+   you borrow its music while playing the Pocket PC assets, and it has never
+   by itself switched DOS audio on; that stays true. */
+static int data_dir_is_dos_install(void)
+{
+  char path[1024];
+  if (!uw_resolve_win_path("\\SOUND\\UW.AD", path, sizeof(path))) {
+    return 0;
+  }
+  FILE *f = fopen(path, "rb");
+  if (!f) {
+    return 0;
+  }
+  fclose(f);
+  return 1;
+}
+
 /* Both modes run the DOS driver; they differ only in where effects come
    from (see platform_dos_prefer_wav_effects). */
-static int dos_mode_requested(void)
+int platform_dos_audio_mode(void)
 {
   const char *mode = g_opts.audio_mode;
-  return (mode && (strcasecmp(mode, "dos") == 0 || strcasecmp(mode, "hybrid") == 0)) ? 1 : 0;
+  if (mode && *mode) {
+    if (strcasecmp(mode, "hybrid") == 0) return UW_DOS_AUDIO_HYBRID;
+    if (strcasecmp(mode, "dos") == 0)    return UW_DOS_AUDIO_DOS;
+    return UW_DOS_AUDIO_OFF;             /* "arm", or anything unrecognised */
+  }
+  /* Unset: a DOS data directory defaults to hybrid, because its SOUND
+     directory holds no .MOD music and no WAVE effects to fall back on. */
+  return data_dir_is_dos_install() ? UW_DOS_AUDIO_HYBRID : UW_DOS_AUDIO_OFF;
+}
+
+static int dos_mode_requested(void)
+{
+  return platform_dos_audio_mode() != UW_DOS_AUDIO_OFF;
 }
 
 static int hybrid_mode_requested(void)
 {
-  const char *mode = g_opts.audio_mode;
-  return (mode && strcasecmp(mode, "hybrid") == 0) ? 1 : 0;
+  return platform_dos_audio_mode() == UW_DOS_AUDIO_HYBRID;
 }
 
 int platform_dos_prefer_wav_effects(void)
@@ -117,12 +167,6 @@ int platform_dosmidi_init(int out_rate)
     return 1;
   }
 
-  const char *root = g_opts.dos_data_dir;
-  if (!root || !*root) {
-    DEBUG(WARN, "[audio] --audio-mode=dos but --dos-data-dir is unset -- "
-                "falling back to the converted .MOD music\n");
-    return 0;
-  }
 
   char path[1024];
   uw_ail_synth synth;
@@ -130,7 +174,11 @@ int platform_dosmidi_init(int out_rate)
   /* The driver file is not optional: uw_adlib_init reads the F-number,
    * block, velocity and operator-slot tables, and the chip's reset
    * registers, out of ADLIB.ADV itself rather than hardcoding them. */
-  snprintf(path, sizeof(path), "%s/SOUND/ADLIB.ADV", root);
+  if (!dos_sound_path("ADLIB.ADV", path, sizeof(path))) {
+    DEBUG(WARN, "[audio] DOS audio: no SOUND directory to read ADLIB.ADV from -- "
+                "falling back to the converted .MOD music\n");
+    return 0;
+  }
   g.adlib_file = uw_read_file(path);
   if (!g.adlib_file.data) {
     DEBUG(WARN, "[audio] DOS audio: cannot read %s (%s) -- falling back\n",
@@ -138,8 +186,7 @@ int platform_dosmidi_init(int out_rate)
     goto fail;
   }
 
-  snprintf(path, sizeof(path), "%s/SOUND/UW.AD", root);
-  if (!uw_bank_open(&g.timbres, path)) {
+  if (!dos_sound_path("UW.AD", path, sizeof(path)) || !uw_bank_open(&g.timbres, path)) {
     DEBUG(WARN, "[audio] DOS audio: cannot read the timbre bank %s -- falling back\n", path);
     goto fail;
   }
@@ -156,19 +203,20 @@ int platform_dosmidi_init(int out_rate)
     have_sounds = uw_sounds_open(&g.sounds, path);
   }
   if (!have_sounds) {
-    snprintf(path, sizeof(path), "%s/SOUND/SOUNDS.DAT", root);
-    have_sounds = uw_sounds_open(&g.sounds, path);
+    if (dos_sound_path("SOUNDS.DAT", path, sizeof(path))) {
+      have_sounds = uw_sounds_open(&g.sounds, path);
+    }
   }
   if (!have_sounds) {
     DEBUG(WARN, "[audio] DOS audio: no readable SOUNDS.DAT in the game data or "
-                "%s/SOUND -- falling back\n", root);
+                "the DOS SOUND directory -- falling back\n");
     goto fail;
   }
   DEBUG(INFO, "[audio] DOS audio: effect table from %s\n", path);
 
   uw_opl_reset(&g.opl);
   if (!uw_adlib_init(&g.adlib, g.adlib_file.data, g.adlib_file.size, chip_write, NULL)) {
-    DEBUG(WARN, "[audio] DOS audio: %s/SOUND/ADLIB.ADV is not the AdLib driver -- falling back\n", root);
+    DEBUG(WARN, "[audio] DOS audio: %s is not the AdLib driver -- falling back\n", path);
     goto fail;
   }
 
@@ -181,6 +229,12 @@ int platform_dosmidi_init(int out_rate)
   g.out_rate = out_rate > 0 ? out_rate : UW_OPL_RATE;
   g.seq = -1;
   g.prefer_wav = hybrid_mode_requested();
+  {
+    const char *env = g_opts.audio_mode;
+    DEBUG(INFO, "[audio] DOS audio enabled: %s%s\n",
+          g.prefer_wav ? "hybrid" : "dos",
+          (env && *env) ? "" : " (no --audio-mode given; the data directory is a DOS install)");
+  }
   /* BUG FIX (confirmed live: the music drowned the effects). At their own
    * settings the OPL music peaks about 7x an effect, so the default trims
    * the music -- never the effects, which stay at the velocities
@@ -225,8 +279,7 @@ fail:
 
 int platform_dosmidi_xmi_path(const char *win_mod_path, char *out, unsigned int out_sz)
 {
-  const char *root = g_opts.dos_data_dir;
-  if (!root || !*root || !win_mod_path || !out || out_sz == 0) {
+  if (!win_mod_path || !out || out_sz == 0) {
     return 0;
   }
 
@@ -256,8 +309,9 @@ int platform_dosmidi_xmi_path(const char *win_mod_path, char *out, unsigned int 
   }
   stem[0] = 'A'; /* UWnn -> AWnn, the AdLib-voiced variant */
 
-  int n = snprintf(out, out_sz, "%s/SOUND/%s.XMI", root, stem);
-  return (n > 0 && (unsigned int)n < out_sz) ? 1 : 0;
+  char file[64];
+  snprintf(file, sizeof(file), "%s.XMI", stem);
+  return dos_sound_path(file, out, out_sz);
 }
 
 /* The patch for (bank, program) out of UW.AD, installed in the driver's

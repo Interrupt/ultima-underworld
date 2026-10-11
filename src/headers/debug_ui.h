@@ -15,6 +15,9 @@ extern "C" {
 void dbgui_begin(const char *title);
 void dbgui_field_double(const char *name, double *value, double step);
 void dbgui_field_int(const char *name, int *value, int step);
+/* An int field that shows names[*value] instead of the number. LEFT, RIGHT, RETURN and click step
+   through the names, wrapping; there is no numeric-edit mode. `names` must outlive the frame. */
+void dbgui_field_int_names(const char *name, int *value, const char *const *names, int count);
 /* A row with no value -- shown as "[ name ]". Selecting it and pressing
    RETURN (or clicking it) calls on_press() immediately, instead of
    entering the numeric-edit mode double/int fields use. */

@@ -11,8 +11,11 @@
 #include "unity.h"
 #include "src/headers/options.h"
 #include "headers/platform_dosmidi.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* audio.c's own, which this suite does not link. Recorded rather than
    ignored: platform_dosmidi_init is supposed to publish every effect's
@@ -23,6 +26,42 @@ void audio_set_effect_base_volume(int sound_id, int velocity)
 {
     (void)sound_id; (void)velocity;
     base_volume_calls++;
+}
+
+/* The suite's game data directory: real, but deliberately NOT a DOS install
+   (no SOUND/UW.AD). file_io caches UW_DATA_DIR on its first use, so this has
+   to be set before any test runs. Two things depend on it now: the XMI path
+   falls back here when UW_DOS_DATA_DIR is unset, and an unset UW_AUDIO_MODE
+   only defaults to DOS audio when this directory IS a DOS install. */
+static char g_data_dir[256];
+/* A second directory that IS a DOS install, for UW_DOS_DATA_DIR. Kept
+   distinct from g_data_dir so the two sources can be told apart: the
+   auto-default must key off the DATA directory alone. */
+static char g_dos_dir[256];
+
+static void make_data_dir(void)
+{
+    char tmpl[] = "/tmp/uw_dosmidi_data_XXXXXX";
+    const char *made = mkdtemp(tmpl);
+    if (!made) { fprintf(stderr, "mkdtemp failed\n"); exit(1); }
+    snprintf(g_data_dir, sizeof g_data_dir, "%s", made);
+    char sound[320];
+    snprintf(sound, sizeof sound, "%s/SOUND", g_data_dir);
+    mkdir(sound, 0755);          /* exists, but holds no UW.AD */
+    options_set("data-dir", g_data_dir);
+
+    char tmpl2[] = "/tmp/uw_dosmidi_dos_XXXXXX";
+    const char *made2 = mkdtemp(tmpl2);
+    if (!made2) { fprintf(stderr, "mkdtemp failed\n"); exit(1); }
+    snprintf(g_dos_dir, sizeof g_dos_dir, "%s", made2);
+    snprintf(sound, sizeof sound, "%s/SOUND", g_dos_dir);
+    mkdir(sound, 0755);
+    char uwad[400];
+    snprintf(uwad, sizeof uwad, "%s/UW.AD", sound);
+    FILE *f = fopen(uwad, "wb");
+    if (!f) { fprintf(stderr, "cannot create %s\n", uwad); exit(1); }
+    fputs("not a real bank, but present", f);
+    fclose(f);
 }
 
 void setUp(void)
@@ -40,8 +79,11 @@ void tearDown(void)
     options_unset("dos-data-dir");
 }
 
-/* The guarantee the whole feature hangs on: nothing about DOS audio
-   engages unless the player opts in.
+/* The guarantee the whole feature hangs on: DOS audio does not engage on a
+   Pocket PC data directory. An unset UW_AUDIO_MODE now defaults to hybrid
+   when the data directory is a DOS install, so what must stay true is the
+   other side of that -- a data directory with no UW.AD (see make_data_dir)
+   leaves the ARM path alone, whatever UW_DOS_DATA_DIR says.
 
    UW_DOS_DATA_DIR is deliberately set here even though UW_AUDIO_MODE is
    not. Without it this test passes for the wrong reason -- init would
@@ -51,6 +93,80 @@ void tearDown(void)
 static void test_dos_mode_is_off_by_default(void)
 {
     options_set("dos-data-dir", "/tmp");
+    TEST_ASSERT_EQUAL_INT(0, platform_dosmidi_init(44100));
+    TEST_ASSERT_FALSE(platform_dos_audio_enabled());
+}
+
+/* The mode decision itself, which platform_dos_audio_enabled cannot show --
+   that reports whether the driver came up, and it stays false whenever a file
+   is missing, whatever the mode resolved to. */
+static void set_data_dir_is_dos_install(int yes)
+{
+    char uwad[320];
+    snprintf(uwad, sizeof uwad, "%s/SOUND/UW.AD", g_data_dir);
+    if (yes) {
+        FILE *f = fopen(uwad, "wb");
+        TEST_ASSERT_NOT_NULL(f);
+        fputs("not a real bank, but present", f);
+        fclose(f);
+    } else {
+        remove(uwad);
+    }
+}
+
+static void test_mode_is_off_for_a_pocket_pc_data_directory(void)
+{
+    set_data_dir_is_dos_install(0);
+    TEST_ASSERT_EQUAL_INT(UW_DOS_AUDIO_OFF, platform_dos_audio_mode());
+}
+
+/* The feature: a DOS data directory needs no UW_AUDIO_MODE at all. */
+static void test_a_dos_data_directory_defaults_to_hybrid(void)
+{
+    set_data_dir_is_dos_install(1);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(UW_DOS_AUDIO_HYBRID, platform_dos_audio_mode(),
+        "a DOS data directory with no UW_AUDIO_MODE must default to hybrid");
+    set_data_dir_is_dos_install(0);
+}
+
+/* ...but only off the DATA directory. UW_DOS_DATA_DIR is for borrowing DOS
+   music while playing the Pocket PC assets and has never by itself switched
+   DOS audio on. */
+static void test_dos_data_dir_alone_does_not_change_the_default(void)
+{
+    set_data_dir_is_dos_install(0);
+    /* g_dos_dir really is a DOS install; the data directory is not. Only the
+       latter may move the default, so this must stay OFF. */
+    options_set("dos-data-dir", g_dos_dir);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(UW_DOS_AUDIO_OFF, platform_dos_audio_mode(),
+        "UW_DOS_DATA_DIR pointing at a DOS install must not switch the default on");
+}
+
+/* An explicit mode always wins over the auto-detection, both ways. */
+static void test_an_explicit_mode_overrides_the_default(void)
+{
+    set_data_dir_is_dos_install(1);
+    options_set("audio-mode", "arm");
+    TEST_ASSERT_EQUAL_INT(UW_DOS_AUDIO_OFF, platform_dos_audio_mode());
+    options_set("audio-mode", "dos");
+    TEST_ASSERT_EQUAL_INT(UW_DOS_AUDIO_DOS, platform_dos_audio_mode());
+
+    set_data_dir_is_dos_install(0);
+    options_set("audio-mode", "hybrid");
+    TEST_ASSERT_EQUAL_INT(UW_DOS_AUDIO_HYBRID, platform_dos_audio_mode());
+    options_set("audio-mode", "DOS");          /* case-insensitive */
+    TEST_ASSERT_EQUAL_INT(UW_DOS_AUDIO_DOS, platform_dos_audio_mode());
+}
+
+/* The auto-default keys off the DATA directory, not UW_DOS_DATA_DIR:
+   pointing the latter at a DOS install is how you borrow its music while
+   playing the Pocket PC assets, and that has never by itself switched DOS
+   audio on. */
+static void test_a_dos_sound_dir_alone_does_not_enable_dos_audio(void)
+{
+    char sound[320];
+    snprintf(sound, sizeof sound, "%s/SOUND", g_data_dir);
+    options_set("dos-data-dir", g_data_dir);
     TEST_ASSERT_EQUAL_INT(0, platform_dosmidi_init(44100));
     TEST_ASSERT_FALSE(platform_dos_audio_enabled());
 }
@@ -117,10 +233,16 @@ static void test_xmi_path_accepts_forward_slashes(void)
     TEST_ASSERT_EQUAL_STRING("/dos/UW/SOUND/AW07.XMI", out);
 }
 
-static void test_xmi_path_needs_a_data_dir(void)
+/* With UW_DOS_DATA_DIR unset the score is looked for in the game's own data
+   directory, which is what lets a DOS data directory work on its own -- the
+   port takes one data directory and the XMI files are already inside it. */
+static void test_xmi_path_falls_back_to_the_game_data_directory(void)
 {
     char out[256];
-    TEST_ASSERT_EQUAL_INT(0, platform_dosmidi_xmi_path("\\SOUND\\uw01.mod", out, sizeof out));
+    TEST_ASSERT_EQUAL_INT(1, platform_dosmidi_xmi_path("\\SOUND\\uw01.mod", out, sizeof out));
+    char want[320];
+    snprintf(want, sizeof want, "%s/SOUND/AW01.XMI", g_data_dir);
+    TEST_ASSERT_EQUAL_STRING(want, out);
 }
 
 /* Must refuse rather than emit a silently truncated path. */
@@ -201,15 +323,21 @@ static void test_missing_effect_table_everywhere_declines_cleanly(void)
 
 int main(void)
 {
+    make_data_dir();
     UNITY_BEGIN();
     RUN_TEST(test_dos_mode_is_off_by_default);
+    RUN_TEST(test_mode_is_off_for_a_pocket_pc_data_directory);
+    RUN_TEST(test_a_dos_data_directory_defaults_to_hybrid);
+    RUN_TEST(test_dos_data_dir_alone_does_not_change_the_default);
+    RUN_TEST(test_an_explicit_mode_overrides_the_default);
+    RUN_TEST(test_a_dos_sound_dir_alone_does_not_enable_dos_audio);
     RUN_TEST(test_dos_mode_ignores_unrelated_mode_values);
     RUN_TEST(test_dos_mode_requires_a_data_dir);
     RUN_TEST(test_dos_mode_requires_the_dos_audio_files);
     RUN_TEST(test_xmi_path_maps_track_to_the_adlib_xmi);
     RUN_TEST(test_xmi_path_preserves_the_track_digits);
     RUN_TEST(test_xmi_path_accepts_forward_slashes);
-    RUN_TEST(test_xmi_path_needs_a_data_dir);
+    RUN_TEST(test_xmi_path_falls_back_to_the_game_data_directory);
     RUN_TEST(test_xmi_path_rejects_a_too_small_buffer);
     RUN_TEST(test_xmi_path_rejects_a_pathological_path);
     RUN_TEST(test_render_produces_nothing_when_no_track_is_loaded);

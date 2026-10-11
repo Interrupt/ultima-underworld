@@ -32,6 +32,24 @@
  * normal path rather than to silence or a crash. */
 int platform_dos_audio_enabled(void);
 
+/* The audio mode this run resolved to, before any file is opened:
+ * UW_DOS_AUDIO_OFF (the ARM/WinCE path), UW_DOS_AUDIO_DOS, or
+ * UW_DOS_AUDIO_HYBRID.
+ *
+ * --audio-mode decides it when given. When it is NOT given the answer is HYBRID
+ * if the game's data directory is itself a DOS install, and OFF otherwise --
+ * a DOS data directory has no .MOD music or WAVE effects to fall back on, so
+ * leaving it on the ARM path would mean silence.
+ *
+ * Separate from platform_dos_audio_enabled(), which reports whether the
+ * driver actually came up: the mode can be HYBRID and the driver still fail
+ * to start because a file is missing. Exposed so that decision can be
+ * inspected and tested without a complete set of DOS audio files. */
+#define UW_DOS_AUDIO_OFF    0
+#define UW_DOS_AUDIO_DOS    1
+#define UW_DOS_AUDIO_HYBRID 2
+int platform_dos_audio_mode(void);
+
 /* Should sound effects prefer this port's sampled WAVE resources over the
  * DOS notes, where a sample exists? True only for --audio-mode=hybrid.
  *

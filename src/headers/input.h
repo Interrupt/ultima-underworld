@@ -77,6 +77,13 @@ void update_mouse_state();
 void register_game_view_interact_zones(int x, int y, int width, int height);
 void unregister_game_view_interact_zones();
 void move_command_dispatch(short command);
+/* Polled movement keys (port): a held-key state separate from the pending-key slot. */
+enum {
+  HELD_MOVE_RUN = 1, HELD_MOVE_WALK = 2, HELD_MOVE_BACK = 4, HELD_MOVE_LEFT = 8,
+  HELD_MOVE_RIGHT = 16, HELD_MOVE_STRAFE_LEFT = 32, HELD_MOVE_STRAFE_RIGHT = 64
+};
+extern ushort g_held_move_keys;
+void set_held_movement_keys(ushort mask);
 void uw_set_analog_move_turn(int fwd_held, int turn_dir);
 void move_key_directional_step(int direction);
 int handle_keyboard_message(int window, int message, uint wparam);

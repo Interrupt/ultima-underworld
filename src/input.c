@@ -576,6 +576,20 @@ void wait_for_click_release(int mode)
   }
   while( true ) {
     sVar1 = peek_input_event();
+    /* Desktop input adaptation: the original only sees mouse codes (0..3) here, so any other event
+       meant the stylus had lifted. A held movement key latches its code in DAT_0023c448, and that
+       made peek_input_event return the key instead of the button state, ending the wait and
+       dropping the dragged item the moment the player moved. Only while an item is held, keys
+       leave the wait running; the button's own state decides when it ends. */
+    if (sVar1 > 3 && g_selected_object != 0) {
+      if (DAT_000876c8 != 0) {
+        DAT_0023c448 = 0; /* key released: stop the walk, as app_main_loop does */
+      }
+      sVar1 = (short)poll_mouse_button_flags();
+      if (sVar1 == 0) {
+        sVar1 = -1;
+      }
+    }
     if (((((int)sVar2 | 0xfffcU) & (int)sVar1) != (int)sVar2) || (DAT_0008696e != -1)) break;
     if (mode != 0) {
       dispatch_sticky_mode_handlers();
@@ -827,6 +841,27 @@ void move_command_dispatch(short command)
 
 
 
+/* Port, DOS style: the polled movement keys (W/S/X/A/D/Z/C) are not funnelled through the one
+   pending-key slot (DAT_0023c448) a typed key or button code lands in. They are a held-key state
+   of their own, like DOS's key array read by do_player_keyboard, which decode_movement_command
+   reads directly. A jump (or any other key) pressed while walking therefore reaches its binding
+   untouched, and decodes together with the held walk. */
+ushort g_held_move_keys;
+
+void set_held_movement_keys(ushort mask)
+{
+  if (mask != 0) {
+    if (g_held_move_keys == 0) {
+      DAT_0024af6c = 0x14; /* press edge: restart the held-key accelerator ramp */
+    }
+    DAT_000876c8 = 0;
+  }
+  else if (g_held_move_keys != 0) {
+    DAT_000876c8 = 1; /* all released: the main loop clears the pending-key slot */
+  }
+  g_held_move_keys = mask;
+}
+
 /* Sets DAT_0023bf48 (forward rate, same 0x500000 scale decode_movement_command's own forward code
    0x8d uses) and DAT_0023bf4c (turn rate, via uw_turn_rate_accel()) together in one call, then
    g_movement_mode = 1... */
@@ -985,8 +1020,18 @@ int handle_keyboard_message(int window, int message, uint wparam)
   uVar1 = (ushort)wparam;
   if (message != 0x100) {
     if (message == 0x101) {
-      DAT_000876c8 = 1;
-      DAT_0024af6c = 0;
+      /* Releasing some other key (the jump key) must not stall a walk the polled movement keys
+         still hold. */
+      if (g_held_move_keys == 0) {
+        DAT_000876c8 = 1;
+        DAT_0024af6c = 0;
+      }
+      else {
+        /* The walk goes on, but the released key's own pending code must still be dropped. The
+           main loop only clears the slot when DAT_000876c8 says a key came up, which a held
+           movement key keeps at 0, so a jump would otherwise repeat for as long as it is held. */
+        DAT_0023c448 = 0;
+      }
       return 0;
     }
     if (message != 0x102) {

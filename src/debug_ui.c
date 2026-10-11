@@ -27,6 +27,10 @@ typedef struct {
   int is_toggle_action;
   double *dval;
   int *ival;
+  /* When set, an int field shows names[*ival] instead of the number, steps through the names with
+     LEFT/RIGHT/RETURN/click (wrapping), and has no numeric-edit mode. */
+  const char *const *names;
+  int name_count;
   void (*on_press)(void);
   double step;
   /* Snapshotted fresh every dbgui_field_text()/dbgui_field_toggle_
@@ -425,6 +429,17 @@ void dbgui_field_int(const char *name, int *value, int step)
   f->step = (double)step;
 }
 
+void dbgui_field_int_names(const char *name, int *value, const char *const *names, int count)
+{
+  DbgField *f = dbgui_new_field(name);
+  if (!f) return;
+  f->is_int = 1;
+  f->ival = value;
+  f->step = 1;
+  f->names = names;
+  f->name_count = count;
+}
+
 void dbgui_field_button(const char *name, void (*on_press)(void))
 {
   DbgField *f = dbgui_new_field(name);
@@ -490,6 +505,11 @@ static double dbgui_field_get(const DbgField *f)
 
 static void dbgui_field_set(DbgField *f, double v)
 {
+  if (f->is_int && f->names && f->name_count > 0) {
+    int n = f->name_count, i = (int)v % n;
+    *f->ival = i < 0 ? i + n : i;
+    return;
+  }
   if (f->is_int) *f->ival = (int)v; else *f->dval = v;
 }
 
@@ -571,6 +591,9 @@ void dbgui_draw()
       snprintf(line, sizeof(line), "%s: %s", f->name, *f->ival ? "ON" : "OFF");
     } else if (f->is_toggle_action) {
       snprintf(line, sizeof(line), "%s: %s", f->name, f->toggle_display_value ? "ON" : "OFF");
+    } else if (f->names && f->name_count > 0) {
+      int v = *f->ival;
+      snprintf(line, sizeof(line), "%s: %s", f->name, v >= 0 && v < f->name_count ? f->names[v] : "?");
     } else if (g_editing && i == g_selected) {
       snprintf(line, sizeof(line), "%s: %s_", f->name, g_edit_buf);
     } else {
@@ -649,6 +672,10 @@ void dbgui_feed_mouse_down(int lx, int ly)
         if (f->on_press) f->on_press();
         return;
       }
+      if (f->names) {
+        dbgui_field_set(f, dbgui_field_get(f) + 1);
+        return;
+      }
       g_editing = 1;
       snprintf(g_edit_buf, sizeof(g_edit_buf), "%g", dbgui_field_get(f));
       g_edit_len = (int)strlen(g_edit_buf);
@@ -699,6 +726,8 @@ void dbgui_feed_key(int sdl_keycode)
     dbgui_field_set(f, dbgui_field_get(f) - f->step);
   } else if (sdl_keycode == DBGUI_KEY_RIGHT) {
     dbgui_field_set(f, dbgui_field_get(f) + f->step);
+  } else if (sdl_keycode == DBGUI_KEY_RETURN && f->names) {
+    dbgui_field_set(f, dbgui_field_get(f) + 1);
   } else if (sdl_keycode == DBGUI_KEY_RETURN) {
     g_editing = 1;
     snprintf(g_edit_buf, sizeof(g_edit_buf), "%g", dbgui_field_get(f));

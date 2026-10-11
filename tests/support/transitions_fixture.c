@@ -112,6 +112,7 @@ short DAT_00086968, DAT_0008696e, DAT_00204850;
 undefined2 DAT_0008696a, DAT_0008696c;
 short g_mouse_x, g_mouse_y;
 ushort DAT_0023c448;
+int DAT_000876c8;
 undefined2 DAT_00201b60;
 int DAT_0020484c;
 undefined4 DAT_00204868;

@@ -12,7 +12,7 @@ extern int DAT_0020485c;
 extern short driver_present;
 extern short *DAT_000876c4;
 extern char DAT_002506aa, DAT_002506ab;
-extern int polls, redraws, drops, backpack_drops, release_poll, target_widget;
+extern int polls, redraws, drops, backpack_drops, release_poll, target_widget, held_key_code;
 extern int game_ticks, world_frames, presents, displayed_world_frames;
 extern uint64_t now_us;
 extern int movement_ticks, scheduler_steps;

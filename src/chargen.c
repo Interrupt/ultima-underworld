@@ -62,6 +62,91 @@ static char s_chrbtns_00084ef8[] = "chrbtns";
 
 // The main character-generation state machine: steps through portrait/gender/skills/stats/name/confirm, one screen per state.
 // was FUN_00024e24
+/* CHRGEN.DAT's record stride differs between the two asset sets, and the
+ * rest of this file hardcodes the Pocket PC one (0x14 records, text region
+ * at 0xa0, used at twenty-odd sites). So normalise the DOS layout up to it
+ * here, at the one place the file is read, rather than making the stride
+ * dynamic everywhere.
+ *
+ * The two files hold identical data; only the record size differs:
+ *
+ *   Pocket PC  254 bytes   8 x 0x14 records, second field at +10
+ *   DOS        238 bytes   8 x 0x12 records, second field at +8
+ *
+ * The port widened the +6 field -- where the loader below stores a real
+ * pointer offset -- from two bytes to four, which pushed everything after
+ * it along by two. Verified byte-for-byte across all eight records of both
+ * shipped files: PPC[0..5] == DOS[0..5] and PPC[10..19] == DOS[8..17], with
+ * PPC[6..9] zero on disk in both (the loader overwrites it anyway).
+ *
+ * Detected from the records themselves rather than from the file size:
+ * each record's first field is its own one-based id, so reading 1,2,3,4 at
+ * records 0-3 (record 4's id is 0) only happens at the right stride. Both
+ * shipped files satisfy it at their own stride and fail at the other.
+ *
+ * Returns the (possibly grown) size; a file already in the port's layout,
+ * or one matching neither, is left exactly as read. */
+unsigned chargen_normalize_record_stride(unsigned char *buf, unsigned size, unsigned capacity)
+{
+  enum { RECORDS = 8, PPC_STRIDE = 0x14, DOS_STRIDE = 0x12 };
+
+  if (!buf) {
+    return size;
+  }
+
+  /* Each record's first field is its own id, 1-based, except record 4. */
+  unsigned stride_ok = 0;
+  if (size >= RECORDS * PPC_STRIDE) {
+    stride_ok = 1;
+    for (unsigned i = 0; i < RECORDS; i++) {
+      unsigned v = (unsigned)buf[i * PPC_STRIDE] | ((unsigned)buf[i * PPC_STRIDE + 1] << 8);
+      if (i != 4 && v != i + 1) { stride_ok = 0; break; }
+    }
+  }
+  if (stride_ok) {
+    return size; /* already the layout the rest of this file expects */
+  }
+
+  unsigned dos_ok = 0;
+  if (size >= RECORDS * DOS_STRIDE) {
+    dos_ok = 1;
+    for (unsigned i = 0; i < RECORDS; i++) {
+      unsigned v = (unsigned)buf[i * DOS_STRIDE] | ((unsigned)buf[i * DOS_STRIDE + 1] << 8);
+      if (i != 4 && v != i + 1) { dos_ok = 0; break; }
+    }
+  }
+  if (!dos_ok) {
+    DEBUG(WARN, "[chargen] CHRGEN.DAT (%u bytes) matches neither the 0x14 nor the 0x12 "
+                "record layout -- using it as read\n", size);
+    return size;
+  }
+
+  const unsigned grow = RECORDS * (PPC_STRIDE - DOS_STRIDE);
+  if (size + grow > capacity) {
+    DEBUG(WARN, "[chargen] CHRGEN.DAT needs %u bytes converted but only %u are available "
+                "-- using it as read\n", size + grow, capacity);
+    return size;
+  }
+
+  /* Tail first (it moves up, so copy before the records overwrite it), then
+   * the records backwards, since each one's destination is at or past its
+   * source. */
+  const unsigned tail = size - RECORDS * DOS_STRIDE;
+  memmove(buf + RECORDS * PPC_STRIDE, buf + RECORDS * DOS_STRIDE, tail);
+  for (int i = RECORDS - 1; i >= 0; i--) {
+    unsigned char rec[DOS_STRIDE];
+    memcpy(rec, buf + (unsigned)i * DOS_STRIDE, DOS_STRIDE);
+    unsigned char *out = buf + (unsigned)i * PPC_STRIDE;
+    memcpy(out, rec, 6);
+    memset(out + 6, 0, 4);              /* the widened field, filled in below */
+    memcpy(out + 10, rec + 8, DOS_STRIDE - 8);
+  }
+
+  DEBUG(INFO, "[chargen] CHRGEN.DAT is the DOS layout (%u bytes, 0x12 records) -- "
+              "converted to 0x14 records (%u bytes)\n", size, size + grow);
+  return size + grow;
+}
+
 int character_generator_loop(char *tree_data, char *scratch_data, char *field_records)
 {
   uint uVar1;
@@ -203,10 +288,17 @@ LAB_00025468:
         sVar8 = sVar8 + 1;
         break;
       case 3:
-        /* (int)&local_5c truncated a real stack address; and (int*)(field_records+0x42) is the same
-           never-written, never-zeroed record field skipped in advance_skill_tree_node above --
-           always take the fallback instead of reading through arbitrary heap garbage. */
-        local_5c_buf[local_64[0] + 3] = 0;
+        /* ARM 0x25198-0x251d4: record the skill the player just picked from the branch menu --
+           picked[cursor-1] = list[choice*2] - 0x1f, where list is the string-id list
+           advance_skill_tree_node filled in for this record (record+6, relative to
+           &DAT_000fb8f0, same field draw_chargen_field_options reads). This was `= 0`, written
+           off as a "never-written" field, so the chosen skill was always discarded and never
+           added to the character's skill list (the slot kept the 0 and then applied nothing
+           useful / skill 0). */
+        {
+          char *picked_list = (char *)&DAT_000fb8f0 + *(int *)(field_records + 0x3c + 6);
+          local_5c_buf[local_64[0] + 3] = picked_list[uVar1 * 2] - 0x1f;
+        }
         DAT_001005c0 = apply_confirmed_skill_picks((int)DAT_001005c0,local_5c_buf + 4);
         decrement_cursor_hide_depth();
         restore_captured_grtile_backdrop(local_60);
@@ -392,8 +484,14 @@ int run_character_generator()
         iVar4 = open_file_for_read(acStack_128);
         if (iVar4 != -1) {
           puVar8 = &DAT_000fb8f0 + uVar5;
-          read_file_handle(iVar4,puVar8,10000);
+          int chrgen_size = read_file_handle(iVar4,puVar8,10000);
           CloseHandle(iVar4);
+          /* The DOS asset set uses a smaller record; bring it up to the
+             layout every site below indexes with. */
+          if (chrgen_size > 0) {
+            chargen_normalize_record_stride((unsigned char *)puVar8, (unsigned)chrgen_size,
+                                            (unsigned)(sizeof DAT_000fb8f0_backing - uVar5));
+          }
           /* Was `(char *)(uVar5 + 0xfb990)` -- a literal original-binary address (0xfb990 =
              &DAT_000fb990's address there) added to an int, instead of real pointer arithmetic
              against the actual (relocated) buffer. 0xfb990 - 0xfb8f0 = 0xa0... */

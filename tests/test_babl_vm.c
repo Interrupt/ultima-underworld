@@ -425,12 +425,12 @@ static void test_barter_cleanup_returns_items_to_their_owners(void)
 static void test_barter_setup_uses_actual_npc_inventory_link(void)
 {
     ((byte *)DAT_00100674)[14] = 0x10; /* loot already initialized */
-    DAT_00100674[3] = 1; /* byte offset 6 */
+    DAT_00100674->hdr.link_word = 1; /* byte offset 6 */
     babl_items[1][0] = 0x30; /* eligible item, nonzero value */
     *(short *)(((byte *)g_object_type_props) + 5 + 0x30 * 13) = 20;
     babl_builtin_setup_to_barter();
     TEST_ASSERT_EQUAL_INT(1, DAT_000bbfe8_backing[0]);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00100674[3]);
+    TEST_ASSERT_EQUAL_INT(0, DAT_00100674->hdr.link_word);
     TEST_ASSERT_EQUAL_INT(0, babl_loot_calls);
 }
 
@@ -458,7 +458,7 @@ static void test_declining_barter_restores_inventory_and_clears_slots(void)
         DAT_000bbff0_backing[i] = 1;
     }
     babl_builtin_do_decline();
-    TEST_ASSERT_EQUAL_INT(4, DAT_00100674[3]);
+    TEST_ASSERT_EQUAL_INT(4, DAT_00100674->hdr.link_word);
     for (int i=0; i<4; i++) {
         TEST_ASSERT_EQUAL_INT(0, DAT_000bbfe8_backing[i]);
         TEST_ASSERT_EQUAL_INT(0, DAT_000bbff0_backing[i]);
@@ -489,7 +489,7 @@ static void test_accepted_offer_exits_barter_branch_and_continues_dialogue(void)
     TEST_ASSERT_EQUAL_INT(1, DAT_000bc008);
     TEST_ASSERT_EQUAL_INT(0, DAT_000bbfd0_backing[0]);
     TEST_ASSERT_EQUAL_INT(0, DAT_000bbf98_backing[0]);
-    TEST_ASSERT_EQUAL_INT(1, DAT_00100674[3]);
+    TEST_ASSERT_EQUAL_INT(1, DAT_00100674->hdr.link_word);
     TEST_ASSERT_EQUAL_INT(1, babl_drop_count);
     TEST_ASSERT_EQUAL_PTR(babl_items[2], babl_dropped[0]);
     TEST_ASSERT_EQUAL_STRING("Goodbye", babl_speech);
@@ -516,7 +516,7 @@ static void test_empty_offer_returns_failure_without_trading(void)
     TEST_ASSERT_EQUAL_INT(0, babl_builtin_do_offer((char *)(args+5)));
     TEST_ASSERT_EQUAL_STRING("Leave", babl_speech);
     TEST_ASSERT_EQUAL_INT(0, DAT_000bc008);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00100674[3]);
+    TEST_ASSERT_EQUAL_INT(0, DAT_00100674->hdr.link_word);
 }
 
 static void test_npc_events_survive_conversation_writeback_and_reentry(void)
@@ -591,13 +591,13 @@ static void test_barter_cache_initialization_and_invalidation_reach_offer_values
 static void test_barter_setup_replaces_staged_item_without_losing_inventory(void)
 {
     ((byte *)DAT_00100674)[14] = 0x10;
-    DAT_00100674[3] = 1;
+    DAT_00100674->hdr.link_word = 1;
     DAT_000bbfe8_backing[0] = 2;
     babl_items[1][0] = 0x30;
     *(short *)(((byte *)g_object_type_props) + 5 + 0x30*13) = 20;
     babl_builtin_setup_to_barter();
     TEST_ASSERT_EQUAL_INT(1, DAT_000bbfe8_backing[0]);
-    TEST_ASSERT_EQUAL_INT(2, DAT_00100674[3]);
+    TEST_ASSERT_EQUAL_INT(2, DAT_00100674->hdr.link_word);
     TEST_ASSERT_EQUAL_INT(0, babl_items[2][2]);
     TEST_ASSERT_EQUAL_INT(0, babl_loot_calls);
 }

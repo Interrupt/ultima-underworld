@@ -1039,33 +1039,6 @@ Use `--reference PATH` with the original `item_use.c` and `--asan` for the
 same oracle under AddressSanitizer. The worklist now contains 190 byte views
 (14 fewer); named full-word copies and retained captures remain intentional.
 
-`generate_held_drop_rules.py`, `held-drop-fields.json` and
-`apply_held_drop_rules.py` convert the common-header accesses in
-`drop_held_object_near_player`. The held record uses a header pointer and the
-spawned record uses the projectile layout already established by the spawn
-path. Named quantity, link, owner, flag, position and object-ID writes replace
-byte reconstruction and self-stores. Full scalar captures, callback order,
-clearance retries and the existing placement behavior remain intact. The
-diagnostic read at offset 0xe remains raw because arbitrary held records do
-not establish a particular extension layout.
-
-This batch uses an exact-source Python rule because the full-body Coccinelle
-match did not convert this function. The applier masks comments and literals
-when locating the definition, then requires the entire original function to
-match byte for byte. Changed callbacks, captures, constants or function scope
-reject conversion. The test requires an actual change and the exact expected
-result, checks generation and idempotence, and verifies rejection guards,
-including an original body embedded in a comment.
-
-`test_held_drop_fields.py` compares 1,310,720 real before/after executions across
-all source type words, projectile creation failures, callback-mutated records,
-clearance retries, fallback exits and light-ID changes. Record and guard bytes,
-player/tile state, return values and callback arguments/events/counts are
-compared. Use `--reference PATH` with the original `item_use.c` and `--asan`
-for the same oracle under AddressSanitizer. The refreshed worklist contains
-180 byte views (10 fewer), 462 packed-word uses, seven raw audited accesses
-and nine signed-word views; retained snapshots remain intentional.
-
 `generate_durability_rules.py` / `durability-fields.cocci` convert
 `apply_object_durability_damage` to a local common-header pointer and named
 `quality` and `owner` stores. The special object-ID range retains its existing
@@ -1086,25 +1059,3 @@ callback events/counts are compared. Use `--reference PATH` with the original
 `combat.c` and `--asan` for AddressSanitizer. The refreshed worklist contains
 176 byte views (four fewer); the full captured words remain intentional.
 
-`generate_blood_splat_rules.py` / `blood-splat-fields.cocci` convert the newly
-allocated blood-splat header in `spawn_blood_splat_object` to a typed pointer
-and named `xpos`, `ypos` and `zpos` stores. The full position-word and byte
-captures remain intact. The x/y writes use the already captured high-byte
-values; the z write retains the fresh collision-snapshot read. Coordinate
-captures before sound/scheduler callbacks, search retries, allocation failure,
-scheduler failure and insertion order remain unchanged. Collision-snapshot
-offsets are outside this object-header conversion.
-
-The complete-body rule rejects changed callbacks, volatile/escaping captures,
-altered masks and intervening writes. Generation strips comments when forming
-the semantic patch and explicitly re-emits the historical pointer-truncation
-comment beside the typed declaration. The test requires the exact expected C
-tokens and an actual change, checks generation/idempotence/rejection guards,
-and compares 917,504 before/after executions. Cases cover every packed position
-word, signed snapshot coordinates, both boundary flags, search retries and
-exhaustion, spawn/scheduler failures, sound gates, callback-mutated records
-and replacement of the shared snapshot pointer. Record/guard/snapshot/tile
-bytes and callback events/counts/arguments are compared. Use `--reference PATH`
-with the original `combat.c` and `--asan` for AddressSanitizer. The worklist now
-contains 170 byte views (six fewer); retained packed-word captures remain
-intentional.

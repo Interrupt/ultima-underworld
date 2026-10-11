@@ -4,6 +4,7 @@
 #include "headers/options.h"
 #include "headers/ordinal_stubs.h"
 #include "headers/uw.h"
+#include "headers/input.h"
 #include "headers/demomode.h"
 #include "headers/democapture.h"
 #include "headers/debug_ui.h"
@@ -85,6 +86,7 @@ extern int DAT_000876c8;              /* set by WM_KEYUP; main loop then clears 
 extern short DAT_0024af6c;            /* held-key repeat accelerator (turn/move rate scale) */
 extern short DAT_0023beb4;            /* view pitch (1/256 deg); sync_camera_from_player -> DAT_000db448 */
 extern unsigned int g_uw_frame_clock_units; /* GX elapsed-time sample for movement; see movement.c */
+extern short g_movement_mode;             /* pending movement command (6/7 jump) */
 
 /* OR'd into the real SDL_GetKeyboardState() so scripted tests (SDLHOLD /
    uw_inject_key_down/up) can drive the same movement path -- SDL_PushEvent
@@ -159,10 +161,8 @@ static int in_dungeon_freelook(void) {
    down; released -> stop. SHIFT+WASD and all of this in menus fall through untouched. */
 static void poll_dungeon_movement_keys(int game_frame_due)
 {
-    static int active = 0;
-
     if (!in_dungeon_freelook()) {     /* menu, or SHIFT held */
-        if (active) { DAT_000876c8 = 1; active = 0; }
+        set_held_movement_keys(0);
         return;
     }
 
@@ -171,11 +171,13 @@ static void poll_dungeon_movement_keys(int game_frame_due)
     const Uint8 *ks = SDL_GetKeyboardState(NULL);
     const int physical_keys = !dbgui_visible();
     #define UW_HELD(sc) ((physical_keys && ks[(sc)]) || g_synth_scancode_held[(sc)])
-    int left    = UW_HELD(SDL_SCANCODE_A);
-    int right   = UW_HELD(SDL_SCANCODE_D);
-    int run     = UW_HELD(SDL_SCANCODE_W);   /* W = run forward  */
+    /* Arrow keys: up forward (run), down backward, left/right turn -- the same held-key state as
+       WASD/X, so they combine with a jump or each other exactly as those do. */
+    int left    = UW_HELD(SDL_SCANCODE_A) || UW_HELD(SDL_SCANCODE_LEFT);
+    int right   = UW_HELD(SDL_SCANCODE_D) || UW_HELD(SDL_SCANCODE_RIGHT);
+    int run     = UW_HELD(SDL_SCANCODE_W) || UW_HELD(SDL_SCANCODE_UP);   /* W = run forward  */
     int walk    = UW_HELD(SDL_SCANCODE_S);   /* S = walk forward (slower) */
-    int back    = UW_HELD(SDL_SCANCODE_X);
+    int back    = UW_HELD(SDL_SCANCODE_X) || UW_HELD(SDL_SCANCODE_DOWN);
     int strafeL = UW_HELD(SDL_SCANCODE_Z);
     int strafeR = UW_HELD(SDL_SCANCODE_C);
     int lookUp  = UW_HELD(SDL_SCANCODE_1);
@@ -196,47 +198,12 @@ static void poll_dungeon_movement_keys(int game_frame_due)
         DAT_0023beb4 = (short)(p > 0x1800 ? 0x1800 : p);
     }
 
-    /* One latched code for turn-alone/forward-alone/back/strafe -- matches
-       decode_movement_command's own single-code dispatch. */
-    int code = 0, walk_slow = 0;
-    int turning = 0;   /* -1 left, +1 right, 0 none */
-    if (left && !right)         { code = 0x8f; turning = -1; }  /* turn left  */
-    else if (right && !left)    { code = 0x91; turning = 1; }   /* turn right */
-    int forward = run || walk;
-    if (!turning) {
-        if (run)               code = 0x8d;                     /* W: run  -- let the accelerator ramp */
-        else if (walk)         { code = 0x8d; walk_slow = 1; }   /* S: walk -- pin accelerator below the step clamp */
-        else if (back)          code = 0x93;   /* backward / turn-around */
-        else if (strafeL && !strafeR) code = 0x2c; /* sidestep left  (DOS ",") */
-        else if (strafeR && !strafeL) code = 0x2e; /* sidestep right (DOS ".") */
-    } else if (walk) {
-        walk_slow = 1;   /* turning + S: still pin the accelerator for a slow diagonal */
-    }
-
-    if (code || (turning && forward)) {
-        /* Re-arm accel on press edge only -- the actual ramp-while-held lives in game.c's
-           app_main_loop (the real WinMain message-pump loop), which already doubles/quadruples
-           DAT_0024af6c every iteration while DAT_000876c8==0 (key still down) -- confirmed... */
-        if (!active) { DAT_0024af6c = 0x14; active = 1; }
-        if (walk_slow) {
-            /* keep S's forward rate below decode_movement_command's per-tick
-               step clamp so it is a genuine slow walk, not a clamped run. */
-            DAT_0024af6c = (short)g_opts.walk_accel;
-        }
-        DAT_000876c8 = 0;
-        if (turning && forward) {
-            /* Diagonal: set both rates directly and skip the single-code dispatch entirely --
-               movement_tick only calls decode_movement_command() while g_movement_mode == 0, so
-               setting it to 1 here (inside uw_set_analog_move_turn) pre-empts that for this tick. */
-            DAT_0023c448 = 0;
-            uw_set_analog_move_turn(1, turning);
-        } else {
-            DAT_0023c448 = (unsigned short)code;
-        }
-    } else if (active) {
-        DAT_000876c8 = 1;   /* release: main loop clears DAT_0023c448 -> stop */
-        active = 0;
-    }
+    /* The held movement keys are their own state (DOS key array), decoded by
+       decode_movement_command; they never go through the pending-key slot, so a jump or any other
+       key pressed meanwhile is not disturbed. */
+    set_held_movement_keys((unsigned short)((run ? HELD_MOVE_RUN : 0) | (walk ? HELD_MOVE_WALK : 0) |
+        (back ? HELD_MOVE_BACK : 0) | (left ? HELD_MOVE_LEFT : 0) | (right ? HELD_MOVE_RIGHT : 0) |
+        (strafeL ? HELD_MOVE_STRAFE_LEFT : 0) | (strafeR ? HELD_MOVE_STRAFE_RIGHT : 0)));
 }
 
 struct uw_frame_pacing {
@@ -383,6 +350,8 @@ void uw_pump_events(void) {
        SDL_KEYDOWN/TEXTINPUT cases) doesn't stop it on its own... */
     if (!dbgui_visible() || dbgui_console_active()) {
         poll_dungeon_movement_keys(game_frame_due);
+    } else {
+        set_held_movement_keys(0);   /* the debug UI owns the keyboard: nothing is held */
     }
 
     if (g_mouseup_deferred) {
@@ -459,7 +428,8 @@ void uw_pump_events(void) {
                     if (msym == SDLK_a || msym == SDLK_d || msym == SDLK_w ||
                         msym == SDLK_s || msym == SDLK_x || msym == SDLK_z ||
                         msym == SDLK_c || msym == SDLK_1 || msym == SDLK_2 ||
-                        msym == SDLK_3) {
+                        msym == SDLK_3 || msym == SDLK_UP || msym == SDLK_DOWN ||
+                        msym == SDLK_LEFT || msym == SDLK_RIGHT) {
                         return;
                     }
                 }
@@ -470,6 +440,18 @@ void uw_pump_events(void) {
                     break;
                 }
                 int vk = translate_vk(ev.key.keysym.sym);
+                /* The game's arrow codes are the PocketPC D-pad rotated a quarter turn (see
+                   GXGetDefaultKeys), which is right for its menus. In the 3D view (SHIFT held, so
+                   the stepped movement handler runs) route each arrow to the VK that triggers the
+                   movement it names: up forward, down backward, left/right turn. */
+                if (DAT_00201b64 == 0 && !g_text_input_active) {
+                    switch (vk) {
+                        case VK_UP: vk = VK_LEFT; break;     /* forward  */
+                        case VK_DOWN: vk = VK_RIGHT; break;  /* backward */
+                        case VK_LEFT: vk = VK_UP; break;     /* turn left  */
+                        case VK_RIGHT: vk = VK_DOWN; break;  /* turn right */
+                    }
+                }
                 if (vk != 0) {
                     unsigned int msg = (ev.type == SDL_KEYDOWN) ? 0x100u : 0x101u;
                     handle_keyboard_message(0, msg, (unsigned int)vk);

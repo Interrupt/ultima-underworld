@@ -7,6 +7,8 @@
 #include "headers/debug_ui.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 /* Debug object inspector: clicking inside the 3D viewport while the
    debug panel is open (gx_stub.c's own mouse-down handling decides
@@ -158,6 +160,17 @@ static void populate_debug_texture_inspector(int pick)
    dbgui_begin's own header comment now calls out). Add a new
    subsystem toggle here, not at a second call site -- there's exactly
    one field list live at a time. */
+/* The surface lighting modes the panel steps through (--light-mode names). */
+static const char *const k_light_modes[] = { "smooth", "inv-square", "dos" };
+
+static int current_light_mode_index(void)
+{
+  const char *m = g_opts.light_mode;
+  if (m && strcasecmp(m, "dos") == 0) return 2;
+  if (m && strcasecmp(m, "inv-square") == 0) return 1;
+  return 0;
+}
+
 void populate_debug_panel(void)
 {
   /* Closing the panel (backtick) should always land back on the base
@@ -190,6 +203,14 @@ void populate_debug_panel(void)
   dbgui_field_toggle("3d_objects", &g_uw_3d_objects_enabled);
   dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
+  {
+    /* --light-mode is a string, the panel field an index: apply the index when the panel changed it,
+       otherwise follow the option (it can also change from the console or the command line). */
+    static int ui_index, applied_index = -1;
+    if (applied_index >= 0 && ui_index != applied_index) options_set("light-mode", k_light_modes[ui_index]);
+    ui_index = applied_index = current_light_mode_index();
+    dbgui_field_int_names("light-mode", &ui_index, k_light_modes, 3);
+  }
   dbgui_end();
 }
 

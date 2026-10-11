@@ -166,3 +166,11 @@ void *get_texture_page(short id) { static char page[4096]; return page; }
 void *lookup_grtile_by_id(short id) { static char gr[4096]={4,64,64}; return gr; }
 byte *decompress_gr_bitmap(byte *source, byte *dest, char mode) { (void)source; (void)dest; (void)mode; return source; }
 uint read_realtime_clock_units(void) { return 0; }
+
+/* No DOS models in this suite: every face falls back to the original's
+   one-colour-per-model behaviour. */
+int uw_dos_model_face_colour(int dos_index, int part)
+{
+    (void)dos_index; (void)part;
+    return -1;
+}

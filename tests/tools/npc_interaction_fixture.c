@@ -5,7 +5,8 @@ static _Alignas(4) byte arena[256], tile[4], stats[256];
 char *DAT_00086df8 = (char *)stats;
 uw_mobile_object_t *g_player_object = (uw_mobile_object_t *)arena;
 uw_object_hdr_t *g_scratch_object_ptr;
-ushort *DAT_00100674, *DAT_00101958;
+uw_mobile_object_t *DAT_00100674;
+ushort *DAT_00101958;
 byte DAT_0010195c;
 short DAT_00201b68;
 undefined2 DAT_002020a0, DAT_002020a4;
@@ -114,7 +115,7 @@ int babl_read_var_word(short index) {
 }
 uw_object_hdr_t *resolve_object_link(ushort *link) {
     event(21 + (link == (ushort *)(tile + 2) ? 0 : 1));
-    DAT_00100674 = (ushort *)(arena + 96);
+    DAT_00100674 = (uw_mobile_object_t *)(arena + 96);
     if ((byte *)link == tile + 2) return (uw_object_hdr_t *)(arena + 128);
     if ((byte *)link == arena + 132) return (uw_object_hdr_t *)(arena + 160);
     assert((byte *)link == arena + 164); return NULL;
@@ -132,7 +133,7 @@ static void setup(unsigned seed, unsigned mode, unsigned test, unsigned player, 
     memset(stats,0,sizeof stats); stats[0x2a]=2+(seed&7); stats[0x69]=(seed>>4)&3;
     tile[0]=seed; tile[1]=tile[2]=tile[3]=0; DAT_00201b68=1+(seed&3);
     g_scratch_object_ptr=(uw_object_hdr_t *)(arena+192);
-    DAT_00100674=(ushort *)(arena+32); DAT_00101958=(ushort *)(arena+32);
+    DAT_00100674=(uw_mobile_object_t *)(arena+32); DAT_00101958=(ushort *)(arena+32);
     DAT_002020a0=DAT_002020a4=20;
     DAT_0010195c=(byte[]){5,0x20,13,0x25}[seed&3];
     write16(arena+32,0x41); write16(arena+128,0x41); write16(arena+160,(seed&1)?0x42:0x41);

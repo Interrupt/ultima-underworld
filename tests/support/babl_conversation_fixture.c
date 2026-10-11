@@ -1,5 +1,6 @@
 #include "babl_conversation_fixture.h"
 #include "src/headers/file_io.h"
+#include "src/headers/options.h"
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -24,7 +25,7 @@ short DAT_00100788;
 short DAT_00100770_backing[1024];
 undefined1 DAT_001007a0_backing[2048];
 char *DAT_000bbf80;
-ushort *DAT_00100674;
+uw_mobile_object_t *DAT_00100674;
 short *DAT_000bc020, *DAT_000bc000;
 short DAT_000bc004, DAT_000bc024;
 undefined2 DAT_000bbfbc, DAT_000bbfb8;
@@ -414,7 +415,7 @@ void conv_fixture_begin(void)
     TEST_ASSERT_EQUAL_INT(0, symlink(UW_TEST_DATA_DIR "/DATA", path));
     snprintf(path, sizeof path, "%s/SAVE0", workspace);
     TEST_ASSERT_EQUAL_INT(0, mkdir(path, 0755));
-    setenv("UW_DATA_DIR", workspace, 1);
+    options_set("data-dir", workspace);
     open_strings();
 }
 
@@ -492,7 +493,7 @@ void conv_talk_as(unsigned slot, unsigned conversation)
 void conv_talk(unsigned slot)
 {
     conv_npc = conv_npc_record(slot);
-    DAT_00100674 = conv_npc;
+    DAT_00100674 = (uw_mobile_object_t *)conv_npc;
     DAT_001007c4 = ((byte *)conv_npc)[0x1a];
     DAT_00100784 = calloc(1, 0x10000);
     DAT_001007c0 = DAT_00100784;

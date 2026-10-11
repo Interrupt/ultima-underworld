@@ -1704,8 +1704,8 @@ int try_npc_special_ability_ranged()
          (iVar3 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                                            (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                                            (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                                           (ushort)(byte) g_object_type_props[(*DAT_00101400 & 0x1ff)].height +
-                                           ((byte)DAT_00101400[1] & 0x7f)), iVar3 != 0)))) &&
+                                           (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
+                                           (((byte)DAT_00101400[2]) & 0x7f)), iVar3 != 0)))) &&
       (iVar3 = check_npc_target_alignment(1), iVar3 != 0)) {
     uVar4 = ce_rand();
     bVar1 = DAT_00101404->spell_flags;
@@ -1742,12 +1742,16 @@ int try_npc_special_ability_alt()
   int extraout_r1;
   uint uVar4;
   
+  /* The target's Z is the position word's low 7 bits (ARM 0x30e50 reads bytes 2-3 of the target);
+     this was `DAT_00101400[1]` on a `char *`, i.e. byte 1 of the object-id word -- always 0 for the
+     player -- so the sight line ran 20-odd units under the floor and every ranged attack was
+     blocked (same bug at the other two sight checks, here and in npc_ai_tick). */
   if (((DAT_00101900 < 0x10) &&
       (iVar2 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                             (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                             (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                            (ushort)(byte) g_object_type_props[(*DAT_00101400 & 0x1ff)].height +
-                            ((byte)DAT_00101400[1] & 0x7f)), iVar2 != 0)) &&
+                            (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
+                            (((byte)DAT_00101400[2]) & 0x7f)), iVar2 != 0)) &&
      (iVar2 = check_npc_target_alignment(1), iVar2 != 0)) {
     uVar3 = ce_rand();
     bVar1 = DAT_00101404->dexterity;

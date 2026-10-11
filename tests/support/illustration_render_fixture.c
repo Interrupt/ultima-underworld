@@ -180,6 +180,7 @@ undefined2 DAT_0008696a, DAT_0008696c;
 short g_mouse_x, g_mouse_y;
 
 ushort DAT_0023c448;
+int DAT_000876c8;
 
 undefined2 DAT_00201b60;
 

@@ -2,6 +2,7 @@
    index to its real .E model geometry), emitting a catalog object (door, bridge, decal, sign) as
    textured model geometry, and door animation-frame emission. */
 #include "headers/models.h"
+#include "headers/models_dos.h"
 #include "headers/options.h"
 #include "headers/debug.h"
 #include "headers/debug_ui.h"
@@ -74,14 +75,45 @@ static int DAT_000db470;
 static int DAT_000db4d4;
 static int DAT_000db4d8;
 static int DAT_000db4d0;
-// DAT_000db494: gates whether parse_e_model_file resolves each PARTS entry's EXTENDED_COLORS index
-// against g_model_known_ext_colors (and the function's own final scratch-to-scratch
-// color-inheritance pass).
+/* DAT_000db494: gates whether parse_e_model_file resolves each PARTS entry's EXTENDED_COLORS index
+   against g_model_known_ext_colors (and the function's own final scratch-to-scratch
+   color-inheritance pass).
+
+   NOT a dropped initialisation -- it reads 0 in the real UU.exe too, so the shipped game never
+   resolved extended colours either and this decompile is faithful in leaving it zero. Checked by
+   reading the original's own gate: parse_e_model_file is FUN_00020a74 there, its test is
+   `*DAT_00022348`, and that literal-pool entry holds 0x000db494, whose contents are 0x00000000.
+
+   So a .E file's per-face colour is dead in both this port and the original. It is worth knowing
+   WHY before anyone tries to revive it, since "use the per-face colours the .E files already
+   carry" sounds like an easy win: the PARTS colour field's low byte indexes the 32-entry RGB table
+   below, which parse_e_model_file's own error message calls the "Mac color table", and the entries
+   the shipped art actually names are authoring placeholders rather than final colours --
+
+       entry  4  rgb(178,0,0)   bright red  <- DFRAME, DOOR, BEAM, FBRIDGE, GRAVE, GATE, ARROW
+       entry  5  rgb(153,0,102) magenta     <- DFRAME, ARROW
+       entry  6  rgb(153,46,1)  brown       <- BENCH, TABLF3, CHEST, BARRCLOS, 40LOTUS, CHAIRSIM
+       entry  8  rgb(54,46,20)  dark brown  <- ROCKSMAL, CHAIRSIM
+       entry 12  rgb(255,0,0)   pure red    <- CHAIRSIM
+       entry 14  rgb(255,255,0) yellow      <- BARRCLOS
+       entry 15  rgb(255,255,255) white     <- SHRINE, BED2
+
+   -- i.e. honouring them would render door frames and doors bright red, the shrine white and
+   barrel faces yellow. The colours the game really uses are the per-model auxiliary palette in
+   DAT_00086c08_backing further down. (The DOS asset set is the opposite case and genuinely worth
+   decoding: its per-face colour operand indexes that same auxiliary palette, which is what
+   models_dos.c's uw_dos_model_face_colour supplies.) */
 static int DAT_000db494;
 static int DAT_000db4e0;
-// was DAT_00084678 -- a fixed table of up to 32 known 24-bit RGB values (0x00RRGGBB-shaped ints)
-// that parse_e_model_file's EXTENDED_COLORS handling linearly searches to turn each entry's literal
-// RGB (e.g. "545454" in ROCKSMAL.E) into a small index, stored per-part...
+/* was DAT_00084678 -- a fixed table of 32 known 24-bit RGB values (0x00RRGGBB-shaped ints) that
+   parse_e_model_file's EXTENDED_COLORS handling linearly searches to turn each entry's literal RGB
+   (e.g. "545454" in ROCKSMAL.E) into a small index, stored per-part.
+
+   Left as a single scalar on purpose: every path that reads it is behind DAT_000db494, which is
+   zero in the real UU.exe as well (see its comment above), so filling the table in would add
+   32 words of data that nothing can reach. Its real contents, read out of the original at
+   0x00084678 should they ever be needed, are the 16 saturated authoring colours listed in that
+   comment followed by a 16-step grey ramp from 0xffffff down to 0xa5a5a5. */
 static undefined4 g_model_known_ext_colors;
 static char s_unexpected_EOF___no_END_statemen_000846f8[] = "unexpected EOF - no END statement\n";
 static char s________c_0008471c[] = "%*[^}]%c";
@@ -1078,6 +1110,33 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
       cVar9 = (char)(sVar7 >> 0xf);
       *(char *)(_face_rec + 0x4e) = cVar9;
       *(char *)(_face_rec + 0x4f) = cVar9;
+      /* DEVIATION FROM THE ORIGINAL, deliberate and opt-in by data: a
+         per-face colour.
+
+         The original paints a whole built-in model in ONE colour -- entry 1 of
+         its auxiliary palette when it has two, else entry 0 -- for every face.
+         That is faithful, not a decompile artefact: UU.exe's FUN_00061e60
+         assigns its palette pointer once before the face loop and never
+         advances it, so the `else` branch below is the original's behaviour
+         verbatim.
+
+         The DOS bytecode, though, carries a colour per face (opcode 0x00bc),
+         and models_dos.c decodes it to an index into that same palette. Using
+         it makes the table, barrel and chair two-tone as the data intends.
+
+         This CANNOT affect the Pocket PC path, by two independent guards:
+         uw_dos_model_face_colour only ever returns >= 0 for a model
+         models_dos.c actually decoded, and the index must land inside this
+         model's own palette (its entry count is the low 3 bits of the catalog
+         flags, at most 3) -- while the .E files' own colour codes are ff04 and
+         up, i.e. 4 or more, so they could never qualify even if they reached
+         here. */
+      int _dos_colour = uw_dos_model_face_colour((int)catalog_u, row_base / 0x18);
+      if (_dos_colour >= 0 && _dos_colour < (int)(catalog_flags & 7)) {
+        uVar10 = 0;
+        *(char *)(_face_rec + 0x50) = (&DAT_00086c09)[iVar1 + _dos_colour];
+      }
+      else {
       cVar9 = (&DAT_00086c09)[iVar1];
       pbVar23 = &DAT_00086c08 + iVar1;
       pbVar6 = (byte *)0x0;
@@ -1092,6 +1151,7 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
       else {
         uVar10 = 0;
         *(char *)(_face_rec + 0x50) = cVar9;
+      }
       }
       *(char *)(_face_rec + 0x51) = (char)uVar10;
       *(char *)(_face_rec + 0x52) = (char)((ushort)uVar10 >> 8);
@@ -1112,7 +1172,24 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
       *(short *)(_face_rec + 0x22) = (short)tex_h >> 0xf;
                     // WARNING: Store size is inaccurate
       *(short *)(_face_rec + 0x23) = (short)tex_h >> 0xf;
-      if (catalog_u == 1) {
+      /* DEVIATION FROM THE ORIGINAL, deliberate: the pillar is clamped too.
+
+         The original clamps catalog 1 alone -- `if (uVar13 == 1)` in UU.exe's
+         FUN_00061e60, and that binary contains exactly one 1024.0f compare,
+         so there is no second clamp anywhere. But exactly TWO models are
+         authored with the 1024 "reaches the ceiling" sentinel, and the clamp
+         covered one of them:
+
+             catalog  1  door frame   DFRAME.E  0..1024   model 0x01, 0x008c x4
+             catalog 10  pillar       NEWPILL.E 0..1024   model 0x0a, 0x008c x4
+
+         Both asset sets agree, since models_dos.c emits the same 1024 for the
+         DOS "extend to ceiling" opcode. Measured on the pillar at tile
+         (34,17) before this change: anchor 768 plus a model height of 1024
+         put its top at 1792 against a 1024 ceiling, three quarters of a tile
+         through it. It is easy to miss in play because the ceiling plane
+         hides the overshoot from most angles. */
+      if (catalog_u == 1 || catalog_u == 10) {
         local_60 = 0;
         do {
           iVar27 = (int)(short)DAT_0023b91c;
@@ -1351,7 +1428,28 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
       *(char *)(_face_rec + 0x42) = (char)((uint)uVar17 >> 0x10);
       *(char *)(_face_rec + 0x43) = (char)((uint)uVar17 >> 0x18);
       local_58 = (byte *)((char *)local_58 + -0x18);
+      /* BUG FIX (dropped loop update): the original steps BOTH per-face
+         cursors here -- the byte offset into the part records (iVar22, -0x60)
+         and the int index into those same records (row_base, -0x18, the very
+         same step counted in ints rather than bytes). This decompile kept the
+         first and lost the second. Confirmed against a Ghidra decompile of
+         the real UU.exe (FUN_00061e60), whose loop tail is:
+
+             local_58 = (byte *)((int)local_58 + -0x18);
+             iVar25 = iVar25 + -0x60;
+
+         row_base feeds exactly one thing -- the door-frame ceiling clamp
+         earlier in this loop -- so frozen at `face_count - 1` the clamp
+         re-read the LAST face's four vertices on every iteration and never
+         once saw the lintel, whose vertices are the only ones authored at the
+         1024 ceiling sentinel. The lintel therefore kept a full 1024 of model
+         height stacked on the frame's world anchor and shot through the
+         ceiling. Measured on a real door frame: anchor 640 with the lintel at
+         model y 1024 put its top at 1664 against a 1024 ceiling; with the
+         step restored the clamp fires on vertices 17 and 19 and the top lands
+         at exactly 1024. */
       iVar22 = iVar22 + -0x60;
+      row_base = row_base + -0x18;
       faces_remaining = faces_remaining + -1;
     } while (faces_remaining != 0);
   }
@@ -1469,24 +1567,41 @@ LAB_000640ec:
   if (!g_opts.model_no_depth_sort && DAT_0023b83c > _rec_start) {
     double _eye_x = *(float *)&DAT_000db438, _eye_y = *(float *)&DAT_000db43c, _eye_z = *(float *)&DAT_000db440;
     int _n = DAT_0023b83c - _rec_start;
-    if (_n <= 64) {
-      double _dist[64];
-      int _order[64];
+    /* This cap used to be 64, and a model with more faces than that was
+       silently left UNSORTED -- no warning, no partial sort, nothing. The
+       DOS boulder decodes to 65 faces, so it fell off this cliff and drew
+       in raw emission order, which is what "far faces in front of nearer
+       ones" looked like in play. A model can emit at most as many faces as
+       its buffer holds parts, and that is 128 ((0x3c1c - 0xc14) / 0x60), so
+       size for that with headroom rather than leaving a silent cutoff. */
+    if (_n <= 256) {
+      double _dist[256];
+      int _order[256];
       int _k;
       for (_k = 0; _k < _n; _k++) {
         int rec = _rec_start + _k;
         int rb = rec * 0x60;
-        int iv0 = *(int *)(&DAT_000acde8 + rb);
-        int iv1 = *(int *)(&DAT_000acdec + rb);
-        int iv2 = *(int *)(&DAT_000acdf0 + rb);
-        int iv3 = *(int *)(&DAT_000acdf4 + rb);
-        float *p0 = (float *)((char *)DAT_000a85d0_backing + 8 + iv0*0xc);
-        float *p1 = (float *)((char *)DAT_000a85d0_backing + 8 + iv1*0xc);
-        float *p2 = (float *)((char *)DAT_000a85d0_backing + 8 + iv2*0xc);
-        float *p3 = (float *)((char *)DAT_000a85d0_backing + 8 + iv3*0xc);
-        double cx = (p0[0]+p1[0]+p2[0]+p3[0]) * 0.25;
-        double cy = (p0[1]+p1[1]+p2[1]+p3[1]) * 0.25;
-        double cz = (p0[2]+p1[2]+p2[2]+p3[2]) * 0.25;
+        /* Average the face's OWN vertices, not four of them. An emitted
+           record is a count at +0 (tmap.c writes `(&DAT_000acde4)[..] = 4`
+           for its tile quads) followed by that many indices from +4, and
+           this sort used to read exactly four regardless. Everything the
+           tile code emits is a quad, so that was invisible -- but a model's
+           faces are not: ROCKBIG is 57 triangles out of 65, and for each of
+           those the fourth slot was never written, so it read 0 and averaged
+           model vertex 0 into the centroid. That put every triangle at the
+           wrong depth, which is exactly the "far faces drawn in front of
+           nearer ones" this sort exists to prevent. */
+        int _vc = *(int *)(&DAT_000acde4 + rb);
+        double cx = 0.0, cy = 0.0, cz = 0.0;
+        int _vi;
+        if (_vc < 3) _vc = 3;
+        if (_vc > 23) _vc = 23;          /* the record holds at most 23 */
+        for (_vi = 0; _vi < _vc; _vi++) {
+          int iv = *(int *)(&DAT_000acde8 + rb + _vi * 4);
+          float *p = (float *)((char *)DAT_000a85d0_backing + 8 + iv*0xc);
+          cx += p[0]; cy += p[1]; cz += p[2];
+        }
+        cx /= _vc; cy /= _vc; cz /= _vc;
         double dx = cx - _eye_x, dy = cy - _eye_y, dz = cz - _eye_z;
         _dist[_k] = dx*dx + dy*dy + dz*dz;
         _order[_k] = _k;
@@ -1504,7 +1619,7 @@ LAB_000640ec:
       /* Apply via cycle-sort in place, whole-record memcpy plus the
          parallel g_tile_texptr_emit[] side channel. */
       { unsigned char _tmp[0x60]; void *_tmp_tex;
-        unsigned char _done[64] = {0};
+        unsigned char _done[256] = {0};
         int _a;
         for (_a = 0; _a < _n; _a++) {
           int _cur, _src;
@@ -1861,38 +1976,69 @@ void scale_model_part_offsets(void *model_block_ptr, int scale_x, int scale_y, i
 // was FUN_00038680 -- loads every catalog 3D object model (.E files: door frame, footbridge, bench,
 // lotus, rocks, arrow, beam, shrine, doors, tilemap decals, grave, gate, table, chest, nightstand,
 // barrel/closet, chair, bed) via parse_e_model_file into their respective geometry buffers...
-void load_3d_object_models()
-
+/* One model slot: from the DOS executable when the data directory is a DOS
+   install, else from the slot's own DATA3D/*.E file.
+ 
+   The port's slot order below is exactly DOS built-in model order shifted by
+   one -- slot 0 is the door frame, DOS model 1 -- which is how `slot + 1`
+   below is derived; see src/models_dos.c for the eight models whose geometry
+   confirms the correspondence vertex for vertex.
+ 
+   flip_winding is passed as 0 on the DOS path, and that is not "no flip":
+   models_dos.c has already reversed every face itself. It has to, because
+   reversing a textured quad also moves a different corner to the front of the
+   vertex list and so rotates its texture, and only the decoder knows which
+   faces carry texture coordinates saying the first vertex is the texture
+   origin. See emit_face_order there. */
+static void load_model_slot(int slot, char *e_path, byte *out_buffer, int flip_winding)
 {
-  parse_e_model_file(s__DATA3D_DFRAME_E_00085620,&DAT_00114c1c,1);
-  parse_e_model_file(s__DATA3D_FBRIDGE_E_0008560c,&DAT_00118848,1);
-  parse_e_model_file(s__DATA3D_BENCH_E_000855fc,&DAT_0011c474,0);
-  parse_e_model_file(s__DATA3D_40LOTUS_E_000855e8,&DAT_001200a0,0);
-  parse_e_model_file(s__DATA3D_ROCKSMAL_E_000855d4,&DAT_00123ccc,0);
-  parse_e_model_file(s__DATA3D_ROCKMED_E_000855c0,&DAT_001278f8,0);
-  parse_e_model_file(s__DATA3D_ROCKBIG_E_000855ac,&DAT_0012b524,1);
-  parse_e_model_file(s__DATA3D_ARROW_E_0008559c,&DAT_0012f150,0);
-  parse_e_model_file(s__DATA3D_BEAM_E_0008558c,&DAT_00132d7c,0);
-  parse_e_model_file(s__DATA3D_NEWPILL_E_00085578,&DAT_001369a8,0);
-  parse_e_model_file(s__DATA3D_SHRINE_E_00085564,&DAT_0013a5d4,0);
-  parse_e_model_file(s__DATA3D_NEWPORT_E_00085550,&DAT_0013e200,0);
-  parse_e_model_file(s__DATA3D_NEWPORT_E_00085550,&DAT_00141e2c,0);
-  parse_e_model_file(s__DATA3D_DOOR_E_00085540,&DAT_00145a58,0);
-  parse_e_model_file(s__DATA3D_DOOR_E_00085540,&DAT_00149684,0);
-  parse_e_model_file(s__DATA3D_TMAP16X16_E_0008552c,&DAT_0014d2b0,0);
-  parse_e_model_file(s__DATA3D_TMAP16X16_E_0008552c,&DAT_00150edc,0);
-  parse_e_model_file(s__DATA3D_TMAP16X16_E_0008552c,&DAT_00154b08,0);
-  parse_e_model_file(s__DATA3D_GRAVE_E_0008551c,&DAT_00158734,0);
-  parse_e_model_file(s__DATA3D_TMAP16X16_E_0008552c,&DAT_0015c360,0);
-  parse_e_model_file(s__DATA3D_TMAP32X32_E_00085508,&DAT_0015ff8c,0);
-  parse_e_model_file(s__DATA3D_TMAP64X64_E_000854f4,&DAT_00163bb8,0);
-  parse_e_model_file(s__DATA3D_GATE_E_000854e4,&DAT_001677e4,0);
-  parse_e_model_file(s__DATA3D_TABLF3_E_000854d0,&DAT_0016b410,0);
-  parse_e_model_file(s__DATA3D_CHEST_E_000854c0,&DAT_0016f03c,0);
-  parse_e_model_file(s__DATA3D_NITESTAN_E_000854ac,&DAT_00172c68,0);
-  parse_e_model_file(s__DATA3D_BARRCLOS_E_00085498,&DAT_00176894,0);
-  parse_e_model_file(s__DATA3D_CHAIRSIM_E_00085484,&DAT_0017a4c0,0);
-  parse_e_model_file(s__DATA3D_BED2_E_00085474,&DAT_0017e0ec,0);
+  if (uw_dos_models_available()) {
+    /* Largest real model is the shrine, 80 vertices and 43 faces; 64KB is
+       ample for any of them as text. Static rather than stack: this runs once
+       per slot at startup and the frame would otherwise be enormous. */
+    static char script[64 * 1024];
+    if (uw_dos_model_script(slot + 1, script, sizeof script) > 0) {
+      parse_e_model_script(script, out_buffer, 0);
+      return;
+    }
+    DEBUG(INFO, "[models] slot %d has no DOS model -- trying %s\n", slot, e_path);
+  }
+  parse_e_model_file(e_path, out_buffer, flip_winding);
+}
+
+void load_3d_object_models()
+{
+  load_model_slot( 0, s__DATA3D_DFRAME_E_00085620, &DAT_00114c1c, 1);
+  load_model_slot( 1, s__DATA3D_FBRIDGE_E_0008560c, &DAT_00118848, 1);
+  load_model_slot( 2, s__DATA3D_BENCH_E_000855fc, &DAT_0011c474, 0);
+  load_model_slot( 3, s__DATA3D_40LOTUS_E_000855e8, &DAT_001200a0, 0);
+  load_model_slot( 4, s__DATA3D_ROCKSMAL_E_000855d4, &DAT_00123ccc, 0);
+  load_model_slot( 5, s__DATA3D_ROCKMED_E_000855c0, &DAT_001278f8, 0);
+  load_model_slot( 6, s__DATA3D_ROCKBIG_E_000855ac, &DAT_0012b524, 1);
+  load_model_slot( 7, s__DATA3D_ARROW_E_0008559c, &DAT_0012f150, 0);
+  load_model_slot( 8, s__DATA3D_BEAM_E_0008558c, &DAT_00132d7c, 0);
+  load_model_slot( 9, s__DATA3D_NEWPILL_E_00085578, &DAT_001369a8, 0);
+  load_model_slot(10, s__DATA3D_SHRINE_E_00085564, &DAT_0013a5d4, 0);
+  load_model_slot(11, s__DATA3D_NEWPORT_E_00085550, &DAT_0013e200, 0);
+  load_model_slot(12, s__DATA3D_NEWPORT_E_00085550, &DAT_00141e2c, 0);
+  load_model_slot(13, s__DATA3D_DOOR_E_00085540, &DAT_00145a58, 0);
+  load_model_slot(14, s__DATA3D_DOOR_E_00085540, &DAT_00149684, 0);
+  load_model_slot(15, s__DATA3D_TMAP16X16_E_0008552c, &DAT_0014d2b0, 0);
+  load_model_slot(16, s__DATA3D_TMAP16X16_E_0008552c, &DAT_00150edc, 0);
+  load_model_slot(17, s__DATA3D_TMAP16X16_E_0008552c, &DAT_00154b08, 0);
+  load_model_slot(18, s__DATA3D_GRAVE_E_0008551c, &DAT_00158734, 0);
+  load_model_slot(19, s__DATA3D_TMAP16X16_E_0008552c, &DAT_0015c360, 0);
+  load_model_slot(20, s__DATA3D_TMAP32X32_E_00085508, &DAT_0015ff8c, 0);
+  load_model_slot(21, s__DATA3D_TMAP64X64_E_000854f4, &DAT_00163bb8, 0);
+  load_model_slot(22, s__DATA3D_GATE_E_000854e4, &DAT_001677e4, 0);
+  load_model_slot(23, s__DATA3D_TABLF3_E_000854d0, &DAT_0016b410, 0);
+  load_model_slot(24, s__DATA3D_CHEST_E_000854c0, &DAT_0016f03c, 0);
+  load_model_slot(25, s__DATA3D_NITESTAN_E_000854ac, &DAT_00172c68, 0);
+  load_model_slot(26, s__DATA3D_BARRCLOS_E_00085498, &DAT_00176894, 0);
+  load_model_slot(27, s__DATA3D_CHAIRSIM_E_00085484, &DAT_0017a4c0, 0);
+  load_model_slot(28, s__DATA3D_BED2_E_00085474, &DAT_0017e0ec, 0);
+  /* UW.EXE is only needed while the models load. */
+  uw_dos_models_release();
   ce_memmove(&DAT_00189590,&DAT_00110ff0,0x78580);
   return;
 }
@@ -1901,6 +2047,25 @@ void load_3d_object_models()
 // was FUN_00020a74 -- parses one DATA3D/*.E text-format 3D model script (param_1 = file path,
 // param_2 = ~16KB per-model output buffer) into point positions and per-part (per-face)
 // vertex-index lists. Called 29 times from load_3d_object_models at startup, once per model file.
+/* Set by parse_e_model_script for exactly one following parse_e_model_file
+   call, which opens it instead of a file. This pair exists so the DOS asset
+   set -- whose models are bytecode inside UW.EXE, with no .E file anywhere
+   (see src/models_dos.c) -- can reuse every line of the parser below rather
+   than grow a second implementation of the output-buffer layout. Not
+   reentrant, and not meant to be: model loading is a single-threaded
+   startup step. */
+static const char *g_e_model_script;
+static unsigned int g_e_model_script_len;
+
+void parse_e_model_script(const char *script, byte *out_buffer, int flip_winding)
+{
+  if (!script || !script[0]) return;
+  g_e_model_script = script;
+  g_e_model_script_len = (unsigned int)strlen(script);
+  parse_e_model_file("<decoded from UW.EXE>", out_buffer, flip_winding);
+  g_e_model_script = NULL;
+}
+
 /* Every .E model file in data/DATA3D/ is CRLF-terminated (confirmed via `xxd` on ROCKBIG.E: the
    PARTS block's last entry ends "...8);\r\n}\r\n"). */
 static void *uw_e_model_strip_cr(void *raw_fh) {
@@ -2015,9 +2180,16 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
     *stack0xffdc3228_ptr = cVar18; stack0xffdc3228_ptr = stack0xffdc3228_ptr + 1;
     pcVar2 = pcVar2 + 1;
   } while (cVar18 != '\0');
-  ce_strcat(acStack_130,path);
-  pvVar_fh = ce_fopen(acStack_130,&DAT_00084a24);
-  pvVar_fh = uw_e_model_strip_cr(pvVar_fh);
+  if (g_e_model_script != 0) {
+    /* An in-memory script from the DOS decoder -- already LF-only, so it
+       skips uw_e_model_strip_cr. */
+    pvVar_fh = fmemopen((void *)g_e_model_script, g_e_model_script_len, "r");
+  }
+  else {
+    ce_strcat(acStack_130,path);
+    pvVar_fh = ce_fopen(acStack_130,&DAT_00084a24);
+    pvVar_fh = uw_e_model_strip_cr(pvVar_fh);
+  }
   local_25c = pvVar_fh;
   /* This whole function's 11 fatal-error checks (NKDbgPrintfW message + terminate_process, killing
      the entire process) originally treated any malformed/unparseable ".E" model script as
