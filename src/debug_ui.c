@@ -621,6 +621,10 @@ void dbgui_toggle()
   }
   g_visible = !g_visible;
   g_editing = 0;
+  /* Whatever height the last panel had is gone (closed: restored below; opening: fresh save), so the
+     next draw's fill must start from its own row count, not max(old, new) -- else a small panel opened
+     after a big inspector paints the big one's height as gray over the HUD. */
+  g_last_rows = 0;
   /* Closing the panel stops it from drawing (dbgui_draw's own `if (!g_visible ...) return`), but
      the panel sits in the static golden-border UI chrome at the screen's top-left corner, outside
      the 3D viewport -- nothing else ever redraws that region... */

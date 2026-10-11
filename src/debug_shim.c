@@ -38,22 +38,28 @@ static int g_dbgui_inspect_tex_pick = 0;
 
 static void dbgui_inspector_back(void) { g_dbgui_inspect_obj = 0; g_dbgui_inspect_tex_pick = 0; }
 
-/* "locked" (door inspector rows, below) is shown as a toggle rather
-   than plain text per direct request, so this tool can unlock a door
-   for testing -- but there's no real "lock a door" action anywhere in
-   this game to call the other way (doors only ever start locked from
-   level data, never get relocked at runtime), so this is a one-way
-   action: if the door is locked, run the exact same forced-unlock
-   object_actions.c already has for a real "unlock" spell/effect
-   (force_unlock_target_object -- temporarily maxes the pick-locks
-   skill so its own internal skill-gated check always passes, same as
-   a guaranteed scripted unlock); if it's already unlocked, there's
-   nothing to do and this is a no-op. The row keeps showing whatever
-   find_object_in_chain reports fresh next frame either way, so it
-   can't drift from the object's real state. */
-static void dbgui_inspector_toggle_door_lock(void)
+/* "locked" (door inspector rows, below) is a toggle so this tool can lock/unlock a door for testing;
+   the row re-reads the real lock state every frame, so it can't drift. */
+/* A door's lock is the id 0x10f object (class 4 / subclass 0 / low nibble 0xf -- the same lookup
+   check_object_combination uses) on the door's link chain; the door is locked while that lock's
+   type-word bit 0x200 is set (a matching key sets it, check_object_combination, and a count-0
+   "is it locked" probe only returns 0 for it). */
+static ushort *dbgui_door_lock_object(ushort *door)
 {
-  if (g_dbgui_inspect_obj != 0) force_unlock_target_object(0,0,g_dbgui_inspect_obj);
+  ushort *chain = door + 3;
+  if ((*door & 0x8000) != 0 || (*chain & 0xffc0) == 0) return 0;
+  return (ushort *)find_object_in_chain(&chain,0,4,0,0xf);
+}
+
+/* Opens the inspected door whether or not it is locked -- the lock is only ever consulted by the
+   player's Use path, never by the door open itself. close_door_object is the routine that acts on a
+   door whose id state (low nibble) is < 8 -- the ids every door has in the level data -- and runs the
+   real open animation (its name is the original's, which reads the opposite way round). Does nothing
+   for a door that is already open. */
+static void dbgui_inspector_open_door(void)
+{
+  if (g_dbgui_inspect_obj == 0) return;
+  close_door_object(0, g_dbgui_inspect_obj);
 }
 
 void dbgui_object_inspector_pick(void)
@@ -107,9 +113,11 @@ static void populate_debug_object_inspector(ushort *obj)
   snprintf(line, sizeof(line), "(%d,%d)", g_dbgui_inspect_tile_x, g_dbgui_inspect_tile_y);
   dbgui_field_text("tile", line);
   if ((id & 0x1f0) == 0x140) {
-    ushort *chain = obj + 3;
-    int locked = find_object_in_chain(&chain,0,6,2,3) != 0;
-    dbgui_field_toggle_action("locked", locked, dbgui_inspector_toggle_door_lock);
+    ushort *lock = dbgui_door_lock_object(obj);
+    int locked = lock != 0 && (*lock & 0x200) != 0;
+    dbgui_field_text("locked", locked ? "yes" : "no");
+    dbgui_field_text("state", (id & 0xf) < 8 ? "closed" : "open");
+    dbgui_field_button("open door", dbgui_inspector_open_door);
   }
   if ((id & 0x1c0) == 0x40) {
     int hp = *(byte *)((char *)obj + 8);
