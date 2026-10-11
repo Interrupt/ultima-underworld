@@ -43,5 +43,11 @@ int options_set(const char *name, const char *value);
 /* Put one option back to its built-in default. Returns 0 or -1 (unknown option). */
 int options_unset(const char *name);
 void options_print_help(FILE *out);
+/* Introspection for the debug console. options_get: current value as text in buf; returns the option's
+   type (0 bool, 1 int, 2 float, 3 string) or -1 for an unknown name. options_name_at: name of option i
+   (NULL past the end) with its current value in buf. */
+size_t options_count(void);
+const char *options_name_at(size_t i, char *buf, size_t n);
+int options_get(const char *name, char *buf, size_t n);
 
 #endif

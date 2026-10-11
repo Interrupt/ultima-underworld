@@ -120,6 +120,35 @@ void options_reset(void) {
   g_opts = g_opts_defaults;
 }
 
+/* Current value of option i as text; returns its type (OPT_BOOL..OPT_STR, 0..3). */
+static int format_value(const struct opt_desc *d, char *buf, size_t n) {
+  const char *base = (const char *)&g_opts + d->offset;
+  switch (d->type) {
+  case OPT_BOOL: snprintf(buf, n, "%s", *(const int *)base ? "on" : "off"); break;
+  case OPT_INT: snprintf(buf, n, "%d", *(const int *)base); break;
+  case OPT_FLOAT: snprintf(buf, n, "%g", (double)*(const float *)base); break;
+  default: {
+    const char *v = *(const char *const *)base;
+    snprintf(buf, n, "%s", v ? v : "(unset)");
+  }
+  }
+  return d->type;
+}
+
+size_t options_count(void) { return OPT_COUNT; }
+
+const char *options_name_at(size_t i, char *buf, size_t n) {
+  if (i >= OPT_COUNT) return NULL;
+  format_value(&g_opt_descs[i], buf, n);
+  return g_opt_descs[i].name;
+}
+
+int options_get(const char *name, char *buf, size_t n) {
+  const struct opt_desc *d = find_opt(name);
+  if (!d) return -1;
+  return format_value(d, buf, n);
+}
+
 void options_print_help(FILE *out) {
   fprintf(out, "Usage: uw_dbg [options]\n\nOptions (a leading --no- turns a boolean off; "
                "--name=VALUE or --name VALUE sets a value):\n");

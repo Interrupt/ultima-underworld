@@ -1017,6 +1017,43 @@ static void demo_exec_line(char *p, Uint32 now) {
         }
     }
 
+    /* Runtime options (options.c): OPTIONS lists them, "<option> [value]" shows or sets one. A bool with
+       no value flips; anything else with no value just shows. */
+    {
+        char val[160], tok[64];
+        size_t tl = 0;
+        const char *rest;
+        int type;
+        if (strcasecmp(p, "OPTIONS") == 0) {
+            for (size_t i = 0; i < options_count(); i++) {
+                const char *nm = options_name_at(i, val, sizeof val);
+                demo_printf("[demo] %s = %s\n", nm, val);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        while (p[tl] && p[tl] != ' ' && p[tl] != '\t' && tl < sizeof tok - 1) { tok[tl] = p[tl]; tl++; }
+        tok[tl] = '\0';
+        rest = p + tl;
+        while (*rest == ' ' || *rest == '\t') rest++;
+        if ((type = options_get(tok, val, sizeof val)) >= 0) {
+            if (*rest == '\0' && type != 0) {
+                demo_printf("[demo] %s = %s\n", tok, val);
+            } else {
+                const char *v = rest;
+                if (*rest == '\0') v = strcmp(val, "on") == 0 ? "0" : "1";
+                if (options_set(tok, v) != 0) {
+                    demo_printf("[demo] bad value '%s' for %s\n", v, tok);
+                } else {
+                    options_get(tok, val, sizeof val);
+                    demo_printf("[demo] %s = %s\n", tok, val);
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+    }
+
     if (strcasecmp(p, "HELP") == 0) {
         /* Mainly for the debug console; harmless in a demofile. */
         demo_printf(
@@ -1031,6 +1068,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "world: TELEPORT <x> <y> [level] | GOTOLEVEL <level>\n"
                     "  OPENMAP | REVEAL | REVEALALL\n"
                     "  FLY | FARSIGHT | NOCLIP  (each takes optional on/off)\n"
+                    "  OPTIONS | <option> [value]\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
                     "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"
