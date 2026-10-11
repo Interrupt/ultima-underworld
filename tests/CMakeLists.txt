@@ -796,7 +796,8 @@ add_game_test_library(uw_test_lighting
   src/lights.c:extra_light_add src/lights.c:extra_lights_reset src/lights.c:extra_lights_consider_object
   src/lights.c:@g_shade_rows_dirty src/lights.c:@g_shade_row_factor src/lights.c:@g_fit_a
   src/lights.c:palette_luminance src/lights.c:fit_formula_to_rows src/lights.c:rebuild_shade_row_factors
-  src/lights.c:dos_shade_factor
+  src/lights.c:light_max_distance_tiles src/lights.c:near_start_factor
+  src/lights.c:inverse_square_factor src/lights.c:windowed_factor src/lights.c:dos_shade_factor
   src/lights.c:shade_span_pixel
   src/3d.c:raster_textured_span src/3d.c:update_fullbright_palette_mask
   src/graphics.c:build_shade_lut

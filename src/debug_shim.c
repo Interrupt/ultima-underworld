@@ -7,6 +7,8 @@
 #include "headers/debug_ui.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 /* Debug object inspector: clicking inside the 3D viewport while the
    debug panel is open (gx_stub.c's own mouse-down handling decides
@@ -159,6 +161,19 @@ static void populate_debug_texture_inspector(int pick)
    already started the backing clean for that case). */
 static int g_dbgui_last_kind = -1;
 
+/* The surface lighting modes the panel cycles through (--light-mode names). */
+static const char *const k_light_modes[] = { "smooth", "inv-square", "dos" };
+
+static int current_light_mode_index(void)
+{
+  const char *m = g_opts.light_mode;
+  if (m && strcasecmp(m, "dos") == 0) return 2;
+  if (m && strcasecmp(m, "inv-square") == 0) return 1;
+  return 0;
+}
+static const char *current_light_mode_name(void) { return k_light_modes[current_light_mode_index()]; }
+static void cycle_light_mode(void) { options_set("light-mode", k_light_modes[(current_light_mode_index() + 1) % 3]); }
+
 void populate_debug_panel(void)
 {
   /* Closing the panel (backtick) should always land back on the base
@@ -208,6 +223,11 @@ void populate_debug_panel(void)
   dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
   dbgui_field_toggle("pick_diag", &g_uw_debug_pick_diag);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
+  {
+    static char label[32];
+    snprintf(label, sizeof label, "light-mode: %s", current_light_mode_name());
+    dbgui_field_button(label, cycle_light_mode);
+  }
   dbgui_end();
 }
 
