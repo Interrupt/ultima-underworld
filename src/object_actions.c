@@ -817,7 +817,7 @@ void apply_targeted_spell_effect(ushort *caster, char effect_index)
     if (iVar1 == 0) {
       print_scroll_message_by_id(0xff);
     }
-    else if (DAT_0023c3e0 != '\0') {
+    else if (DAT_0023c3e0 != '\0' && !g_debug_godmode) {
       *(char *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) - DAT_0023c3e0;
     }
     DAT_0023c3e0 = '\0';

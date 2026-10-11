@@ -51,6 +51,8 @@ byte DAT_0020208c;
 int g_debug_fly;
 int g_debug_farsight;
 int g_debug_noclip;
+/* GODMODE: the player's hp never reaches 0 and spells cost no mana (combat.c, hud.c, object_actions.c). */
+int g_debug_godmode;
 undefined2 DAT_00203304;
 undefined1 DAT_00203303;
 short DAT_00202078;
@@ -3402,6 +3404,7 @@ void handle_player_death_and_menu_transition(short reason)
 void apply_level9_random_hazard_tick()
 
 {
+  if (g_debug_godmode) return;   /* the one hit-point write that bypasses apply_damage_to_object */
   int uw_ord2005_rem_106 = 0; int uw_ord2005_rem_107 = 0; int uw_ord2005_rem_108 = 0; int uw_ord2005_rem_109 = 0; int uw_ord2005_rem_110 = 0;
   uint uVar1;
   ushort uVar2;
@@ -3851,4 +3854,44 @@ int dungeon_view_anim_tick()
     }
   }
   return 1;
+}
+
+
+/* Debug console: PLAYERLEVEL. Sets the level byte and the XP that level starts at, then refreshes
+   max hp/mana (full refill) and the HUD. Returns the clamped level. */
+int debug_set_player_level(int level)
+{
+  if (level < 1) level = 1;
+  if (level > 16) level = 16;
+  *(byte *)(DAT_00086df8 + 0x3d) = (byte)level;
+  uint xp = (uint)DAT_00086e87_backing[level - 1] * 500;
+  DAT_00086df8[0x4e] = (char)xp;
+  DAT_00086df8[0x4f] = (char)(xp >> 8);
+  DAT_00086df8[0x50] = (char)(xp >> 16);
+  DAT_00086df8[0x51] = (char)(xp >> 24);
+  recalculate_player_stats(1);
+  g_player_object->npc_hp = *(byte *)(DAT_0023be74 + 4);
+  refresh_experience_display();
+  return level;
+}
+
+/* Debug console: SETSKILL. Skills are the 20 bytes at DAT_00086df8 + 0x21 (max 30). */
+const char *const g_debug_skill_names[DEBUG_SKILL_COUNT] = {
+  "attack", "defense", "unarmed", "sword", "axe", "mace", "missile", "mana", "lore", "casting",
+  "traps", "search", "track", "sneak", "repair", "charm", "picklock", "acrobat", "appraise", "swimming",
+};
+
+int debug_set_skill(int index, int value)
+{
+  if (index < 0 || index >= DEBUG_SKILL_COUNT) return -1;
+  if (value < 0) value = 0;
+  if (value > 30) value = 30;
+  *(byte *)(DAT_00086df8 + 0x21 + index) = (byte)value;
+  return value;
+}
+
+void debug_skills_changed(void)
+{
+  recalculate_player_stats(0);   /* max mana depends on the mana skill */
+  refresh_experience_display();
 }

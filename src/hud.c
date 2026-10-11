@@ -4346,7 +4346,7 @@ int cast_spell_from_rune_combo(uint circle_hint)
   if ((uint)((int)(*(byte *)(DAT_00086df8 + 0x3d) + 1) >> 1) < (uint)bVar6) {
     uVar4 = 0;
   }
-  else if ((uint)*(byte *)(DAT_00086df8 + 0x37) < (uint)bVar6 * 3) {
+  else if (!g_debug_godmode && (uint)*(byte *)(DAT_00086df8 + 0x37) < (uint)bVar6 * 3) {
     uVar4 = 1;
   }
   else {
@@ -4367,7 +4367,7 @@ int cast_spell_from_rune_combo(uint circle_hint)
       DAT_002028d8 = *(undefined4 *)(DAT_00086df8 + 0xce);
       DAT_0023c3e0 = bVar6 * '\x03';
       if (bVar7 != 5) {
-        *(byte *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) + bVar6 * -3;
+        if (!g_debug_godmode) *(byte *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) + bVar6 * -3;
         DAT_0023c3e0 = '\0';
       }
       iVar5 = dispatch_special_action(bVar7,bVar1,g_player_object,g_player_object);

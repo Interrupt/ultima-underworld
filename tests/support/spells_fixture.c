@@ -180,3 +180,5 @@ void spells_fixture_reset(void)
     spells_fixture.equipment_refreshes=0;
     spells_fixture.sound=-1;
 }
+
+int g_debug_godmode;

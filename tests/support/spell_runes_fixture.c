@@ -57,3 +57,5 @@ void ready_runes(int first, int second, int third)
 {
     player[0x47] = first; player[0x48] = second; player[0x49] = third;
 }
+
+int g_debug_godmode;

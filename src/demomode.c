@@ -998,6 +998,60 @@ static void demo_exec_line(char *p, Uint32 now) {
             g_demo_next_tick = now;
             return;
         }
+        if (demo_match_cmd(p, "GODMODE", &arg)) {
+            /* GODMODE [on|off] -- the player can't die (damage never takes the last hit point) and
+               spells cost no mana. */
+            if ((want = demo_parse_onoff(arg, g_debug_godmode)) < 0) {
+                demo_printf("[demo] usage: GODMODE [on|off]\n");
+            } else {
+                g_debug_godmode = want;
+                demo_printf("[demo] godmode %s\n", want ? "on" : "off");
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "PLAYERLEVEL", &arg)) {
+            /* PLAYERLEVEL <1-16> -- set the character level (and its starting XP), refill hp/mana. */
+            char *end;
+            long lv = strtol(arg, &end, 10);
+            if (*arg == '\0' || *end != '\0') {
+                demo_printf("[demo] usage: PLAYERLEVEL <1-16>\n");
+            } else {
+                demo_printf("[demo] player level %d\n", debug_set_player_level((int)lv));
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "SETSKILL", &arg)) {
+            /* SETSKILL <skill|all> <0-30> -- skill by name (see usage), or every skill at once. */
+            char name[32];
+            size_t nl = 0;
+            const char *lvl;
+            char *end;
+            long v = 0;
+            int idx = -2, ok = 0, i;
+            while (arg[nl] && arg[nl] != ' ' && arg[nl] != '\t' && nl < sizeof name - 1) { name[nl] = arg[nl]; nl++; }
+            name[nl] = '\0';
+            lvl = arg + nl;
+            while (*lvl == ' ' || *lvl == '\t') lvl++;
+            if (nl && *lvl) v = strtol(lvl, &end, 10), ok = (*end == '\0');
+            if (ok) {
+                if (strcasecmp(name, "all") == 0) idx = -1;
+                else for (i = 0; i < DEBUG_SKILL_COUNT; i++) if (strcasecmp(name, g_debug_skill_names[i]) == 0) idx = i;
+            }
+            if (!ok || idx == -2) {
+                char list[256] = "";
+                for (i = 0; i < DEBUG_SKILL_COUNT; i++) { strcat(list, i ? " " : ""); strcat(list, g_debug_skill_names[i]); }
+                demo_printf("[demo] usage: SETSKILL <all|%s> <0-30>\n", list);
+            } else {
+                int shown = 0;
+                for (i = 0; i < DEBUG_SKILL_COUNT; i++) if (idx == -1 || idx == i) shown = debug_set_skill(i, (int)v);
+                debug_skills_changed();
+                demo_printf("[demo] %s skill = %d\n", idx == -1 ? "all" : g_debug_skill_names[idx], shown);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
         if (demo_match_cmd(p, "NOCLIP", &arg)) {
             /* NOCLIP [on|off] -- fly mode on, and the player ignores walls/objects. Turning it off
                puts collisions back and drops fly only if NOCLIP was what turned it on. */
@@ -1067,7 +1121,8 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "  SDLDOWN/SDLUP/SDLRDOWN/SDLRUP/SDLMOVE <x> <y>\n"
                     "world: TELEPORT <x> <y> [level] | GOTOLEVEL <level>\n"
                     "  OPENMAP | REVEAL | REVEALALL\n"
-                    "  FLY | FARSIGHT | NOCLIP  (each takes optional on/off)\n"
+                    "  FLY | FARSIGHT | NOCLIP | GODMODE  (each takes optional on/off)\n"
+                    "  PLAYERLEVEL <1-16> | SETSKILL <skill|all> <0-30>\n"
                     "  OPTIONS | <option> [value]\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"

@@ -107,7 +107,12 @@ extern char s_and_00087310[];
 extern char DAT_0023c27c;
 extern short DAT_00202078;
 extern byte DAT_0020208c;
-extern int g_debug_fly, g_debug_farsight, g_debug_noclip;
+extern int g_debug_fly, g_debug_farsight, g_debug_noclip, g_debug_godmode;
+#define DEBUG_SKILL_COUNT 20
+extern const char *const g_debug_skill_names[DEBUG_SKILL_COUNT];
+int debug_set_player_level(int level);
+int debug_set_skill(int index, int value);
+void debug_skills_changed(void);
 extern undefined4 DAT_002020d4;
 extern undefined2 DAT_00201b60;
 extern short DAT_00201b64;

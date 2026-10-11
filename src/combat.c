@@ -1955,6 +1955,8 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
   bool bVar6;
   uint attacker_id = 0;  /* was the `attacker` pointer param itself, reused as an integer id (truncating cast) */
 
+  /* GODMODE: the player takes no damage (every damage path funnels through here). */
+  if (g_debug_godmode && target == (ushort *)g_player_object) return 0;
   bVar6 = attacker == (ushort *)0x0;
   iVar5 = (((int)(short)*target & 0xfU) + (short)((*target & 0x30) >> 4) * 0x10) * 0x30;
   *(byte *)((char *)target + 0x11) = *(char *)((char *)target + 0x11) + damage;
