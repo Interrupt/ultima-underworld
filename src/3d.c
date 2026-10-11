@@ -31,6 +31,7 @@ void update_fullbright_palette_mask()
 {
   int index, row;
 
+  g_shade_rows_dirty = 1;
   for (index = 0; index < 256; index++) {
     g_fullbright_palette_mask[index] = DAT_0024fa2c != 0;
     for (row = 1; row < 16 && g_fullbright_palette_mask[index]; row++)

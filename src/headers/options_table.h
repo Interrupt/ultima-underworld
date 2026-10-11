@@ -43,7 +43,7 @@ X(BOOL, fullbright, 1, "Skip the ARM distance falloff for palette indices LIGHT.
 X(INT, hack_pitch, UW_OPT_UNSET, "Force the camera pitch (0-360).")
 X(BOOL, hack_reveal_depth, 0, "Hack reveal depth.")
 X(BOOL, hack_reveal_depth_zero, 0, "Hack reveal depth zero.")
-X(STR, light_mode, NULL, "Lighting: \"dos\" uses LIGHT.DAT/SHADES.DAT shade tables; unset/\"arm\" keeps the Pocket PC RGB falloff.")
+X(STR, light_mode, NULL, "Lighting: \"smooth\" (default, also \"arm\") scales colours by (1-s^2)^2/(1+F*s^2) with s=d/max, F=max/1.3; \"inv-square\" uses power/(1+d^2); \"dos\" uses the LIGHT.DAT/SHADES.DAT shade rows. The first two fade to black at the same distance.")
 X(INT, look_slot, UW_OPT_UNSET, "Dump object-slot details for this slot once.")
 X(BOOL, model_no_depth_sort, 0, "Model no depth sort.")
 X(BOOL, no_force_3d_redraw, 0, "Do not force 3d redraw every pass.")

@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 /* ---- Extra lights (--extralights) --------------------------------------------------------------
    Small point lights around campfires, glowing rocks, lit torches on the floor and magic
@@ -105,6 +106,115 @@ void extra_lights_transform_to_eye(void)
   }
 }
 
+/* ARM mode takes its brightness from the DOS shade table so the two modes light the same: row r of
+   LIGHT.DAT/MONO.DAT is a darker version of every palette colour, so its average luminance relative
+   to row 0 is how bright the row is. Those 16 factors (4096 = full) give the brightness next to the
+   player and, through a fit A * (1 - x/D)^k, the shade D at which the light reaches black rather than
+   holding the table's darkest row. The falloff curves themselves (--light-mode smooth / inv-square) are functions of the
+   true distance. Refitted after the table is (re)loaded (update_fullbright_palette_mask sets the flag). */
+int g_shade_rows_dirty = 1;
+static double g_shade_row_factor[16] = {0};
+static double g_fit_a = 4096.0, g_fit_d = 16.0, g_fit_k = 1.0;
+
+static int palette_luminance(int texel)
+{
+  unsigned int c = (unsigned short)(&g_palette_rgb565)[texel];
+  unsigned int r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+  return (int)(r * 8 * 77 + g * 4 * 150 + b * 8 * 29);
+}
+
+/* Least-squares fit of A, D and k to the row factors by grid search over D and k (A is closed form). */
+static void fit_formula_to_rows(void)
+{
+  double best = 1e30, d, k;
+  int row;
+  for (d = 15.5; d <= 28.0; d += 0.25) {
+    for (k = 0.4; k <= 4.0; k += 0.05) {
+      double num = 0.0, den = 0.0, a, err = 0.0;
+      for (row = 0; row < 16; row++) {
+        double b = pow(1.0 - row / d, k);
+        num += b * g_shade_row_factor[row];
+        den += b * b;
+      }
+      a = num / den;
+      if (a > 4096.0) a = 4096.0;
+      for (row = 0; row < 16; row++) {
+        double e = a * pow(1.0 - row / d, k) - g_shade_row_factor[row];
+        err += e * e;
+      }
+      if (err < best) { best = err; g_fit_a = a; g_fit_d = d; g_fit_k = k; }
+    }
+  }
+}
+
+static void rebuild_shade_row_factors(void)
+{
+  long total[16];
+  int row, texel;
+  g_shade_rows_dirty = 0;
+  for (row = 0; row < 16; row++) {
+    total[row] = 0;
+    for (texel = 1; texel < 256; texel++)
+      total[row] += palette_luminance((byte)DAT_0024fa2c[row * 256 + texel]);
+  }
+  for (row = 0; row < 16; row++) {
+    double f = total[0] > 0 ? (double)total[row] * 4096.0 / (double)total[0] : 4096.0;
+    if (f > 4096.0) f = 4096.0;
+    if (row > 0 && f > g_shade_row_factor[row - 1]) f = g_shade_row_factor[row - 1];
+    g_shade_row_factor[row] = f;
+  }
+  fit_formula_to_rows();
+}
+
+/* The falloff curves (light mode "smooth", the default, and "inv-square") are textbook functions of the true distance from the player,
+   in tiles. Both keep the near brightness of the level's start row and reach black at the shade D of the
+   fit, converted back to tiles through the level's falloff and offset. */
+static double light_max_distance_tiles(void)
+{
+  double falloff = DAT_0025063c < 1 ? 1 : DAT_0025063c;
+  double m = (g_fit_d - DAT_0025064c - DAT_002506dc) * 2048.0 / falloff / 256.0;
+  return m < 0.25 ? 0.25 : m;
+}
+
+static double near_start_factor(void)
+{
+  int init = DAT_0025064c;
+  return g_shade_row_factor[init < 0 ? 0 : init > 15 ? 15 : init];
+}
+
+/* Mode "inv-square": power / (1 + d^2), shifted and rescaled so it reaches exactly zero at the maximum distance. */
+static double inverse_square_factor(double d_tiles)
+{
+  double m = light_max_distance_tiles(), edge, v;
+  if (d_tiles >= m) return 0.0;
+  edge = 1.0 / (1.0 + m * m);
+  v = (1.0 / (1.0 + d_tiles * d_tiles) - edge) / (1.0 - edge);
+  return near_start_factor() * v;
+}
+
+/* Mode "smooth" (default): (1 - s^2)^2 / (1 + F s^2), s = d / max distance, F = max distance / 1.3.
+   The windowed attenuation from https://lisyarus.github.io/blog/posts/point-light-attenuation.html: it is 1 at
+   the light, reaches exactly 0 at the maximum distance, and eases out there. */
+static double windowed_factor(double d_tiles)
+{
+  double m = light_max_distance_tiles(), s, s2, w;
+  if (d_tiles >= m) return 0.0;
+  s = d_tiles / m;
+  s2 = s * s;
+  w = 1.0 - s2;
+  return near_start_factor() * (w * w) / (1.0 + (m / 1.3) * s2);
+}
+
+/* Brightness factor (0..4096) at the span's radial distance, in 4096*w units (world units * 4096/1500).
+   The light mode picks the curve; "dos" never gets here. */
+static int dos_shade_factor(int light_distance)
+{
+  double tiles = light_distance * 1500.0 / 4096.0 / 256.0, f;
+  if (g_shade_rows_dirty) rebuild_shade_row_factors();
+  f = g_opts.light_mode && strcasecmp(g_opts.light_mode, "inv-square") == 0 ? inverse_square_factor(tiles) : windowed_factor(tiles);
+  return f > 4096.0 ? 4096 : (int)f;
+}
+
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
    (ray_x, ray_y) is the pixel's offset from screen centre in focal-length units. With --extralights off
    (or an empty light list) this is exactly the player's light: the DOS shade table when `dos_light_mode`,
@@ -166,15 +276,13 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     return (unsigned short)(&g_palette_rgb565)[texel];
   }
   else {
-    int index = ((light_distance >> 4) + (int)DAT_000842b0) * 0x10000 >> 0x10;
+    /* The DOS brightness and light distance as a smooth RGB scale (see dos_shade_factor). */
     unsigned int colour;
     int factor;
     int round;
     int red, green, blue;
-    if (index < 0) index = 0;
     colour = (unsigned int)(unsigned short)(&g_palette_rgb565)[texel];
-    if (0x9f < (short)index) index = 0x9f;
-    factor = (int)(&DAT_000b5638)[(short)index];
+    factor = DAT_0024fa2c ? dos_shade_factor(light_distance) : 4096;
     if (use_extra) {
       /* Same falloff table, indexed by the distance to each light scaled so that the table's last
          entry lands on the light's radius; the contributions add up, capped at full brightness. */
