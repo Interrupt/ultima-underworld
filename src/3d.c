@@ -705,10 +705,17 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
       iVar6 = ordint_divmod(local_38,0x1000000).quot;
       iVar12 = (local_34 >> 6) * iVar6 >> 0x12;
       bVar1 = shade;
-      if ((texture_pixels != 0) && (-1 < iVar12)) {
-        for (iVar12 = (int)(iVar12) * texture_stride + ((iVar14 >> 6) * iVar6 >> 0x12); texture_size < iVar12;
+      if (texture_pixels != 0 && texture_size > 0) {
+        /* HACK: a pixel whose centre lands just outside the polygon's texture rectangle (the edges
+           round up to whole scanlines, and axis-aligned views land v/u right on the boundary) used to
+           take the flat `shade` colour for a negative row, painting a stripe along the top edge of
+           the texture, or read one byte past the end of the texture when the index hit exactly
+           texture_size. Clamp to the first texel instead and wrap with `>=`. */
+        if (iVar12 < 0) iVar12 = 0;
+        for (iVar12 = (int)(iVar12) * texture_stride + ((iVar14 >> 6) * iVar6 >> 0x12); texture_size <= iVar12;
             iVar12 = iVar12 - texture_size) {
         }
+        if (iVar12 < 0) iVar12 = 0;
         bVar1 = *(byte *)(iVar12 + texture_pixels);
       }
       if (bVar1 != 0) {
@@ -1519,6 +1526,14 @@ void render_dungeon_view_frame()
   DAT_00110fc0 = DAT_00110fc0 + 1;
   set_viewport_clip_rect(0,0,DAT_0023b020 + -1,DAT_0023aed4 + -1);
   set_viewport_clip_rect(0x34,0x13,DAT_0023b020 + 0x33,DAT_0023aed4 + 0x12);
+  if (DAT_0023b830 != 0 && DAT_0023cca0 != 0) {
+    /* A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
+       uncovered would keep the previous frame's ids (a hall-of-mirrors smear in the pick view, and
+       clicks there picking whatever used to be drawn). Clear the viewport to "nothing" first. */
+    int row;
+    for (row = 0; row < DAT_0023aed4; row++)
+      memset(DAT_0023cca0 + (0x13 + row) * 0x140 + 0x34, 0, (size_t)DAT_0023b020);
+  }
   render_dungeon_view();
   set_viewport_clip_rect(0,0,0x13f,199);
 }
