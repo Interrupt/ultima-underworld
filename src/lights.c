@@ -110,7 +110,7 @@ void extra_lights_transform_to_eye(void)
    LIGHT.DAT/MONO.DAT is a darker version of every palette colour, so its average luminance relative
    to row 0 is how bright the row is. Those 16 factors (4096 = full) give the brightness next to the
    player and, through a fit A * (1 - x/D)^k, the shade D at which the light reaches black rather than
-   holding the table's darkest row. The falloff curves themselves (--light-mode smooth / inv-square) are functions of the
+   holding the table's darkest row. The falloff curves themselves (--light-mode smooth / linear) are functions of the
    true distance. Refitted after the table is (re)loaded (update_fullbright_palette_mask sets the flag). */
 int g_shade_rows_dirty = 1;
 static double g_shade_row_factor[16] = {0};
@@ -166,7 +166,7 @@ static void rebuild_shade_row_factors(void)
   fit_formula_to_rows();
 }
 
-/* The falloff curves (light mode "smooth", the default, and "inv-square") are textbook functions of the true distance from the player,
+/* The falloff curves (light modes "smooth", the default, and "linear") are textbook functions of the true distance from the player,
    in tiles. Both keep the near brightness of the level's start row and reach black at the shade D of the
    fit, converted back to tiles through the level's falloff and offset. */
 static double light_max_distance_tiles(void)
@@ -182,16 +182,6 @@ static double near_start_factor(void)
   return g_shade_row_factor[init < 0 ? 0 : init > 15 ? 15 : init];
 }
 
-/* Mode "inv-square": power / (1 + d^2), shifted and rescaled so it reaches exactly zero at the maximum distance. */
-static double inverse_square_factor(double d_tiles)
-{
-  double m = light_max_distance_tiles(), edge, v;
-  if (d_tiles >= m) return 0.0;
-  edge = 1.0 / (1.0 + m * m);
-  v = (1.0 / (1.0 + d_tiles * d_tiles) - edge) / (1.0 - edge);
-  return near_start_factor() * v;
-}
-
 /* Mode "smooth" (default): (1 - s^2)^2 / (1 + F s^2), s = d / max distance, F = max distance / 1.3.
    The windowed attenuation from https://lisyarus.github.io/blog/posts/point-light-attenuation.html: it is 1 at
    the light, reaches exactly 0 at the maximum distance, and eases out there. */
@@ -205,13 +195,42 @@ static double windowed_factor(double d_tiles)
   return near_start_factor() * (w * w) / (1.0 + (m / 1.3) * s2);
 }
 
+/* Mode "linear": the DOS shade rows' brightness factors, interpolated linearly. Distance maps to a fractional shade row
+   exactly as the DOS table does (max(0, world*F/2048 + offset) + start); the two nearest rows' factors are averaged
+   by the fraction, and a final knot of zero at the fit's black shade D carries the last row down to black. Same near
+   brightness and black distance as the other modes, following the table's own (near-linear) steps with no extra shaping. */
+static double linear_factor(double d_tiles)
+{
+  const double far_scale = 1.23;
+  double falloff = DAT_0025063c < 1 ? 1 : DAT_0025063c;
+  double shade = d_tiles * 256.0 * falloff / 2048.0 + DAT_002506dc, lo_f, hi_f, t;
+  int row;
+  if (shade < 0.0) shade = 0.0;
+  /* HACK: not original behaviour -- the averaged row brightnesses stay brighter than the DOS table's per-colour rows, which
+     go black around shade 14.6 rather than at the fit's D (~18). Bring the whole falloff in by this factor (measured from
+     the start shade) so the linear ramp ends where the DOS lighting does. */
+  shade = shade * far_scale + DAT_0025064c;
+  if (shade >= g_fit_d) return 0.0;
+  row = (int)shade;
+  t = shade - row;
+  lo_f = g_shade_row_factor[row > 15 ? 15 : row];
+  if (row >= 15) {
+    /* Past the last table row: fall from its brightness to zero at D. */
+    double span = g_fit_d - 15.0;
+    return span <= 0.0 ? 0.0 : lo_f * (1.0 - (shade - 15.0) / span);
+  }
+  hi_f = g_shade_row_factor[row + 1];
+  return lo_f + (hi_f - lo_f) * t;
+}
+
 /* Brightness factor (0..4096) at the span's radial distance, in 4096*w units (world units * 4096/1500).
    The light mode picks the curve; "dos" never gets here. */
 static int dos_shade_factor(int light_distance)
 {
   double tiles = light_distance * 1500.0 / 4096.0 / 256.0, f;
   if (g_shade_rows_dirty) rebuild_shade_row_factors();
-  f = g_opts.light_mode && strcasecmp(g_opts.light_mode, "inv-square") == 0 ? inverse_square_factor(tiles) : windowed_factor(tiles);
+  if (g_opts.light_mode && strcasecmp(g_opts.light_mode, "linear") == 0) f = linear_factor(tiles);
+  else f = windowed_factor(tiles);
   return f > 4096.0 ? 4096 : (int)f;
 }
 

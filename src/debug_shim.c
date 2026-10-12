@@ -161,13 +161,13 @@ static void populate_debug_texture_inspector(int pick)
    subsystem toggle here, not at a second call site -- there's exactly
    one field list live at a time. */
 /* The surface lighting modes the panel steps through (--light-mode names). */
-static const char *const k_light_modes[] = { "smooth", "inv-square", "dos" };
+static const char *const k_light_modes[] = { "smooth", "linear", "dos" };
 
 static int current_light_mode_index(void)
 {
   const char *m = g_opts.light_mode;
   if (m && strcasecmp(m, "dos") == 0) return 2;
-  if (m && strcasecmp(m, "inv-square") == 0) return 1;
+  if (m && strcasecmp(m, "linear") == 0) return 1;
   return 0;
 }
 
@@ -203,6 +203,7 @@ void populate_debug_panel(void)
   dbgui_field_toggle("3d_objects", &g_uw_3d_objects_enabled);
   dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
   dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
+  dbgui_field_toggle("extra_lights", &g_opts.extralights);
   {
     /* --light-mode is a string, the panel field an index: apply the index when the panel changed it,
        otherwise follow the option (it can also change from the console or the command line). */
