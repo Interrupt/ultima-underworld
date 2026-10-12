@@ -516,3 +516,5 @@ ushort wall_spark_height(short pitch)
     TEST_ASSERT_EQUAL_HEX16(0x1cb, wall_effect[0]);
     return wall_effect[1] & 0x7f;
 }
+
+int g_debug_godmode;

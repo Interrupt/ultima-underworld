@@ -388,7 +388,9 @@ void use_light_source(ushort *object, int turn_on)
       if ((uVar10 & 0xf) < 4) {
         *(byte *)object = (bVar2 + 4 ^ bVar2) & 0xf ^ bVar2;
         *(byte *)((char *)object + 1) = bVar1;
-        set_ambient_bias_with_light(0);
+        /* HACK: pass the lit light's real brightness (see set_ambient_bias_with_light). */
+        g_scratch_object_ptr = (uw_object_hdr_t *)object;
+        set_ambient_bias_with_light(((uw_light_type_props_t *)get_scanned_object_class_effect_ptr())->brightness);
       }
       else {
         *(byte *)object = (bVar2 - 4 ^ bVar2) & 0xf ^ bVar2;

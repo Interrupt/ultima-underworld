@@ -183,32 +183,40 @@ static void test_text_field_is_read_only(void)
     TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(before[1], vals[1], "selection did not pass through the text row to f1");
 }
 
-/* A panel that shrinks between frames (toggle panel -> object/texture
- * inspector, in real usage) must still clear the rows a taller earlier
- * panel left behind -- the fill is the only thing that ever repaints
- * that screen region (see dbgui_draw's own comment), so if it only
- * covers the CURRENT, smaller row count, an old row's text is left
- * sitting there as a stale ghost (confirmed live: picking a wall left
- * a leftover "pick_diag:" row below a 3-row Texture Inspector). */
+/* When the drawn panel's size changes between frames (any cause: panel switch, an inspector whose
+ * row count varies per object), dbgui_draw must invalidate -- restore + have the game repaint the HUD
+ * via the close hook -- and then fill only the new size. An unchanged size must not invalidate. */
 extern int g_last_bg_fill_y1;
-static void test_shrinking_panel_clears_the_now_unused_rows(void)
+static int g_inval_hook_calls;
+static void count_inval_hook(void) { g_inval_hook_calls++; }
+
+static void draw_panel_with_fields(int n)
 {
-    dbgui_begin("Tall Panel");
-    dbgui_field_toggle("f0", &vals[0]);
-    dbgui_field_toggle("f1", &vals[1]);
-    dbgui_field_toggle("f2", &vals[2]);
-    dbgui_field_toggle("f3", &vals[3]);
+    dbgui_begin("Panel");
+    for (int i = 0; i < n; i++) dbgui_field_toggle("f", &vals[i]);
     dbgui_end();
     dbgui_draw();
+}
+
+static void test_panel_size_change_invalidates_and_fills_own_size(void)
+{
+    g_inval_hook_calls = 0;
+    dbgui_console_set_close_hook(count_inval_hook);
+    draw_panel_with_fields(4);
     int tall_y1 = g_last_bg_fill_y1;
     TEST_ASSERT_GREATER_THAN_INT_MESSAGE(0, tall_y1, "background fill never ran");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(0, g_inval_hook_calls, "first draw invalidated");
 
-    dbgui_begin("Short Panel");
-    dbgui_field_toggle("g0", &vals[0]);
-    dbgui_end();
-    dbgui_draw();
-    TEST_ASSERT_GREATER_OR_EQUAL_INT_MESSAGE(tall_y1, g_last_bg_fill_y1,
-        "shrinking panel's fill didn't cover the taller previous panel's rows");
+    draw_panel_with_fields(4);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(0, g_inval_hook_calls, "same-size redraw invalidated");
+
+    draw_panel_with_fields(1);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, g_inval_hook_calls, "shrinking did not invalidate");
+    TEST_ASSERT_LESS_THAN_INT_MESSAGE(tall_y1, g_last_bg_fill_y1, "fill still covers the old height");
+
+    draw_panel_with_fields(4);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(2, g_inval_hook_calls, "growing did not invalidate");
+    dbgui_console_set_close_hook(0);
 }
 
 /* A toggle-action row (debug panel's door "locked" field, in real
@@ -409,7 +417,7 @@ int main(void)
     RUN_TEST(test_mouse_click_dispatches_the_clicked_row);
     RUN_TEST(test_mouse_click_outside_panel_dispatches_nothing);
     RUN_TEST(test_text_field_is_read_only);
-    RUN_TEST(test_shrinking_panel_clears_the_now_unused_rows);
+    RUN_TEST(test_panel_size_change_invalidates_and_fills_own_size);
     RUN_TEST(test_toggle_action_field_calls_its_callback);
     RUN_TEST(test_console_button_style_open_makes_console_active);
     RUN_TEST(test_console_submits_typed_line_to_handler);

@@ -138,13 +138,13 @@ static void test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid(void)
         slots[5] = lights[0]; lights[0][2] = 63; lights[0][0] = 0x91;
         use_light_source(lights[0], 1);
         TEST_ASSERT_EQUAL_HEX16(0x95, lights[0][0]);
-        TEST_ASSERT_EQUAL_INT(-24, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-34, DAT_000842b0); /* -32 - the torch's light level (2) */
         TEST_ASSERT_EQUAL_HEX8(0x20, (byte)player[99]);
         TEST_ASSERT_EQUAL_INT(2, DAT_000872a0);
         TEST_ASSERT_GREATER_THAN_INT(0, rebuilds);
         use_light_source(lights[0], 1);
         TEST_ASSERT_EQUAL_HEX16(0x91, lights[0][0]);
-        TEST_ASSERT_EQUAL_INT(8, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0); /* level 0 again */
     }
 }
 static void test_arm_surfaces_scale_rgb_by_the_dos_shade(void)
@@ -242,7 +242,7 @@ static void test_ambient_bias_calibration_restores_default_and_env_override(void
     options_set("ambient-bias-reduction", "8");
     set_ambient_bias_without_light(0); TEST_ASSERT_EQUAL_INT(16, DAT_000842b0);
 }
-static void test_arm_light_types_step_bias_by_sixteen_and_keep_calibration(void)
+static void test_light_types_pass_their_light_level_and_keep_calibration(void)
 {
     const int strengths[] = {4,2,1,3}; /* lantern, torch, candle, taper */
     slots[5] = lights[0]; lights[0][2] = 63;
@@ -250,20 +250,20 @@ static void test_arm_light_types_step_bias_by_sixteen_and_keep_calibration(void)
     for (int type = 0; type < 4; type++) {
         lights[0][0] = 0x90 + type;
         use_light_source(lights[0], 1);
-        TEST_ASSERT_EQUAL_INT(72 - strengths[type]*16, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(32 - strengths[type], DAT_000842b0);
         use_light_source(lights[0], 1);
-        TEST_ASSERT_EQUAL_INT(72, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(32, DAT_000842b0);
     }
     /* Source index 3 must not affect the strength calculation. */
     slots[5] = NULL; slots[8] = lights[1]; lights[1][0] = 0x95;
     refresh_player_equipment_effects();
     TEST_ASSERT_EQUAL_HEX8(0x23, (byte)player[99]);
-    TEST_ASSERT_EQUAL_INT(40, DAT_000842b0);
+    TEST_ASSERT_EQUAL_INT(30, DAT_000842b0);
     /* An intrinsic light stronger than the torch wins, using the same steps. */
     player[0x5f] = 0x40; player[0x3e] = 0x30;
-    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(24, DAT_000842b0);
+    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(29, DAT_000842b0);
     options_set("ambient-bias-reduction", "0");
-    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(-40, DAT_000842b0);
+    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(-35, DAT_000842b0);
 }
 static void test_dos_shading_uses_radial_distance_horizontally_and_vertically(void)
 {
@@ -457,9 +457,8 @@ static void test_dos_mode_is_case_insensitive_for_equipment_and_surface_shading(
         DAT_000842b0 = 37;
         refresh_player_equipment_effects();
         assert_mode(2, 39, 2, -2);
-        /* Original light scanning sets -32. ARM-only strength calibration
-           would overwrite that with -24; DOS must skip that final step. */
-        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0);
+        /* The light level (2) is passed to set_ambient_bias_with_light in both modes. */
+        TEST_ASSERT_EQUAL_INT(-34, DAT_000842b0);
         ushort expected = g_palette_rgb565_backing[(byte)mappings[5*256+88]];
         TEST_ASSERT_EQUAL_HEX16(expected, draw_at_world_depth(272));
         /* DOS ignores ARM brightness calibration, regardless of spelling. */
@@ -468,7 +467,7 @@ static void test_dos_mode_is_case_insensitive_for_equipment_and_surface_shading(
         lights[0][0] = 0x91;
         refresh_player_equipment_effects();
         assert_mode(0, 56, 5, -3);
-        TEST_ASSERT_EQUAL_INT(-80, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0); /* level 0: the refresh passes it in DOS mode too */
     }
 }
 static void test_fullbright_mask_is_the_indices_light_dat_never_changes(void)
@@ -611,7 +610,7 @@ int main(void)
     RUN_TEST(test_arm_falloffs_are_monotone_and_reach_black_at_the_same_distance);
     RUN_TEST(test_arm_falloff_never_brightens_with_distance_and_ends_in_black);
     RUN_TEST(test_ambient_bias_calibration_restores_default_and_env_override);
-    RUN_TEST(test_arm_light_types_step_bias_by_sixteen_and_keep_calibration);
+    RUN_TEST(test_light_types_pass_their_light_level_and_keep_calibration);
     RUN_TEST(test_fullbright_mask_is_the_indices_light_dat_never_changes);
     RUN_TEST(test_arm_fullbright_colours_skip_distance_falloff_unless_disabled);
     RUN_TEST(test_extra_lights_are_ignored_unless_enabled);

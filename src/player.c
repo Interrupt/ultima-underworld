@@ -51,6 +51,8 @@ byte DAT_0020208c;
 int g_debug_fly;
 int g_debug_farsight;
 int g_debug_noclip;
+/* GODMODE: the player's hp never reaches 0 and spells cost no mana (combat.c, hud.c, object_actions.c). */
+int g_debug_godmode;
 undefined2 DAT_00203304;
 undefined1 DAT_00203303;
 short DAT_00202078;
@@ -730,8 +732,9 @@ LAB_000669a8:
       bVar1 = iVar7->brightness;
       if (bVar10 < bVar1) {
         /* ARM 0x66a54 sets r0 = 0 before the call at 0x66a5c;
-           Ghidra omitted the reused-register argument. */
-        set_ambient_bias_with_light(0);
+           Ghidra omitted the reused-register argument. HACK: the port passes the light's real
+           brightness (see set_ambient_bias_with_light). */
+        set_ambient_bias_with_light(bVar1);
         iVar5 = iVar4;
         bVar9 = bVar1;
         bVar10 = bVar1;
@@ -770,31 +773,10 @@ LAB_000669a8:
     iVar4 = (iVar4 + 1) * 0x10000 >> 0x10;
   } while (iVar4 < 0xb);
   apply_equipment_effect_penalties(local_30);
-  if (DAT_002020d8 == 0) {
-    /* Keep the tile-light grid in sync in both render modes. ARM's RGB
-       bias controls drawing, but does not update the SHADES.DAT grid
-       used to decide which tiles the automap can discover. */
-    load_shading_level_config(*(byte *)(DAT_00086df8 + 99) >> 4);
-    const char *light_mode = g_opts.light_mode;
-    if (!light_mode || strcasecmp(light_mode, "dos") != 0) {
-      /* HACK: the ARM build only distinguished lit from unlit here.
-         Restore per-strength brightness: start at the unlit bias (+8),
-         subtract 16 for every light level, and retain the calibration
-         adjustment. The low nibble identifies the source, not strength. */
-      set_ambient_bias_without_light((*(byte *)(DAT_00086df8 + 99) >> 4) * 16);
-    }
-  }
-  else {
-    load_shading_level_config(6);
-    /* Far sight lights the view at level 6 regardless of carried light (the shading config above
-       is all the ARM build does); without a matching ambient bias the port's view stays dark. */
-    {
-      const char *light_mode = g_opts.light_mode;
-      if (!light_mode || strcasecmp(light_mode, "dos") != 0) {
-        set_ambient_bias_without_light(6 * 16);
-      }
-    }
-  }
+  /* The light level (0-7) selects the SHADES.DAT row in both render modes; far sight lights the view
+     at level 6 regardless of carried light. Applying it also keeps the tile-light grid in sync, which
+     decides which tiles the automap can discover. */
+  set_ambient_bias_with_light(DAT_002020d8 == 0 ? *(byte *)(DAT_00086df8 + 99) >> 4 : 6);
   update_screen_flicker_effect((*(byte *)(DAT_00086df8 + 0x61) & 0xc) != 0);
   force_locomotion_state_refresh();
   apply_movement_mode_profile(0xff);
@@ -3402,6 +3384,7 @@ void handle_player_death_and_menu_transition(short reason)
 void apply_level9_random_hazard_tick()
 
 {
+  if (g_debug_godmode) return;   /* the one hit-point write that bypasses apply_damage_to_object */
   int uw_ord2005_rem_106 = 0; int uw_ord2005_rem_107 = 0; int uw_ord2005_rem_108 = 0; int uw_ord2005_rem_109 = 0; int uw_ord2005_rem_110 = 0;
   uint uVar1;
   ushort uVar2;
@@ -3851,4 +3834,44 @@ int dungeon_view_anim_tick()
     }
   }
   return 1;
+}
+
+
+/* Debug console: PLAYERLEVEL. Sets the level byte and the XP that level starts at, then refreshes
+   max hp/mana (full refill) and the HUD. Returns the clamped level. */
+int debug_set_player_level(int level)
+{
+  if (level < 1) level = 1;
+  if (level > 16) level = 16;
+  *(byte *)(DAT_00086df8 + 0x3d) = (byte)level;
+  uint xp = (uint)DAT_00086e87_backing[level - 1] * 500;
+  DAT_00086df8[0x4e] = (char)xp;
+  DAT_00086df8[0x4f] = (char)(xp >> 8);
+  DAT_00086df8[0x50] = (char)(xp >> 16);
+  DAT_00086df8[0x51] = (char)(xp >> 24);
+  recalculate_player_stats(1);
+  g_player_object->npc_hp = *(byte *)(DAT_0023be74 + 4);
+  refresh_experience_display();
+  return level;
+}
+
+/* Debug console: SETSKILL. Skills are the 20 bytes at DAT_00086df8 + 0x21 (max 30). */
+const char *const g_debug_skill_names[DEBUG_SKILL_COUNT] = {
+  "attack", "defense", "unarmed", "sword", "axe", "mace", "missile", "mana", "lore", "casting",
+  "traps", "search", "track", "sneak", "repair", "charm", "picklock", "acrobat", "appraise", "swimming",
+};
+
+int debug_set_skill(int index, int value)
+{
+  if (index < 0 || index >= DEBUG_SKILL_COUNT) return -1;
+  if (value < 0) value = 0;
+  if (value > 30) value = 30;
+  *(byte *)(DAT_00086df8 + 0x21 + index) = (byte)value;
+  return value;
+}
+
+void debug_skills_changed(void)
+{
+  recalculate_player_stats(0);   /* max mana depends on the mana skill */
+  refresh_experience_display();
 }

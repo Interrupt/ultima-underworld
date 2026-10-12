@@ -57,9 +57,8 @@ static int g_selected = 0;
 static int g_editing = 0;
 static char g_edit_buf[32];
 static int g_edit_len = 0;
-/* How many rows dbgui_draw's own background fill covered last time it
-   ran -- see its own comment on why the fill has to track this instead
-   of just this frame's g_field_count. */
+/* Row count of the panel currently drawn (0 = nothing drawn); a change triggers an invalidate in
+   dbgui_draw. */
 static int g_last_rows = 0;
 
 /* Real pixel save/restore for the panel's own screen region, so closing it doesn't leave stale
@@ -96,8 +95,9 @@ static void dbgui_restore_backing()
     memcpy(&fb[fy * DBGUI_FB_STRIDE + DBGUI_PANEL_X], &g_saved_px[y * DBGUI_PANEL_W],
            DBGUI_PANEL_W * sizeof(unsigned short));
   }
-  dirty_rect_union(DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W,
-                    DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H);
+  /* dirty_rect_union takes (y0, y1, x0, x1), as bitmap.c's own callers pass it -- not (x0, x1, y0, y1). */
+  dirty_rect_union(DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H,
+                    DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W);
   g_saved_valid = 0;
 }
 
@@ -116,10 +116,18 @@ static void dbgui_restore_backing()
    this region afterward. Call this whenever the caller is about to
    switch content and the panel was already visible (not on a fresh
    open -- dbgui_toggle's own save already started it clean then). */
+static void dbgui_con_close_redraw(void);
+
 void dbgui_invalidate_region(void)
 {
   dbgui_restore_backing();
+  /* The saved pixels can be stale (the game redraws under the panel), so also have the game repaint
+     the HUD for the old panel's area -- matters when the new content is smaller. */
+  dbgui_con_close_redraw();
   dbgui_save_backing();
+  /* The old panel's rows are gone from the framebuffer now, so dbgui_draw's fill must not keep
+     covering max(old, new) rows -- that painted the old height as a gray block over the restored HUD. */
+  g_last_rows = 0;
 }
 
 /* SDL_Keycode values duplicated here (not #include <SDL.h>) to keep
@@ -146,10 +154,10 @@ void dbgui_invalidate_region(void)
 #define CON_ROW_H 8                       /* tighter than the panel's DBGUI_ROW_H */
 #define CON_ROWS 8                        /* log rows shown above the input row */
 #define CON_H (CON_ROW_H * (CON_ROWS + 1) + 4)
-#define CON_LOG_LINES 128
+#define CON_LOG_LINES 1024
 #define CON_LINE_MAX 120
 #define CON_INPUT_MAX 120
-#define CON_HIST_MAX 16
+#define CON_HIST_MAX 64
 
 static int g_console_open = 0;
 static char g_con_log[CON_LOG_LINES][CON_LINE_MAX];
@@ -199,7 +207,8 @@ void dbgui_console_set_close_hook(void (*hook)(void))
   g_con_close_hook = hook;
 }
 
-/* The saved pixels were captured when the console opened, so anything the game redrew underneath
+/* Debug-window redraw hook (registered by the owner via dbgui_console_set_close_hook): runs when
+   the console closes or the panel switches content. The saved pixels were captured when the console opened, so anything the game redrew underneath
    since (the inventory panel above all) would come back stale or black -- let the game repaint the
    region it owns. */
 static void dbgui_con_close_redraw(void)
@@ -530,20 +539,13 @@ void dbgui_draw()
   }
   if (!g_visible || g_field_count == 0) return;
 
-  /* The background fill below covers max(this frame's rows, last
-     frame's rows), not just this frame's -- the panel can legitimately
-     get SHORTER between one frame and the next now (toggle panel ->
-     object/texture inspector, 4 rows -> 3), and without this the newly
-     -uncovered row(s) from the taller previous panel are never
-     repainted by anything (this fill is the only thing that ever
-     touches that screen region -- see dbgui_toggle's own save/restore
-     comment), so their old text just sits there as a stale ghost row
-     forever. Confirmed live: picking a wall left a leftover
-     "pick_diag:" row below the 3-row Texture Inspector's own "desc"
-     row. Shrinks to the real size cleanly one frame later once
-     g_last_rows itself catches down to g_field_count. */
-  int fill_rows = g_field_count > g_last_rows ? g_field_count : g_last_rows;
-  int panel_h = DBGUI_ROW_H * (fill_rows + 1) + 4;
+  /* The panel's height follows g_field_count, which can change at any time (the object inspector's
+     row count differs per object type, panels switch, ...). When the drawn size differs from what
+     was drawn last, put the real pixels back and have the game repaint the HUD under the old rect
+     first, so nothing from the old size is left behind; then fill only this frame's own size.
+     g_last_rows == 0 means nothing is currently drawn (fresh open / just invalidated). */
+  if (g_last_rows != 0 && g_last_rows != g_field_count) dbgui_invalidate_region();
+  int panel_h = DBGUI_ROW_H * (g_field_count + 1) + 4;
   int x0 = DBGUI_PANEL_X, y0 = DBGUI_PANEL_Y;
   int x1 = x0 + DBGUI_PANEL_W, y1 = y0 + panel_h;
   g_last_rows = g_field_count;
@@ -634,6 +636,10 @@ void dbgui_toggle()
   }
   g_visible = !g_visible;
   g_editing = 0;
+  /* Whatever height the last panel had is gone (closed: restored below; opening: fresh save), so the
+     next draw's fill must start from its own row count, not max(old, new) -- else a small panel opened
+     after a big inspector paints the big one's height as gray over the HUD. */
+  g_last_rows = 0;
   /* Closing the panel stops it from drawing (dbgui_draw's own `if (!g_visible ...) return`), but
      the panel sits in the static golden-border UI chrome at the screen's top-left corner, outside
      the 3D viewport -- nothing else ever redraws that region... */

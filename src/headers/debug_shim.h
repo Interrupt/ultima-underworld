@@ -25,4 +25,13 @@ void uw_debug_dump_critter_sheet_once(void);
 /* Debug tool (--dump-sprite-frames / --dump-sprite-ids): dump individual sprites to standalone
    BMP files by real resource id. */
 void uw_debug_dump_sprite_frames_once(void);
+/* Console object commands: OBJIDS name lookup, SPAWNOBJ (returns 1 + tile), GIVEOBJ (returns slot, or
+   -1 bad id / -2 backpack full / -3 no object slot free). */
+void dbgui_object_name(int id, char *out, size_t n);
+int dbgui_spawn_object(int id, int *tile_x, int *tile_y);
+int dbgui_give_object(int id);
+int dbgui_all_runes(void);
+void dbgui_spell_name(int i, char *out, size_t n);
+int dbgui_spell_count(void);
+int dbgui_cast_spell(int i);
 #endif
