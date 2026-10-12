@@ -360,9 +360,7 @@ static const unsigned short DAT_000871b8_arr[14] = {
 static undefined DAT_0023c124_backing[4];
 #define DAT_0023c124 DAT_0023c124_backing[0]
 static short DAT_0023c254;
-/* Next frame (above 0x2098) of the full-charge gem's pulse, which runs 9..13 and wraps back to 9. It was
-   zero-initialised, so the first full charge after startup stepped through frames 0..8 (the charging gems) at
-   one frame per HUD tick -- seconds -- before the gem finally turned green. It starts at 9 like its resets. */
+/* Next frame (above 0x2098) of the full-charge gem pulse (9..13). Initial value 9 is from the original .data. */
 static short DAT_00087258 = 9;
 static short DAT_0023c258;
 static int DAT_0023c20c;
