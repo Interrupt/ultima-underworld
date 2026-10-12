@@ -557,6 +557,50 @@ static void test_extra_lights_light_the_dos_shade_table_rows_too(void)
     TEST_ASSERT_NOT_EQUAL(lit, dark);
 }
 
+/* --light-depth-rounding: DOS truncates each camera-space coordinate to 32 world units, sums the squares
+   in 16 bits and takes a 4-iteration integer square root (openabyss uw_rast_vertex_shade). */
+static int depth_for_world(double world) { return (int)(world * 4096.0 / 1500.0); }
+static int rounded_distance_units(int root) { return (int)(((long long)root * 32 * 4096 + 749) / 1500); }
+
+static void test_depth_rounding_follows_the_dos_vertex_shade_arithmetic(void)
+{
+    /* z = 1000 world units: 1000 >> 5 = 31, sum 961, Newton from 0x40: 39, 31, 31, 31. */
+    TEST_ASSERT_EQUAL_INT(rounded_distance_units(31), light_rounded_distance(depth_for_world(1000), 0, 0));
+    /* z = 40 world units: 1; sum 1; Newton from 0x40 only reaches 4 in four halvings. */
+    TEST_ASSERT_EQUAL_INT(rounded_distance_units(4), light_rounded_distance(depth_for_world(40), 0, 0));
+    /* z = 170 (>>5 = 5) with x = 400 (>>5 = 12): sum 169, Newton from 0x40: 33, 19, 13, 13. */
+    TEST_ASSERT_EQUAL_INT(rounded_distance_units(13),
+                          light_rounded_distance(depth_for_world(170), 400.0 / 170.0, 0));
+}
+static void test_depth_rounding_steps_in_32_world_units_and_wraps_in_16_bits(void)
+{
+    /* Everything within one 32-unit slice of z rounds to the same distance. */
+    TEST_ASSERT_EQUAL_INT(light_rounded_distance(depth_for_world(1030), 0, 0),
+                          light_rounded_distance(depth_for_world(1050), 0, 0));
+    TEST_ASSERT_NOT_EQUAL(light_rounded_distance(depth_for_world(1050), 0, 0),
+                          light_rounded_distance(depth_for_world(1070), 0, 0));
+    /* Past 255 slices the 16-bit sum wraps, as the DOS register does (z = 260 * 32). */
+    TEST_ASSERT_LESS_THAN_INT(light_rounded_distance(depth_for_world(255 * 32), 0, 0),
+                              light_rounded_distance(depth_for_world(260 * 32), 0, 0));
+}
+static void test_depth_rounding_makes_equal_slices_light_identically_in_every_mode(void)
+{
+    const char *modes[] = {"smooth", "linear", "dos"};
+    for (unsigned m = 0; m < 3; m++) {
+        options_set("light-mode", modes[m]);
+        options_set("light-depth-rounding", "1");
+        bool dos = m == 2;
+        TEST_ASSERT_EQUAL_HEX16(shade_span_pixel(88, depth_for_world(1030), 0, 0, 0, dos, false),
+                                shade_span_pixel(88, depth_for_world(1050), 0, 0, 0, dos, false));
+        options_unset("light-depth-rounding");
+    }
+}
+static void test_depth_rounding_is_off_by_default(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, g_opts.light_depth_rounding);
+    /* Off, the exact radial distance is used: depth 2000 straight ahead is 2000 units, not a 32-world-unit slice. */
+    TEST_ASSERT_NOT_EQUAL(light_rounded_distance(2000, 0, 0), 2000);
+}
 static void test_light_list_holds_eight_lights_and_drops_the_rest(void)
 {
     for (int i = 0; i < UW_MAX_EXTRA_LIGHTS; i++) TEST_ASSERT_EQUAL_INT(1, extra_light_add(i, 0, 0, 100, 1));
@@ -618,6 +662,10 @@ int main(void)
     RUN_TEST(test_extra_lights_are_ignored_unless_enabled);
     RUN_TEST(test_extra_light_falls_off_with_distance_and_stops_at_its_radius);
     RUN_TEST(test_extra_lights_light_the_dos_shade_table_rows_too);
+    RUN_TEST(test_depth_rounding_follows_the_dos_vertex_shade_arithmetic);
+    RUN_TEST(test_depth_rounding_steps_in_32_world_units_and_wraps_in_16_bits);
+    RUN_TEST(test_depth_rounding_makes_equal_slices_light_identically_in_every_mode);
+    RUN_TEST(test_depth_rounding_is_off_by_default);
     RUN_TEST(test_light_list_holds_eight_lights_and_drops_the_rest);
     RUN_TEST(test_light_sources_are_recognised_by_object_id);
     return UNITY_END();

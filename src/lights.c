@@ -234,6 +234,31 @@ static int dos_shade_factor(int light_distance)
   return f > 4096.0 ? 4096 : (int)f;
 }
 
+/* HACK: not original behaviour -- the --light-depth-rounding option. The DOS renderer shades per vertex from
+   the camera-space point (x, y, z): each coordinate is truncated with `sar ax,5` (32 world units), the three
+   squares are summed in a 16-bit register (wrapping past ~8160 world units), and the distance is a 4-iteration
+   Newton square root from 0x40 using integer `div` and `rcr` halving. Returns the light distance, in the same
+   4096*w units as the exact one, that this arithmetic gives for the pixel at `depth` (4096*w) and the given
+   ray offsets (reference: cimmerianpit/openabyss src/uw_shade.c uw_rast_vertex_shade, MIT). */
+int light_rounded_distance(int depth, double ray_x, double ray_y)
+{
+  const double world_per_unit = 1500.0 / 4096.0;
+  int coord[3], i;
+  unsigned short sum = 0, root = 0x40;
+  coord[0] = (int)(depth * ray_x * world_per_unit);
+  coord[1] = (int)(depth * ray_y * world_per_unit);
+  coord[2] = (int)(depth * world_per_unit);
+  for (i = 0; i < 3; i++) {
+    short a = (short)(coord[i] >> 5);
+    sum = (unsigned short)(sum + (unsigned short)((int)a * a));
+  }
+  for (i = 0; i < 4; i++) {
+    unsigned short q = (unsigned short)(sum / root);
+    root = (unsigned short)(((unsigned int)root + q) >> 1);
+  }
+  return (int)(((long long)root * 32 * 4096 + 749) / 1500);
+}
+
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
    (ray_x, ray_y) is the pixel's offset from screen centre in focal-length units. With --extralights off
    (or an empty light list) this is exactly the player's light: the DOS shade table when `dos_light_mode`,
@@ -244,6 +269,7 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
                                 bool dos_light_mode, bool fullbright_enabled)
 {
   int light_distance = (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
+  if (g_opts.light_depth_rounding) light_distance = light_rounded_distance(depth, ray_x, ray_y);
   bool use_extra = g_opts.extralights && g_extra_light_count > 0;
   double pixel[3];
   int i;
