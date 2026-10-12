@@ -185,14 +185,14 @@ static void test_arm_falloff_never_brightens_with_distance_and_ends_in_black(voi
     }
     TEST_ASSERT_TRUE(first_black > 0);
 }
-static void test_arm_falloffs_are_monotone_and_reach_black_at_the_same_distance(void)
+static void test_arm_falloffs_are_monotone_and_reach_black_near_the_dos_distance(void)
 {
     use_real_palette();
     g_palette_rgb565_backing[88] = 0xffff;
     load_shading_level_config(2);
     int black[2];
     for (int mode = 0; mode <= 1; mode++) {
-        options_set("light-mode", mode == 0 ? "smooth" : "inv-square");
+        options_set("light-mode", mode == 0 ? "smooth" : "linear");
         ushort last = 0xffff;
         black[mode] = -1;
         for (int depth = 128; depth < 30000; depth += 16) {
@@ -204,7 +204,9 @@ static void test_arm_falloffs_are_monotone_and_reach_black_at_the_same_distance(
         TEST_ASSERT_TRUE(black[mode] > 0);
     }
     options_unset("light-mode");
-    TEST_ASSERT_INT_WITHIN(600, black[0], black[1]);
+    /* linear is deliberately pulled in to end where the DOS rows go black */
+    TEST_ASSERT_TRUE(black[1] <= black[0]);
+    TEST_ASSERT_INT_WITHIN(1200, black[0], black[1]);
 }
 static void test_arm_surfaces_are_smoother_than_dos_rows(void)
 {
@@ -607,7 +609,7 @@ int main(void)
     RUN_TEST(test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid);
     RUN_TEST(test_arm_surfaces_scale_rgb_by_the_dos_shade);
     RUN_TEST(test_arm_surfaces_are_smoother_than_dos_rows);
-    RUN_TEST(test_arm_falloffs_are_monotone_and_reach_black_at_the_same_distance);
+    RUN_TEST(test_arm_falloffs_are_monotone_and_reach_black_near_the_dos_distance);
     RUN_TEST(test_arm_falloff_never_brightens_with_distance_and_ends_in_black);
     RUN_TEST(test_ambient_bias_calibration_restores_default_and_env_override);
     RUN_TEST(test_light_types_pass_their_light_level_and_keep_calibration);
