@@ -1645,8 +1645,10 @@ LAB_0006de54:
           psVar9 = (short *)(&DAT_0023c24c + iVar1);
           sVar4 = *psVar11;
           *psVar9 = *psVar9 + -1;
-          sprite_list_set_frame_id((int)sVar4,*psVar9); 
+          // HACK: not original behaviour -- was draw-then-check, which drew the frame one before
+          // this pose's first (the previous pose's last frame) for a tick before hiding the sprite.
           if (local_40[iVar6 * 3 + 1] <= *psVar9) {
+            sprite_list_set_frame_id((int)sVar4,*psVar9);
             return;
           }
           goto LAB_0006de54;
@@ -1654,12 +1656,14 @@ LAB_0006de54:
         psVar9 = (short *)(&DAT_0023c24c + iVar1);
         sVar4 = *psVar11;
         *psVar9 = *psVar9 + 1;
-        sprite_list_set_frame_id((int)sVar4,*psVar9); 
         iVar5 = iVar6 * 3 + 1;
+        // HACK: not original behaviour -- was draw-then-check, which drew the frame one past this
+        // pose's last (the next pose's frame, or the 12x28 vine frame) for a tick before wrapping.
         if (local_30[iVar5] < *psVar9) {
           *psVar9 = local_40[iVar5] + 2;
           *(short *)(&DAT_0023c124 + iVar1) = *(short *)(&DAT_0023c124 + iVar1) + -1;
         }
+        sprite_list_set_frame_id((int)sVar4,*psVar9);
         if ((&DAT_0023c11c)[iVar6] == '\0') {
           sVar4 = *(short *)(&DAT_0023c124 + iVar1);
           goto LAB_0006df34;
@@ -1734,8 +1738,10 @@ LAB_0006dd88:
       psVar9 = (short *)(&DAT_0023c24c + iVar1);
       sVar4 = *psVar11;
       *psVar9 = *psVar9 + 1;
-      sprite_list_set_frame_id((int)sVar4,*psVar9); 
+      // HACK: not original behaviour -- was draw-then-check: it drew frame local_30+1 (0x207b, the
+      // 12x28 vine frame) into the 37x23 dragon rect for a tick, a stray strip on screen.
       if ((int)*psVar9 <= (int)local_30[iVar6 * 3 + 2]) {
+        sprite_list_set_frame_id((int)sVar4,*psVar9);
         return;
       }
       *psVar9 = (short)((uint)((*psVar9 + -1) * 0x10000) >> 0x10);

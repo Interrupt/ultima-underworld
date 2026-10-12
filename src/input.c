@@ -444,32 +444,12 @@ void unregister_key_binding(short binding_id)
       if ((uint)(sVar6 - 1) < 128 && (uint)(iVar5 - 1) < 128) {
         g_click_region_handler[sVar6 - 1] = g_click_region_handler[iVar5 - 1];
       }
-      sVar6 = DAT_00202890[iVar5 * 9 + -9];
-      *(char *)psVar7 = (char)sVar6;
-      *(char *)((char *)psVar7 + 1) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[3];
-      *(char *)(psVar7 + 3) = (char)sVar6;
-      *(char *)((char *)psVar7 + 7) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[4];
-      *(char *)(psVar7 + 4) = (char)sVar6;
-      *(char *)((char *)psVar7 + 9) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[1];
-      *(char *)(psVar7 + 1) = (char)sVar6;
-      *(char *)((char *)psVar7 + 3) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[2];
-      *(char *)(psVar7 + 2) = (char)sVar6;
-      *(char *)((char *)psVar7 + 5) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[5];
-      *(char *)(psVar7 + 5) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xb) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[6];
-      *(char *)(psVar7 + 6) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xd) = (char)((ushort)sVar6 >> 8);
-      uVar4 = *(undefined4 *)(DAT_00202890 + 7);
-      *(char *)(psVar7 + 7) = (char)uVar4;
-      *(char *)((char *)psVar7 + 0xf) = (char)((uint)uVar4 >> 8);
-      *(char *)(psVar7 + 8) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)psVar7 + 0x11) = (char)((uint)uVar4 >> 0x18);
+      /* Was a field-by-field copy whose first field (the id) came from the LAST record but whose
+         others (`DAT_00202890[3]`, `[4]`, `[1]`, ... -- Ghidra dropped the last-record base) came
+         from record 0, so the surviving last region ended up with region 0's rect/mode/handler
+         and its own was lost: after a HUD panel swap unregistered a non-last region, click regions
+         stopped responding. Copy the whole 0x12-byte last record, as the keybinding branch does. */
+      memmove(psVar7,(char *)DAT_00202890 + (iVar5 - 1) * 0x12,0x12);
     }
     if (g_click_region_handler_n > 0) g_click_region_handler_n--;
     sVar6 = DAT_00202898;
