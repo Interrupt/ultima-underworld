@@ -1124,14 +1124,16 @@ static void demo_exec_line(char *p, Uint32 now) {
             return;
         }
         if (demo_match_cmd(p, "LIGHTLEVEL", &arg)) {
-            /* LIGHTLEVEL <n> -- set_ambient_bias_with_light(n), the call a light-level change makes. */
+            /* LIGHTLEVEL <0-7> -- set_ambient_bias_with_light(n): the light strength a lit light item
+               gives, i.e. the SHADES.DAT row. Held until the next equipment refresh recomputes it from
+               what is carried (lighting or snuffing a light, ...). */
             char *end;
-            long level = arg ? strtol(arg, &end, 0) : 0;
-            if (!arg || end == arg) {
-                demo_printf("[demo] usage: LIGHTLEVEL <n>\n");
+            long level = strtol(arg, &end, 0);
+            if (*arg == '\0' || *end != '\0' || level < 0 || level > 7) {
+                demo_printf("[cmd] usage: LIGHTLEVEL <0-7>\n");
             } else {
                 set_ambient_bias_with_light((char)level);
-                demo_printf("[demo] light level %d\n", (int)(char)level);
+                demo_printf("[cmd] light level %d\n", (int)level);
             }
             g_demo_next_tick = now;
             return;
@@ -1205,7 +1207,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "  OBJIDS | SPAWNOBJ <id> | GIVEOBJ <id> | ALLRUNES\n"
                     "  CASTSPELL [id]  (no id lists spells)\n"
                     "  OPTIONS | <option> [value]\n"
-                    "  LIGHTLEVEL <n>\n"
+                    "  LIGHTLEVEL <0-7>\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
                     "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"

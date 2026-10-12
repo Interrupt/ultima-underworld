@@ -261,7 +261,7 @@ static void test_arm_torch_updates_automap_light_and_extinguishing_restores_dark
     equip_visibility_test_torch(1);
     refresh_player_equipment_effects();
     TEST_ASSERT_EQUAL_INT(4, visibility_light_config_record);
-    TEST_ASSERT_EQUAL_INT(64, visibility_ambient_strength);
+    TEST_ASSERT_EQUAL_INT(4, visibility_ambient_strength); /* the light level passed to set_ambient_bias_with_light */
     TEST_ASSERT_LESS_THAN_INT(8, g_visibility_ring_buffer_backing[66 + 33] & 0xf);
     flood_at(tilemap,32 * 256 + 128,32 * 256 + 128,0);
     TEST_ASSERT_TRUE(visible_world_tile(32,32,32,36) & 0x80);
@@ -280,7 +280,7 @@ static void test_dos_torch_updates_the_same_automap_light_table(void)
     refresh_player_equipment_effects();
     options_unset("light-mode");
     TEST_ASSERT_EQUAL_INT(4, visibility_light_config_record);
-    TEST_ASSERT_EQUAL_INT(-1, visibility_ambient_strength);
+    TEST_ASSERT_EQUAL_INT(4, visibility_ambient_strength); /* DOS passes the same level */
     TEST_ASSERT_LESS_THAN_INT(8, g_visibility_ring_buffer_backing[66 + 33] & 0xf);
 }
 

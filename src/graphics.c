@@ -5,6 +5,7 @@
 #include "headers/options.h"
 #include "headers/gx_stub.h"
 #include "headers/debug.h"
+#include "headers/visibility.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -706,10 +707,17 @@ static int get_ambient_bias_reduction()
 
 
 // was FUN_00014324. ARM lighting bias: -32 when a light is active.
-// HACK: optional project calibration is added to the original formula;
-// default 64; an override of zero preserves ARM lighting. Negative values brighten it.
+// HACK: the port makes this the single place the light level is applied. `light_level` is the real
+// light strength, 0-7: the brightness byte of the light item (OBJECTS.DAT), which is also the row of
+// SHADES.DAT that sets the falloff, start shade and light range for both the ARM and DOS lighting
+// modes. It loads that row (a no-op if it is already loaded) before the bias is set. Optional
+// project calibration is added to the original formula; default 64; an override of zero preserves
+// ARM lighting. Negative values brighten it.
 void set_ambient_bias_with_light(char light_level)
 {
+  if (light_level < 0) light_level = 0;
+  if (light_level > 7) light_level = 7;   /* SHADES.DAT has rows 0-7 */
+  load_shading_level_config(light_level);
   DAT_000842b0 = -0x20 - light_level + get_ambient_bias_reduction();
 }
 

@@ -732,8 +732,9 @@ LAB_000669a8:
       bVar1 = iVar7->brightness;
       if (bVar10 < bVar1) {
         /* ARM 0x66a54 sets r0 = 0 before the call at 0x66a5c;
-           Ghidra omitted the reused-register argument. */
-        set_ambient_bias_with_light(0);
+           Ghidra omitted the reused-register argument. HACK: the port passes the light's real
+           brightness (see set_ambient_bias_with_light). */
+        set_ambient_bias_with_light(bVar1);
         iVar5 = iVar4;
         bVar9 = bVar1;
         bVar10 = bVar1;
@@ -772,31 +773,10 @@ LAB_000669a8:
     iVar4 = (iVar4 + 1) * 0x10000 >> 0x10;
   } while (iVar4 < 0xb);
   apply_equipment_effect_penalties(local_30);
-  if (DAT_002020d8 == 0) {
-    /* Keep the tile-light grid in sync in both render modes. ARM's RGB
-       bias controls drawing, but does not update the SHADES.DAT grid
-       used to decide which tiles the automap can discover. */
-    load_shading_level_config(*(byte *)(DAT_00086df8 + 99) >> 4);
-    const char *light_mode = g_opts.light_mode;
-    if (!light_mode || strcasecmp(light_mode, "dos") != 0) {
-      /* HACK: the ARM build only distinguished lit from unlit here.
-         Restore per-strength brightness: start at the unlit bias (+8),
-         subtract 16 for every light level, and retain the calibration
-         adjustment. The low nibble identifies the source, not strength. */
-      set_ambient_bias_without_light((*(byte *)(DAT_00086df8 + 99) >> 4) * 16);
-    }
-  }
-  else {
-    load_shading_level_config(6);
-    /* Far sight lights the view at level 6 regardless of carried light (the shading config above
-       is all the ARM build does); without a matching ambient bias the port's view stays dark. */
-    {
-      const char *light_mode = g_opts.light_mode;
-      if (!light_mode || strcasecmp(light_mode, "dos") != 0) {
-        set_ambient_bias_without_light(6 * 16);
-      }
-    }
-  }
+  /* The light level (0-7) selects the SHADES.DAT row in both render modes; far sight lights the view
+     at level 6 regardless of carried light. Applying it also keeps the tile-light grid in sync, which
+     decides which tiles the automap can discover. */
+  set_ambient_bias_with_light(DAT_002020d8 == 0 ? *(byte *)(DAT_00086df8 + 99) >> 4 : 6);
   update_screen_flicker_effect((*(byte *)(DAT_00086df8 + 0x61) & 0xc) != 0);
   force_locomotion_state_refresh();
   apply_movement_mode_profile(0xff);

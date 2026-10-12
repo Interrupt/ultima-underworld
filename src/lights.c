@@ -234,6 +234,10 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     pixel[1] = -depth * ray_y;
     pixel[2] = depth;
   }
+  /* Shading level 5 loads MONO.DAT instead of LIGHT.DAT (load_shading_level_config): the black and
+     * white view. DOS mode gets it through its row lookups below; the ARM-style RGB scaling does not use the
+     * table's rows, so map the texel through row 0 (full-brightness grey) first and scale that. */
+  if (!dos_light_mode && DAT_000872a0 == 5 && DAT_0024fa2c) texel = (byte)DAT_0024fa2c[texel];
   if (dos_light_mode) {
     /* HACK: palette shading uses SHADES.DAT's selected light strength.
        tmap supplies w = world_depth/1500. Edge setup scales 1/w by
