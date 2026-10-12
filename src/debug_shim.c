@@ -409,9 +409,10 @@ int dbgui_spawn_object(int id, int *tile_x, int *tile_y)
   return 1;
 }
 
-/* GIVEOBJ: put a new object in the first empty top-level backpack slot (slots 0xb..0x12). Returns the
+/* GIVEOBJ: put a new object in the first empty top-level backpack slot (slots 0xb..0x12); quantity > 1 sets the stack
+   size of a stackable object. Returns the
    slot, -1 for a bad id, -2 if the backpack is full, -3 if no object could be allocated. */
-int dbgui_give_object(int id)
+int dbgui_give_object(int id, int quantity)
 {
   int slot;
   if (id < 0 || id > 0x1ff) return -1;
@@ -421,6 +422,7 @@ int dbgui_give_object(int id)
   if (slot >= 0x13) return -2;
   uw_object_hdr_t *obj = dbgui_new_object(id);
   if (!obj) return -3;
+  if (quantity > 1 && obj->is_quant) obj->link = (quantity > 0x1ff ? 0x1ff : quantity) & 0x3ff;
   if (!place_held_item_in_empty_slot(obj, (short)slot)) {
     free_object_slot(obj);
     return -2;
@@ -438,7 +440,7 @@ int dbgui_all_runes(void)
     ushort *o = (ushort *)resolve_object_link(&g_equipped_items + slot * 2);
     if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
   }
-  if (!have_bag) result = dbgui_give_object(0x8f) >= 0 ? 1 : -2;
+  if (!have_bag) result = dbgui_give_object(0x8f, 1) >= 0 ? 1 : -2;
   DAT_00086df8[0x44] = (char)0xff;
   DAT_00086df8[0x45] = (char)0xff;
   DAT_00086df8[0x46] = (char)0xff;
