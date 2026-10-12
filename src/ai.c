@@ -1183,6 +1183,15 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
       apply_typed_damage_to_object(object,0,(int)(short)DAT_0010144c,(int)DAT_00101454,1,8);
     }
   }
+  /* HACK: not original behaviour -- --physics-fps keeps a sub-pitch vertical velocity (see
+     g_physics_vz_remainder) that the original's 64-unit pitch rounds away. A projectile with no
+     gravity (a magic missile) that has hit something has had its horizontal velocity zeroed but is
+     left a tiny vertical one, so it never settled and drifted slowly to the floor instead of being
+     destroyed. Zero it too, as the horizontal velocity already is. */
+  if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0 &&
+      (char *)object < DAT_002046c4 && position[10] == 0 && position[8] == 0) {
+    position[5] = 0;
+  }
   if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40) {
     if (DAT_002046c4 < (char *)object) {
       if ((position[10] != 0 || position[8] != 0) || position[5] != 0) {
