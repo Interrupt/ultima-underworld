@@ -72,6 +72,11 @@ int apply_placement_collision_sweep(void *snapshot, void *sweep_flags)
   /* HACK: same ushort-vs-byte pointer-scaling bug as the rest of this NPC-AI cluster this session
      (see [[ushort-byte-scaling-bug-npc-cluster]]) -- DAT_0010190c is `ushort *`... */
   *(char *)(snapshot + 0x12) = (char)(((DAT_0010190c->attack_pitch & 7) << 0x14) >> 0x10);
+  /* HACK: not original behaviour -- with --physics-fps a non-NPC mobile object integrates the finer
+     tick it is stepped at (speed class * subtick clock units) instead of speed class * 16. */
+  if ((DAT_0010190c->hdr.object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+    *(char *)(snapshot + 0x12) = (char)((DAT_0010190c->attack_pitch & 7) * physics_subtick_units());
+  }
   *(undefined1 *)(snapshot + 0x13) = 0;
   movement_collision_sweep(snapshot,sweep_flags);
   return 1;

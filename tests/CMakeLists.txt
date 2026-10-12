@@ -164,6 +164,8 @@ target_include_directories(uw_test_dosmidi PUBLIC
   "${PROJECT_SOURCE_DIR}/third_party/openabyss")
 add_supported_game_unit_test(dosmidi uw_test_dosmidi)
 add_game_test_library(uw_test_movement
+  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:physics_subtick_units
+  src/movement.c:@player_move_fraction src/movement.c:@g_player_move_fraction
   src/movement.c:sweep_kill_velocity src/movement.c:sweep_deflect_heading
   src/movement.c:sweep_slide_along_wall src/movement.c:sweep_apply_collision
   src/movement.c:collision_flags_to_locomotion_code src/movement.c:sweep_collision_flags
@@ -730,6 +732,10 @@ target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURC
 
 add_game_test_library(uw_test_throw
   src/ai.c:@DAT_000868c0_backing
+  src/ai.c:@physics_vz_remainder
+  src/ai.c:@g_physics_vz_remainder
+  src/movement.c:@player_move_fraction
+  src/movement.c:@g_player_move_fraction
   src/item_use.c:drop_held_object_near_player
   src/objects.c:spawn_object_near_player
   src/item_use.c:compute_drop_aim_from_cursor
@@ -737,6 +743,20 @@ add_game_test_library(uw_test_throw
   src/ai.c:build_object_placement_snapshot
   src/collision.c:apply_placement_collision_sweep
   src/ai.c:mobile_object_tick
+  src/ai.c:tick_mobile_objects
+  src/ai.c:tick_physics_objects
+  src/ai.c:physics_subtick_units
+  src/ai.c:object_tick_is_due
+  src/ai.c:@DAT_00101948
+  src/movement.c:movement_pacing_handler
+  src/movement.c:uw_frame_clock_ms
+  src/gx_stub.c:@uw_frame_pacing
+  src/gx_stub.c:@g_display_pacing
+  src/gx_stub.c:@g_game_pacing
+  src/gx_stub.c:uw_set_present_refresh_rate
+  src/gx_stub.c:uw_reset_frame_pacing
+  src/gx_stub.c:uw_claim_frame
+  src/gx_stub.c:uw_service_game_clock
   src/ai.c:sync_object_tile_position
   src/input.c:set_locomotion_state
   src/input.c:apply_movement_mode_profile
@@ -769,6 +789,12 @@ target_compile_definitions(uw_test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOU
 add_supported_game_unit_test(throw uw_test_throw)
 target_compile_definitions(test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
 target_sources(test_throw PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
+add_supported_game_unit_test(player_move_direction uw_test_throw)
+target_compile_definitions(test_player_move_direction PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_sources(test_player_move_direction PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
+add_supported_game_unit_test(throw_tick_rate uw_test_throw)
+target_compile_definitions(test_throw_tick_rate PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_sources(test_throw_tick_rate PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_throw_cursor
   src/item_use.c:drop_held_object_near_player
