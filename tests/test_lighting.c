@@ -557,50 +557,83 @@ static void test_extra_lights_light_the_dos_shade_table_rows_too(void)
     TEST_ASSERT_NOT_EQUAL(lit, dark);
 }
 
-/* --light-depth-rounding: DOS truncates each camera-space coordinate to 32 world units, sums the squares
-   in 16 bits and takes a 4-iteration integer square root (openabyss uw_rast_vertex_shade). */
-static int depth_for_world(double world) { return (int)(world * 4096.0 / 1500.0); }
-static int rounded_distance_units(int root) { return (int)(((long long)root * 32 * 4096 + 749) / 1500); }
+/* --light-depth-rounding=N snaps each pixel's world x, y and z to a grid of N * 32 world units, then measures the
+   distance from the camera to the snapped point (DOS's distances come in whole 32-world-unit steps). */
+static const double eye_units = 1500.0 / 4096.0;
 
-static void test_depth_rounding_follows_the_dos_vertex_shade_arithmetic(void)
+/* A camera turned 30 degrees about the vertical axis and shifted, so the world grid is not aligned with the
+   screen: eye = Q * (world + offset) + t, as extra_lights_transform_to_eye applies it. */
+static void set_turned_camera(void)
 {
-    /* z = 1000 world units: 1000 >> 5 = 31, sum 961, Newton from 0x40: 39, 31, 31, 31. */
-    TEST_ASSERT_EQUAL_INT(rounded_distance_units(31), light_rounded_distance(depth_for_world(1000), 0, 0));
-    /* z = 40 world units: 1; sum 1; Newton from 0x40 only reaches 4 in four halvings. */
-    TEST_ASSERT_EQUAL_INT(rounded_distance_units(4), light_rounded_distance(depth_for_world(40), 0, 0));
-    /* z = 170 (>>5 = 5) with x = 400 (>>5 = 12): sum 169, Newton from 0x40: 33, 19, 13, 13. */
-    TEST_ASSERT_EQUAL_INT(rounded_distance_units(13),
-                          light_rounded_distance(depth_for_world(170), 400.0 / 170.0, 0));
+    const float c = 0.8660254f, s = 0.5f;
+    const float m[16] = { c, 0, -s, 0,   0, 1, 0, 0,   s, 0, c, 0,   5, 0, 500, 1 };
+    const float offset[3] = { 100, 0, 200 };
+    lighting_fixture_set_camera(m, offset);
 }
-static void test_depth_rounding_steps_in_32_world_units_and_wraps_in_16_bits(void)
+/* Distance the option reports for the pixel showing the world point (wx, wy, wz) through the turned camera. */
+static int rounded_distance_of_world_point(double wx, double wy, double wz)
 {
-    /* Everything within one 32-unit slice of z rounds to the same distance. */
-    TEST_ASSERT_EQUAL_INT(light_rounded_distance(depth_for_world(1030), 0, 0),
-                          light_rounded_distance(depth_for_world(1050), 0, 0));
-    TEST_ASSERT_NOT_EQUAL(light_rounded_distance(depth_for_world(1050), 0, 0),
-                          light_rounded_distance(depth_for_world(1070), 0, 0));
-    /* Past 255 slices the 16-bit sum wraps, as the DOS register does (z = 260 * 32). */
-    TEST_ASSERT_LESS_THAN_INT(light_rounded_distance(depth_for_world(255 * 32), 0, 0),
-                              light_rounded_distance(depth_for_world(260 * 32), 0, 0));
+    const double a = wx + 100, b = wy, c = wz + 200;
+    const double c30 = 0.8660254, s30 = 0.5;
+    double ex = a * c30 + c * s30 + 5, ey = b, ez = -a * s30 + c * c30 + 500;
+    TEST_ASSERT_TRUE_MESSAGE(ez > 0, "the test point must be in front of the camera");
+    return light_rounded_distance((int)(ez / eye_units), ex / ez, -ey / ez);
 }
-static void test_depth_rounding_makes_equal_slices_light_identically_in_every_mode(void)
+
+static void test_depth_rounding_snaps_the_world_position_to_the_grid(void)
+{
+    /* Identity camera: the eye point is the world point. (60, 0, 100) snaps to (64, 0, 96) at 32 units. */
+    options_set("light-depth-rounding", "1");
+    int depth = (int)(100 / eye_units);
+    TEST_ASSERT_INT_WITHIN(1, (int)(sqrt(64.0 * 64 + 96.0 * 96) / eye_units), light_rounded_distance(depth, 60.0 / 100, 0));
+    /* A coarser grid: 4 * 32 = 128 world units snaps the same point to the origin plane (0, 0, 128). */
+    options_set("light-depth-rounding", "4");
+    TEST_ASSERT_INT_WITHIN(1, (int)(128 / eye_units), light_rounded_distance(depth, 60.0 / 100, 0));
+}
+static void test_depth_rounding_bands_lie_on_a_grid_fixed_in_the_world(void)
+{
+    set_turned_camera();
+    options_set("light-depth-rounding", "1");
+    /* Two world points inside one 32-unit cell (centre (64, 32, 96)) light identically from any angle, ... */
+    int first = rounded_distance_of_world_point(60, 24, 90);
+    TEST_ASSERT_INT_WITHIN(1, first, rounded_distance_of_world_point(72, 40, 104));
+    /* ... and a point in the next cell does not. */
+    TEST_ASSERT_NOT_EQUAL(first, rounded_distance_of_world_point(100, 24, 90));
+    /* A larger value merges the cells: at 8 * 32 = 256 units both points snap to the same corner. */
+    options_set("light-depth-rounding", "8");
+    TEST_ASSERT_INT_WITHIN(1, rounded_distance_of_world_point(60, 24, 90), rounded_distance_of_world_point(100, 24, 90));
+}
+static void test_depth_rounding_lights_every_mode_from_the_rounded_distance(void)
 {
     const char *modes[] = {"smooth", "linear", "dos"};
+    set_turned_camera();
     for (unsigned m = 0; m < 3; m++) {
         options_set("light-mode", modes[m]);
         options_set("light-depth-rounding", "1");
         bool dos = m == 2;
-        TEST_ASSERT_EQUAL_HEX16(shade_span_pixel(88, depth_for_world(1030), 0, 0, 0, dos, false),
-                                shade_span_pixel(88, depth_for_world(1050), 0, 0, 0, dos, false));
+        /* Two pixels of the same world cell, one near the screen edge. */
+        const double a1 = 60 + 100, c1 = 90 + 200, a2 = 72 + 100, c2 = 104 + 200;
+        double ez1 = -a1 * 0.5 + c1 * 0.8660254 + 500, ex1 = a1 * 0.8660254 + c1 * 0.5 + 5, ey1 = 24;
+        double ez2 = -a2 * 0.5 + c2 * 0.8660254 + 500, ex2 = a2 * 0.8660254 + c2 * 0.5 + 5, ey2 = 40;
+        ushort p1 = shade_span_pixel(88, (int)(ez1 / eye_units), ex1 / ez1, -ey1 / ez1, 0, dos, false);
+        ushort p2 = shade_span_pixel(88, (int)(ez2 / eye_units), ex2 / ez2, -ey2 / ez2, 0, dos, false);
+        TEST_ASSERT_EQUAL_HEX16(p1, p2);
         options_unset("light-depth-rounding");
     }
 }
 static void test_depth_rounding_is_off_by_default(void)
 {
     TEST_ASSERT_EQUAL_INT(0, g_opts.light_depth_rounding);
-    /* Off, the exact radial distance is used: depth 2000 straight ahead is 2000 units, not a 32-world-unit slice. */
-    TEST_ASSERT_NOT_EQUAL(light_rounded_distance(2000, 0, 0), 2000);
+    set_turned_camera();
+    options_set("light-mode", "smooth");
+    /* Off, nothing is snapped: pixels of one world cell light differently. */
+    double a1 = 60 + 100, c1 = 90 + 200, a2 = 72 + 100, c2 = 104 + 200;
+    double ez1 = -a1 * 0.5 + c1 * 0.8660254 + 500, ex1 = a1 * 0.8660254 + c1 * 0.5 + 5;
+    double ez2 = -a2 * 0.5 + c2 * 0.8660254 + 500, ex2 = a2 * 0.8660254 + c2 * 0.5 + 5;
+    TEST_ASSERT_NOT_EQUAL(shade_span_pixel(88, (int)(ez1 / eye_units), ex1 / ez1, -24 / ez1, 0, false, false),
+                          shade_span_pixel(88, (int)(ez2 / eye_units), ex2 / ez2, -40 / ez2, 0, false, false));
 }
+
 static void test_light_list_holds_eight_lights_and_drops_the_rest(void)
 {
     for (int i = 0; i < UW_MAX_EXTRA_LIGHTS; i++) TEST_ASSERT_EQUAL_INT(1, extra_light_add(i, 0, 0, 100, 1));
@@ -662,9 +695,9 @@ int main(void)
     RUN_TEST(test_extra_lights_are_ignored_unless_enabled);
     RUN_TEST(test_extra_light_falls_off_with_distance_and_stops_at_its_radius);
     RUN_TEST(test_extra_lights_light_the_dos_shade_table_rows_too);
-    RUN_TEST(test_depth_rounding_follows_the_dos_vertex_shade_arithmetic);
-    RUN_TEST(test_depth_rounding_steps_in_32_world_units_and_wraps_in_16_bits);
-    RUN_TEST(test_depth_rounding_makes_equal_slices_light_identically_in_every_mode);
+    RUN_TEST(test_depth_rounding_snaps_the_world_position_to_the_grid);
+    RUN_TEST(test_depth_rounding_bands_lie_on_a_grid_fixed_in_the_world);
+    RUN_TEST(test_depth_rounding_lights_every_mode_from_the_rounded_distance);
     RUN_TEST(test_depth_rounding_is_off_by_default);
     RUN_TEST(test_light_list_holds_eight_lights_and_drops_the_rest);
     RUN_TEST(test_light_sources_are_recognised_by_object_id);
