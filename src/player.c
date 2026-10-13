@@ -348,6 +348,8 @@ void commit_player_move()
   if ((_DAT_002048a9 != 0) && (_DAT_002048a1 == (short)DAT_00201c78)) {
     g_jump_ascent_timer = 0;
   }
+  /* A wall hit that deflects the travel heading also swings the player's FACING toward the slide
+     direction by 0x400 (~5.6 degrees) per tick; --wall-turn scales that step (0 = never turns). */
   uVar5 = DAT_00201c70;
   if (_DAT_002048a1 != (short)DAT_00201c78) {
     DAT_00201c78 = _DAT_002048a1;
@@ -355,9 +357,9 @@ void commit_player_move()
     if ((((DAT_00204897 & 0x80) != 0) &&
         (uVar6 = (int)(short)DAT_00201c70 - ((int)(uVar3 * 0x10000) >> 0x10),
         uVar4 = (int)uVar6 >> 0x1f, uVar5 = (ushort)uVar3, 0x3ff < (int)((uVar6 ^ uVar4) - uVar4)))
-       && (uVar5 = DAT_00201c70 - 0x400, 0x7ffe < ((uint)DAT_00201c70 - (uVar3 & 0xffff) & 0xffff)))
+       && (uVar5 = DAT_00201c70 - uw_wall_turn_step(), 0x7ffe < ((uint)DAT_00201c70 - (uVar3 & 0xffff) & 0xffff)))
     {
-      uVar5 = DAT_00201c70 + 0x400;
+      uVar5 = DAT_00201c70 + uw_wall_turn_step();
     }
   }
   DAT_00201c70 = uVar5;
