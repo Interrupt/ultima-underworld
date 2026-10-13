@@ -1214,6 +1214,18 @@ void run_visibility_flood()
   } while (g_visibility_ring_done != 0xf);
 
 
+  /* Hack (--near-tile-visibility): the flood never tags the player's own cell as the left/right
+     end of its row (0x08 / 0x20), so the faces beside the player go undrawn -- unseen at the original
+     +/-24 degree pitch limit, a black gap beyond it. Tag it as both ends. Only this cell: marking
+     more tiles visible makes it worse, and over 512 vertices the whole view blacks out. */
+  if (g_opts.near_tile_visibility) {
+    /* DAT_000db448: camera pitch in degrees, 0-359 (look-up wraps to 360-N). */
+    int pitch = (int)DAT_000db448;
+    if (pitch > 180) pitch -= 360;
+    if (pitch < 0) pitch = -pitch;
+    if (pitch > 24) g_visibility_ring_buffer_backing[16 * 2] |= 0x80 | 0x20 | 0x08;
+  }
+
   /* Hack - Testing (opt-in via --hack-reveal-depth): g_visibility_ring_depth is the row depth of
      walk_visible_tiles's reveal/visibility walk -- it starts at row &g_visibility_ring_buffer +
      g_visibility_ring_depth*0x42 and sweeps back to row 0... */
