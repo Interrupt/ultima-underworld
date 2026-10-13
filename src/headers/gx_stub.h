@@ -9,6 +9,14 @@
    can tell a real keypress from a demo's own SDLHOLD injection. */
 #define UW_SYNTH_KEY 0x55570002u
 
+/* The SDL window/renderer, and posting a game mouse-motion message at a game (landscape) position --
+   used by mouselook.c, which pins the game cursor without a real pointer event. */
+struct SDL_Window;
+struct SDL_Renderer;
+struct SDL_Window *uw_gx_window(void);
+struct SDL_Renderer *uw_gx_renderer(void);
+void uw_gx_post_mouse_motion(int landscape_x, int landscape_y);
+
 int GXOpenDisplay(void *hwnd, unsigned int flags);
 int uw_save_rgb565_region_bmp(const char *path, const unsigned short *pixels, int w, int h, int stride_pixels);
 void uw_debug_mkdir_p(const char *path);

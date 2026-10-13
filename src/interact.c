@@ -1,6 +1,7 @@
 /* Object interaction dispatch: the default click handler and the per-cursor-mode handlers (talk,
    look, use, attack). Split out of uw.c (the original monolithic decompile) once these functions'
    real roles were confirmed. */
+#include "headers/mouselook.h"
 #include "headers/interact.h"
 #include "headers/options.h"
 #include "headers/debug.h"

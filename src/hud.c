@@ -1,6 +1,7 @@
 /* The HUD: dirty-rect tracking/flush, mode icons, cursor-mode button clicks, the per-frame HUD
    draw/tick dispatch (vitals bar, dragon reaction, compass needle, panel transitions), and the
    message scroll panel (word-wrap, line-by-line scroll, draw). */
+#include "headers/mouselook.h"
 #include "headers/hud.h"
 #include "headers/options.h"
 #include "headers/debug.h"

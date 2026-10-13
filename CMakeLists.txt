@@ -62,6 +62,7 @@ set(UW_SOURCES
   src/main.c
   src/options.c
   src/gx_stub.c
+  src/mouselook.c
   src/ordinal_stubs.c
   src/file_io.c
   src/demomode.c

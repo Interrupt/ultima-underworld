@@ -1,6 +1,7 @@
 /* Top-level program flow: WinMain's real body (window/subsystem init and the OS message pump) and
    the title/main menu loop. Split out of uw.c (the original monolithic decompile) once these
    functions' real roles were confirmed. */
+#include "headers/mouselook.h"
 #include "headers/game.h"
 #include "headers/options.h"
 #include "headers/debug.h"
