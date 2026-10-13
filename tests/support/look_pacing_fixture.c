@@ -20,6 +20,7 @@ const Uint8 *SDL_GetKeyboardState(int *count)
 int in_dungeon_freelook(void) { return freelook; }
 int dbgui_visible(void) { return 0; }
 int mouselook;
+int uw_look_pitch_limit(void) { return 0x1800; }
 int uw_mouselook_active(void) { return mouselook; }
 int GXEndDraw(void) { return 1; }
 

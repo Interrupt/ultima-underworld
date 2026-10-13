@@ -131,7 +131,13 @@ static int is_hotkey_sym(SDL_Keycode sym) { return sym == SDLK_f || sym == SDLK_
    on whatever is under the crosshair. */
 extern short DAT_0023be5c, DAT_0023bd80, DAT_0023be80, DAT_0023be88;  /* 3D viewport x, width, bottom y, height */
 extern short DAT_00201c70;                                            /* player yaw, 65536 = 360 deg */
-#define MOUSELOOK_PITCH_LIMIT     0x1800
+/* Maximum view pitch in 1/256-degree units (--look-pitch-limit degrees; the original's was 24; default 45). */
+int uw_look_pitch_limit(void) {
+    float deg = g_opts.look_pitch_limit;
+    if (deg < 1.0f) deg = 1.0f;
+    if (deg > 89.0f) deg = 89.0f;
+    return (int)(deg * 256.0f);
+}
 static int g_mouselook_enabled = 0;   /* the player's F toggle */
 static int g_mouselook_applied = 0;   /* toggle AND the game is in a state where it makes sense */
 
@@ -203,8 +209,9 @@ static void mouselook_apply_motion(const SDL_MouseMotionEvent *m) {
     double deg = g_opts.mouselook_speed;
     DAT_00201c70 = (short)(DAT_00201c70 + (int)lround(dx * deg * (65536.0 / 360.0)));
     int p = (int)DAT_0023beb4 + (int)lround(dy * deg * 256.0);
-    if (p < -MOUSELOOK_PITCH_LIMIT) p = -MOUSELOOK_PITCH_LIMIT;
-    if (p > MOUSELOOK_PITCH_LIMIT) p = MOUSELOOK_PITCH_LIMIT;
+    const int limit = uw_look_pitch_limit();
+    if (p < -limit) p = -limit;
+    if (p > limit) p = limit;
     DAT_0023beb4 = (short)p;
 }
 
@@ -285,10 +292,10 @@ static void poll_dungeon_movement_keys(int game_frame_due)
         DAT_0023beb4 = 0;
     } else if (game_frame_due && lookUp && !lookDn) {
         int p = (int)DAT_0023beb4 - 0x120;
-        DAT_0023beb4 = (short)(p < -0x1800 ? -0x1800 : p);
+        DAT_0023beb4 = (short)(p < -uw_look_pitch_limit() ? -uw_look_pitch_limit() : p);
     } else if (game_frame_due && lookDn && !lookUp) {
         int p = (int)DAT_0023beb4 + 0x120;
-        DAT_0023beb4 = (short)(p > 0x1800 ? 0x1800 : p);
+        DAT_0023beb4 = (short)(p > uw_look_pitch_limit() ? uw_look_pitch_limit() : p);
     }
 
     /* The held movement keys are their own state (DOS key array), decoded by
