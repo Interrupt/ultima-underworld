@@ -164,7 +164,7 @@ target_include_directories(uw_test_dosmidi PUBLIC
   "${PROJECT_SOURCE_DIR}/third_party/openabyss")
 add_supported_game_unit_test(dosmidi uw_test_dosmidi)
 add_game_test_library(uw_test_movement
-  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:physics_subtick_units
+  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks src/ai.c:physics_subtick_units
   src/movement.c:@player_move_fraction src/movement.c:@g_player_move_fraction
   src/movement.c:sweep_kill_velocity src/movement.c:sweep_deflect_heading
   src/movement.c:sweep_slide_along_wall src/movement.c:sweep_apply_collision
@@ -733,7 +733,7 @@ target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURC
 add_game_test_library(uw_test_throw
   src/ai.c:@DAT_000868c0_backing
   src/ai.c:@physics_vz_remainder
-  src/ai.c:@g_physics_vz_remainder
+  src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks
   src/movement.c:@player_move_fraction
   src/movement.c:@g_player_move_fraction
   src/item_use.c:drop_held_object_near_player

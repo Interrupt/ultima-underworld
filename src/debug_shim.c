@@ -5,6 +5,12 @@
 #include "headers/debug_shim.h"
 #include "headers/options.h"
 #include "headers/debug_ui.h"
+#include "headers/ai.h"
+#include "headers/tmap.h"
+#include "headers/text.h"
+#include "headers/automap.h"
+#include "headers/player.h"
+#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -255,6 +261,63 @@ void uw_debug_blit_pick_buffer(void)
       if (cx >= 0 && cx < 320 && cy + i >= 0 && cy + i < 240) fb[py * 0x140 + cx] = 0xFFE0;
     }
   }
+}
+
+/* --show-fps: frame stats over the 3D view's upper left. fps and physics ticks/s are measured over
+   half-second windows of wall-clock time; tiles and faces are the last frame's counts (tiles that
+   emitted geometry, and records in the draw list, which includes object models). */
+void uw_debug_draw_frame_stats(void)
+{
+  static Uint32 window_start;
+  static unsigned frames, last_ticks;
+  static double fps, tick_rate;
+  Uint32 now = SDL_GetTicks();
+  char line[64];
+  int saved_use_pal = g_text_use_palette_color;
+  unsigned short saved_flat = g_text_flat_color;
+
+  frames++;
+  if (window_start == 0) {
+    window_start = now;
+    last_ticks = g_stat_physics_ticks;
+  } else if (now - window_start >= 500) {
+    double secs = (now - window_start) / 1000.0;
+    fps = frames / secs;
+    tick_rate = (g_stat_physics_ticks - last_ticks) / secs;
+    frames = 0;
+    last_ticks = g_stat_physics_ticks;
+    window_start = now;
+  }
+  g_text_use_palette_color = 0;
+  g_text_flat_color = (unsigned short)0xffff;
+  /* The automap's small font, which only has upper-case glyphs; restored to the normal font below. */
+  select_active_font(s_font4x5p_sys_0008431c);
+  snprintf(line, sizeof line, "FPS %.1f", fps);
+  draw_text_string(line, 0x34 + 3, 0x13 + 2);
+  snprintf(line, sizeof line, "PHYSICS %.1f/S", tick_rate);
+  draw_text_string(line, 0x34 + 3, 0x13 + 9);
+  snprintf(line, sizeof line, "TILES %d", g_stat_tiles_drawn);
+  draw_text_string(line, 0x34 + 3, 0x13 + 16);
+  snprintf(line, sizeof line, "FACES %d", DAT_0023b83c);
+  draw_text_string(line, 0x34 + 3, 0x13 + 23);
+  select_active_font(s_font5x6p_sys_0008430c);
+  g_text_use_palette_color = saved_use_pal;
+  g_text_flat_color = saved_flat;
+}
+
+/* --max-fps: called once per main-loop iteration; sleeps until the iteration's slot of 1/max_fps has
+   passed. A slow frame does not bank a deficit that later frames would then run uncapped to repay. */
+void uw_limit_frame_rate(void)
+{
+  static Uint64 next_frame;
+  Uint64 freq = SDL_GetPerformanceFrequency(), now = SDL_GetPerformanceCounter();
+  Uint64 interval = (Uint64)((double)freq / g_opts.max_fps);
+
+  if (next_frame > now) {
+    SDL_Delay((Uint32)((next_frame - now) * 1000 / freq));
+    now = SDL_GetPerformanceCounter();
+  }
+  next_frame = (next_frame + interval > now) ? next_frame + interval : now + interval;
 }
 
 /* Debug tool (--dump-sprite-frames / --dump-sprite-ids): dump individual sprites to standalone

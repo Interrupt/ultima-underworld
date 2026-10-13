@@ -12,6 +12,8 @@
    lines down (0x4814 record region base, ~490-record cap, 0x60-byte stride), real worst case is
    0x4814+490*0x60=65492 bytes=16373 elements -- already a near-exact match for the current 16384... */
  undefined4 DAT_000a85d0_backing[16384];
+/* Vertices live at +8, 0xc bytes each, up to the camera offset at +0x4808. */
+#define UW_ARENA_MAX_VERTS ((0x4808 - 8) / 0xc)
 /* Set (0-359) by emit_tile_objects's class-2 TMOBJ/sign branch right before jumping into the shared
    class-0 mesh-quad code, to make a wall-mounted decal extend along the WALL's own fixed facing
    angle instead of the camera's... */
@@ -19,6 +21,8 @@ static int g_billboard_angle_override_deg = -1;
 /* UW_MODEL_TUNER=1's "hide_walls" toggle (debug panel, dbgui_field_toggle) -- lets wall/floor tile
    geometry be filtered out of the render so a single object's own faces... */
 int g_uw_hide_walls = 0;
+/* --show-fps: tiles that emitted geometry this frame (reset in walk_visible_tiles). */
+int g_stat_tiles_drawn = 0;
 /* Recovered from UU.exe .data at 0x8462c: the 3D viewport clip rect {x0=0x34, y0=0x13, w=0xe0,
    h=0x84} == {52, 19, 224, 132}, matching render_dungeon_view's `rect_fill(0x34,0x13,0xe0,0x83)`.
    render_visible_tile_ list copies these into a local passed to raster_triangle as param_8... */
@@ -392,6 +396,7 @@ void walk_visible_tiles()
   extra_lights_reset();
   uVar6 = (uint)(short)(((byte *)pbVar8 - (byte *)DAT_0023b814) >> 2);
   DAT_0023b838 = 0;
+  g_stat_tiles_drawn = 0;
   /* Also clear the arena's own count fields (offset 0 = vertex count, offset 4 = record count).
      process_visible_tile_cell normally keeps them in step with DAT_0023b838 / DAT_0023b83c as it
      emits, but a frame where it emits nothing... */
@@ -566,9 +571,12 @@ void process_visible_tile_cell(byte *cell)
   /* This branch emits a visible tile's 3D geometry slice for the dungeon viewport. */
   { static int _disabled = -1;
     if (_disabled < 0) _disabled = (g_opts.disable_3d_geometry);
-    /* Arena overflow guard. */
+    /* Arena overflow guard. HACK: not original behaviour -- the vertex cap was 512, which a bright
+       (light level 6-7) far-view scene overflows after ~120 tiles; tiles are emitted far to near, so
+       the nearest ones were the ones dropped. The vertex region really runs from +8 to the camera
+       offset at +0x4808: 1536 vertices of 0xc bytes. */
     if (_disabled
-        || (int)(uint)DAT_0023b838 >= 512 - 28
+        || (int)(uint)DAT_0023b838 >= UW_ARENA_MAX_VERTS - 28
         || (int)DAT_0023b83c >= 490 - 6) {
       if (*cell == 0) {
         /* Even when geometry storage is full, darkness must not reveal floors. */
@@ -580,6 +588,7 @@ void process_visible_tile_cell(byte *cell)
       return;
     }
   }
+  g_stat_tiles_drawn++;
   DAT_0023b4d0 = 200;
   bVar15 = g_current_tile->floor_height;
   uVar1 = (uint)bVar15;
@@ -2324,7 +2333,7 @@ LAB_emit_mesh_sprite_quad:
     /* Same arena-overflow risk as the tile-geometry guard a few hundred lines above this function
        (see its own comment for the full explanation of the ~512-vert/~490-record cap on
        DAT_000a85d0_backing) -- that guard only accounts for wall/floor geometry... */
-    if ((int)(uint)DAT_0023b838 >= 512 - 4 || (int)DAT_0023b83c >= 490 - 1) {
+    if ((int)(uint)DAT_0023b838 >= UW_ARENA_MAX_VERTS - 4 || (int)DAT_0023b83c >= 490 - 1) {
       return;
     }
     if (g_billboard_angle_override_deg >= 0) {

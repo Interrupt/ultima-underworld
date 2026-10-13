@@ -899,6 +899,8 @@ int physics_subtick_units(void)
    apply_placement_collision_sweep), so the trajectory is the original one sampled more finely.
    The original's per-object tick_phase ring is not used here: it is only meaningful for 64ms ticks
    and a fresh thrown item does not seed it. */
+unsigned g_stat_physics_ticks = 0;  /* --show-fps: physics steps run (a tick_mobile_objects call, or a subtick) */
+
 void tick_physics_objects(int elapsed_units)
 {
   static int carry_units;
@@ -921,6 +923,7 @@ void tick_physics_objects(int elapsed_units)
   }
   while (subticks-- > 0) {
     subtick_count++;
+    g_stat_physics_ticks++;
     pbVar2 = DAT_002046c0;
     while (pbVar2 < DAT_002046c8) {
       object = (uw_mobile_object_t *)((uint)*pbVar2 * 0x1b + DAT_002046b8);
@@ -952,6 +955,7 @@ void tick_mobile_objects(char elapsed)
   int iVar1;
   byte *pbVar2;
 
+  if (physics_subtick_units() == 0) g_stat_physics_ticks++;
   DAT_0010190c = (uw_mobile_object_t *)0x0;
   DAT_00101928 = DAT_00101948 + elapsed & 0xf;
   pbVar2 = DAT_002046c0;
