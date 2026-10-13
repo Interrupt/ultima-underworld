@@ -21,7 +21,6 @@ short g_visibility_ring_depth;
 
 short g_visibility_max_ring_passes;
 short DAT_0025063c, DAT_0025064c, DAT_002506dc;
-int DAT_000db448;   /* camera pitch angle; 0 keeps the near-tile visibility hack inactive */
 
 /* Exercise the actual equipment light scan; unrelated HUD/equipment
    services do nothing in this visibility fixture. */
