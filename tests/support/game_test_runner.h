@@ -5,6 +5,8 @@
 
        int main(void) { UNITY_BEGIN(); RUN_GAME_TEST(test_a); RUN_GAME_TEST(test_b); return UNITY_END(); }
 
+   Set UW_TEST_NO_FORK=1 to run in-process, e.g. under lldb (then only the first case can boot a game).
+
    Cases share data/SAVE0 on disk, so run them one at a time (as this does; do not run suites in
    parallel against one data folder). */
 #ifndef UW_GAME_TEST_RUNNER_H
@@ -12,6 +14,7 @@
 #include "unity.h"
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -20,6 +23,11 @@
 static inline void uw_run_game_test(void (*func)(void), const char *name, int line)
 {
     fflush(NULL);
+    /* UW_TEST_NO_FORK=1: run the case in this process (one case per run), so a debugger can follow it. */
+    if (getenv("UW_TEST_NO_FORK")) {
+        UnityDefaultTestRun(func, name, line);
+        return;
+    }
     pid_t pid = fork();
     if (pid < 0) {
         perror("fork");

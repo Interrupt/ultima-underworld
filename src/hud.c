@@ -430,7 +430,9 @@ static short DAT_00250724;
 static short DAT_00250728;
 static short DAT_00250710;
 static char s__MORE__00087994[] = "[MORE]";
-static undefined4 DAT_00250720;
+/* Message scroll: read_realtime_clock_units() stamp of the last line added. Not static so real-game
+   tests (tests/test_traps_game.c) can observe that a message was printed. */
+undefined4 DAT_00250720;
 static short DAT_0025070c;
 /* Was a bare 1-byte `undefined` scalar -- FUN_0008090c's yes/no dialog takes its address and passes
    it to message_scroll_print_wrapped, so it needs to be a real string. Real bytes confirmed via a

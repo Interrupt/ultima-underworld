@@ -15,6 +15,29 @@ static uw_test_hooks g_hooks;
 static int g_active;
 static unsigned g_ticks, g_max_ticks;
 
+/* Virtual game clock. Starts well above zero so "time since 0" never looks like "never". */
+#define CLOCK_START_US 1000000ULL
+#define DEFAULT_TICK_US 16667 /* 60 Hz: the game clock's frame rate */
+#define SPIN_READS_BEFORE_NUDGE 1000
+static uint64_t g_clock_us;
+static unsigned g_tick_us, g_reads_since_advance;
+
+int uw_test_clock_active(void) { return g_active; }
+
+void uw_test_clock_advance_us(uint64_t microseconds)
+{
+    g_clock_us += microseconds;
+    g_reads_since_advance = 0;
+}
+
+/* A loop that polls the clock waiting for time to pass (e.g. busy_wait_ms) would otherwise hang on a
+   clock that only moves between passes, so a long run of reads with no advance nudges it by 1 ms. */
+uint64_t uw_test_clock_us(void)
+{
+    if (++g_reads_since_advance > SPIN_READS_BEFORE_NUDGE) uw_test_clock_advance_us(1000);
+    return g_clock_us;
+}
+
 int uw_test_game_active(void) { return g_active; }
 
 #define CALL_HOOK(name) do { if (g_active && g_hooks.name) g_hooks.name(); } while (0)
@@ -24,7 +47,12 @@ void uw_test_hook_pre_level_load(int level_number)
     if (g_active && g_hooks.pre_level_load) g_hooks.pre_level_load(level_number);
 }
 void uw_test_hook_on_game_start(void)  { CALL_HOOK(on_game_start); }
-void uw_test_hook_pre_game_tick(void)  { CALL_HOOK(pre_game_tick); }
+void uw_test_hook_pre_game_tick(void)
+{
+    if (!g_active) return;
+    uw_test_clock_advance_us(g_tick_us);
+    CALL_HOOK(pre_game_tick);
+}
 void uw_test_hook_post_game_tick(void)
 {
     if (!g_active) return;
@@ -39,6 +67,9 @@ int start_test_game(const uw_test_hooks *hooks)
 {
     g_hooks = hooks ? *hooks : (uw_test_hooks){0};
     g_ticks = 0;
+    g_tick_us = hooks && hooks->tick_us ? hooks->tick_us : DEFAULT_TICK_US;
+    g_clock_us = CLOCK_START_US;
+    g_reads_since_advance = 0;
     g_max_ticks = !hooks ? 1 : hooks->max_ticks ? hooks->max_ticks : 100000;
     options_set("headless", NULL);
     options_set("fast-sleep", NULL);
@@ -96,4 +127,34 @@ int uw_test_patch_level_tile(int level_number, int x, int y, const unsigned char
 {
     if (x < 0 || x > 63 || y < 0 || y > 63) return -1;
     return uw_test_patch_level_block(level_number, UW_TEST_LEVEL_TILE_OFFSET(x, y), tile, 4);
+}
+
+/* Live level arena (see load_level_object_table): tiles at 0, mobile objects 0x4000 (27 bytes each,
+   slots 0-255), static objects 0x5b00 (8 bytes each, slots 256-1023). */
+extern char *DAT_002029cc;
+
+unsigned char *uw_test_live_tile(int x, int y)
+{
+    if (x < 0 || x > 63 || y < 0 || y > 63 || !DAT_002029cc) return NULL;
+    return (unsigned char *)DAT_002029cc + UW_TEST_LEVEL_TILE_OFFSET(x, y);
+}
+
+unsigned short *uw_test_live_object(unsigned slot)
+{
+    if (slot == 0 || slot >= 1024 || !DAT_002029cc) return NULL;
+    return (unsigned short *)(DAT_002029cc + (slot < 256 ? 0x4000 + slot * 27 : 0x5b00 + (slot - 256) * 8));
+}
+
+unsigned short *uw_test_find_object_on_tile(int x, int y, unsigned object_id)
+{
+    unsigned char *tile = uw_test_live_tile(x, y);
+    if (!tile) return NULL;
+    unsigned slot = ((unsigned short *)tile)[1] >> 6;
+    for (int guard = 0; slot && guard < 1024; guard++) {
+        unsigned short *object = uw_test_live_object(slot);
+        if (!object) return NULL;
+        if ((object[0] & 0x1ff) == object_id) return object;
+        slot = object[2] >> 6;
+    }
+    return NULL;
 }

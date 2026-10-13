@@ -7,10 +7,17 @@
        uw_test_hooks hooks = { .on_game_start = on_start, .post_game_tick = each_tick };
        start_test_game(&hooks);        // returns when the game exits; hooks may be NULL
 
+   Time: a test game runs on a virtual clock, not the wall clock. Every main-loop pass advances it
+   by exactly tick_us, so passes run as fast as the CPU allows while the game sees a steady 60 Hz
+   and every run behaves identically. Sleep() advances it by the requested time instead of waiting.
+
    Hooks (any may be NULL), in the order they fire:
      pre_game_start   the new character exists with default stats but the level is not loaded yet;
                       set up the player (g_player_object, the DAT_00086df8 player record) here
-     on_game_start    level 1 is loaded and gameplay mode is on; the main loop is about to run
+     on_game_start    level 1 is loaded and gameplay mode is on; the main loop is about to run. The
+                      dungeon view (HUD, message scroll) is only initialised by the first pass, so
+                      anything that draws or prints messages should wait for the first post_game_tick
+                      (reading or editing level data is fine here)
      pre_level_load   a level is about to be loaded from \SAVE0\lev.ark: at game start (level 1) and on
                       every later level change or save load. The archive is complete and not yet
                       read, so patch the level here with the uw_test_*_level_* helpers below
@@ -24,6 +31,7 @@
    headless and fast-sleep on, and points data_dir at the repo's data/ folder unless one was set. */
 #ifndef UW_UNIT_TEST_HOOKS_H
 #define UW_UNIT_TEST_HOOKS_H
+#include <stdint.h>
 
 typedef struct uw_test_hooks {
     void (*pre_game_start)(void);
@@ -35,6 +43,8 @@ typedef struct uw_test_hooks {
     /* Safety stop: leave the main loop after this many passes (0 = 100000), so a test that forgets
        test_game_request_exit fails instead of hanging. With NULL hooks the game runs one pass. */
     unsigned max_ticks;
+    /* Game time that passes per main-loop pass, in microseconds (0 = 16667, i.e. 60 Hz). */
+    unsigned tick_us;
 } uw_test_hooks;
 
 /* Run a complete headless game with the given hooks (NULL = boot, run one pass, exit). Returns 0 on a clean exit, -1 if
@@ -58,6 +68,18 @@ int uw_test_write_level_block(int level_number, const void *block);
 int uw_test_patch_level_block(int level_number, unsigned offset, const void *data, unsigned size);
 /* Overwrite one tile's 4 raw bytes. */
 int uw_test_patch_level_tile(int level_number, int x, int y, const unsigned char tile[4]);
+
+/* Live-level lookups, valid once the level is loaded (on_game_start or later). They read the game's
+   own in-memory level, so they see edits made by the running game. Objects are the raw ushort-word
+   records (word 0 low 9 bits = object id; word 1 = position; word 2 >> 6 = next object on the tile). */
+unsigned char *uw_test_live_tile(int x, int y);               /* 4 raw bytes, NULL if out of range */
+unsigned short *uw_test_live_object(unsigned slot);          /* object table slot 1..1023, or NULL */
+unsigned short *uw_test_find_object_on_tile(int x, int y, unsigned object_id); /* first match or NULL */
+
+/* The virtual clock (src/gx_stub.c and src/ordinal_stubs.c read it while a test game is active). */
+int uw_test_clock_active(void);
+uint64_t uw_test_clock_us(void);
+void uw_test_clock_advance_us(uint64_t microseconds);
 
 /* Used by the game itself (game.c). */
 int uw_test_game_active(void);

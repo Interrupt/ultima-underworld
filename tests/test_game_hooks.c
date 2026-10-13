@@ -6,6 +6,8 @@
 #include "game_test_runner.h"
 #include <string.h>
 
+uint64_t uw_gx_time_us(void);
+
 #define TICKS_TO_RUN 5
 
 static char order[16];
@@ -46,6 +48,29 @@ static void test_lifecycle(void)
     TEST_ASSERT_GREATER_THAN_INT(0, player_hp);
 }
 
+static uint64_t clock_at_tick[61];
+static long ms_at_tick[61];
+static unsigned clock_ticks;
+static void record_clock(void)
+{
+    if (clock_ticks < 61) {
+        clock_at_tick[clock_ticks] = uw_gx_time_us();
+        ms_at_tick[clock_ticks] = GetTickCount();
+    }
+    if (++clock_ticks == 61) test_game_request_exit();
+}
+
+static void test_clock_advances_a_fixed_step_per_tick(void)
+{
+    uw_test_hooks hooks = { .post_game_tick = record_clock };
+    TEST_ASSERT_EQUAL_INT(0, start_test_game(&hooks));
+    /* Every pass is exactly one 60 Hz step, however fast the host runs it. */
+    for (int i = 1; i < 61; i++)
+        TEST_ASSERT_EQUAL_UINT64(16667, clock_at_tick[i] - clock_at_tick[i - 1]);
+    TEST_ASSERT_EQUAL_UINT64(60 * 16667ULL, clock_at_tick[60] - clock_at_tick[0]);
+    TEST_ASSERT_INT_WITHIN(2, 1000, ms_at_tick[60] - ms_at_tick[0]);
+}
+
 static void test_null_hooks_boot_and_exit(void)
 {
     TEST_ASSERT_EQUAL_INT(0, start_test_game(NULL));
@@ -66,6 +91,7 @@ int main(void)
 {
     UNITY_BEGIN();
     RUN_GAME_TEST(test_lifecycle);
+    RUN_GAME_TEST(test_clock_advances_a_fixed_step_per_tick);
     RUN_GAME_TEST(test_null_hooks_boot_and_exit);
     RUN_GAME_TEST(test_pre_game_start_sets_up_the_player);
     return UNITY_END();

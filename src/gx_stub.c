@@ -339,6 +339,7 @@ int uw_service_game_clock(uint64_t now_us)
 
 uint64_t uw_gx_time_us()
 {
+    if (uw_test_clock_active()) return uw_test_clock_us();
     return (uint64_t)((double)SDL_GetPerformanceCounter() * 1000000.0 /
                       (double)SDL_GetPerformanceFrequency());
 }
