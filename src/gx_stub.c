@@ -190,7 +190,7 @@ static void mouselook_refresh(void) {
 /* Relative motion -> view. Right turns right, down looks down (positive pitch).
    SDL divides a real event's xrel/yrel by the renderer's logical-to-window scale, so the same
    physical movement would turn a big window less than a small one; multiply it back out so the
-   speed depends only on the device count and --mouselook-sensitivity (deg per count). Injected
+   speed depends only on the device count and --mouselook-speed (deg per count). Injected
    (demo) motion is taken verbatim. */
 static void mouselook_apply_motion(const SDL_MouseMotionEvent *m) {
     double dx = m->xrel, dy = m->yrel;
@@ -200,7 +200,7 @@ static void mouselook_apply_motion(const SDL_MouseMotionEvent *m) {
         double scale = SDL_min((double)ww / GX_W, (double)wh / g_display_height);
         if (scale > 0) { dx *= scale; dy *= scale; }
     }
-    double deg = g_opts.mouselook_sensitivity;
+    double deg = g_opts.mouselook_speed;
     DAT_00201c70 = (short)(DAT_00201c70 + (int)lround(dx * deg * (65536.0 / 360.0)));
     int p = (int)DAT_0023beb4 + (int)lround(dy * deg * 256.0);
     if (p < -MOUSELOOK_PITCH_LIMIT) p = -MOUSELOOK_PITCH_LIMIT;
