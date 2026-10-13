@@ -166,3 +166,20 @@ services. Spawn allocation is an exhausted-pool fixture, so successful NPC
 placement is outside these cases. Drawing, sound, resource cleanup, inventory
 light lookup, allocation/copy services, RNG and the clock are controlled so
 the tests do not need interactive input or rendering.
+
+## Real-game tests (`start_test_game`)
+
+Fixtures replace game code; a real-game test runs all of it. Register with
+`add_test_game_executable(name)` (needs `tests/test_name.c` with its own `main`), then:
+
+```c
+#include "src/headers/unit_test_hooks.h"
+uw_test_hooks hooks = { .pre_game_start = setup_player, .post_game_tick = check_world };
+start_test_game(&hooks);   /* NULL hooks are fine; returns when the game exits */
+```
+
+It boots headless (SDL dummy video/audio, `--headless`), skips the intro and title menu, and
+starts a default character on level 1 using the real data folder. Hooks: `pre_game_start`
+(character exists, level not loaded), `on_game_start`, `pre_game_tick`, `post_game_tick`,
+`on_game_exit`; call `test_game_request_exit()` from one to stop. One game per process, so use one
+executable per scenario. See `tests/test_game_hooks.c`.

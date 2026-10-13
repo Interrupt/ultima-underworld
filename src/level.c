@@ -211,6 +211,7 @@ int load_level(int level_number)
   if (-1 < DAT_00202080) {
     DAT_00202080 = -1;
   }
+  uw_test_hook_pre_level_load(level_number);
   if (open_level_archive(archive,s__SAVE0_lev_ark_000842fc) == 0) {
     return 0;
   }

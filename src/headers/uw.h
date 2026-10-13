@@ -11,6 +11,7 @@
 #include "ghidra_intrinsics.h"
 #include "ordinal_stubs.h"
 #include "gx_stub.h"
+#include "unit_test_hooks.h"
 #include "file_io.h"
 
 typedef unsigned char   undefined;

@@ -41,6 +41,7 @@ X(INT, force_critter_state, UW_OPT_UNSET, "Force every critter into this animati
 X(BOOL, extralights, 0, "Add small distance lights around campfires, glowing rocks, lit torches and magic projectiles (up to 8 at once). Also a toggle in the debug panel.")
 X(BOOL, fullbright, 1, "Skip the ARM distance falloff for palette indices LIGHT.DAT leaves fullbright (lava, magic).")
 X(INT, hack_pitch, UW_OPT_UNSET, "Force the camera pitch (0-360).")
+X(BOOL, headless, 0, "Run without a window, display or sound device (SDL dummy video and audio drivers). Used by the unit-test game harness.")
 X(BOOL, hack_reveal_depth, 0, "Hack reveal depth.")
 X(BOOL, hack_reveal_depth_zero, 0, "Hack reveal depth zero.")
 X(STR, light_mode, NULL, "Lighting: \"smooth\" (default, also \"arm\") scales colours by (1-s^2)^2/(1+F*s^2) with s=d/max, F=max/1.3; \"linear\" interpolates the SHADES.DAT/LIGHT.DAT shade-row brightnesses linearly; \"dos\" uses the shade rows themselves. \"smooth\" and \"linear\" fade to black near where the dos rows do.")

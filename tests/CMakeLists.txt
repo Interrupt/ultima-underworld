@@ -125,7 +125,7 @@ add_fixture_game_unit_test(chargen
 # fixture library's own copy of the define is PRIVATE).
 target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
 add_fixture_game_unit_test(new_game
-  src/game.c:prepare_new_game src/game.c:begin_gameplay
+  src/game.c:prepare_new_game src/game.c:start_game_with_current_character src/game.c:begin_gameplay
   src/level.c:load_level_object_table src/level.c:load_level
   src/game.c:set_game_mode
   src/ordinal_stubs.c:ce_wcscpy src/ordinal_stubs.c:CopyFileW
@@ -1371,3 +1371,20 @@ add_supported_game_unit_test(save_inventory uw_test_save_inventory uw_test_divis
 
 # NPC collision-response profiles must be populated in the buffers the sweep actually reads.
 add_fixture_game_unit_test(collision_profiles src/movement.c:init_collision_response_profiles)
+
+# Real-game tests: the whole game (uw_game_objs) with a test-supplied main(), run headless through
+# start_test_game (src/unit_test_hooks.c). These link no fixtures -- fixtures replace game code, these
+# run it. Unity is linked without the options library because the game objects already define g_opts.
+add_library(unity_bare STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c")
+target_include_directories(unity_bare PUBLIC "${PROJECT_SOURCE_DIR}/third_party/unity/src")
+function(add_test_game_executable name)
+  add_executable(test_${name} "${CMAKE_CURRENT_SOURCE_DIR}/test_${name}.c"
+    $<TARGET_OBJECTS:uw_game_objs>)
+  target_include_directories(test_${name} PRIVATE "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/support"
+    ${SDL2_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/third_party/hxcmod" "${PROJECT_SOURCE_DIR}/third_party/openabyss")
+  target_link_directories(test_${name} PRIVATE ${SDL2_LIBRARY_DIRS})
+  target_link_libraries(test_${name} PRIVATE unity_bare ${SDL2_LIBRARIES})
+  add_dependencies(unit_tests test_${name})
+  add_test(NAME ${name} COMMAND test_${name} WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+endfunction()
+add_test_game_executable(game_hooks)
