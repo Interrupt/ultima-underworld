@@ -444,32 +444,12 @@ void unregister_key_binding(short binding_id)
       if ((uint)(sVar6 - 1) < 128 && (uint)(iVar5 - 1) < 128) {
         g_click_region_handler[sVar6 - 1] = g_click_region_handler[iVar5 - 1];
       }
-      sVar6 = DAT_00202890[iVar5 * 9 + -9];
-      *(char *)psVar7 = (char)sVar6;
-      *(char *)((char *)psVar7 + 1) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[3];
-      *(char *)(psVar7 + 3) = (char)sVar6;
-      *(char *)((char *)psVar7 + 7) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[4];
-      *(char *)(psVar7 + 4) = (char)sVar6;
-      *(char *)((char *)psVar7 + 9) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[1];
-      *(char *)(psVar7 + 1) = (char)sVar6;
-      *(char *)((char *)psVar7 + 3) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[2];
-      *(char *)(psVar7 + 2) = (char)sVar6;
-      *(char *)((char *)psVar7 + 5) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[5];
-      *(char *)(psVar7 + 5) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xb) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[6];
-      *(char *)(psVar7 + 6) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xd) = (char)((ushort)sVar6 >> 8);
-      uVar4 = *(undefined4 *)(DAT_00202890 + 7);
-      *(char *)(psVar7 + 7) = (char)uVar4;
-      *(char *)((char *)psVar7 + 0xf) = (char)((uint)uVar4 >> 8);
-      *(char *)(psVar7 + 8) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)psVar7 + 0x11) = (char)((uint)uVar4 >> 0x18);
+      /* Was a field-by-field copy whose first field (the id) came from the LAST record but whose
+         others (`DAT_00202890[3]`, `[4]`, `[1]`, ... -- Ghidra dropped the last-record base) came
+         from record 0, so the surviving last region ended up with region 0's rect/mode/handler
+         and its own was lost: after a HUD panel swap unregistered a non-last region, click regions
+         stopped responding. Copy the whole 0x12-byte last record, as the keybinding branch does. */
+      memmove(psVar7,(char *)DAT_00202890 + (iVar5 - 1) * 0x12,0x12);
     }
     if (g_click_region_handler_n > 0) g_click_region_handler_n--;
     sVar6 = DAT_00202898;
@@ -579,10 +559,12 @@ void wait_for_click_release(int mode)
     /* Desktop input adaptation: the original only sees mouse codes (0..3) here, so any other event
        meant the stylus had lifted. A held movement key latches its code in DAT_0023c448, and that
        made peek_input_event return the key instead of the button state, ending the wait and
-       dropping the dragged item the moment the player moved. Only while an item is held, keys
-       leave the wait running; the button's own state decides when it ends. */
-    if (sVar1 > 3 && g_selected_object != 0) {
-      if (DAT_000876c8 != 0) {
+       dropping the dragged item the moment the player moved (a key's own message pump also reads
+       back as -1, "nothing pending", which the original takes for a lifted stylus). Only while an
+       item is held, keys and "nothing pending" leave the wait running; the button's own state
+       decides when it ends. */
+    if ((sVar1 > 3 || sVar1 == -1) && g_selected_object != 0) {
+      if (sVar1 > 3 && DAT_000876c8 != 0) {
         DAT_0023c448 = 0; /* key released: stop the walk, as app_main_loop does */
       }
       sVar1 = (short)poll_mouse_button_flags();

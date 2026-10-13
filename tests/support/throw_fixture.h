@@ -3,6 +3,9 @@
 #include "unity.h"
 #include "../throw_test_globals.h"
 short fine(ushort *object, int offset);
+int uw_service_game_clock(uint64_t now_us);
+void uw_reset_frame_pacing(void);
+void movement_pacing_handler(void);
 uw_object_hdr_t *alloc_object_slot(int mobile);
 void free_object_slot(uw_object_hdr_t *object);
 int encode_object_slot_index(const uw_object_hdr_t *object);
@@ -44,4 +47,7 @@ void throw_fixture_reset(void);
 void throw_fixture_dispose(void);
 void launch(void);
 void tick(void);
+void run_game_frame(void);
+void thrown_set_phase(int phase);
+void thrown_count_steps(void);
 #endif

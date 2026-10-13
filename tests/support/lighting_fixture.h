@@ -29,6 +29,7 @@ long CloseHandle(int h);
 void *ce_memset(void *p, int value, unsigned n);
 char *ce_strcat(char *p, char *s);
 void lighting_fixture_reset(void);
+void lighting_fixture_set_camera(const float m[16], const float cam_offset[3]);
 void lighting_fixture_dispose(void);
 ushort lighting_draw_texel(int reciprocal_w, int x, int y);
 extern byte lighting_span_shade;

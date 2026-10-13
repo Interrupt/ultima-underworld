@@ -136,6 +136,13 @@ static char DAT_00087944_backing[128];
 static char *DAT_00087944 = DAT_00087944_backing;
 /* Port clock for movement_pacing_handler, in the original 4ms units. GX input polling samples
    elapsed time at 60Hz, including inside the original blocking input waits. */
+/* HACK: not original behaviour -- the player's X/Y position below the 1/256-tile resolution the
+   movement block stores, valid while the block still holds (x, y). See sweep_init_position. */
+struct player_move_fraction {
+  short x, y;
+  byte x_frac, y_frac;
+};
+static struct player_move_fraction g_player_move_fraction = {0};
 unsigned int g_uw_frame_clock_units;
 static char DAT_00087950_backing[128];
 static char *DAT_00087950 = DAT_00087950_backing;
@@ -236,6 +243,18 @@ void sweep_init_position()
   g_sweep_foot_pos[2] = *(short *)(DAT_00204874 + 4) >> 3;
   DAT_00086980 = (*DAT_00204874 & 0x1f) << 8;
   DAT_00086982 = (DAT_00204874[2] & 0x1f) << 8;
+  /* HACK: not original behaviour -- the position is stored back as whole 1/256-tile units, so the
+     remainder below that was thrown away every tick: a positive move lost up to one unit per tick
+     and a negative one gained up to one (floor), skewing slow movement toward -x/-y and off the
+     camera's heading. Carry the remainder over while the stored position is still the one we left. */
+  if (DAT_00204874 == (char *)&DAT_00204880) {
+    if (*(short *)(DAT_00204874 + 0) == g_player_move_fraction.x) {
+      DAT_00086980 |= g_player_move_fraction.x_frac;
+    }
+    if (*(short *)(DAT_00204874 + 2) == g_player_move_fraction.y) {
+      DAT_00086982 |= g_player_move_fraction.y_frac;
+    }
+  }
   DAT_00086984 = (DAT_00204874[4] & 7) << 8;
 }
 
@@ -384,10 +403,32 @@ int movement_sweep_setup(int is_initial, int use_remaining)
   short local_1e;
   
   angle_to_screen_delta((int)*(short *)(DAT_00204874 + 0x21),&local_20,&local_1e);
-  iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_20 >> 0xf;
-  *(char *)(DAT_00204874 + 6) = (char)iVar10;
-  *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
-  iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_1e >> 0xf;
+  /* HACK: not original behaviour -- speed * sin/cos >> 15 floors, which pushes a negative component
+     up to a whole velocity unit further from zero than the matching positive one. At walking speeds
+     a unit is a large fraction of the vector, so the player drifted off the camera's heading (worst
+     slowly, at 45 degrees, and biased toward -x/-y). The player's rounding remainder is carried from
+     tick to tick instead, so the net direction and distance are exact. */
+  if (DAT_00204874 == (char *)&DAT_00204880 && is_initial != 0) {
+    static int carry_x, carry_y;
+    int speed = (int)*(short *)(DAT_00204874 + 0x14);
+    if (speed == 0) {
+      carry_x = carry_y = 0;
+    }
+    iVar10 = speed * (int)local_20 + carry_x;
+    carry_x = iVar10 & 0x7fff;
+    iVar10 = iVar10 >> 0xf;
+    *(char *)(DAT_00204874 + 6) = (char)iVar10;
+    *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
+    iVar10 = speed * (int)local_1e + carry_y;
+    carry_y = iVar10 & 0x7fff;
+    iVar10 = iVar10 >> 0xf;
+  }
+  else {
+    iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_20 >> 0xf;
+    *(char *)(DAT_00204874 + 6) = (char)iVar10;
+    *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
+    iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_1e >> 0xf;
+  }
   *(char *)(DAT_00204874 + 8) = (char)iVar10;
   *(char *)(DAT_00204874 + 9) = (char)((uint)iVar10 >> 8);
   *g_sweep_velocity = *g_sweep_velocity + *(short *)(DAT_00204874 + 0x12) * *(short *)(DAT_00204874 + 0xc);
@@ -441,6 +482,18 @@ int movement_sweep_setup(int is_initial, int use_remaining)
     iVar10 = iVar10 * 2;
     (&DAT_00086986)[iVar10] = 0;
     (&DAT_00086987)[iVar10] = uVar5;
+    /* HACK: not original behaviour -- the ratio above is only kept to 1/32 of a unit (one byte, and
+       truncated), so the minor axis always came out short of the heading by up to ~3%. For the
+       player keep the full 16-bit, rounded ratio (dominant step * minor / dominant velocity). */
+    if (DAT_00204874 == (char *)&DAT_00204880) {
+      int dominant_step = (int)*(short *)(&DAT_00086986 + (short)DAT_0008698c * 2);
+      int dominant_velocity = (int)g_sweep_velocity[(short)DAT_0008698c];
+      long long scaled = (long long)dominant_step * (int)g_sweep_velocity[iVar10 / 2];
+      long long half = dominant_velocity < 0 ? -(long long)dominant_velocity / 2 : dominant_velocity / 2;
+      int ratio = (int)((scaled + (scaled < 0 ? -half : half)) / dominant_velocity);
+      (&DAT_00086986)[iVar10] = (char)ratio;
+      (&DAT_00086987)[iVar10] = (char)(ratio >> 8);
+    }
     psVar11 = g_sweep_velocity;
     iVar10 = (int)*(short *)(state_rec + 0x12) * (int)g_sweep_velocity[(short)DAT_0008698c] * 0x10000;
     uVar1 = iVar10 >> 0x1f;
@@ -561,6 +614,14 @@ void sweep_writeback_position()
        (short)(g_sweep_foot_pos[1] * 0x20 + (((int)DAT_00086982 << 0x10) >> 0x18));
   *(short *)(DAT_00204874 + 4) =
        (short)(g_sweep_foot_pos[2] * 8 + (((int)DAT_00086984 << 0x10) >> 0x18));
+  /* HACK: not original behaviour -- keep the player's sub-1/256-tile X/Y fraction (see
+     g_player_move_fraction), which the whole-unit position stored above cannot hold. */
+  if (DAT_00204874 == (char *)&DAT_00204880) {
+    g_player_move_fraction.x = *(short *)(DAT_00204874 + 0);
+    g_player_move_fraction.y = *(short *)(DAT_00204874 + 2);
+    g_player_move_fraction.x_frac = (byte)(DAT_00086980 & 0xff);
+    g_player_move_fraction.y_frac = (byte)(DAT_00086982 & 0xff);
+  }
   if (((((DAT_002049d4 & 0x2000) != 0) &&
        (uVar1 = (int)((int)g_sweep_foot_pos[2] - (uint)DAT_002049d8) >> 0x1f,
        (int)(((int)g_sweep_foot_pos[2] - (uint)DAT_002049d8 ^ uVar1) - uVar1) <=
@@ -623,6 +684,14 @@ int sweep_integrate_substep(short sub_step, short axis)
   else {
     iVar1 = (int)DAT_0008698e;
     sVar3 = (*(short *)(&DAT_00086986 + iVar1 * 2) >> 5) * (short)(char)((ushort)DAT_00086992 >> 8);
+    /* HACK: not original behaviour -- that product keeps only the top 5 bits of the leftover
+       fraction and floors a negative step, so the minor axis lost up to a whole 1/256 tile every
+       tick. Use the full fraction, rounded symmetrically, for the player. */
+    if (DAT_00204874 == (char *)&DAT_00204880) {
+      int minor_step = (int)*(short *)(&DAT_00086986 + iVar1 * 2);
+      int magnitude = ((minor_step < 0 ? -minor_step : minor_step) * (int)DAT_00086992 + 0x1000) >> 13;
+      sVar3 = (short)(minor_step < 0 ? -magnitude : magnitude);
+    }
     if (iVar2 != 1) {
       sVar3 = -sVar3;
     }
@@ -1457,6 +1526,11 @@ void movement_pacing_handler()
   bVar1 = DAT_0023bf58;
   DAT_0023bf58 = bVar2;
   movement_tick(uVar6 & 0xffff,bVar1,0);
+  /* HACK: not original behaviour -- with --physics-fps, thrown items and projectiles are stepped on
+     their own finer tick (the same gate movement_tick applies to the mobile object pass). */
+  if (g_npc_tick_enabled != 0 && DAT_002020d0 == 0) {
+    tick_physics_objects(uVar6);
+  }
 }
 
 

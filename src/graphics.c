@@ -659,6 +659,10 @@ int render_dungeon_view()
   rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);
   build_view_matrix();
   extra_lights_transform_to_eye();
+  /* HACK: not original behaviour -- --light-depth-rounding needs the inverse of this frame's view matrix. */
+  if (g_opts.light_depth_rounding > 0) {
+    light_pass_prepare();
+  }
   near_clip_visible_tiles(0,0);
   translate_verts_to_camera_space(&DAT_000a85d0);
   project_verts_through_view_matrix(&DAT_000a85d0);

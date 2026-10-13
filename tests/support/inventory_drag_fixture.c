@@ -44,6 +44,10 @@ void movement_tick(int elapsed, int bob, int mode)
     TEST_ASSERT_GREATER_THAN_UINT(0, elapsed);
     movement_ticks++;
 }
+/* The physics-fps object pass is off here (g_npc_tick_enabled stays 0). */
+int g_npc_tick_enabled;
+undefined4 DAT_002020d0;
+void tick_physics_objects(int elapsed_units) { (void)elapsed_units; TEST_FAIL_MESSAGE("Unexpected physics pass"); }
 void scheduler_tick(int elapsed)
 {
     TEST_ASSERT_NOT_NULL(g_selected_object);

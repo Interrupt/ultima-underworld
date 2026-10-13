@@ -471,6 +471,25 @@ void walk_visible_tiles()
 
 
 
+/* HACK: not original behaviour. The visibility walk lays the visible tiles out in a window turned by the
+   view quadrant (DAT_0023b4a0, 90 degrees per step), and the floor/ceiling quads give their corners the same
+   texture coordinates in that turned window, so the tile texture rotated by 90 degrees each time the view
+   crossed a quadrant boundary (at yaw 45, 135, 225 and 315). Rotate the four corner coordinates the other way
+   so the texture keeps its place in the world. `winding` is -1 for the floor quad (corners listed counter-clockwise)
+   and +1 for the ceiling quad (clockwise), which turn the corner order opposite ways. */
+static void rotate_flat_quad_uv_for_view(int rec, int winding)
+{
+  int quadrant = DAT_0023b4a0 & 3, k;
+  int uv[8], rotated[8];
+  if (quadrant == 0 || rec < 0) return;
+  memcpy(uv, &DAT_000ace08 + rec * 0x60, sizeof uv);
+  for (k = 0; k < 4; k++) {
+    rotated[k * 2] = uv[((k + winding * quadrant) & 3) * 2];
+    rotated[k * 2 + 1] = uv[((k + winding * quadrant) & 3) * 2 + 1];
+  }
+  memcpy(&DAT_000ace08 + rec * 0x60, rotated, sizeof rotated);
+}
+
 // was FUN_0005e604
 void process_visible_tile_cell(byte *cell)
 {
@@ -791,6 +810,7 @@ LAB_0005e7e0:
     (&DAT_000acde6)[iVar30] = 0;
     iVar16 = DAT_00086e6c;
     (&DAT_000acde7)[iVar30] = 0;
+    rotate_flat_quad_uv_for_view(DAT_0023b83c, -1);
     if (!g_uw_hide_walls) {
       DAT_000a85d4 = iVar32 + 1;
       DAT_0023b83c = DAT_000a85d4;
@@ -972,6 +992,7 @@ LAB_0005e7e0:
     (&DAT_000acde5)[iVar19] = 0;
     (&DAT_000acde6)[iVar19] = 0;
     (&DAT_000acde7)[iVar19] = 0;
+    rotate_flat_quad_uv_for_view(DAT_0023b83c, 1);
     if (!g_uw_hide_walls) {
       DAT_000a85d4 = DAT_0023b83c + 1;
       DAT_0023b83c = DAT_000a85d4;

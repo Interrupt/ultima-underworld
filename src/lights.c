@@ -234,6 +234,71 @@ static int dos_shade_factor(int light_distance)
   return f > 4096.0 ? 4096 : (int)f;
 }
 
+/* HACK: not original behaviour -- the --light-depth-rounding=N option. DOS shades from distances that come in
+   whole 32-world-unit steps (`sar ax,5` on each coordinate before the squares are summed; reference:
+   cimmerianpit/openabyss src/uw_shade.c uw_rast_vertex_shade, MIT). Rounding the camera-space x, y and z of every
+   pixel does not reproduce that: the steps follow the screen's axes, so near the screen edge a wall at an angle
+   steps x up while z steps down, the rounded distance rises and falls and the bands repeat. Round the pixel's
+   *world* position instead: undo the camera transform (the inverse of the one extra_lights_transform_to_eye
+   applies), snap the world x, y and z to a grid of N * 32 world units, and measure the distance from the camera
+   to the snapped point. The bands then lie on a grid fixed in the world, so they are coherent on any surface at
+   any angle. Returns that distance in the same 4096*w units as `depth` (4096*w; ray_x, ray_y are the pixel's
+   offsets from screen centre in focal-length units, as in shade_span_pixel). */
+/* The camera transform the rounding inverts, prepared once per frame (light_pass_prepare) rather than for
+   every pixel: eye = Q * (world + cam_offset) + t, with `inv` the inverse of Q. */
+struct light_round_frame {
+  double q[9], inv[9], t[3], cam_offset[3];
+  int state; /* 0 = not prepared, 1 = ready, 2 = singular matrix (fall back to the exact distance) */
+};
+static struct light_round_frame g_light_round_frame = {{0}};
+
+/* Call once per frame, after the view matrix and camera offset are built and before any pixel is shaded. */
+void light_pass_prepare(void)
+{
+  struct light_round_frame *f = &g_light_round_frame;
+  float m[16], cam_offset[3];
+  double *q = f->q, *inv = f->inv, det;
+  int i;
+  memcpy(m, DAT_000c8ac0_mtx, sizeof m);
+  memcpy(cam_offset, (char *)DAT_000a85d0_backing + 0x4808, sizeof cam_offset);
+  for (i = 0; i < 3; i++) { f->t[i] = m[12 + i]; f->cam_offset[i] = cam_offset[i]; }
+  q[0] = m[0]; q[1] = m[4]; q[2] = m[8];
+  q[3] = m[1]; q[4] = m[5]; q[5] = m[9];
+  q[6] = m[2]; q[7] = m[6]; q[8] = m[10];
+  det = q[0] * (q[4] * q[8] - q[5] * q[7]) - q[1] * (q[3] * q[8] - q[5] * q[6]) + q[2] * (q[3] * q[7] - q[4] * q[6]);
+  if (fabs(det) < 1e-12) {
+    f->state = 2;
+    return;
+  }
+  inv[0] = (q[4] * q[8] - q[5] * q[7]) / det; inv[1] = (q[2] * q[7] - q[1] * q[8]) / det; inv[2] = (q[1] * q[5] - q[2] * q[4]) / det;
+  inv[3] = (q[5] * q[6] - q[3] * q[8]) / det; inv[4] = (q[0] * q[8] - q[2] * q[6]) / det; inv[5] = (q[2] * q[3] - q[0] * q[5]) / det;
+  inv[6] = (q[3] * q[7] - q[4] * q[6]) / det; inv[7] = (q[1] * q[6] - q[0] * q[7]) / det; inv[8] = (q[0] * q[4] - q[1] * q[3]) / det;
+  f->state = 1;
+}
+
+int light_rounded_distance(int depth, double ray_x, double ray_y)
+{
+  const double eye_units = 1500.0 / 4096.0;
+  const struct light_round_frame *f = &g_light_round_frame;
+  double eye[3], world[3], step = 32.0 * (g_opts.light_depth_rounding > 0 ? g_opts.light_depth_rounding : 1);
+  int i;
+  if (f->state == 0) {
+    light_pass_prepare();
+  }
+  if (f->state != 1) return (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
+  /* the pixel's eye-space point, as shade_span_pixel builds it for the extra lights, in world units */
+  eye[0] = depth * ray_x * eye_units - f->t[0];
+  eye[1] = -depth * ray_y * eye_units - f->t[1];
+  eye[2] = depth * eye_units - f->t[2];
+  for (i = 0; i < 3; i++)
+    world[i] = f->inv[i * 3] * eye[0] + f->inv[i * 3 + 1] * eye[1] + f->inv[i * 3 + 2] * eye[2] - f->cam_offset[i];
+  for (i = 0; i < 3; i++)
+    world[i] = floor(world[i] / step + 0.5) * step + f->cam_offset[i];
+  for (i = 0; i < 3; i++)
+    eye[i] = f->q[i * 3] * world[0] + f->q[i * 3 + 1] * world[1] + f->q[i * 3 + 2] * world[2] + f->t[i];
+  return (int)(sqrt(eye[0] * eye[0] + eye[1] * eye[1] + eye[2] * eye[2]) / eye_units);
+}
+
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
    (ray_x, ray_y) is the pixel's offset from screen centre in focal-length units. With --extralights off
    (or an empty light list) this is exactly the player's light: the DOS shade table when `dos_light_mode`,
@@ -244,6 +309,7 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
                                 bool dos_light_mode, bool fullbright_enabled)
 {
   int light_distance = (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
+  if (g_opts.light_depth_rounding > 0) light_distance = light_rounded_distance(depth, ray_x, ray_y);
   bool use_extra = g_opts.extralights && g_extra_light_count > 0;
   double pixel[3];
   int i;

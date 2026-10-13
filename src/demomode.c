@@ -1015,17 +1015,19 @@ static void demo_exec_line(char *p, Uint32 now) {
         }
         if (demo_match_cmd(p, "SPAWNOBJ", &arg) || demo_match_cmd(p, "GIVEOBJ", &arg)) {
             /* SPAWNOBJ <id> -- new object on a free tile in front of the player.
-               GIVEOBJ <id>  -- new object in the first free top-level backpack slot. */
+               GIVEOBJ <id> [quantity] -- new object in the first free top-level backpack slot. */
             int give = (strncasecmp(p, "GIVEOBJ", 7) == 0);
             char *end;
             long id = strtol(arg, &end, 0);
+            long qty = 1;
             char nm[96];
+            if (give && *end == ' ') qty = strtol(end, &end, 0);
             if (*arg == '\0' || *end != '\0' || id < 0 || id > 0x1ff) {
-                demo_printf("[cmd] usage: %s <id 0-0x1ff>  (see OBJIDS)\n", give ? "GIVEOBJ" : "SPAWNOBJ");
+                demo_printf("[cmd] usage: %s <id 0-0x1ff>%s  (see OBJIDS)\n", give ? "GIVEOBJ" : "SPAWNOBJ", give ? " [quantity]" : "");
             } else {
                 dbgui_object_name((int)id, nm, sizeof nm);
                 if (give) {
-                    int slot = dbgui_give_object((int)id);
+                    int slot = dbgui_give_object((int)id, (int)qty);
                     if (slot >= 0) demo_printf("[cmd] gave 0x%03lx %s (backpack slot %d)\n", id, nm, slot - 0xb);
                     else demo_printf("[cmd] %s\n", slot == -2 ? "no free backpack slot" : "no free object slot");
                 } else {
@@ -1204,7 +1206,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "  OPENMAP | REVEAL | REVEALALL\n"
                     "  FLY | FARSIGHT | NOCLIP | GODMODE  (each takes optional on/off)\n"
                     "  PLAYERLEVEL <1-16> | SETSKILL <skill|all> <0-30>\n"
-                    "  OBJIDS | SPAWNOBJ <id> | GIVEOBJ <id> | ALLRUNES\n"
+                    "  OBJIDS | SPAWNOBJ <id> | GIVEOBJ <id> [qty] | ALLRUNES\n"
                     "  CASTSPELL [id]  (no id lists spells)\n"
                     "  OPTIONS | <option> [value]\n"
                     "  LIGHTLEVEL <0-7>\n"
