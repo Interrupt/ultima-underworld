@@ -101,6 +101,31 @@ static void test_arrow_keys_do_nothing_outside_the_3d_view(void)
     TEST_ASSERT_EQUAL_HEX16(0, g_held_move_keys);
 }
 
+extern int mouselook;
+
+static void test_mouselook_swaps_strafe_and_turn_keys(void)
+{
+    const struct { SDL_Scancode key; ushort held; } normal[] = {
+        {SDL_SCANCODE_A, HELD_MOVE_LEFT}, {SDL_SCANCODE_D, HELD_MOVE_RIGHT},
+        {SDL_SCANCODE_Z, HELD_MOVE_STRAFE_LEFT}, {SDL_SCANCODE_C, HELD_MOVE_STRAFE_RIGHT},
+    };
+    const struct { SDL_Scancode key; ushort held; } look[] = {
+        {SDL_SCANCODE_A, HELD_MOVE_STRAFE_LEFT}, {SDL_SCANCODE_D, HELD_MOVE_STRAFE_RIGHT},
+        {SDL_SCANCODE_Z, HELD_MOVE_LEFT}, {SDL_SCANCODE_C, HELD_MOVE_RIGHT},
+    };
+    for (unsigned i = 0; i < 4; i++) {
+        setUp();
+        keyboard[normal[i].key] = 1;
+        look_pacing_poll(0);
+        TEST_ASSERT_EQUAL_HEX16(normal[i].held, g_held_move_keys);
+        setUp();
+        mouselook = 1;
+        keyboard[look[i].key] = 1;
+        look_pacing_poll(0);
+        TEST_ASSERT_EQUAL_HEX16(look[i].held, g_held_move_keys);
+    }
+}
+
 static void test_modal_input_does_not_ramp_pitch(void)
 {
     keyboard[SDL_SCANCODE_1] = 1;
@@ -124,6 +149,7 @@ int main(void)
     RUN_TEST(test_arrow_keys_hold_the_same_movement_state_as_wasd);
     RUN_TEST(test_arrow_keys_combine_and_release);
     RUN_TEST(test_arrow_keys_do_nothing_outside_the_3d_view);
+    RUN_TEST(test_mouselook_swaps_strafe_and_turn_keys);
     RUN_TEST(test_modal_input_does_not_ramp_pitch);
     return UNITY_END();
 }

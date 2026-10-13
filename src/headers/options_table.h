@@ -58,5 +58,8 @@ X(BOOL, player_no_bounce, 1, "Clear the player's downward velocity on landing (-
 X(INT, record_delay_ms, UW_OPT_UNSET, "DELAY line written into a recorded demo file.")
 X(STR, record_demofile, NULL, "Record input to this demo script file.")
 X(BOOL, touchscreen, 0, "Use the full-height touchscreen window layout.")
+X(FLOAT, look_pitch_limit, 45.0f, "How far (degrees, 1-89) the view can look up and down, for both mouselook and the 1/3 keys.")
+X(FLOAT, mouselook_speed, 0.12f, "Mouselook speed in degrees of turn per mouse count (F toggles mouselook).")
+X(FLOAT, wall_turn, 1.0f, "How much running into a wall turns the player toward the slide direction (1.0 = original, 0 = off).")
 X(INT, turn_accel, 0x60, "Turn acceleration used for keyboard turning.")
 X(INT, walk_accel, 0x30, "Walk acceleration used for keyboard movement.")

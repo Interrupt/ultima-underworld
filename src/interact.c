@@ -1,6 +1,7 @@
 /* Object interaction dispatch: the default click handler and the per-cursor-mode handlers (talk,
    look, use, attack). Split out of uw.c (the original monolithic decompile) once these functions'
    real roles were confirmed. */
+#include "headers/mouselook.h"
 #include "headers/interact.h"
 #include "headers/options.h"
 #include "headers/debug.h"
@@ -196,6 +197,61 @@ void interact_use()
   }
 }
 
+
+
+/* True when the cursor is inside the 3D viewport's registered rect (the same bounds
+   pick_object_under_cursor itself guards with). */
+static int cursor_in_game_view(void)
+{
+  return g_mouse_x >= DAT_0023be5c && g_mouse_x < DAT_0023be5c + DAT_0023bd80 &&
+         g_mouse_y >= (short)(DAT_0023be80 - DAT_0023be88) && g_mouse_y < DAT_0023be80;
+}
+
+/* Desktop hotkey Q: Look at whatever is under the cursor, exactly as a plain click does in look
+   mode (handle_game_view_click's index-2 dispatch), including the terrain description when the pick
+   hits a wall or floor instead of an object. */
+void quick_look_at_cursor(int unused)
+{
+  (void)unused;
+  if (g_cursor_holding_state != 0 || !cursor_in_game_view()) return;
+  g_interact_target = pick_object_under_cursor(2);
+  if (g_interact_target == 0) {
+    describe_picked_terrain(2,(int)DAT_002020ac);
+    return;
+  }
+  interact_look();
+}
+
+/* Desktop hotkey E: talk to a critter under the cursor; otherwise Use the object, or -- if it is
+   something the player can pick up -- grab it into the cursor/inventory instead, the way get mode
+   does. Always ends in a Use-mode response, even for terrain. */
+void quick_use_object_at_cursor(int unused)
+{
+  (void)unused;
+  if (g_cursor_holding_state != 0 || !cursor_in_game_view()) return;
+  g_interact_target = pick_object_under_cursor(2);
+  /* Nothing under the cursor (a wall, the floor, the void): exactly what a click does in Use mode
+     (handle_game_view_click's dispatch index 0), i.e. the "cannot use that" message. */
+  if (g_interact_target == 0) {
+    describe_picked_terrain(0,(int)DAT_002020ac);
+    return;
+  }
+  /* A critter (object ids 0x40-0x7f, same test interact_default's talk branch uses): talk to it.
+     Mouselook releases itself when the conversation screen takes over the view. */
+  if (object_ptr_in_arena(g_interact_target) != 0 && (*g_interact_target & 0x1c0) == 0x40) {
+    interact_talk_npc();
+    return;
+  }
+  if (DAT_002020ec != 0) {
+    interact_default();
+    /* A picked-up item is now on the cursor and needs the free pointer to drag it somewhere
+       (inventory, a container, the floor): leave mouselook. */
+    if (g_cursor_holding_state != 0 && uw_mouselook_active()) uw_toggle_mouselook(0);
+  }
+  else {
+    interact_use();
+  }
+}
 
 
 // was FUN_0003f368

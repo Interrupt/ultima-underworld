@@ -918,6 +918,16 @@ static void demo_exec_line(char *p, Uint32 now) {
         return;
     }
 
+    if (strncasecmp(p, "SDLREL ", 7) == 0) {
+        /* SDLREL <dx> <dy> -- relative pointer motion (mouselook steering). */
+        int dx = 0, dy = 0;
+        sscanf(p + 7, "%d %d", &dx, &dy);
+        demo_printf("[cmd] SDLREL rel=(%d,%d)\n", dx, dy);
+        uw_inject_mouse_relmotion(dx, dy);
+        g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
+        return;
+    }
+
     if (strncasecmp(p, "SDLMOVE ", 8) == 0) {
         int wx = 0, wy = 0;
         sscanf(p + 8, "%d %d", &wx, &wy);

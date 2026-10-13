@@ -1,6 +1,7 @@
 /* The HUD: dirty-rect tracking/flush, mode icons, cursor-mode button clicks, the per-frame HUD
    draw/tick dispatch (vitals bar, dragon reaction, compass needle, panel transitions), and the
    message scroll panel (word-wrap, line-by-line scroll, draw). */
+#include "headers/mouselook.h"
 #include "headers/hud.h"
 #include "headers/options.h"
 #include "headers/debug.h"
@@ -5762,6 +5763,16 @@ void update_hotspot_cursor_icon()
   int iVar1;
   int iVar2;
   
+  /* Mouselook pins the cursor to the viewport centre: show the plain default ('X') cursor, not
+     whatever walk-arrow hotspot the (unused) real pointer position would select. Same override
+     guard as the body below, so a held item / targeting icon keeps its own cursor. */
+  if (uw_mouselook_active()) {
+    if (DAT_00204858 < '\x01') {
+      DAT_00086970 = -1;   /* force a fresh hotspot scan once mouselook ends */
+      if (DAT_00204788 != 0x106c) set_cursor_sprite_id(0x106c);
+    }
+    return;
+  }
   if ((DAT_00204858 < '\x01') &&
      ((((DAT_00086970 == -1 || (g_mouse_x < DAT_00086970)) || (DAT_002047a8 < g_mouse_x)) ||
       ((DAT_0020478c < g_mouse_y || (g_mouse_y < DAT_002047ac)))))) {
@@ -5919,6 +5930,16 @@ uint poll_mouse_button_flags()
     }
   }
   return uVar1;
+}
+
+
+/* Desktop hotkeys R (rune bag page, 1) and V (skills/stats page, 2): show that page of the HUD
+   panel, or return to the inventory (page 0) if it is already showing. Same panel switch
+   toggle_stats_panel and the rune-bag click use; ignored while the panel is mid-transition. */
+void toggle_hud_panel_page(int page)
+{
+  if (g_active_hud_panel == '\x04') return;
+  set_hud_status_value(6, g_active_hud_panel == (char)page ? 0 : page);
 }
 
 

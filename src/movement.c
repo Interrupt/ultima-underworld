@@ -1288,6 +1288,14 @@ void sweep_apply_collision()
 
 
 
+/* Per-tick facing change commit_player_move applies when a wall deflects the player's travel
+   heading: the original's 0x400 (~5.6 degrees) scaled by --wall-turn (1.0 = original, 0 = off). */
+int uw_wall_turn_step(void) {
+  float scale = g_opts.wall_turn;
+  if (scale < 0.0f) scale = 0.0f;
+  return (int)(0x400 * scale);
+}
+
 /* Fixed turn-rate accelerator value for decode_movement_command's turn branches -- see that
    function's own comment for why turning was decoupled from DAT_0024af6c (the held-key ramp, still
    used as-is for forward/back). */

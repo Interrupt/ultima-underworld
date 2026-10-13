@@ -105,6 +105,7 @@ int collision_response_mobile_object(ushort *collision_flags);
 unsigned int uw_frame_clock_ms();
 int check_and_reset_landing_state(ushort *object);
 int uw_turn_rate_accel();
+int uw_wall_turn_step(void);
 void init_collision_response_profiles();
 int collision_response_default(ushort *object);
 int collision_response_alt_locomotion(ushort *object);
