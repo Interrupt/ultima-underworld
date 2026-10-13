@@ -118,6 +118,96 @@ static int g_keychar_deferred = 0;
    actually dispatches. */
 static int g_mouse_button_held = 0;
 
+/* The F/E/Q hotkeys must fire once per physical press. They reach the game as WM_CHAR from
+   SDL_TEXTINPUT, which SDL repeats along with the auto-repeated SDL_KEYDOWN; a repeated keydown of
+   one of them sets this so the text event that follows it is dropped. */
+static int g_skip_repeat_hotkey_char = 0;
+static int is_hotkey_sym(SDL_Keycode sym) { return sym == SDLK_f || sym == SDLK_e || sym == SDLK_q; }
+
+/* Mouselook (toggled with F, see uw_toggle_mouselook). While active the real pointer is captured
+   (SDL relative mode): its motion turns/pitches the player's view directly, and the game's own
+   software cursor stays pinned to the middle of the 3D viewport -- where the registered hotspot
+   map has no walk arrow, so it shows the default 'X' -- so clicks, E (use/get) and Q (look) all act
+   on whatever is under the crosshair. */
+extern short DAT_0023be5c, DAT_0023bd80, DAT_0023be80, DAT_0023be88;  /* 3D viewport x, width, bottom y, height */
+extern short DAT_00201c70;                                            /* player yaw, 65536 = 360 deg */
+#define MOUSELOOK_PITCH_LIMIT     0x1800
+static int g_mouselook_enabled = 0;   /* the player's F toggle */
+static int g_mouselook_applied = 0;   /* toggle AND the game is in a state where it makes sense */
+
+int uw_mouselook_active(void) { return g_mouselook_applied; }
+
+void uw_toggle_mouselook(int unused) {
+    (void)unused;
+    /* The software cursor is what shows the crosshair and receives clicks; the stylus-style
+       cursor (--always-show-cursor=0) has no persistent position to pin. */
+    if (!uw_always_show_cursor()) return;
+    g_mouselook_enabled = !g_mouselook_enabled;
+    fprintf(stderr, "[mouselook] %s\n", g_mouselook_enabled ? "on" : "off");
+}
+
+/* Centre of the 3D viewport in game (landscape) coordinates; 0 if it isn't registered yet. */
+static int mouselook_center(int *cx, int *cy) {
+    if (DAT_0023bd80 <= 0 || DAT_0023be88 <= 0) return 0;
+    *cx = DAT_0023be5c + DAT_0023bd80 / 2;
+    *cy = DAT_0023be80 - DAT_0023be88 / 2;
+    return 1;
+}
+
+static void mouselook_post_motion(int landscape_x, int landscape_y) {
+    int portrait_x = landscape_y;
+    int portrait_y = (HW_H - 1) - landscape_x;
+    handle_mouse_message(0, 0x200u, 0, (portrait_y << 16) | (portrait_x & 0xffff));
+    uw_request_cursor_present();
+}
+
+/* Called every pump: capture/release the pointer as the toggle and the game state dictate. Only the
+   interactive 3D view (no menu, text prompt, or debug UI, window focused) gets mouselook; anywhere
+   else the pointer is free so the HUD, inventory and menus stay clickable. */
+static void mouselook_refresh(void) {
+    int cx, cy;
+    int want = g_mouselook_enabled && g_win && DAT_00201b64 == 0 && !g_text_input_active &&
+               !dbgui_visible() && (SDL_GetWindowFlags(g_win) & SDL_WINDOW_INPUT_FOCUS) &&
+               mouselook_center(&cx, &cy);
+    if (want == g_mouselook_applied) return;
+    g_mouselook_applied = want;
+    SDL_SetRelativeMouseMode(want ? SDL_TRUE : SDL_FALSE);
+    if (!want && g_ren) {
+        /* Hand the real pointer back where the game cursor is (the viewport centre) so it
+           doesn't jump on the next motion. */
+        int wx = 0, wy = 0;
+        if (mouselook_center(&cx, &cy)) {
+            SDL_RenderLogicalToWindow(g_ren, (float)cx, (float)cy, &wx, &wy);
+            SDL_WarpMouseInWindow(g_win, wx, wy);
+        }
+    }
+    if (want) {
+        SDL_GetRelativeMouseState(NULL, NULL);   /* drop motion accumulated before capture */
+        mouselook_post_motion(cx, cy);
+    }
+}
+
+/* Relative motion -> view. Right turns right, down looks down (positive pitch).
+   SDL divides a real event's xrel/yrel by the renderer's logical-to-window scale, so the same
+   physical movement would turn a big window less than a small one; multiply it back out so the
+   speed depends only on the device count and --mouselook-sensitivity (deg per count). Injected
+   (demo) motion is taken verbatim. */
+static void mouselook_apply_motion(const SDL_MouseMotionEvent *m) {
+    double dx = m->xrel, dy = m->yrel;
+    if (m->which != UW_SYNTH_MOUSE && g_win) {
+        int ww = 0, wh = 0;
+        SDL_GetWindowSize(g_win, &ww, &wh);
+        double scale = SDL_min((double)ww / GX_W, (double)wh / g_display_height);
+        if (scale > 0) { dx *= scale; dy *= scale; }
+    }
+    double deg = g_opts.mouselook_sensitivity;
+    DAT_00201c70 = (short)(DAT_00201c70 + (int)lround(dx * deg * (65536.0 / 360.0)));
+    int p = (int)DAT_0023beb4 + (int)lround(dy * deg * 256.0);
+    if (p < -MOUSELOOK_PITCH_LIMIT) p = -MOUSELOOK_PITCH_LIMIT;
+    if (p > MOUSELOOK_PITCH_LIMIT) p = MOUSELOOK_PITCH_LIMIT;
+    DAT_0023beb4 = (short)p;
+}
+
 static int translate_vk(SDL_Keycode sym) {
     switch (sym) {
         case SDLK_UP: return VK_UP;
@@ -173,13 +263,16 @@ static void poll_dungeon_movement_keys(int game_frame_due)
     #define UW_HELD(sc) ((physical_keys && ks[(sc)]) || g_synth_scancode_held[(sc)])
     /* Arrow keys: up forward (run), down backward, left/right turn -- the same held-key state as
        WASD/X, so they combine with a jump or each other exactly as those do. */
-    int left    = UW_HELD(SDL_SCANCODE_A) || UW_HELD(SDL_SCANCODE_LEFT);
-    int right   = UW_HELD(SDL_SCANCODE_D) || UW_HELD(SDL_SCANCODE_RIGHT);
+    /* Mouselook swaps the A/D and Z/C pairs: the mouse turns, so A/D strafe (modern WASD) and
+       Z/C take over keyboard turning. */
+    const int ml = uw_mouselook_active();
+    int left    = UW_HELD(ml ? SDL_SCANCODE_Z : SDL_SCANCODE_A) || UW_HELD(SDL_SCANCODE_LEFT);
+    int right   = UW_HELD(ml ? SDL_SCANCODE_C : SDL_SCANCODE_D) || UW_HELD(SDL_SCANCODE_RIGHT);
     int run     = UW_HELD(SDL_SCANCODE_W) || UW_HELD(SDL_SCANCODE_UP);   /* W = run forward  */
     int walk    = UW_HELD(SDL_SCANCODE_S);   /* S = walk forward (slower) */
     int back    = UW_HELD(SDL_SCANCODE_X) || UW_HELD(SDL_SCANCODE_DOWN);
-    int strafeL = UW_HELD(SDL_SCANCODE_Z);
-    int strafeR = UW_HELD(SDL_SCANCODE_C);
+    int strafeL = UW_HELD(ml ? SDL_SCANCODE_A : SDL_SCANCODE_Z);
+    int strafeR = UW_HELD(ml ? SDL_SCANCODE_D : SDL_SCANCODE_C);
     int lookUp  = UW_HELD(SDL_SCANCODE_1);
     int lookCtr = UW_HELD(SDL_SCANCODE_2);
     int lookDn  = UW_HELD(SDL_SCANCODE_3);
@@ -345,6 +438,7 @@ void uw_pump_events(void) {
        menus, dungeon movement, ...)... */
     democapture_tick();
     demomode_pump();
+    mouselook_refresh();
     /* poll_dungeon_movement_keys() reads physical keyboard state directly (not the SDL event
        queue), so swallowing key EVENTS below (the dbgui_visible() checks in the
        SDL_KEYDOWN/TEXTINPUT cases) doesn't stop it on its own... */
@@ -433,11 +527,29 @@ void uw_pump_events(void) {
                         return;
                     }
                 }
+                /* Only in the 3D view: in a text prompt, holding the key must keep typing. */
+                if (ev.type == SDL_KEYDOWN && ev.key.repeat && is_hotkey_sym(ev.key.keysym.sym) &&
+                    DAT_00201b64 == 0 && !g_text_input_active) {
+                    g_skip_repeat_hotkey_char = 1;
+                }
                 /* SDL auto-repeats a held key as a stream of SDL_KEYDOWN events; the game's
                    menu/chargen "wait for one keypress" loops (e.g. wait_for_chargen_field_input)
                    treat every keydown as a fresh confirm/select... */
                 if (ev.type == SDL_KEYDOWN && ev.key.repeat) {
+                    /* Backspace is the one exception: holding it must keep deleting, so each
+                       auto-repeat queues another backspace char exactly like the first press. */
+                    if (ev.key.keysym.sym == SDLK_BACKSPACE) {
+                        g_keychar_deferred = 0x08;
+                        return;
+                    }
                     break;
+                }
+                /* TAB (combat-mode toggle) has no SDL_TEXTINPUT; hand it to the game's key bindings as the
+                   WM_CHAR 0x09 they are registered for, once per press, in the 3D view only. */
+                if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_TAB &&
+                    DAT_00201b64 == 0 && !g_text_input_active) {
+                    handle_keyboard_message(0, 0x102u, 9u);
+                    return;
                 }
                 int vk = translate_vk(ev.key.keysym.sym);
                 /* The game's arrow codes are the PocketPC D-pad rotated a quarter turn (see
@@ -477,6 +589,11 @@ void uw_pump_events(void) {
                 }
                 /* Real typed characters (respects keyboard layout/shift state) -- forwarded as
                    WM_CHAR (0x102), matching handle_keyboard_message's real-text-input path. */
+                if (g_skip_repeat_hotkey_char) {
+                    g_skip_repeat_hotkey_char = 0;
+                    char c0 = ev.text.text[0] | 0x20;
+                    if (c0 == 'f' || c0 == 'e' || c0 == 'q') return;
+                }
                 for (const char *p = ev.text.text; *p; p++) {
                     unsigned char c = (unsigned char)*p;
                     /* In 3D free-look the WASD/ZXC/1-3 keys are polled by
@@ -523,6 +640,17 @@ void uw_pump_events(void) {
                    the displayed area, including button releases outside it. */
                 landscape_x = SDL_clamp(landscape_x, 0, GX_W - 1);
                 landscape_y = SDL_clamp(landscape_y, 0, g_display_height - 1);
+                if (g_mouselook_applied) {
+                    /* Mouselook: motion steers the view; every event (motion or button) is
+                       reported at the viewport centre, never at the real pointer position. */
+                    int cx, cy;
+                    if (ev.type == SDL_MOUSEMOTION)
+                        mouselook_apply_motion(&ev.motion);
+                    if (mouselook_center(&cx, &cy)) {
+                        landscape_x = cx;
+                        landscape_y = cy;
+                    }
+                }
                 if (dbgui_visible() && !(dbgui_console_active() && ev.button.which == UW_SYNTH_MOUSE)) {
                     if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT && !dbgui_console_active()) {
                         /* A click inside the 3D viewport's own registered
@@ -707,6 +835,18 @@ int uw_take_mouse_event_pending(void) {
     int had = g_mouse_event_pending;
     g_mouse_event_pending = 0;
     return had;
+}
+
+int uw_inject_mouse_relmotion(int dx, int dy) {
+    /* Relative pointer motion, as SDL reports it while mouselook has the pointer captured. */
+    if (!g_win) return 0;
+    SDL_Event e = {0};
+    e.type = SDL_MOUSEMOTION;
+    e.motion.which = UW_SYNTH_MOUSE;
+    e.motion.xrel = dx;
+    e.motion.yrel = dy;
+    SDL_PushEvent(&e);
+    return 1;
 }
 
 int uw_inject_mouse_down(int window_x, int window_y) {

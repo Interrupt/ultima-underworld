@@ -699,6 +699,14 @@ void init_gameplay_session()
   register_key_binding(0x32,0,0x11,&debug_adjust_view_heading);
   register_key_binding(0x6a,7,0x1b,move_command_dispatch);
   register_key_binding(0x4a,6,0x1b,move_command_dispatch);
+  /* Quality-of-life desktop keys (not in the original): F toggles mouselook, E uses / picks up the
+     object under the cursor, Q looks at it. */
+  register_key_binding(0x46,0,0x1b,uw_toggle_mouselook);
+  register_key_binding(0x66,0,0x1b,uw_toggle_mouselook);
+  register_key_binding(0x45,0,0x1b,quick_use_object_at_cursor);
+  register_key_binding(0x65,0,0x1b,quick_use_object_at_cursor);
+  register_key_binding(0x51,0,0x1b,quick_look_at_cursor);
+  register_key_binding(0x71,0,0x1b,quick_look_at_cursor);
   register_key_binding(0x86,0,0x1b,toggle_stats_panel);
   register_key_binding(0x89,0,0x1b,&debug_force_rest_action);
   register_key_binding(0x88,2,0x1b,&print_debug_stat_message);
@@ -720,7 +728,24 @@ void init_gameplay_session()
   register_key_binding(0x2e,3,1,tick_weapon_swing_state);
   register_key_binding(0x3b,6,1,tick_weapon_swing_state);
   register_key_binding(0x4a3,0x4a3,7,noop_key_handler);
-  register_key_binding(9,9,7,noop_key_handler);
+  /* Mask 6, not 7: mode 1 (the 3D view) is left out so the TAB combat toggle below can bind there --
+     dispatch_key_binding takes the FIRST matching entry. */
+  register_key_binding(9,9,6,noop_key_handler);
+  /* Desktop QoL (the TAB noop above excludes mode 1): TAB toggles
+     combat (attack) mode -- the attack icon's own handler, button index 1 -- and M opens the
+     automap, or closes it again from inside it (like its ESC binding). */
+  register_key_binding(9,1,1,cursor_mode_button_click);
+  register_key_binding(0x4d,2,1,change_game_mode);
+  register_key_binding(0x6d,2,1,change_game_mode);
+  register_key_binding(0x4d,1,2,change_game_mode);
+  register_key_binding(0x6d,1,2,change_game_mode);
+  /* R: rune bag page, V: skills page -- each also closes itself back to the inventory.
+     Shift+R (the 'R' character) casts the spell currently set in the rune slots, the same call
+     as the 0x87 cast binding. */
+  register_key_binding(0x52,1,0x1b,handle_cast_spell_click);
+  register_key_binding(0x72,1,1,toggle_hud_panel_page);
+  register_key_binding(0x56,2,1,toggle_hud_panel_page);
+  register_key_binding(0x76,2,1,toggle_hud_panel_page);
   register_key_binding(0x8d,0x8d,7,noop_key_handler);
   register_key_binding(0x93,0x93,7,noop_key_handler);
   register_key_binding(0x8f,0x8f,7,noop_key_handler);
@@ -1028,6 +1053,10 @@ void handle_game_view_click_hold()
 
 {
   if (DAT_002020d8 == 0) {
+    /* Mouselook: the cursor sits at the viewport centre, which this click-and-hold-to-walk logic
+       reads as "walk forward slowly" -- a held button (attack swing, drag) must not move the
+       player; WASD does that. */
+    if (uw_mouselook_active()) return;
     move_command_dispatch(-1);
     if (DAT_0023bf0c == '\0') {
       set_cursor_confine_rect((int)DAT_0023be5c,(int)DAT_0023be80,(int)DAT_0023bd80 + (int)DAT_0023be5c + -1,

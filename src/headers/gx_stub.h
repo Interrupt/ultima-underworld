@@ -89,6 +89,9 @@ int uw_inject_mouse_rup(int window_x, int window_y);
    while held" middle of a drag. */
 int uw_inject_mouse_motion(int window_x, int window_y);
 
+/* Push a relative-only SDL_MOUSEMOTION (demomode's SDLREL), which steers the view in mouselook. */
+int uw_inject_mouse_relmotion(int dx, int dy);
+
 /* Push a genuine SDL_KEYDOWN (+ SDL_TEXTINPUT for a printable key) / SDL_KEYUP for the given
    SDL_Keycode, so scripted tests exercise uw_pump_events()'s real keyboard path (demomode's SDLHOLD
    command). Returns 1, or 0 if there's no window yet. */

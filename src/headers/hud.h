@@ -68,10 +68,14 @@ void uw_debug_blit_pick_buffer();
 void uw_debug_dump_critter_sheet_once();
 void uw_debug_dump_sprite_frames_once();
 int uw_always_show_cursor();
+/* gx_stub.c: F-key mouselook (captured pointer steers the view, cursor pinned to viewport centre). */
+int uw_mouselook_active(void);
+void uw_toggle_mouselook(int unused);
 void uw_composite_desktop_cursor(void *present_buffer);
 void flush_dirty_rect_to_display(int unused_flag);
 void flush_dirty_rect_to_display_240();
 void toggle_stats_panel(int target_panel);
+void toggle_hud_panel_page(int page);
 void print_character_description_scroll();
 void show_flask_value_tooltip();
 void register_stats_panel_click_regions();
