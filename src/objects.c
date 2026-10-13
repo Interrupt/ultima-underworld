@@ -594,6 +594,12 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
   undefined1 local_80 [40];
   undefined1 local_58 [40];
 
+  /* HACK: not original behaviour -- a start tile outside the 64x64 map (a Gate Travel / teleport
+     with no destination set queues one) made tilemap_lookup return NULL, which the search below
+     dereferences. Report "no placement" instead; the caller treats that as a failed teleport. */
+  if (tilemap_lookup(tile_x,tile_y) == NULL) {
+    return 0;
+  }
   ce_memset(local_80,0,0x14);
   ce_memset(local_58,0,0x14);
   ce_memset(auStack_98,0,9);

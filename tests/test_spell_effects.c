@@ -47,6 +47,20 @@ static void test_cone_permanent_state_effect_preserves_object_address(void)
     TEST_ASSERT_EQUAL_HEX8(0x40, ((byte *)fx.target)[0x19] & 0x40);
     TEST_ASSERT_EQUAL_HEX8(0xc0, ((byte *)fx.target)[0xe] & 0xc0);
 }
+static void test_cone_variants_past_the_table_do_not_read_off_its_end(void)
+{
+    /* Spell 45 (Flame Wind) uses index 4, one past the 4-entry table: the original reads the table
+       that follows, so every 6-bit index must resolve to a callback or none, never off the array. */
+    for (int index=0; index<0x40; index++) {
+        fx.scans=0;
+        cast_cone_damage_spell(g_player_object, index);
+        TEST_ASSERT_EQUAL_INT(1, fx.scans);
+    }
+    fx.scans=0; fx.effects=0;
+    fx.resist=1;
+    cast_cone_damage_spell(g_player_object, 68);
+    TEST_ASSERT_EQUAL_INT(1, fx.scans);
+}
 static void test_search_area_spell_uses_first_damage_tier(void)
 {
     cast_targeted_search_effect(g_player_object, 0);
@@ -116,6 +130,7 @@ int main(void)
     RUN_TEST(test_cone_unlock_executes_callback);
     RUN_TEST(test_cone_tile_spell_uses_second_damage_tier);
     RUN_TEST(test_cone_permanent_state_effect_preserves_object_address);
+    RUN_TEST(test_cone_variants_past_the_table_do_not_read_off_its_end);
     RUN_TEST(test_search_area_spell_uses_first_damage_tier);
     RUN_TEST(test_search_morph_variants_execute_on_actual_object);
     RUN_TEST(test_search_resistance_and_tile_damage_callbacks);

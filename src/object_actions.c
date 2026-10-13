@@ -1286,7 +1286,17 @@ void cast_cone_damage_spell(void *caster, uint spell_variant)
   char cVar1;
 
   cVar1 = roll_dice_sum(3,4);
-  scan_area_ahead_of_object(caster,(int)cVar1,DAT_00087604_backing[spell_variant & 0x3f],
+  /* The original indexes past the 4-entry table at 0x87604 into the table that follows it at
+     0x87614 (spell 45 uses index 4), so reproduce that adjacency instead of reading off the end
+     of the host array. */
+  unsigned idx = spell_variant & 0x3f;
+  int (*callback)() = NULL;
+  if (idx < 4) {
+    callback = DAT_00087604_backing[idx];
+  } else if (idx - 4 < 6) {
+    callback = PTR_FUN_00087614_backing[idx - 4];
+  }
+  scan_area_ahead_of_object(caster,(int)cVar1,callback,
                spell_variant & 0xc0,4,2);
 }
 
@@ -1298,7 +1308,8 @@ void cast_cone_damage_spell(void *caster, uint spell_variant)
 void cast_targeted_search_effect(void *caster, uint spell_variant)
 {
   if (caster == g_player_object) {
-    scan_area_ahead_of_object(caster,1,PTR_FUN_00087614_backing[spell_variant & 0x3f],spell_variant & 0xc0,4,2);
+    unsigned idx = spell_variant & 0x3f;
+    scan_area_ahead_of_object(caster,1,idx < 6 ? PTR_FUN_00087614_backing[idx] : NULL,spell_variant & 0xc0,4,2);
   }
 }
 
@@ -1411,8 +1422,14 @@ void cast_summon_or_spawn_effect(void *caster, char variant)
       uVar10 = (uint)local_2c;
     }
     iVar8 = check_object_placement_clearance(uVar10,0,(int)(short)local_34,(int)(short)local_32,local_30,1,8);
+    /* HACK: not original behaviour -- spawn_new_object returns NULL once the object table is full
+       (a mobile-object slot for variant 4, summon monster); the original dereferenced it. Treat
+       a full table like a blocked spot. */
+    pObj = NULL;
     if (iVar8 != 0) {
       pObj = spawn_new_object(uVar10, variant == '\x04');
+    }
+    if (pObj != NULL) {
       uVar2 = pObj->position_word;
       uVar6 = uVar2 & 0x1fff;
       bVar1 = (byte)(((local_34 & 7) << 0xd) >> 8);
