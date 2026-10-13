@@ -244,7 +244,7 @@ static int dos_shade_factor(int light_distance)
    to the snapped point. The bands then lie on a grid fixed in the world, so they are coherent on any surface at
    any angle. Returns that distance in the same 4096*w units as `depth` (4096*w; ray_x, ray_y are the pixel's
    offsets from screen centre in focal-length units, as in shade_span_pixel). */
-/* The camera transform the rounding inverts, prepared once per frame (light_depth_rounding_prepare) rather than for
+/* The camera transform the rounding inverts, prepared once per frame (light_pass_prepare) rather than for
    every pixel: eye = Q * (world + cam_offset) + t, with `inv` the inverse of Q. */
 struct light_round_frame {
   double q[9], inv[9], t[3], cam_offset[3];
@@ -253,7 +253,7 @@ struct light_round_frame {
 static struct light_round_frame g_light_round_frame = {{0}};
 
 /* Call once per frame, after the view matrix and camera offset are built and before any pixel is shaded. */
-void light_depth_rounding_prepare(void)
+void light_pass_prepare(void)
 {
   struct light_round_frame *f = &g_light_round_frame;
   float m[16], cam_offset[3];
@@ -283,7 +283,7 @@ int light_rounded_distance(int depth, double ray_x, double ray_y)
   double eye[3], world[3], step = 32.0 * (g_opts.light_depth_rounding > 0 ? g_opts.light_depth_rounding : 1);
   int i;
   if (f->state == 0) {
-    light_depth_rounding_prepare();
+    light_pass_prepare();
   }
   if (f->state != 1) return (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
   /* the pixel's eye-space point, as shade_span_pixel builds it for the extra lights, in world units */

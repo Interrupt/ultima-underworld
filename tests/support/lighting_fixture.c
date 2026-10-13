@@ -77,7 +77,7 @@ void lighting_fixture_set_camera(const float m[16], const float cam_offset[3])
 {
     memcpy(DAT_000c8ac0_mtx, m, 16 * sizeof(float));
     memcpy((char *)DAT_000a85d0_backing + 0x4808, cam_offset, 3 * sizeof(float));
-    light_depth_rounding_prepare(); /* the game does this once per frame, before shading */
+    light_pass_prepare(); /* the game does this once per frame, before shading */
 }
 void lighting_fixture_reset(void)
 {

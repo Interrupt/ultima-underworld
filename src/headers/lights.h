@@ -27,7 +27,7 @@ void extra_lights_reset(void);
 int extra_light_add(float world_x, float world_height, float world_y, float radius, float intensity);
 void extra_lights_consider_object(unsigned int object_id, int world_x, int world_y, int world_z);
 void extra_lights_transform_to_eye(void);
-void light_depth_rounding_prepare(void);
+void light_pass_prepare(void);
 int light_rounded_distance(int depth, double ray_x, double ray_y);
 unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_y, int dither_offset,
                                 bool dos_light_mode, bool fullbright_enabled);
