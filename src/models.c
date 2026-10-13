@@ -1586,7 +1586,7 @@ LAB_000640ec:
       for (_k = 0; _k < _n; _k++) {
         int rec = _rec_start + _k;
         /* Average the face's OWN vertices, not four of them. An emitted
-           record is a count at +0 (tmap.c writes `(&DAT_000acde4)[..] = 4`
+           record is a count at +0 (tmap.c sets vert_count = 4
            for its tile quads) followed by that many indices from +4, and
            this sort used to read exactly four regardless. Everything the
            tile code emits is a quad, so that was invisible -- but a model's

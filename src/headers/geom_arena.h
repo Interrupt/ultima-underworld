@@ -5,8 +5,9 @@
    (the transform / clip pipeline, declared from the uw.h umbrella) need the type. */
 #include <stddef.h>
 
-/* Arena limits. 512 vertices x 3 arrays and 490 records fill 64 KB, like the original. */
-#define UW_ARENA_MAX_VERTS 512
+/* Arena limits. The original binary had 512 vertices (x3 arrays) and 490 records in 64 KB; the
+   vertex arrays are now larger, so the offsets after model_verts differ from the original. */
+#define UW_ARENA_MAX_VERTS 600
 #define UW_ARENA_MAX_RECORDS 490
 
 /* The per-frame geometry arena: every visible tile's (and model's) vertices and faces, filled by
@@ -49,7 +50,6 @@ _Static_assert(UW_ARENA_MAX_VERTS != 512 ||
 extern uw_geom_arena_t g_geom_arena;
 #define UW_ARENA_OFF(member) offsetof(uw_geom_arena_t, member)
 #define UW_REC_OFF(field) (offsetof(uw_geom_arena_t, records) + offsetof(uw_geom_record_t, field))
-#define UW_ARENA_BYTE(member, k) (*((undefined1 *)&g_geom_arena + UW_ARENA_OFF(member) + (k)))
 
 /* Accessors for the decompiler's byte-offset indexing: an arena vertex (record) is addressed by its
    byte offset, vertex * 0xc (record * 0x60). UW_BITS stores raw IEEE bits into a float member. */
