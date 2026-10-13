@@ -72,11 +72,11 @@ void *ce_memset(void *p, int value, unsigned n) { return memset(p, value, n); }
 char *ce_strcat(char *p, char *s) { return strcat(p, s); }
 /* The camera: the view matrix and the camera offset the eye transform of --light-depth-rounding inverts. */
 undefined4 DAT_000c8ac0_mtx[16];
-undefined4 DAT_000a85d0_backing[16384];
+uw_geom_arena_t g_geom_arena;
 void lighting_fixture_set_camera(const float m[16], const float cam_offset[3])
 {
     memcpy(DAT_000c8ac0_mtx, m, 16 * sizeof(float));
-    memcpy((char *)DAT_000a85d0_backing + 0x4808, cam_offset, 3 * sizeof(float));
+    memcpy(&g_geom_arena.cam_offset, cam_offset, 3 * sizeof(float));
     light_pass_prepare(); /* the game does this once per frame, before shading */
 }
 void lighting_fixture_reset(void)

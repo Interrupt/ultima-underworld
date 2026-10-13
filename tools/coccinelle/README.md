@@ -1059,3 +1059,32 @@ callback events/counts are compared. Use `--reference PATH` with the original
 `combat.c` and `--asan` for AddressSanitizer. The refreshed worklist contains
 176 byte views (four fewer); the full captured words remain intentional.
 
+
+## Geometry arena
+
+`generate_geom_arena_rules.py` writes three files that fold the decompiler's four-byte stores
+into the per-frame geometry arena (`uw_geom_arena_t`, `src/headers/geom_arena.h`) back into one
+member store, e.g. four `(&DAT_000a85d8)[I] = ...` byte stores become
+`UW_BITS(UW_VERT_AT(g_geom_arena.model_verts, I)->x) = V;`. `I` is still the byte offset the
+decompiler computed (vertex * 0xc, record * 0x60). Run them on `src/tmap.c` in this order:
+
+```
+python3 tools/coccinelle/generate_geom_arena_rules.py
+spatch --sp-file tools/coccinelle/geom-arena-temps.cocci --no-includes src/tmap.c --in-place   # repeat until unchanged
+spatch --sp-file tools/coccinelle/geom-arena-dead-temps.cocci --no-includes src/tmap.c --in-place
+spatch --sp-file tools/coccinelle/geom-arena.cocci --no-includes src/tmap.c --in-place
+```
+
+* `geom-arena-temps.cocci` folds a shifted-byte temporary (`T = (undefined1)((uint)V >> 8);
+  (&N)[I] = T;`) into the store, one use per run. The decompiler reuses these temporaries for
+  several stores, so a use is only folded while `V` is not reassigned between it and the
+  temporary's assignment.
+* `geom-arena-dead-temps.cocci` drops an assignment only when the temporary is never mentioned
+  again in the function; a reused temporary keeps its assignment (and so keeps the stores that read it).
+* `geom-arena.cocci` collapses the four stores (low byte, then the three shifted bytes; or a
+  byte followed by three zeros; or a constant followed by three zeros; or four zeros) when `V`
+  and the index are not touched between them.
+
+Stores the rules do not recognise (the sign-extended `tex` word, single-byte constant stores of
+float exponent bytes, temporaries reused after their value changed) stay as byte stores through
+the `DAT_000a85d8`-style macros in `tmap.h`.

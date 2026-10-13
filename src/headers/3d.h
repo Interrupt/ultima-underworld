@@ -4,6 +4,7 @@
 /* Declarations for 3d.c: the 3D transform/rasterization pipeline (vertex math, view matrix, camera
    transform/projection, near-plane clipping, triangle rasterizer). Pulls in uw.h itself so this
    header is self-contained for any caller. */
+#include "geom_arena.h"
 #include "uw.h"
 
 extern void * g_tile_texptr_emit[UW_MAX_VIS_TILES];
@@ -45,10 +46,10 @@ extern unsigned char g_fullbright_palette_mask[256];
 void raster_textured_span(int row, char *framebuffer, char *gradients, char *left_edge, char *right_edge, int texture_stride, int texture_size, char *texture_pixels, int *depth_limit, byte shade);
 void build_trig_tables();
 void build_view_matrix();
-void translate_verts_to_camera_space(int *vertex_list);
-void project_verts_through_view_matrix(int *vertex_list);
+void translate_verts_to_camera_space(uw_geom_arena_t *arena);
+void project_verts_through_view_matrix(uw_geom_arena_t *arena);
 void build_euler_rotation_matrix(void *matrix, int angle_x, int angle_y, int angle_z);
-void transform_points_by_matrix(int *matrix, void *points);
+void transform_points_by_matrix(uw_geom_arena_t *arena, void *points);
 void near_clip_visible_tiles(void *tile_list, int clip_mode);
 void load_dungeon_texture_arenas();
 void configure_dungeon_viewport(int x, int y, int width, int height);

@@ -54,7 +54,7 @@ static void test_next_frame_discards_vertices_added_by_previous_near_clip(void)
     /* Put one corner behind the near plane: clipping adds two intersections
        and produces a five-vertex polygon instead of the original quad. */
     float behind = 0;
-    memcpy((byte *)DAT_000a85d0_backing + 0x3010, &behind, sizeof behind);
+    g_geom_arena.projected_verts[0].z = behind;
     geometry_fixture_render();
     TEST_ASSERT_EQUAL_INT(3, geometry_triangles);
     geometry_fixture_wall(1, 4, 10);

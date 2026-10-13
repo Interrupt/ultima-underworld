@@ -94,7 +94,7 @@ void extra_lights_transform_to_eye(void)
   }
   if (g_extra_light_count == 0) return;
   memcpy(m, DAT_000c8ac0_mtx, sizeof m);
-  memcpy(cam_offset, (char *)DAT_000a85d0_backing + 0x4808, sizeof cam_offset);
+  memcpy(cam_offset, &g_geom_arena.cam_offset, sizeof cam_offset);
   for (i = 0; i < g_extra_light_count; i++) {
     uw_extra_light_t *light = &g_extra_lights[i];
     float a = light->world[0] + cam_offset[0];
@@ -260,7 +260,7 @@ void light_pass_prepare(void)
   double *q = f->q, *inv = f->inv, det;
   int i;
   memcpy(m, DAT_000c8ac0_mtx, sizeof m);
-  memcpy(cam_offset, (char *)DAT_000a85d0_backing + 0x4808, sizeof cam_offset);
+  memcpy(cam_offset, &g_geom_arena.cam_offset, sizeof cam_offset);
   for (i = 0; i < 3; i++) { f->t[i] = m[12 + i]; f->cam_offset[i] = cam_offset[i]; }
   q[0] = m[0]; q[1] = m[4]; q[2] = m[8];
   q[3] = m[1]; q[4] = m[5]; q[5] = m[9];

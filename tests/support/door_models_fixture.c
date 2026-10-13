@@ -75,7 +75,7 @@ static const float *draw_at(int heading, int camera_heading, int progress,
                             int direction, int catalog, int x, int z,
                             int anchor_x, int anchor_z)
 {
-    memset(DAT_000a85d0_backing, 0, sizeof DAT_000a85d0_backing);
+    memset(&g_geom_arena, 0, sizeof g_geom_arena);
     DAT_0023b838 = DAT_0023b83c = 0;
     DAT_00110fc0 = draw_commands;
     DAT_0023b904 = anchor_x;
@@ -87,7 +87,7 @@ static const float *draw_at(int heading, int camera_heading, int progress,
     door[1] = heading << 7;
     DAT_0018957a = direction * progress * 4096;
     emit_catalog_object(catalog, (char *)door, heading*2, -1);
-    return (float *)((char *)DAT_000a85d0_backing + 8);
+    return &g_geom_arena.model_verts[0].x;
 }
 const float *door_models_draw(int heading, int camera_heading, int progress, int direction, int catalog)
 {
@@ -120,7 +120,7 @@ const float *door_models_draw_level_one_frame(int x, int y, int camera_heading, 
 short DAT_00086b24;
 short DAT_00086b2c;
 undefined2 DAT_00086b30;
-undefined4 DAT_000a85d0_backing[16384];
+uw_geom_arena_t g_geom_arena;
 short DAT_000b4620;
 undefined4 DAT_000d9930_arr[361];
 undefined4 DAT_000d9ed8_arr[361];
