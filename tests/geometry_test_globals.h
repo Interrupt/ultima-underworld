@@ -1,6 +1,19 @@
 #include "src/headers/uw.h"
 extern undefined4 DAT_00084608;
 extern int DAT_000c8c98;
+extern undefined4 DAT_000c8ac0_mtx[16];
+#define DAT_000c8ac0 DAT_000c8ac0_mtx[0]
+#define DAT_000c8ac4 DAT_000c8ac0_mtx[1]
+#define DAT_000c8ac8 DAT_000c8ac0_mtx[2]
+#define DAT_000c8ad0 DAT_000c8ac0_mtx[4]
+#define DAT_000c8ad4 DAT_000c8ac0_mtx[5]
+#define DAT_000c8ad8 DAT_000c8ac0_mtx[6]
+#define DAT_000c8ae0 DAT_000c8ac0_mtx[8]
+#define DAT_000c8ae4 DAT_000c8ac0_mtx[9]
+#define DAT_000c8ae8 DAT_000c8ac0_mtx[10]
+#define DAT_000c8af0 DAT_000c8ac0_mtx[12]
+#define DAT_000c8af4 DAT_000c8ac0_mtx[13]
+#define DAT_000c8af8 DAT_000c8ac0_mtx[14]
 #define DAT_000bc038 DAT_000bc038_backing[0]
 #define DAT_000bc039 DAT_000bc038_backing[1]
 #define DAT_000bc03a DAT_000bc038_backing[2]

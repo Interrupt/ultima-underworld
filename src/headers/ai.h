@@ -31,6 +31,7 @@ extern undefined4 DAT_0010191c;
 extern char DAT_00101928;
 extern char DAT_00101948;
 int physics_subtick_units(void);
+extern unsigned g_stat_physics_ticks;
 void tick_physics_objects(int elapsed_units);
 extern short DAT_00101938;
 extern short DAT_0010193c;

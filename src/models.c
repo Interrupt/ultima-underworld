@@ -1552,9 +1552,14 @@ LAB_000640ec:
   { int _rec_start = DAT_0023b83c;
   int _vtx_start = DAT_0023b838;
   build_euler_rotation_matrix(_anim,0,(int)sVar13,0);
-  transform_points_by_matrix(&DAT_000a85d0,_anim);
-  DAT_0023b83c = DAT_000a85d4;
-  DAT_0023b838 = DAT_000a85d0;
+  /* HACK: not original behaviour -- the append below has no capacity check, so a model drawn into an
+     almost-full arena wrote past the transformed-vertex copies and the records. Skip it instead. */
+  if (DAT_000a85d0 + *(int *)_anim <= UW_ARENA_MAX_VERTS &&
+      DAT_000a85d4 + *(int *)(_anim + 4) <= UW_ARENA_MAX_RECORDS) {
+    transform_points_by_matrix(&g_geom_arena,_anim);
+    DAT_0023b83c = DAT_000a85d4;
+    DAT_0023b838 = DAT_000a85d0;
+  }
   /* transform_points_by_matrix is original, unmodified code -- it has no idea g_tile_texptr_emit[]
      exists. */
   { int _ti; for (_ti = _rec_start; _ti < DAT_0023b83c; _ti++) {
@@ -1580,9 +1585,8 @@ LAB_000640ec:
       int _k;
       for (_k = 0; _k < _n; _k++) {
         int rec = _rec_start + _k;
-        int rb = rec * 0x60;
         /* Average the face's OWN vertices, not four of them. An emitted
-           record is a count at +0 (tmap.c writes `(&DAT_000acde4)[..] = 4`
+           record is a count at +0 (tmap.c sets vert_count = 4
            for its tile quads) followed by that many indices from +4, and
            this sort used to read exactly four regardless. Everything the
            tile code emits is a quad, so that was invisible -- but a model's
@@ -1591,14 +1595,15 @@ LAB_000640ec:
            model vertex 0 into the centroid. That put every triangle at the
            wrong depth, which is exactly the "far faces drawn in front of
            nearer ones" this sort exists to prevent. */
-        int _vc = *(int *)(&DAT_000acde4 + rb);
+        uw_geom_record_t *face = &g_geom_arena.records[rec];
+        int _vc = face->vert_count;
         double cx = 0.0, cy = 0.0, cz = 0.0;
         int _vi;
         if (_vc < 3) _vc = 3;
         if (_vc > 23) _vc = 23;          /* the record holds at most 23 */
         for (_vi = 0; _vi < _vc; _vi++) {
-          int iv = *(int *)(&DAT_000acde8 + rb + _vi * 4);
-          float *p = (float *)((char *)DAT_000a85d0_backing + 8 + iv*0xc);
+          int iv = face->vert_idx[_vi];
+          float *p = &g_geom_arena.model_verts[iv].x;
           cx += p[0]; cy += p[1]; cz += p[2];
         }
         cx /= _vc; cy /= _vc; cz /= _vc;
@@ -1625,17 +1630,17 @@ LAB_000640ec:
           int _cur, _src;
           if (_done[_a] || _order[_a] == _a) { _done[_a] = 1; continue; }
           _cur = _a;
-          memcpy(_tmp, (char *)&DAT_000acde4 + (_rec_start+_a)*0x60, 0x60);
+          memcpy(_tmp, &g_geom_arena.records[_rec_start+_a], 0x60);
           _tmp_tex = g_tile_texptr_emit[_rec_start+_a];
           while (!_done[_cur]) {
             _src = _order[_cur];
             _done[_cur] = 1;
             if (_src == _a) break;
-            memcpy((char *)&DAT_000acde4 + (_rec_start+_cur)*0x60, (char *)&DAT_000acde4 + (_rec_start+_src)*0x60, 0x60);
+            memcpy(&g_geom_arena.records[_rec_start+_cur], &g_geom_arena.records[_rec_start+_src], 0x60);
             g_tile_texptr_emit[_rec_start+_cur] = g_tile_texptr_emit[_rec_start+_src];
             _cur = _src;
           }
-          memcpy((char *)&DAT_000acde4 + (_rec_start+_cur)*0x60, _tmp, 0x60);
+          memcpy(&g_geom_arena.records[_rec_start+_cur], _tmp, 0x60);
           g_tile_texptr_emit[_rec_start+_cur] = _tmp_tex;
         }
       }

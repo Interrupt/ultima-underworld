@@ -907,6 +907,8 @@ void cursor_mode_button_click_restricted(int button_y)
 void main_loop_hud_flush()
 
 {
+  /* HACK: not original behaviour -- --max-fps holds each main-loop iteration to a minimum length. */
+  if (g_opts.max_fps > 0.0f) uw_limit_frame_rate();
   uw_begin_present_batch();
   dirty_rect_set(100,100,100,100);
   /* HACK: redraw the 3D dungeon view on every main-loop iteration. */
@@ -931,6 +933,7 @@ void main_loop_hud_flush()
          buffer, then paint it over the viewport (see
          uw_debug_blit_pick_buffer). */
       if (g_opts.debug_pick_view) { render_dungeon_view_frame(); uw_debug_blit_pick_buffer(); }
+      if (g_opts.show_fps) uw_debug_draw_frame_stats();
     }
   }
   if (DAT_00201c84 != 0) {

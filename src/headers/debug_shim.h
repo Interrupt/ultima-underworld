@@ -19,6 +19,10 @@ void populate_debug_panel(void);
 /* Debug view (--debug-pick-view): paint the per-pixel object-pick buffer over the 3D viewport
    instead of the rendered dungeon. */
 void uw_debug_blit_pick_buffer(void);
+/* --show-fps: call once per rendered 3D frame; draws frame stats in the view's upper left. */
+void uw_debug_draw_frame_stats(void);
+/* --max-fps: sleep out the rest of this main-loop iteration's time slice. */
+void uw_limit_frame_rate(void);
 /* Debug tool (--dump-critter-sheet): systematically drive decode_critter_sprite_page across every
    (tier, direction, frame) combination for one or more critter type indices. */
 void uw_debug_dump_critter_sheet_once(void);

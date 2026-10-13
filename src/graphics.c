@@ -664,9 +664,9 @@ int render_dungeon_view()
     light_pass_prepare();
   }
   near_clip_visible_tiles(0,0);
-  translate_verts_to_camera_space(&DAT_000a85d0);
-  project_verts_through_view_matrix(&DAT_000a85d0);
-  near_clip_visible_tiles(&DAT_000a85d0,1);
+  translate_verts_to_camera_space(&g_geom_arena);
+  project_verts_through_view_matrix(&g_geom_arena);
+  near_clip_visible_tiles(&g_geom_arena,1);
   render_visible_tile_list();
   free_frame_geometry_buffers();
   return 0;

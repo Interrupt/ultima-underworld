@@ -386,6 +386,8 @@ void dispatch_sticky_mode_handlers(void)
     flush_dirty_rect_to_display(1);
 }
 void uw_debug_blit_pick_buffer(void) {}
+void uw_debug_draw_frame_stats(void) {}
+void uw_limit_frame_rate(void) {}
 void render_dungeon_view_frame(void) {}
 void uw_debug_draw_inv_hotspot_positions(void) {}
 void dbgui_draw(void) {}

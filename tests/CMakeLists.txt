@@ -164,7 +164,7 @@ target_include_directories(uw_test_dosmidi PUBLIC
   "${PROJECT_SOURCE_DIR}/third_party/openabyss")
 add_supported_game_unit_test(dosmidi uw_test_dosmidi)
 add_game_test_library(uw_test_movement
-  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:physics_subtick_units
+  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks src/ai.c:physics_subtick_units
   src/movement.c:@player_move_fraction src/movement.c:@g_player_move_fraction
   src/movement.c:sweep_kill_velocity src/movement.c:sweep_deflect_heading
   src/movement.c:sweep_slide_along_wall src/movement.c:sweep_apply_collision
@@ -324,6 +324,8 @@ add_fixture_game_unit_test(inventory
 add_fixture_game_unit_test(geometry
   src/3d.c:@DAT_000bc038_backing
   src/3d.c:near_clip_visible_tiles src/tmap.c:render_visible_tile_list
+  src/3d.c:translate_verts_to_camera_space src/3d.c:project_verts_through_view_matrix
+  src/3d.c:transform_points_by_matrix
   src/ordinal_stubs.c:ordfloat_bits_to_float src/ordinal_stubs.c:ordfloat_float_to_bits
   src/ordinal_stubs.c:ordfloat_add src/ordinal_stubs.c:ordfloat_sub
   src/ordinal_stubs.c:ordfloat_mul src/ordinal_stubs.c:ordfloat_div
@@ -733,7 +735,7 @@ target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURC
 add_game_test_library(uw_test_throw
   src/ai.c:@DAT_000868c0_backing
   src/ai.c:@physics_vz_remainder
-  src/ai.c:@g_physics_vz_remainder
+  src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks
   src/movement.c:@player_move_fraction
   src/movement.c:@g_player_move_fraction
   src/item_use.c:drop_held_object_near_player
