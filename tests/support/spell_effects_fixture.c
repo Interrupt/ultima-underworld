@@ -21,7 +21,7 @@ void spell_effects_fixture_reset(void)
     memset(DAT_00101740_backing, 0, sizeof DAT_00101740_backing);
     DAT_0010142c=0;
 }
-int dispatch_special_action(uint type, uint parameter, void *actor, void *context)
+int execute_spell_effect(uint type, uint parameter, void *actor, void *context)
 {
     fx.dispatched_type=type; fx.dispatched_parameter=parameter;
     fx.dispatched_actor=(uintptr_t)actor; fx.dispatched_context=(intptr_t)context;

@@ -167,9 +167,27 @@ static undefined1 DAT_0024ac18_backing[256];
    creature's look text ran the words together... */
 static char s_named_00085d18[] = " named ";
 /* Original binary 0x868c0..0x868d7 maps locomotion bit values to
-   the compact mobile-record state (indexed by snapshot byte 0x28). */
-static undefined DAT_000868c0_backing[24] = {
-  0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0
+   the compact mobile-record state (indexed by snapshot byte 0x28). The index is a full byte, and the
+   original keeps indexing past the 24-byte table into the data that follows it (0x868d8 onward,
+   where index 0x20 lands on the low byte of a code pointer), so the array carries the 256 bytes the
+   original ARM image has there (read from the Ghidra project; the data/UU.exe file is the MIPS build). */
+static undefined DAT_000868c0_backing[256] = {
+  0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,
+  4,0,0,0,0,0,0,0,2,0,0,0,7,0,0,0,
+  236,103,5,0,236,103,5,0,100,104,5,0,100,104,5,0,
+  60,105,5,0,56,104,5,0,192,103,5,0,0,0,0,0,
+  220,107,5,0,220,107,5,0,192,105,5,0,24,106,5,0,
+  112,106,5,0,136,108,5,0,72,107,5,0,0,0,0,0,
+  0,24,36,34,32,30,0,0,24,36,34,32,30,0,0,0,
+  26,22,20,0,0,0,0,26,22,20,0,0,28,44,42,40,
+  38,0,0,0,0,0,59,57,0,0,18,16,14,12,10,8,
+  6,0,0,0,111,112,116,98,116,110,115,0,0,0,0,0,
+  100,0,0,0,100,0,0,0,255,255,0,0,0,0,0,0,
+  255,255,0,0,255,255,0,0,0,0,0,0,200,73,32,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,224,0,192,0,160,
+  0,128,0,96,0,64,0,32,98,97,100,32,116,109,97,112
 };
 #define DAT_000868c0 DAT_000868c0_backing[0]
 /* was `int` -- truncated pointer to a 64-bit address on assignment in spawn_creature_death_loot

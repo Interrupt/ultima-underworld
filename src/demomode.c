@@ -782,7 +782,7 @@ static void demo_exec_line(char *p, Uint32 now) {
 
     if (strcasecmp(p, "CASTALLSPELLS") == 0) {
         /* Diagnostic/regression hook for the "Spell crashes - test each" bug report: directly
-           drives dispatch_special_action (the real per-spell effect dispatcher
+           drives execute_spell_effect (the real per-spell effect dispatcher
            cast_spell_from_rune_combo calls after its mana/skill checks pass) once for each of... */
         extern uw_mobile_object_t *g_player_object;
         extern undefined DAT_00087530_backing[212];
@@ -792,7 +792,7 @@ static void demo_exec_line(char *p, Uint32 now) {
             unsigned char byte3 = DAT_00087530_backing[i * 4 + 3];
             unsigned int type = byte0 >> 3;
             demo_printf("[castallspells] spell %d: type=%u param=%u\n", i, type, byte3);
-            dispatch_special_action(type, byte3, g_player_object, g_player_object);
+            execute_spell_effect(type, byte3, g_player_object, g_player_object);
             demo_printf("[castallspells] spell %d: survived\n", i);
         }
         demo_printf("[castallspells] all 48 spells dispatched\n");
@@ -1060,7 +1060,7 @@ static void demo_exec_line(char *p, Uint32 now) {
         }
         if (demo_match_cmd(p, "CASTSPELL", &arg)) {
             /* CASTSPELL [id] -- no id: list the spell ids and names. With an id: cast that spell now,
-               ignoring mana cost (and the level / skill-roll checks), via dispatch_special_action. */
+               ignoring mana cost (and the level / skill-roll checks), via execute_spell_effect. */
             char nm[64];
             int i;
             if (*arg == '\0') {

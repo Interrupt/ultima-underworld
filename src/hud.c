@@ -4339,7 +4339,7 @@ int report_spell_cast_failure(int failure_reason)
 
 // was FUN_00044e9c -- resolves and attempts to cast the spell matched by handle_cast_spell_click's
 // rune-combo lookup: checks caster-level requirement, mana cost, rolls a casting skill check, and
-// on success dispatches the actual spell effect via dispatch_special_action...
+// on success dispatches the actual spell effect via execute_spell_effect...
 int cast_spell_from_rune_combo(uint circle_hint)
 {
   byte bVar1;
@@ -4381,7 +4381,7 @@ int cast_spell_from_rune_combo(uint circle_hint)
         if (!g_debug_godmode) *(byte *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) + bVar6 * -3;
         DAT_0023c3e0 = '\0';
       }
-      iVar5 = dispatch_special_action(bVar7,bVar1,g_player_object,g_player_object);
+      iVar5 = execute_spell_effect(bVar7,bVar1,g_player_object,g_player_object);
       if (iVar5 != 0) {
         play_sound_effect_with_pan(0x10,0x40,0);
         return 1;
@@ -4398,9 +4398,9 @@ int cast_spell_from_rune_combo(uint circle_hint)
 /* Debug console CASTSPELL (declared in debug_shim.h; lives here for the statics it shares with
    cast_spell_from_rune_combo). */
 /* Cast spell i: the effect half of cast_spell_from_rune_combo (hud.c) -- the same power globals it
-   sets, then dispatch_special_action with the spell's table entry -- skipping its level, mana and
+   sets, then execute_spell_effect with the spell's table entry -- skipping its level, mana and
    skill-roll checks. DAT_0023c3e0 (deferred mana cost, charged by the spawn-type spells) stays 0.
-   Returns dispatch_special_action's result (nonzero = took effect). */
+   Returns execute_spell_effect's result (nonzero = took effect). */
 int dbgui_cast_spell(int i)
 {
   if (i < 0 || i >= 48) return -1;
@@ -4409,7 +4409,7 @@ int dbgui_cast_spell(int i)
   DAT_002028d4 = (char)((i / 6 + 9) * 8 + *(char *)(DAT_00086df8 + 0x3d) * -4);
   DAT_002028d8 = *(undefined4 *)(DAT_00086df8 + 0xce);
   DAT_0023c3e0 = 0;
-  int r = dispatch_special_action(type, param, g_player_object, g_player_object);
+  int r = execute_spell_effect(type, param, g_player_object, g_player_object);
   if (r != 0) play_sound_effect_with_pan(0x10, 0x40, 0);
   return r;
 }

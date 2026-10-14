@@ -336,7 +336,7 @@ add_fixture_game_unit_test(spells
   src/hud.c:@DAT_00087530_backing
   src/hud.c:handle_cast_spell_click src/hud.c:cast_spell_from_rune_combo
   src/hud.c:report_spell_cast_failure
-  src/object_actions.c:dispatch_special_action
+  src/spells.c:execute_spell_effect
   src/object_actions.c:reduce_item_quality_on_use
   src/combat.c:add_active_light_source src/tmap.c:tile_is_no_magic
   src/object_actions.c:complete_cast_spell_on_target
@@ -1107,24 +1107,23 @@ endforeach()
 
 add_game_test_library(uw_test_spell_effects
   src/hud.c:@DAT_00087530_backing
-  src/object_actions.c:@DAT_00087604_backing
-  src/object_actions.c:@PTR_FUN_00087614_backing
+  src/spells.c:@DAT_00087604_backing
   src/object_actions.c:@DAT_0008762c_backing
   src/traps.c:dispatch_trap_special_or_tile_action
   src/object_actions.c:dispatch_tile_special_action
-  src/object_actions.c:cast_cone_damage_spell
-  src/object_actions.c:cast_targeted_search_effect
+  src/spells.c:cast_cone_damage_spell
+  src/spells.c:cast_targeted_search_effect
   src/object_actions.c:scan_area_ahead_of_object
-  src/object_actions.c:force_unlock_target_object
-  src/object_actions.c:cast_single_tile_spell_effect
-  src/object_actions.c:cast_area_spell_effect
-  src/object_actions.c:trigger_type_flagged_trap_effect
-  src/object_actions.c:trigger_tile_damage_trap_effect
-  src/object_actions.c:morph_tile_object_state
-  src/object_actions.c:trigger_permanent_object_state_effect
-  src/object_actions.c:apply_tile_morph_variant_2
-  src/object_actions.c:apply_tile_morph_variant_6
-  src/object_actions.c:apply_tile_morph_variant_7
+  src/spells.c:force_unlock_target_object
+  src/spells.c:cast_single_tile_spell_effect
+  src/spells.c:cast_area_spell_effect
+  src/spells.c:trigger_type_flagged_trap_effect
+  src/spells.c:trigger_tile_damage_trap_effect
+  src/spells.c:morph_tile_object_state
+  src/spells.c:trigger_permanent_object_state_effect
+  src/spells.c:apply_tile_morph_variant_2
+  src/spells.c:apply_tile_morph_variant_6
+  src/spells.c:apply_tile_morph_variant_7
   src/object_actions.c:damage_all_objects_at_tile
   src/ai.c:@DAT_000853b0_backing
   src/ai.c:@DAT_000853c0_backing
@@ -1162,7 +1161,7 @@ add_fixture_game_unit_test(special_use
   src/item_use.c:dispatch_use_special_item_by_type
   src/traps.c:dispatch_trap_special_or_tile_action
   src/object_actions.c:dispatch_tile_special_action
-  src/object_actions.c:dispatch_special_action
+  src/spells.c:execute_spell_effect
   src/object_actions.c:resolve_object_variant_or_special_link
   src/objects.c:find_object_in_chain
   src/objects.c:resolve_object_link
