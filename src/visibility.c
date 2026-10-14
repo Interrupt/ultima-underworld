@@ -621,8 +621,25 @@ void seed_visibility_queue()
     DAT_0023aee9 = (char)(uintptr_t)DAT_0023aecc;
     g_visibility_ray_realptr[0] = DAT_0023aecc; // real-pointer side channel for advance_visibility_ray -- see g_visibility_ray_realptr's comment
     g_visibility_ray_realptr[1] = DAT_0023aecc; // entry 1's own copy of the same packed pointer (DAT_0023aefe/af00, same source)
-    angle_to_screen_delta(g_current_view->view_facing + 0x2040,&DAT_0023aef6,&DAT_0023aef8);
-    angle_to_screen_delta(g_current_view->view_facing + -0x2040,&DAT_0023aee1,&DAT_0023aee3);
+    {
+      /* Hack (--near-tile-visibility): the flood's +/-45 degree edge rays miss the floor and walls beside
+         the player once the camera pitches past the original +/-24 degree limit. Widen them with
+         pitch, up to 65 degrees at 90 degrees of pitch; wider pulls in so many tiles that the 512-vertex
+         arena fills and the floor near the player disappears. */
+      int pitch = (int)DAT_000db448, excess = 0, edge, left, right;
+      if (pitch > 180) pitch -= 360;
+      if (pitch < 0) pitch = -pitch;
+      if (g_opts.near_tile_visibility && pitch > 24) excess = pitch > 90 ? 66 : pitch - 24;
+      edge = 0x2040 + excess * (0x2e39 - 0x2040) / 66;
+      right = g_current_view->view_facing + edge;
+      left = g_current_view->view_facing - edge;
+      if (excess) {
+        if (right > 0x3fc0) right = 0x3fc0;
+        if (left < -0x3fc0) left = -0x3fc0;
+      }
+      angle_to_screen_delta(right,&DAT_0023aef6,&DAT_0023aef8);
+      angle_to_screen_delta(left,&DAT_0023aee1,&DAT_0023aee3);
+    }
     /* angle_to_screen_delta writes a 2-byte X delta at DAT_0023aee1 and a 2-byte Y delta at
        DAT_0023aee3, and every downstream reader (advance_visibility_ray's `*(short *)(param_1 + 1)`
        / `+ 3`) treats them as separate signed shorts... */
@@ -1213,12 +1230,6 @@ void run_visibility_flood()
     }
   } while (g_visibility_ring_done != 0xf);
 
-
-  /* Hack (--near-tile-visibility): the flood never tags the player's own cell as the left/right
-     end of its row (0x08 / 0x20), so the faces beside the player go undrawn -- unseen at the original
-     pitch limit, a black gap at steeper angles. Tag it as both ends. Only this cell: marking
-     more tiles visible makes it worse, and over 512 vertices the whole view blacks out. */
-  if (g_opts.near_tile_visibility) g_visibility_ring_buffer_backing[16 * 2] |= 0x80 | 0x20 | 0x08;
 
   /* Hack - Testing (opt-in via --hack-reveal-depth): g_visibility_ring_depth is the row depth of
      walk_visible_tiles's reveal/visibility walk -- it starts at row &g_visibility_ring_buffer +
