@@ -2880,29 +2880,6 @@ void restore_stat_capped(void *object_ptr, uint amount)
 
 
 
-// was FUN_00073fc4 -- execute_spell_effect's "healing item" handler (its own case 4): only
-// applies if the target object's quality bits match 0x40 (a food/potion-shaped flag), then restores
-// HP via restore_stat_capped -- param_2==0xf is a full-heal sentinel (-1)...
-void apply_healing_item_effect(ushort *object, char effect_code)
-{
-  char cVar1;
-  int iVar2;
-  
-  if ((*object & 0x1c0) == 0x40) {
-    if (effect_code == '\x0f') {
-      iVar2 = -1;
-    }
-    else {
-      cVar1 = roll_dice_sum((int)effect_code,8);
-      iVar2 = (int)cVar1;
-    }
-    restore_stat_capped(object,iVar2);
-  }
-}
-
-
-
-
 
 // was FUN_00077f30 -- draws the stats panel's name/title/level header. Called from
 // draw_stats_panel_content.
@@ -3439,19 +3416,6 @@ LAB_0003c780:
   uVar2 = ce_rand();
   set_hud_status_value(2,uVar2 & 0xf);
   return;
-}
-
-
-// was FUN_0003dba0 -- execute_spell_effect's case-1 handler for sub-codes 3/5 (uw.c,
-// src/object_actions.c:896).
-void trigger_player_jump_if_grounded(char *object)
-{
-  if ((void *)object == (void *)g_player_object) {
-    if ((DAT_002048a8 & 0x10) == 0) {
-      g_vertical_velocity = 0x8d;
-    }
-    g_fall_accel = 0;
-  }
 }
 
 
