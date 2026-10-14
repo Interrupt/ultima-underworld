@@ -78,6 +78,7 @@ extern undefined1 DAT_00085d20_backing[128];
 extern short DAT_00201c70;
 extern undefined2 DAT_00201c78;
 extern short DAT_00202088;
+extern int g_move_facing_offset;
 extern undefined4 DAT_002020d8;
 extern undefined1 DAT_00203303;
 extern undefined2 DAT_00203304;

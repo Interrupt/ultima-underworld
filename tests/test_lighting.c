@@ -150,6 +150,7 @@ static void test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid(void)
 static void test_arm_surfaces_scale_rgb_by_the_dos_shade(void)
 {
     use_real_palette();
+    options_set("light-mode", "smooth"); /* the default is linear */
     /* ARM mode takes the DOS brightness and light distance (SHADES.DAT strength, LIGHT.DAT rows) but
        scales the colour smoothly instead of snapping to a table row. */
     g_palette_rgb565_backing[88] = 0xffff;

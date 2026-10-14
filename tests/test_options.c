@@ -71,7 +71,7 @@ static void test_set_and_unset_by_name(void)
     TEST_ASSERT_EQUAL_INT(0x30, g_opts.walk_accel);
     options_set("light-mode", "dos");
     options_unset("light-mode");
-    TEST_ASSERT_NULL(g_opts.light_mode);
+    TEST_ASSERT_EQUAL_STRING("linear", g_opts.light_mode);
 }
 
 static void test_environment_is_a_fallback_the_command_line_overrides(void)

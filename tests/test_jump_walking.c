@@ -110,6 +110,39 @@ static void test_back_and_sidestep_modes(void)
     decode_movement_command();
     TEST_ASSERT_EQUAL_INT(10, g_movement_mode);
 }
+static void test_strafing_while_walking_takes_a_diagonal_mode(void)
+{
+    g_opts.strafe_while_walking = 1;
+    set_held_movement_keys(HELD_MOVE_RUN | HELD_MOVE_STRAFE_LEFT);
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(0x10, g_movement_mode);
+    TEST_ASSERT_TRUE(DAT_0023bf48 > 0);
+    g_movement_mode = 0;
+    set_held_movement_keys(HELD_MOVE_RUN | HELD_MOVE_STRAFE_RIGHT);
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(0x11, g_movement_mode);
+    g_movement_mode = 0;
+    set_held_movement_keys(HELD_MOVE_BACK | HELD_MOVE_STRAFE_LEFT);
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(0x12, g_movement_mode);
+    g_movement_mode = 0;
+    set_held_movement_keys(HELD_MOVE_BACK | HELD_MOVE_STRAFE_RIGHT);
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(0x13, g_movement_mode);
+    TEST_ASSERT_EQUAL_INT(0, DAT_0023bf48);
+}
+static void test_strafe_walk_diagonal_keeps_turning_and_can_be_disabled(void)
+{
+    g_opts.strafe_while_walking = 1;
+    set_held_movement_keys(HELD_MOVE_RUN | HELD_MOVE_STRAFE_RIGHT | HELD_MOVE_LEFT);
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(0x11, g_movement_mode);
+    TEST_ASSERT_TRUE(DAT_0023bf4c < 0);
+    g_movement_mode = 0;
+    g_opts.strafe_while_walking = 0;
+    decode_movement_command();
+    TEST_ASSERT_EQUAL_INT(1, g_movement_mode);
+}
 static void test_a_slot_code_still_moves_when_no_key_is_polled(void)
 {
     DAT_0023c448 = 0x8d;   /* a hardware-button style forward code */
@@ -137,6 +170,8 @@ int main(void)
     RUN_TEST(test_turning_alone_has_no_forward_rate);
     RUN_TEST(test_walk_key_is_slower_than_run);
     RUN_TEST(test_back_and_sidestep_modes);
+    RUN_TEST(test_strafing_while_walking_takes_a_diagonal_mode);
+    RUN_TEST(test_strafe_walk_diagonal_keeps_turning_and_can_be_disabled);
     RUN_TEST(test_a_slot_code_still_moves_when_no_key_is_polled);
     RUN_TEST(test_typed_character_is_unchanged);
     return UNITY_END();

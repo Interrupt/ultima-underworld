@@ -191,6 +191,7 @@ void resolve_move_vector(short movement_mode, short step_scale, short *out_step)
   
   sVar3 = DAT_00201c70;
   sVar1 = DAT_0020207a;
+  g_move_facing_offset = 0;
   switch(movement_mode) {
   case 0:
     *out_step = 0;
@@ -289,6 +290,36 @@ LAB_0003da74:
     break;
   case 0xb:
     sVar3 = DAT_00201c70;
+    break;
+  case 0x10:
+  case 0x11:
+  case 0x12:
+  case 0x13:
+    /* Strafing while walking (--strafe-while-walking): turn as mode 1 does, then travel on the
+       diagonal at the forward (0x10/0x11) or backward (0x12/0x13) speed. */
+    iVar4 = (int)DAT_0023bf4c;
+    if (iVar4 < 0) {
+      iVar4 = iVar4 + 3;
+    }
+    iVar4 = (iVar4 >> 2) * (int)DAT_00086e68 * (int)step_scale;
+    if (iVar4 < 0) {
+      iVar4 = iVar4 + 3;
+    }
+    DAT_00201c70 = DAT_00201c70 + (short)(iVar4 >> 2);
+    if (movement_mode < 0x12) {
+      iVar4 = ((int)DAT_0023bf48 >> 2) * (int)DAT_00202078;
+      if (iVar4 < 0) {
+        iVar4 = iVar4 + 0x1f;
+      }
+      *out_step = (short)(iVar4 >> 5);
+      g_move_facing_offset = (movement_mode & 1) ? 0x2000 : -0x2000;
+    }
+    else {
+      *out_step = DAT_0020207c;
+      g_move_facing_offset = (movement_mode & 1) ? 0x6000 : -0x6000;
+    }
+    DAT_00202088 = 0;
+    sVar3 = DAT_00201c70 + g_move_facing_offset;
     break;
   case 0xc:
     g_vertical_velocity = 0x8d;
