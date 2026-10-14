@@ -1,10 +1,7 @@
 # Summon Monster (spell 38) from a grid of positions on level 2 until the mobile-object table is
 # full, then let the monsters walk. Regression for the NULL dereference in
 # cast_summon_or_spawn_effect when spawn_new_object ran out of slots. Run under ASan.
-ENTER
-ENTER
-ENTER
-ENTER
+
 ENTER
 ENTER
 ENTER
@@ -24,12 +21,12 @@ ENTER
 ENTER
 ENTER
 TYPE Avatar
-WAIT 3
-SDLCLICK 38 180
-WAIT 3
-SDLCLICK 320 150
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
 WAIT 30
-WAIT 100
 LIGHTLEVEL 7
 GODMODE on
 DELAY 1

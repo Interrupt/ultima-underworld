@@ -47,6 +47,7 @@ set(UW_SOURCES
   src/input.c
   src/object_actions.c
   src/spells.c
+  src/fullscreen_view.c
   src/weapon_swing.c
   src/level.c
   src/doors.c

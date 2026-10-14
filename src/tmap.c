@@ -259,6 +259,15 @@ void render_visible_tile_list()
   local_68 = DAT_00084634;
   local_6c = DAT_00084630;
   local_64 = DAT_00084638;
+  /* HACK: not original behaviour -- the fullscreen view (see fullscreen_view.c) projects about the
+     centre of the whole 320x200 screen (the original: 140,80) with the scale raised so the
+     horizontal field of view stays the same (the original's 100 over its 171-pixel-wide view). */
+  undefined4 proj_cx = 0x430c0000, proj_cy = 0x42a00000;
+  int proj_scale = DAT_00084610;
+  if (g_view_fullscreen) {
+    local_70 = 0; local_6c = 0; local_68 = 0x140; local_64 = 200;
+    proj_cx = 0x43200000; proj_cy = 0x42c80000; proj_scale = (int)UW_FULLSCREEN_PROJ_SCALE;  /* 160.0, 100.0 */
+  }
   if (0 < DAT_000c8c98) {
     local_98 = &DAT_000c4838;
     iVar15 = DAT_000c8c98;
@@ -285,32 +294,32 @@ void render_visible_tile_list()
           uVar5 = *(undefined4 *)((char *)piVar14 + iVar17 + 0x18);
           local_2c = ordfloat_int_to_float2(piVar14[iVar16 * 2 + 0x12]);
           local_28 = ordfloat_int_to_float2(piVar14[iVar16 * 2 + 0x13]);
-          uVar8 = ordfloat_int_to_float2(DAT_00084610);
+          uVar8 = ordfloat_int_to_float2(proj_scale);
           uVar9 = ordfloat_mul(uVar6,uVar8);
           uVar9 = ordfloat_mul(uVar9,iVar1);
-          local_60 = ordfloat_add(uVar9,0x430c0000);
+          local_60 = ordfloat_add(uVar9,proj_cx);
           uVar9 = ordfloat_mul(uVar6,uVar8);
           uVar9 = ordfloat_mul(uVar9,iVar2);
           uVar9 = ordfloat_mul(uVar9,0x3f666666);
-          local_5c = ordfloat_sub(0x42a00000,uVar9);
+          local_5c = ordfloat_sub(proj_cy,uVar9);
           local_58 = uVar7;
           uVar9 = ordfloat_div(0x3f800000,uVar3);
           uVar10 = ordfloat_mul(uVar9,uVar8);
           uVar11 = ordfloat_mul(uVar10,uVar11);
-          local_4c = ordfloat_add(uVar11,0x430c0000);
+          local_4c = ordfloat_add(uVar11,proj_cx);
           uVar11 = ordfloat_mul(uVar9,uVar8);
           uVar11 = ordfloat_mul(uVar11,uVar12);
           uVar11 = ordfloat_mul(uVar11,0x3f666666);
-          local_48 = ordfloat_sub(0x42a00000,uVar11);
+          local_48 = ordfloat_sub(proj_cy,uVar11);
           local_44 = ordfloat_mul(uVar3,0x3a2ec33e);
           uVar11 = ordfloat_div(0x3f800000,uVar5);
           uVar12 = ordfloat_mul(uVar11,uVar8);
           uVar13 = ordfloat_mul(uVar12,uVar13);
-          local_38 = ordfloat_add(uVar13,0x430c0000);
+          local_38 = ordfloat_add(uVar13,proj_cx);
           uVar11 = ordfloat_mul(uVar11,uVar8);
           uVar11 = ordfloat_mul(uVar11,uVar4);
           uVar11 = ordfloat_mul(uVar11,0x3f666666);
-          local_34 = ordfloat_sub(0x42a00000,uVar11);
+          local_34 = ordfloat_sub(proj_cy,uVar11);
           local_30 = ordfloat_mul(uVar5,0x3a2ec33e);
           DAT_000da47c = (undefined2)piVar14[0x1d];
           raster_triangle(0x140,g_uw_framebuffer,local_60_arr,piVar14[0x1e],

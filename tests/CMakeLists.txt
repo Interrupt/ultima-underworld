@@ -1043,7 +1043,7 @@ add_game_test_library(uw_test_transitions
   src/graphics.c:fade_out
   src/chargen.c:chargen_normalize_record_stride
   src/chargen.c:run_character_generator
-  src/level.c:enter_dungeon_view
+  src/level.c:enter_dungeon_view src/level.c:draw_dungeon_hud_backdrop
   src/hud.c:run_pause_menu_modal_loop
   src/graphics.c:blit_fullscreen_bitmap_file
   src/hud.c:flush_dirty_rect_to_display

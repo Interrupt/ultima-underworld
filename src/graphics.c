@@ -658,7 +658,13 @@ void flush_dungeon_frame()
 int render_dungeon_view()
 {
   set_draw_color(0);
-  rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);
+  /* HACK: not original behaviour -- the fullscreen view clears the whole screen. */
+  if (g_view_fullscreen) {
+    rect_fill_or_save_restore(0,0,0x13f,199);
+  }
+  else {
+    rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);
+  }
   build_view_matrix();
   extra_lights_transform_to_eye();
   /* HACK: not original behaviour -- --light-depth-rounding needs the inverse of this frame's view matrix. */

@@ -8,6 +8,7 @@ uw_object_hdr_t *g_scratch_object_ptr;
 unsigned char g_fullbright_palette_mask[256];
 uw_extra_light_t g_extra_lights[UW_MAX_EXTRA_LIGHTS];
 int g_extra_light_count;
+int g_view_fullscreen;
 byte lighting_span_shade = 88;
 char *g_selected_object;
 undefined1 DAT_00086da8;

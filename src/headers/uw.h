@@ -770,6 +770,7 @@ void emit_object_billboard();
 #include "input.h"
 #include "object_actions.h"
 #include "spells.h"
+#include "fullscreen_view.h"
 #include "weapon_swing.h"
 #include "level.h"
 #include "doors.h"

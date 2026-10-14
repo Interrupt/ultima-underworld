@@ -36,16 +36,39 @@ bool g_new_game_entry_pause_pending = false;
 
 // WARNING: Globals starting with '_' overlap smaller symbols at the same address
 
-// was enter_dungeon_view -- 3D dungeon-view entry transition (fade out, load PALS.DAT
-// bank 0, redraw dungeon, fade in)
-// was FUN_0003bd50
-void enter_dungeon_view()
+// Blits \DATA\main.byt (the HUD frame bitmap) over the whole screen -- the first step of entering the
+// dungeon view, split out so the fullscreen view can redraw the HUD when it is turned off.
+void draw_dungeon_hud_backdrop()
 {
   char *path_cursor;
   char path_char;
   char *install_dir;
   int loaded;
   char main_byt_path[264];
+
+  ce_memset(main_byt_path,0,0x104);
+  install_dir = &DAT_0023cca8;
+  path_cursor = main_byt_path;
+  do {
+    path_char = *install_dir;
+    *path_cursor = path_char;
+    path_cursor = path_cursor + 1;
+    install_dir = install_dir + 1;
+  } while (path_char != '\0');
+  ce_strcat(main_byt_path,s__DATA_main_byt_000857a8);
+  loaded = blit_fullscreen_bitmap_file(0xffffffff,main_byt_path,0);
+  if (loaded == 0) {
+    report_fatal_error_and_exit(0x300b);
+  }
+}
+
+
+
+// was enter_dungeon_view -- 3D dungeon-view entry transition (fade out, load PALS.DAT
+// bank 0, redraw dungeon, fade in)
+// was FUN_0003bd50
+void enter_dungeon_view()
+{
   undefined1 saved_palette[768];
 
   decrement_cursor_hide_depth();
@@ -66,20 +89,7 @@ void enter_dungeon_view()
      the game-mode switch) into the local saved_palette and installs it, but leaves the global
      DAT_00088d98 holding whatever bank the main menu last loaded (bank 2). */
   ce_memmove(&DAT_00088d98,saved_palette,0x300);
-  ce_memset(main_byt_path,0,0x104);
-  install_dir = &DAT_0023cca8;
-  path_cursor = main_byt_path;
-  do {
-    path_char = *install_dir;
-    *path_cursor = path_char;
-    path_cursor = path_cursor + 1;
-    install_dir = install_dir + 1;
-  } while (path_char != '\0');
-  ce_strcat(main_byt_path,s__DATA_main_byt_000857a8);
-  loaded = blit_fullscreen_bitmap_file(0xffffffff,main_byt_path,0);
-  if (loaded == 0) {
-    report_fatal_error_and_exit(0x300b);
-  }
+  draw_dungeon_hud_backdrop();
   enter_dungeon_view_hud_init();
   set_pending_update_flags(0x7dfe);
   refresh_player_equipment_effects();

@@ -1661,7 +1661,16 @@ void dispatch_sticky_mode_handlers()
         /* *8 (real pointer size), see DAT_00085668's comment; *0x10 stays
            -- that's the 16-entries-per-mode count, not a byte stride. */
         if (*(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8) != (code *)0x0) {
-          (**(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8))();
+          code *handler = *(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8);
+          /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) sends the
+             HUD's own draw handlers to an off-screen buffer. */
+          int hud_sink = sVar1 == 0 &&
+                         (handler == (code *)refresh_equipment_display_if_visible ||
+                          handler == (code *)sync_player_stats_to_hud ||
+                          handler == (code *)hud_panel_redraw_dispatch) &&
+                         uw_fullscreen_hud_sink_begin();
+          handler();
+          if (hud_sink) uw_fullscreen_hud_sink_end();
           sVar1 = DAT_00201b64;
         }
       }
