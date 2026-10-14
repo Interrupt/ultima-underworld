@@ -42,6 +42,7 @@ extern void * DAT_0023c430;
 void set_draw_color(short color_index);
 void rect_fill_or_save_restore(ushort left, uint top, short right, short bottom);
 void bitmap_blit_to_framebuffer(ushort x, ushort y, char *pixels, short height, short width, short src_x, short src_y, byte transparent);
+void bitmap_blit_scaled_to_framebuffer(int x, int y, const char *pixels, int height, int width, double scale);
 
 int screen_backup_save();
 void screen_backup_restore();

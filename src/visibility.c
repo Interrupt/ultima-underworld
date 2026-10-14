@@ -452,7 +452,7 @@ void render_dungeon_frame_timed()
   set_dungeon_view_clip_rect();
   /* HACK: not original behaviour -- the fullscreen view dirties the whole screen. */
   if (g_view_fullscreen) {
-    dirty_rect_union(0,200,0,0x140);
+    dirty_rect_union(0,UW_FULLSCREEN_VIEW_HEIGHT,0,0x140);
   }
   else {
     dirty_rect_union(0x13,0x84,0x34,0xe0);
@@ -462,7 +462,10 @@ void render_dungeon_frame_timed()
   iVar4 = render_dungeon_view();
   iVar5 = read_realtime_clock_units();
   if (g_dungeon_view_active != 0) {
+    /* HACK: not original behaviour -- the weapon overlay belongs to the fullscreen scene. */
+    int scene_redirect = uw_fullscreen_scene_begin();
     weapon_swing_draw_tick();
+    if (scene_redirect) uw_fullscreen_scene_end();
   }
   track_hotspot_hover_state();
   flush_dungeon_frame();

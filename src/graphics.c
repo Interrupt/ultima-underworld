@@ -396,6 +396,31 @@ void bitmap_blit_to_framebuffer(ushort x, ushort y, char *pixels, short height, 
 
 
 
+/* HACK: not original behaviour -- bitmap_blit_to_framebuffer's transparent mode with the bitmap enlarged
+   by `scale` (nearest neighbour) about its top-left corner at (x,y), clipped to the screen. Used for
+   the weapon in the fullscreen view. Index 0 is transparent. */
+void bitmap_blit_scaled_to_framebuffer(int x, int y, const char *pixels, int height, int width, double scale)
+{
+  int out_w = (int)(width * scale + 0.5), out_h = (int)(height * scale + 0.5);
+  int x0 = x < 0 ? -x : 0, y0 = y < 0 ? -y : 0;
+  int x1 = x + out_w > 0x140 ? 0x140 - x : out_w, y1 = y + out_h > 200 ? 200 - y : out_h;
+  if (!pixels || width <= 0 || height <= 0 || scale <= 0.0 || x0 >= x1 || y0 >= y1) return;
+  dirty_rect_union(y + y0,y + y1,x + x0,x + x1);
+  for (int dy = y0; dy < y1; dy++) {
+    int sy = (int)(dy / scale);
+    if (sy >= height) sy = height - 1;
+    for (int dx = x0; dx < x1; dx++) {
+      int sx = (int)(dx / scale);
+      unsigned px;
+      if (sx >= width) sx = width - 1;
+      px = (unsigned char)pixels[sy * width + sx];
+      if (px != 0) ((ushort *)g_uw_framebuffer)[(y + dy) * 0x140 + x + dx] = (ushort)(&g_palette_rgb565)[px];
+    }
+  }
+}
+
+
+
 // WARNING: Globals starting with '_' overlap smaller symbols at the same address
 
 // Snapshots the current 320x200 framebuffer into the DAT_000891b0 backup buffer, skipping any pixel
@@ -657,10 +682,13 @@ void flush_dungeon_frame()
 // was FUN_00012970 -- 3D dungeon-view frame driver: clears the viewport then runs the whole pipeline (view matrix, visibility walk, vertex transform, near-clip, rasterize, cleanup)
 int render_dungeon_view()
 {
+  /* HACK: not original behaviour -- the fullscreen view draws its scene into a separate buffer so the
+     HUD image in the framebuffer survives (see fullscreen_view.c). */
+  int scene_redirect = uw_fullscreen_scene_begin();
   set_draw_color(0);
   /* HACK: not original behaviour -- the fullscreen view clears the whole screen. */
   if (g_view_fullscreen) {
-    rect_fill_or_save_restore(0,0,0x13f,199);
+    rect_fill_or_save_restore(0,0,0x13f,UW_FULLSCREEN_VIEW_HEIGHT - 1);
   }
   else {
     rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);
@@ -677,6 +705,7 @@ int render_dungeon_view()
   near_clip_visible_tiles(&g_geom_arena,1);
   render_visible_tile_list();
   free_frame_geometry_buffers();
+  if (scene_redirect) uw_fullscreen_scene_end();
   return 0;
 }
 

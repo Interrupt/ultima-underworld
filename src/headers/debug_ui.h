@@ -48,6 +48,9 @@ void dbgui_end(void);
    view and HUD have drawn), NOT from wherever dbgui_begin/dbgui_field_.../dbgui_end happened to
    run. See its own comment in debug_ui.c for why the two are split. */
 void dbgui_draw();
+/* The screen rect (left, top, right and bottom exclusive) the panel or console occupies now; returns 0 when
+   nothing is shown. */
+int dbgui_overlay_rect(int *x0, int *y0, int *x1, int *y1);
 
 /* True once dbgui_begin has been called with a non-NULL title at least once this process and the
    panel is currently shown -- gx_stub.c's event loop checks this to decide whether raw input

@@ -505,6 +505,14 @@ void poll_input_bindings(void *input_state_ptr)
       if (-1 < iVar3) {
         do {
           pcVar2 = (char *)DAT_00202890 + iVar3 * 0x12;
+          /* HACK: not original behaviour -- in the fullscreen view the 3D view's click region covers the
+             whole screen; leave the overlay panels to their own regions. */
+          if (g_view_fullscreen && (uint)iVar3 < 128 && g_click_region_handler[iVar3] == handle_game_view_click &&
+              uw_fullscreen_in_overlay(local_28,local_26)) {
+            iVar4 = (iVar3 + -1) * 0x10000 >> 0x10;
+            iVar3 = iVar4;
+            continue;
+          }
           if ((((*(short *)(pcVar2 + 6) <= local_28) && (local_26 <= *(short *)(pcVar2 + 8))) &&
               (local_28 <= *(short *)(pcVar2 + 2))) &&
              (((*(short *)(pcVar2 + 4) <= local_26 &&
@@ -1661,16 +1669,7 @@ void dispatch_sticky_mode_handlers()
         /* *8 (real pointer size), see DAT_00085668's comment; *0x10 stays
            -- that's the 16-entries-per-mode count, not a byte stride. */
         if (*(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8) != (code *)0x0) {
-          code *handler = *(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8);
-          /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) sends the
-             HUD's own draw handlers to an off-screen buffer. */
-          int hud_sink = sVar1 == 0 &&
-                         (handler == (code *)refresh_equipment_display_if_visible ||
-                          handler == (code *)sync_player_stats_to_hud ||
-                          handler == (code *)hud_panel_redraw_dispatch) &&
-                         uw_fullscreen_hud_sink_begin();
-          handler();
-          if (hud_sink) uw_fullscreen_hud_sink_end();
+          (**(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8))();
           sVar1 = DAT_00201b64;
         }
       }

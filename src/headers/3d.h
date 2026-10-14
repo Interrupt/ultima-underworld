@@ -62,8 +62,14 @@ extern int g_view_fullscreen;
 #define UW_VIEW_PROJ_CY 80.0
 #define UW_VIEW_PROJ_SCALE 100.0
 #define UW_FULLSCREEN_PROJ_CX 160.0
-#define UW_FULLSCREEN_PROJ_CY 100.0
+#define UW_FULLSCREEN_PROJ_CY 84.0   /* the middle of the view, which stops above the black border and message scroll */
 #define UW_FULLSCREEN_PROJ_SCALE 188.0
+/* The fullscreen view stops above a one pixel black border and the message scroll along the bottom of the
+   screen (fullscreen_view.c). */
+#define UW_FULLSCREEN_VIEW_HEIGHT 168
+/* Pixels the held weapon is moved in the fullscreen view (x: right is positive; y: down is positive). */
+#define UW_FULLSCREEN_WEAPON_NUDGE_X 5
+#define UW_FULLSCREEN_WEAPON_NUDGE_Y -1
 extern short g_view_x0;
 extern short g_view_y0;
 void set_dungeon_view_clip_rect(void);

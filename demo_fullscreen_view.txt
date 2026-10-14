@@ -1,5 +1,5 @@
-# Toggle the fullscreen 3D view (G) on and off repeatedly -- turning, casting and clicking while it is on --
-# to check the HUD redraw/restore paths and the 3D and pick passes at the full-screen size. Run under ASan.
+# Toggle the fullscreen 3D view (G) on and off repeatedly -- turning, casting, clicking the overlaid
+# inventory panel (shown with I/R) and looking while it is on -- to check the HUD overlay/restore paths and the 3D and pick passes at the full-screen size. Run under ASan.
 
 ENTER
 ENTER
@@ -80,5 +80,37 @@ TYPE g
 WAIT 5
 TYPE g
 WAIT 20
+TYPE i
+WAIT 5
+SDLCLICK 520 90
+WAIT 5
+SDLCLICK 520 90
+WAIT 5
+TYPE q
+WAIT 10
+TYPE r
+WAIT 5
+SDLRDOWN 577 180
+WAIT 3
+SDLMOVE 540 180
+WAIT 3
+SDLRUP 500 180
+WAIT 10
+TYPE i
+WAIT 5
+TYPE r
+WAIT 5
+TYPE i
+WAIT 5
 TYPE g
 WAIT 20
+TYPE g
+WAIT 20
+0x60
+WAIT 10
+ENTER
+WAIT 10
+ESC
+WAIT 10
+0x60
+WAIT 10

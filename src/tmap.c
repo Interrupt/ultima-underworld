@@ -260,13 +260,13 @@ void render_visible_tile_list()
   local_6c = DAT_00084630;
   local_64 = DAT_00084638;
   /* HACK: not original behaviour -- the fullscreen view (see fullscreen_view.c) projects about the
-     centre of the whole 320x200 screen (the original: 140,80) with the scale raised so the
+     centre of the whole-width view above the message scroll (the original: 140,80) with the scale raised so the
      horizontal field of view stays the same (the original's 100 over its 171-pixel-wide view). */
   undefined4 proj_cx = 0x430c0000, proj_cy = 0x42a00000;
   int proj_scale = DAT_00084610;
   if (g_view_fullscreen) {
-    local_70 = 0; local_6c = 0; local_68 = 0x140; local_64 = 200;
-    proj_cx = 0x43200000; proj_cy = 0x42c80000; proj_scale = (int)UW_FULLSCREEN_PROJ_SCALE;  /* 160.0, 100.0 */
+    local_70 = 0; local_6c = 0; local_68 = 0x140; local_64 = UW_FULLSCREEN_VIEW_HEIGHT;
+    proj_cx = 0x43200000; proj_cy = 0x42a80000; proj_scale = (int)UW_FULLSCREEN_PROJ_SCALE;  /* 160.0, 84.0 */
   }
   if (0 < DAT_000c8c98) {
     local_98 = &DAT_000c4838;

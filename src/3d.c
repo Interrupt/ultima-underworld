@@ -1439,7 +1439,7 @@ void configure_dungeon_viewport(int x, int y, int width, int height)
   /* HACK: not original behaviour -- the fullscreen view keeps its own rect whenever the game
      re-enters the dungeon view. */
   if (g_view_fullscreen) {
-    x = 0; y = 1; width = 320; height = 200;
+    x = 0; y = 1; width = 320; height = UW_FULLSCREEN_VIEW_HEIGHT;
   }
   g_view_x0 = (short)x;
   g_view_y0 = (short)(y - 1);

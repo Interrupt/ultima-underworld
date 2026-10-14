@@ -612,8 +612,9 @@ int hit_test_inventory_widget(short x, short y)
     }
   }
   else if ((DAT_0023be5c < iVar1) && (iVar1 < (int)DAT_0023be5c + (int)DAT_0023bd80)) {
-    if (((int)y < (int)DAT_0023be80) && ((int)DAT_0023be80 - (int)DAT_0023be88 < (int)y)
-       ) {
+    /* HACK: not original behaviour -- the fullscreen view's rect covers the overlaid panels too. */
+    if (((int)y < (int)DAT_0023be80) && ((int)DAT_0023be80 - (int)DAT_0023be88 < (int)y) &&
+        !(g_view_fullscreen && uw_fullscreen_in_overlay(iVar1,(int)y))) {
       return 0x17;
     }
   }

@@ -203,8 +203,7 @@ void interact_use()
    pick_object_under_cursor itself guards with). */
 static int cursor_in_game_view(void)
 {
-  return g_mouse_x >= DAT_0023be5c && g_mouse_x < DAT_0023be5c + DAT_0023bd80 &&
-         g_mouse_y >= (short)(DAT_0023be80 - DAT_0023be88) && g_mouse_y < DAT_0023be80;
+  return uw_point_in_game_view(g_mouse_x,g_mouse_y);
 }
 
 /* Desktop hotkey Q: Look at whatever is under the cursor, exactly as a plain click does in look
@@ -877,8 +876,7 @@ ushort *pick_object_under_cursor(int mode)
   DAT_002020ac = 0;
   /* Guard never present in the decompile: nothing bounds-checked g_mouse_x/g_mouse_y against the 3D
      viewport's own registered rect (DAT_0023be5c/DAT_0023bd80 x-range, DAT_0023be80-DAT_0023be88.. */
-  if ((g_mouse_x < DAT_0023be5c) || (DAT_0023be5c + DAT_0023bd80 <= g_mouse_x) ||
-      (g_mouse_y < (short)(DAT_0023be80 - DAT_0023be88)) || (DAT_0023be80 <= g_mouse_y)) {
+  if (!uw_point_in_game_view(g_mouse_x,g_mouse_y)) {
     return (ushort *)0x0;
   }
   bVar1 = *(byte *)(g_mouse_y * 0x140 + (int)g_mouse_x + DAT_0023cca0);
