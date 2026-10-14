@@ -700,7 +700,7 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
   /* HACK: not original behaviour -- the fullscreen view projects about a different centre and scale
      (see UW_FULLSCREEN_PROJ_* in 3d.h), so the ray must be inverted with the same values. */
   const double proj_cx = g_view_fullscreen ? UW_FULLSCREEN_PROJ_CX : UW_VIEW_PROJ_CX;
-  const double proj_cy = g_view_fullscreen ? UW_FULLSCREEN_PROJ_CY : UW_VIEW_PROJ_CY;
+  const double proj_cy = g_view_fullscreen ? uw_fullscreen_proj_cy() : UW_VIEW_PROJ_CY;
   const double proj_scale = g_view_fullscreen ? UW_FULLSCREEN_PROJ_SCALE : UW_VIEW_PROJ_SCALE;
   double light_y = (*(int *)(left_edge + 8) - proj_cy) / (proj_scale * 0.9);
   if (0 < iVar11) {
@@ -1425,6 +1425,16 @@ int g_view_fullscreen = 0;
 short g_view_x0 = 0x34;
 short g_view_y0 = 0x13;
 
+int uw_fullscreen_scene_height(void)
+{
+  return g_opts.fullscreen_floating_log ? 200 : UW_FULLSCREEN_VIEW_HEIGHT;
+}
+
+double uw_fullscreen_proj_cy(void)
+{
+  return uw_fullscreen_scene_height() / 2.0;
+}
+
 /* Clip rect of the dungeon view (the original's set_viewport_clip_rect(0x34,0x13,w+0x33,h+0x12)). */
 void set_dungeon_view_clip_rect(void)
 {
@@ -1439,7 +1449,7 @@ void configure_dungeon_viewport(int x, int y, int width, int height)
   /* HACK: not original behaviour -- the fullscreen view keeps its own rect whenever the game
      re-enters the dungeon view. */
   if (g_view_fullscreen) {
-    x = 0; y = 1; width = 320; height = UW_FULLSCREEN_VIEW_HEIGHT;
+    x = 0; y = 1; width = 320; height = uw_fullscreen_scene_height();
   }
   g_view_x0 = (short)x;
   g_view_y0 = (short)(y - 1);

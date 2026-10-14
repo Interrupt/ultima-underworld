@@ -452,7 +452,7 @@ void render_dungeon_frame_timed()
   set_dungeon_view_clip_rect();
   /* HACK: not original behaviour -- the fullscreen view dirties the whole screen. */
   if (g_view_fullscreen) {
-    dirty_rect_union(0,UW_FULLSCREEN_VIEW_HEIGHT,0,0x140);
+    dirty_rect_union(0,uw_fullscreen_scene_height(),0,0x140);
   }
   else {
     dirty_rect_union(0x13,0x84,0x34,0xe0);

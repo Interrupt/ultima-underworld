@@ -5265,12 +5265,12 @@ void uw_composite_desktop_cursor(void *present_buffer)
 
 
 /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) shows the weapon charge gem, on black,
-   at the left edge of the bottom of the view, and the three selected runes straight over the scene to its right
-   (`bottom` is the first row below them). Drawn with the real sprite decoder onto the presentation copy, like the
+   in the top left corner of the screen, and the three selected runes straight over the scene to its right
+   (`top` is the first row of both). Drawn with the real sprite decoder onto the presentation copy, like the
    cursor. */
-void uw_draw_fullscreen_hud_sprites(void *present_buffer, int bottom)
+void uw_draw_fullscreen_hud_sprites(void *present_buffer, int top_y)
 {
-  enum { RUNE_SIZE = 16, GEM_X = 2, RUNE_GAP = 5, RUNE_NUDGE_Y = 1 };
+  enum { RUNE_SIZE = 16, GEM_X = 2, RUNE_GAP = 5, RUNE_NUDGE_Y = -1 };
   unsigned short *display = (unsigned short *)present_buffer;
   void *game_buffer = g_uw_framebuffer;
   int transparent = g_blit_transparent_mode;
@@ -5291,9 +5291,9 @@ void uw_draw_fullscreen_hud_sprites(void *present_buffer, int bottom)
     char *sprite = (char *)g_grtile_registry[frame];
     if (sprite) {
       int gem_w = (byte)sprite[1], gem_h = (byte)sprite[2];
-      for (int y = bottom - gem_h; y < bottom; y++)   /* on a black backdrop */
+      for (int y = top_y; y < top_y + gem_h; y++)   /* on a black backdrop */
         for (int x = GEM_X; x < GEM_X + gem_w && x < 320; x++) display[y * 320 + x] = 0;
-      draw_sprite_by_id(frame_id, GEM_X, bottom - gem_h, gem_h, gem_w);
+      draw_sprite_by_id(frame_id, GEM_X, top_y, gem_h, gem_w);
       rune_x = GEM_X + gem_w + RUNE_GAP;
     }
   }
@@ -5301,7 +5301,7 @@ void uw_draw_fullscreen_hud_sprites(void *present_buffer, int bottom)
   for (int i = 0; i < 3; i++) {
     byte rune = *(byte *)(DAT_00086df8 + 0x47 + i);
     if (rune < 0x18)
-      draw_sprite_by_id(rune + 0xe8, rune_x + i * RUNE_SIZE, bottom - RUNE_SIZE + RUNE_NUDGE_Y, RUNE_SIZE, RUNE_SIZE);
+      draw_sprite_by_id(rune + 0xe8, rune_x + i * RUNE_SIZE, top_y + RUNE_NUDGE_Y, RUNE_SIZE, RUNE_SIZE);
   }
   g_uw_framebuffer = game_buffer;
   g_blit_transparent_mode = transparent;

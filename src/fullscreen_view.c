@@ -19,6 +19,7 @@ extern short DAT_00201b64;   /* game mode; 0 == in-game 3D dungeon view */
 
 #define FS_W 320
 #define FS_H 200
+#define RGB565(r, g, b) ((unsigned short)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
 /* HUD areas kept visible over the scene: left, top, right (exclusive), bottom (exclusive), and whether
    the black of the HUD image around the art lets the scene show through. */
@@ -28,6 +29,16 @@ static const int g_overlay_rects[][5] = {
 };
 #define OVERLAY_COUNT ((int)(sizeof g_overlay_rects / sizeof g_overlay_rects[0]))
 #define PANEL_OVERLAY 0
+#define SCROLL_OVERLAY 1
+
+/* --fullscreen-floating-log: instead of the scroll's backdrop, only its text is drawn (the scroll's text
+   area, below), over a scene that extends underneath. */
+static const int g_floating_log_rect[4] = { 15, 169, 304, 200 };
+#define FLOATING_LOG_SHIFT_X -13   /* the text is drawn this far from where the scroll puts it */
+#define FLOATING_LOG_SHIFT_Y 1
+#define SCROLL_BACKGROUND_COLOR 0x2a   /* palette index the scroll fills its text area with */
+/* the floating text's colour: the scroll's parchment (its background colour) */
+#define FLOATING_LOG_TEXT_COLOR ((unsigned short)(&g_palette_rgb565)[SCROLL_BACKGROUND_COLOR])
 
 /* The panel is hidden until the player shows it (I, R or V), and stays up while an item is held so it
    can be dropped onto it. */
@@ -55,13 +66,14 @@ void uw_fullscreen_toggle_panel(int unused)
 }
 
 /* The health and mana bars stand side by side at the right edge above the message scroll; the selected runes
-   and the charge gem are drawn by uw_draw_fullscreen_hud_sprites (hud.c). */
+   and the charge gem (top left) are drawn by uw_draw_fullscreen_hud_sprites (hud.c). */
 #define BAR_WIDTH 3
 #define BAR_GAP 1
 #define BAR_RIGHT_MARGIN 2
 #define BAR_HEIGHT 30
+#define HUD_SPRITES_TOP 2   /* the charge gem and runes sit in the top left corner */
+#define FLOATING_BAR_BOTTOM_GAP 4   /* from the bottom of the screen, with --fullscreen-floating-log */
 #define BAR_BOTTOM_GAP 2   /* between the bars and the top of the message scroll */
-#define RGB565(r, g, b) ((unsigned short)((((r) >> 3) << 11) | (((g) >> 2) << 5) | ((b) >> 3)))
 
 static unsigned short *g_scene;
 static void *g_hud_saved_framebuffer;
@@ -112,6 +124,7 @@ static void overlay_transparency(const unsigned short *hud, const int *r, unsign
 static void draw_vital_bar(unsigned short *display, int x, int fraction_num, int fraction_den, unsigned short colour)
 {
   int bottom = UW_FULLSCREEN_VIEW_HEIGHT + 1 - BAR_BOTTOM_GAP;   /* exclusive; the scroll starts at VIEW_HEIGHT + 1 */
+  if (g_opts.fullscreen_floating_log) bottom = FS_H - FLOATING_BAR_BOTTOM_GAP;   /* no scroll backdrop to clear */
   int top = bottom - BAR_HEIGHT;
   int filled = fraction_den > 0 ? (fraction_num * BAR_HEIGHT + fraction_den / 2) / fraction_den : 0;
   if (filled < 0) filled = 0;
@@ -124,7 +137,7 @@ static void draw_vital_bar(unsigned short *display, int x, int fraction_num, int
 static void draw_vitals_and_runes(unsigned short *display)
 {
   int mana_x = FS_W - BAR_RIGHT_MARGIN - BAR_WIDTH, health_x = mana_x - BAR_GAP - BAR_WIDTH;
-  uw_draw_fullscreen_hud_sprites(display, UW_FULLSCREEN_VIEW_HEIGHT);
+  uw_draw_fullscreen_hud_sprites(display, HUD_SPRITES_TOP);
   if (g_player_object && DAT_0023be74 && DAT_00086df8) {
     /* poisoned (the same test that picks the poisoned flask): the health bar turns green */
     int poisoned = (*(byte *)(DAT_00086df8 + 0x5f) & 0x3c) != 0;
@@ -141,10 +154,21 @@ int uw_fullscreen_compose(unsigned short *display)
   if (!g_view_fullscreen || !g_scene || !hud || DAT_00201b64 != 0) return 0;
   memcpy(display, g_scene, (size_t)FS_W * FS_H * sizeof *display);
   /* a one pixel black border between the scene and the message scroll */
-  memset(display + UW_FULLSCREEN_VIEW_HEIGHT * FS_W, 0, (size_t)FS_W * sizeof *display);
+  if (!g_opts.fullscreen_floating_log)
+    memset(display + UW_FULLSCREEN_VIEW_HEIGHT * FS_W, 0, (size_t)FS_W * sizeof *display);
   for (int i = 0; i < OVERLAY_COUNT; i++) {
     const int *r = g_overlay_rects[i];
     int w = r[2] - r[0];
+    if (i == SCROLL_OVERLAY && g_opts.fullscreen_floating_log) {
+      /* only the text, redrawn in the scroll's parchment (background) colour so it reads over a dark scene */
+      const int *t = g_floating_log_rect;
+      unsigned short bg = (unsigned short)(&g_palette_rgb565)[SCROLL_BACKGROUND_COLOR];
+      for (int y = t[1]; y < t[3]; y++)
+        for (int x = t[0]; x < t[2]; x++)
+          if (hud[y * FS_W + x] != bg && x + FLOATING_LOG_SHIFT_X >= 0 && y + FLOATING_LOG_SHIFT_Y < FS_H)
+            display[(y + FLOATING_LOG_SHIFT_Y) * FS_W + x + FLOATING_LOG_SHIFT_X] = FLOATING_LOG_TEXT_COLOR;
+      continue;
+    }
     if (!overlay_visible(i) || w * (r[3] - r[1]) > MAX_OVERLAY_PIXELS) continue;
     if (r[4]) overlay_transparency(hud, r, clear);
     else memset(clear, 0, (size_t)w * (r[3] - r[1]));
@@ -181,6 +205,7 @@ int uw_fullscreen_in_overlay(int x, int y)
   if (dbgui_overlay_rect(&dx0, &dy0, &dx1, &dy1) && x >= dx0 && x < dx1 && y >= dy0 && y < dy1) return 1;
   for (int i = 0; i < OVERLAY_COUNT; i++) {
     const int *r = g_overlay_rects[i];
+    if (i == SCROLL_OVERLAY && g_opts.fullscreen_floating_log) continue;   /* floating text doesn't block clicks */
     if (overlay_visible(i) && x >= r[0] && x < r[2] && y >= r[1] && y < r[3]) return 1;
   }
   return 0;

@@ -688,7 +688,7 @@ int render_dungeon_view()
   set_draw_color(0);
   /* HACK: not original behaviour -- the fullscreen view clears the whole screen. */
   if (g_view_fullscreen) {
-    rect_fill_or_save_restore(0,0,0x13f,UW_FULLSCREEN_VIEW_HEIGHT - 1);
+    rect_fill_or_save_restore(0,0,0x13f,uw_fullscreen_scene_height() - 1);
   }
   else {
     rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);

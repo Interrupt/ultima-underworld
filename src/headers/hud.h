@@ -69,7 +69,7 @@ void uw_debug_dump_critter_sheet_once();
 void uw_debug_dump_sprite_frames_once();
 int uw_always_show_cursor();
 void uw_composite_desktop_cursor(void *present_buffer);
-void uw_draw_fullscreen_hud_sprites(void *present_buffer, int bottom);
+void uw_draw_fullscreen_hud_sprites(void *present_buffer, int top_y);
 void flush_dirty_rect_to_display(int unused_flag);
 void flush_dirty_rect_to_display_240();
 void toggle_stats_panel(int target_panel);

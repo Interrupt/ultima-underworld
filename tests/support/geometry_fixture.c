@@ -7,6 +7,8 @@ uw_geom_arena_t g_geom_arena;
 undefined4 DAT_00084608 = 0x40a00000;
 undefined4 DAT_000c8ac0_mtx[16];
 int g_view_fullscreen;
+int uw_fullscreen_scene_height(void) { return 168; }
+double uw_fullscreen_proj_cy(void) { return 84.0; }
 int DAT_000c8c98;
 void *DAT_000c4838_backing[4096];
 void *g_tile_texptr_emit[UW_MAX_VIS_TILES], *g_tile_texptr_out[UW_MAX_VIS_TILES];

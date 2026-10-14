@@ -196,7 +196,7 @@ void weapon_swing_draw_tick()
            from the bottom of the view (which is above the message scroll). */
         const double scale = UW_FULLSCREEN_PROJ_SCALE / UW_VIEW_PROJ_SCALE;
         bitmap_blit_scaled_to_framebuffer((int)(UW_FULLSCREEN_PROJ_CX + (weapon_x - UW_VIEW_PROJ_CX) * scale) + UW_FULLSCREEN_WEAPON_NUDGE_X,
-                     (int)(UW_FULLSCREEN_VIEW_HEIGHT + (weapon_y - 0x83) * scale) + UW_FULLSCREEN_WEAPON_NUDGE_Y,uVar2,
+                     (int)(uw_fullscreen_scene_height() + (weapon_y - 0x83) * scale) + UW_FULLSCREEN_WEAPON_NUDGE_Y,uVar2,
                      *(undefined1 *)(g_weapon_swing_current_frame + 2),
                      *(undefined1 *)(g_weapon_swing_current_frame + 1),scale);
       }

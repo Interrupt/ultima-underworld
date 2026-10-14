@@ -265,8 +265,10 @@ void render_visible_tile_list()
   undefined4 proj_cx = 0x430c0000, proj_cy = 0x42a00000;
   int proj_scale = DAT_00084610;
   if (g_view_fullscreen) {
-    local_70 = 0; local_6c = 0; local_68 = 0x140; local_64 = UW_FULLSCREEN_VIEW_HEIGHT;
-    proj_cx = 0x43200000; proj_cy = 0x42a80000; proj_scale = (int)UW_FULLSCREEN_PROJ_SCALE;  /* 160.0, 84.0 */
+    local_70 = 0; local_6c = 0; local_68 = 0x140; local_64 = uw_fullscreen_scene_height();
+    float cy = (float)uw_fullscreen_proj_cy();
+    proj_cx = 0x43200000; proj_scale = (int)UW_FULLSCREEN_PROJ_SCALE;  /* 160.0 */
+    memcpy(&proj_cy, &cy, sizeof cy);
   }
   if (0 < DAT_000c8c98) {
     local_98 = &DAT_000c4838;
