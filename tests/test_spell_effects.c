@@ -38,10 +38,18 @@ static void test_cone_tile_spell_uses_second_damage_tier(void)
     TEST_ASSERT_EQUAL_INT(6, fx.dice_count); TEST_ASSERT_EQUAL_INT(5, fx.dice_sides);
     TEST_ASSERT_EQUAL_INT(30, fx.damage); TEST_ASSERT_EQUAL_INT(3, fx.damage_type);
 }
-static void test_cone_permanent_state_effect_preserves_object_address(void)
+static void test_cone_morph_variant_2_runs_on_actual_object(void)
 {
     fx.resist=1;
     cast_cone_damage_spell(g_player_object, 3);
+    TEST_ASSERT_EQUAL_INT(4, fx.variant);
+    TEST_ASSERT_EQUAL_INT(1, fx.goal_mode);
+    TEST_ASSERT_EQUAL_INT(2, fx.goal);
+}
+static void test_search_permanent_state_effect_preserves_object_address(void)
+{
+    fx.resist=1;
+    cast_targeted_search_effect(g_player_object, 3);
     TEST_ASSERT_EQUAL_INT(1, fx.effects); TEST_ASSERT_EQUAL_INT(2, fx.goal);
     TEST_ASSERT_EQUAL_INT(0, fx.goal_mode);
     TEST_ASSERT_EQUAL_HEX8(0x40, ((byte *)fx.target)[0x19] & 0x40);
@@ -71,8 +79,8 @@ static void test_search_area_spell_uses_first_damage_tier(void)
 }
 static void test_search_morph_variants_execute_on_actual_object(void)
 {
-    const int parameters[]={1,3,5}, goals[]={6,2,7};
-    for (int i=0; i<3; i++) {
+    const int parameters[]={1,5}, goals[]={6,7};
+    for (int i=0; i<2; i++) {
         fx.resist=1;
         cast_targeted_search_effect(g_player_object, parameters[i]);
         TEST_ASSERT_EQUAL_INT(4, fx.variant);
@@ -129,7 +137,8 @@ int main(void)
     RUN_TEST(test_trap_dispatch_preserves_actor_and_context_in_both_branches);
     RUN_TEST(test_cone_unlock_executes_callback);
     RUN_TEST(test_cone_tile_spell_uses_second_damage_tier);
-    RUN_TEST(test_cone_permanent_state_effect_preserves_object_address);
+    RUN_TEST(test_cone_morph_variant_2_runs_on_actual_object);
+    RUN_TEST(test_search_permanent_state_effect_preserves_object_address);
     RUN_TEST(test_cone_variants_past_the_table_do_not_read_off_its_end);
     RUN_TEST(test_search_area_spell_uses_first_damage_tier);
     RUN_TEST(test_search_morph_variants_execute_on_actual_object);

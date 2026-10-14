@@ -68,19 +68,18 @@ static char s__DATA_grave_dat_00085cf8[] = "\\DATA\\grave.dat";
    "an adventurer.\n". */
 static char s_an_adventurer__00085d08[] = "an adventurer.\n";
 static uint DAT_00202094;
-/* ARM 0x87604..0x87610 and 0x87614..0x87628 contain native callbacks,
-   not byte data. Preserve the original entries using host-sized pointers;
-   casting a loaded 32-bit word would truncate them on a 64-bit host. */
-int (*const DAT_00087604_backing[4])() = {
+/* ARM 0x87604..0x8762b is one table of 10 native callbacks, not byte data (Ghidra has it as a NULL
+   word then pointers, with PTR_FUN_00087614 at entry 4). cast_cone_damage_spell indexes it from the
+   start and cast_targeted_search_effect from entry 4. Host-sized pointers are used because casting
+   a loaded 32-bit word would truncate them on a 64-bit host. */
+int (*const DAT_00087604_backing[10])() = {
   NULL, (int (*)())force_unlock_target_object, (int (*)())cast_single_tile_spell_effect,
-  (int (*)())trigger_permanent_object_state_effect
-};
-int (*const PTR_FUN_00087614_backing[6])() = {
+  (int (*)())apply_tile_morph_variant_2,
   (int (*)())cast_area_spell_effect, (int (*)())apply_tile_morph_variant_6,
-  (int (*)())trigger_type_flagged_trap_effect, (int (*)())apply_tile_morph_variant_2,
+  (int (*)())trigger_type_flagged_trap_effect, (int (*)())trigger_permanent_object_state_effect,
   (int (*)())trigger_tile_damage_trap_effect, (int (*)())apply_tile_morph_variant_7
 };
-#define PTR_FUN_00087614 PTR_FUN_00087614_backing[0]
+#define PTR_FUN_00087614 DAT_00087604_backing[4]
 /* ARM 0x8762c/30/34: two tile-damage tiers, dice count/size/type. */
 static undefined DAT_0008762c_backing[12] = {10,6,0,0,6,5,0,0,11,3,0,0};
 #define DAT_0008762c DAT_0008762c_backing[0]
@@ -1286,16 +1285,9 @@ void cast_cone_damage_spell(void *caster, uint spell_variant)
   char cVar1;
 
   cVar1 = roll_dice_sum(3,4);
-  /* The original indexes past the 4-entry table at 0x87604 into the table that follows it at
-     0x87614 (spell 45 uses index 4), so reproduce that adjacency instead of reading off the end
-     of the host array. */
+  /* Indices past the 10 entries would read non-code data in the original; use no callback. */
   unsigned idx = spell_variant & 0x3f;
-  int (*callback)() = NULL;
-  if (idx < 4) {
-    callback = DAT_00087604_backing[idx];
-  } else if (idx - 4 < 6) {
-    callback = PTR_FUN_00087614_backing[idx - 4];
-  }
+  int (*callback)() = idx < 10 ? DAT_00087604_backing[idx] : NULL;
   scan_area_ahead_of_object(caster,(int)cVar1,callback,
                spell_variant & 0xc0,4,2);
 }
@@ -1309,7 +1301,7 @@ void cast_targeted_search_effect(void *caster, uint spell_variant)
 {
   if (caster == g_player_object) {
     unsigned idx = spell_variant & 0x3f;
-    scan_area_ahead_of_object(caster,1,idx < 6 ? PTR_FUN_00087614_backing[idx] : NULL,spell_variant & 0xc0,4,2);
+    scan_area_ahead_of_object(caster,1,idx + 4 < 10 ? DAT_00087604_backing[idx + 4] : NULL,spell_variant & 0xc0,4,2);
   }
 }
 

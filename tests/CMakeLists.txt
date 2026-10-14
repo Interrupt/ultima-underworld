@@ -1108,7 +1108,6 @@ endforeach()
 add_game_test_library(uw_test_spell_effects
   src/hud.c:@DAT_00087530_backing
   src/object_actions.c:@DAT_00087604_backing
-  src/object_actions.c:@PTR_FUN_00087614_backing
   src/object_actions.c:@DAT_0008762c_backing
   src/traps.c:dispatch_trap_special_or_tile_action
   src/object_actions.c:dispatch_tile_special_action

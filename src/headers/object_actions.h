@@ -19,10 +19,9 @@ extern undefined1 DAT_0023ce70_backing[128];
 extern char s_You_see_000858fc[];
 extern undefined1 DAT_0023c3dc;
 extern undefined1 DAT_0023c3d8;
-extern int (*const DAT_00087604_backing[4])();
+extern int (*const DAT_00087604_backing[10])();
 #define DAT_00087604 DAT_00087604_backing[0]
-extern int (*const PTR_FUN_00087614_backing[6])();
-#define PTR_FUN_00087614 PTR_FUN_00087614_backing[0]
+#define PTR_FUN_00087614 DAT_00087604_backing[4]
 
 
 int decode_critter_sprite_page(int page_base, int page_index, short column, short row, short frame);
