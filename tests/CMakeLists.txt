@@ -1370,6 +1370,10 @@ if(UW_SPATCH_TESTS)
   add_test(NAME scheduler_finish_fields
     COMMAND "${Python3_EXECUTABLE}" -B
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_scheduler_finish_fields.py")
+  add_test(NAME combat_stance_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_combat_stance_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
   find_program(UW_CLANG_EXECUTABLE clang)
   if(UW_CLANG_EXECUTABLE)
     add_test(NAME current_object_aliases

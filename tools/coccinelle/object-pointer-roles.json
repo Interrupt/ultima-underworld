@@ -570,10 +570,17 @@
           "roles": [
             {
               "name": "iVar6_rec",
-              "type": "char *",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
+            },
+            {
+              "name": "target_header",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
             }
           ],
           "requires_review": []
@@ -1567,6 +1574,13 @@
           "requires_review": []
         },
         {
+          "function": "tick_physics_objects",
+          "roles": [],
+          "requires_review": [
+            "object"
+          ]
+        },
+        {
           "function": "roll_object_destroy_chance",
           "roles": [
             {
@@ -1672,6 +1686,19 @@
               "name": "iVar6",
               "type": "char *",
               "parameter": false,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "spawn_creature_death_loot",
+          "roles": [
+            {
+              "name": "creature",
+              "type": "ushort *",
+              "parameter": true,
               "evidence": "UW1 object struct member access",
               "current_mobile_alias": false
             }
@@ -2551,6 +2578,13 @@
           "function": "use_light_source",
           "roles": [
             {
+              "name": "object",
+              "type": "ushort *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
+              "current_mobile_alias": false
+            },
+            {
               "name": "puVar7",
               "type": "ushort *",
               "parameter": false,
@@ -2727,7 +2761,7 @@
           "requires_review": []
         },
         {
-          "function": "extract_clicked_backpack_item",
+          "function": "extract_backpack_item_count",
           "roles": [
             {
               "name": "puVar2",
@@ -2780,6 +2814,40 @@
             {
               "name": "slot_item",
               "type": "void *",
+              "parameter": false,
+              "evidence": "object accessor / proven object alias",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "prompt_split_object_stack",
+          "roles": [
+            {
+              "name": "object",
+              "type": "byte *",
+              "parameter": true,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "split",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "whole",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "puVar4",
+              "type": "undefined1 *",
               "parameter": false,
               "evidence": "object accessor / proven object alias",
               "current_mobile_alias": false
@@ -3127,117 +3195,12 @@
           "requires_review": []
         },
         {
-          "function": "spawn_and_prime_spell_effect_object",
-          "roles": [
-            {
-              "name": "iVar4",
-              "type": "char *",
-              "parameter": false,
-              "evidence": "UW1 object struct member access",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "force_unlock_target_object",
-          "roles": [
-            {
-              "name": "iVar2",
-              "type": "ushort *",
-              "parameter": false,
-              "evidence": "object accessor / proven object alias",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "trigger_type_flagged_trap_effect",
-          "roles": [
-            {
-              "name": "uVar2",
-              "type": "void *",
-              "parameter": false,
-              "evidence": "object accessor / proven object alias",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "trigger_tile_damage_trap_effect",
-          "roles": [
-            {
-              "name": "uVar2",
-              "type": "void *",
-              "parameter": false,
-              "evidence": "object accessor / proven object alias",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
           "function": "scan_area_for_matching_objects",
           "roles": [
             {
               "name": "puVar6",
               "type": "ushort *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "cast_summon_or_spawn_effect",
-          "roles": [
-            {
-              "name": "caster",
-              "type": "void *",
-              "parameter": true,
-              "evidence": "UW1 object struct member access",
-              "current_mobile_alias": false
-            },
-            {
-              "name": "pObj",
-              "type": "uw_object_hdr_t *",
-              "parameter": false,
-              "evidence": "typed UW1 object pointer declaration",
-              "current_mobile_alias": false
-            },
-            {
-              "name": "saved_scratch",
-              "type": "uw_object_hdr_t *",
-              "parameter": false,
-              "evidence": "typed UW1 object pointer declaration",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "spawn_random_variant_object_at_tile",
-          "roles": [
-            {
-              "name": "iVar4",
-              "type": "char *",
-              "parameter": false,
-              "evidence": "UW1 object struct member access",
-              "current_mobile_alias": false
-            }
-          ],
-          "requires_review": []
-        },
-        {
-          "function": "complete_pending_player_command_target",
-          "roles": [
-            {
-              "name": "target",
-              "type": "ushort *",
-              "parameter": true,
               "evidence": "UW1 object struct member access",
               "current_mobile_alias": false
             }
@@ -3329,6 +3292,116 @@
             }
           ],
           "requires_review": []
+        }
+      ]
+    },
+    {
+      "source": "src/spells.c",
+      "functions": [
+        {
+          "function": "force_unlock_target_object",
+          "roles": [
+            {
+              "name": "iVar2",
+              "type": "ushort *",
+              "parameter": false,
+              "evidence": "object accessor / proven object alias",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "trigger_type_flagged_trap_effect",
+          "roles": [
+            {
+              "name": "uVar2",
+              "type": "void *",
+              "parameter": false,
+              "evidence": "object accessor / proven object alias",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "trigger_tile_damage_trap_effect",
+          "roles": [
+            {
+              "name": "uVar2",
+              "type": "void *",
+              "parameter": false,
+              "evidence": "object accessor / proven object alias",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "cast_summon_or_spawn_effect",
+          "roles": [
+            {
+              "name": "caster",
+              "type": "void *",
+              "parameter": true,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "pObj",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "saved_scratch",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "spawn_and_prime_spell_effect_object",
+          "roles": [
+            {
+              "name": "iVar4",
+              "type": "char *",
+              "parameter": false,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "complete_pending_player_command_target",
+          "roles": [
+            {
+              "name": "target",
+              "type": "ushort *",
+              "parameter": true,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "spawn_random_variant_object_at_tile",
+          "roles": [
+            {
+              "name": "iVar4",
+              "type": "char *",
+              "parameter": false,
+              "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
         },
         {
           "function": "spawn_object_near_actor",
@@ -3405,6 +3478,10 @@
       "functions": []
     },
     {
+      "source": "src/models_dos.c",
+      "functions": []
+    },
+    {
       "source": "src/models.c",
       "functions": []
     },
@@ -3441,11 +3518,19 @@
       "functions": []
     },
     {
+      "source": "src/unit_test_hooks.c",
+      "functions": []
+    },
+    {
       "source": "src/options.c",
       "functions": []
     },
     {
       "source": "src/gx_stub.c",
+      "functions": []
+    },
+    {
+      "source": "src/mouselook.c",
       "functions": []
     },
     {
@@ -3460,7 +3545,7 @@
       "source": "src/demomode.c",
       "functions": [
         {
-          "function": "demomode_pump",
+          "function": "demo_exec_line",
           "roles": [
             {
               "name": "pl",
@@ -3558,6 +3643,51 @@
     },
     {
       "source": "src/debug_shim.c",
+      "functions": [
+        {
+          "function": "dbgui_new_object",
+          "roles": [
+            {
+              "name": "obj",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "dbgui_spawn_object",
+          "roles": [],
+          "requires_review": [
+            "obj"
+          ]
+        },
+        {
+          "function": "dbgui_give_object",
+          "roles": [],
+          "requires_review": [
+            "obj"
+          ]
+        },
+        {
+          "function": "dbgui_all_runes",
+          "roles": [
+            {
+              "name": "o",
+              "type": "ushort *",
+              "parameter": false,
+              "evidence": "object accessor / proven object alias",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        }
+      ]
+    },
+    {
+      "source": "src/program_main.c",
       "functions": []
     }
   ]

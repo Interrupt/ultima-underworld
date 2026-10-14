@@ -1405,3 +1405,34 @@ spatch --sp-file tools/coccinelle/geom-arena.cocci --no-includes src/tmap.c --in
 Stores the rules do not recognise (the sign-extended `tex` word, single-byte constant stores of
 float exponent bytes, temporaries reused after their value changed) stay as byte stores through
 the `DAT_000a85d8`-style macros in `tmap.h`.
+
+
+## Combat stance fields
+
+`generate_combat_stance_rules.py` emits `combat-stance-fields.cocci` and its
+before/after recipe. `apply_combat_stance_rules.py SOURCE` runs Coccinelle only
+when the original function is present exactly once and its audited body is
+unchanged. It requires Coccinelle's output to match the recipe's C tokens before
+writing canonical formatting and comments. Modified calls, masks, volatile or
+escaping captures, ambiguous definitions and unrelated scopes are left alone.
+
+`npc_combat_set_stance` reads/writes animation frames and swing charge in their
+logical field units, uses a typed target header for height, and updates speed
+and pitch without rebuilding packed words. The saved NPC receiver and captured
+gravity bit survive the division callback, which can replace the current NPC
+and change its record. The speed-only branches have no intervening callback
+between capture and store. Animation/path flag masks and the undocumented low
+attack-state bits remain unchanged; no named semantic subfields exist for them.
+
+`combat_stance_fields` tests the generated patch, guards and idempotence, then
+compares 4,194,304 original/current cases across all word seeds, sixteen stance/
+random paths, callback mutations and target aliasing. It compares both guarded
+records, targets, templates, globals, return values and callback observations.
+Independent checks cover frame clearing/advancement, saturated charge and
+preserved goal/target coordinates. The live function is compared by behavior;
+its complete source text is not frozen to the generated spelling. Use
+`--reference PATH` with the pre-conversion `combat.c`, or `--asan` for the same
+matrix under AddressSanitizer. This suite is registered with `UW_SPATCH_TESTS=ON`.
+The post-merge audit covers 55 sources and 304 proven pointer roles, with
+74 byte views, 451 packed accesses, 12 raw audited object accesses and nine
+signed word views. These are remaining work items, not completion evidence.
