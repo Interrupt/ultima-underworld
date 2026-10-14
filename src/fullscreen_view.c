@@ -201,10 +201,11 @@ void uw_toggle_fullscreen_view(int unused)
     set_pending_update_flags(2);
   }
   else {
-    draw_dungeon_hud_backdrop();
-    enter_dungeon_view_hud_init();
+    /* The HUD image in the game's framebuffer was never drawn over (the scene had its own buffer), so only
+       the 3D view needs redrawing. Re-running enter_dungeon_view_hud_init here would register the stats
+       panel's click regions again on every toggle and eventually fill the click-region table. */
+    dirty_rect_union(0,200,0,0x140);
     set_pending_update_flags(0x7dfe);
-    refresh_player_equipment_effects();
     full_dungeon_redraw();
     weapon_overlay_and_full_redraw();
   }
