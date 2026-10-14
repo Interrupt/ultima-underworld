@@ -66,4 +66,5 @@ X(FLOAT, look_pitch_limit, 45.0f, "How far (degrees, 1-89) the view can look up 
 X(FLOAT, mouselook_speed, 0.12f, "Mouselook speed in degrees of turn per mouse count (F toggles mouselook).")
 X(FLOAT, wall_turn, 1.0f, "How much running into a wall turns the player toward the slide direction (1.0 = original, 0 = off).")
 X(INT, turn_accel, 0x60, "Turn acceleration used for keyboard turning.")
+X(BOOL, strafe_while_walking, 1, "Strafe and walk forwards or backwards at the same time (--strafe-while-walking=0 restores one direction at a time).")
 X(INT, walk_accel, 0x30, "Walk acceleration used for keyboard movement.")

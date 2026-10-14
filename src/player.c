@@ -72,6 +72,7 @@ undefined4 DAT_000858a0;
   0x00,0x03, 0x40,0x03, 0x00,0x00, 0x00,0x00, 0x00,0x04, 0x00,0x00,
 };
 short DAT_00202088;
+int g_move_facing_offset; /* travel heading minus facing (16-bit), for the diagonal walk+strafe modes */
 /* DAT_0008589c/85898/85894 are link-time-initialized read-only data, same situation as DAT_00086e68
    right above's fix (nothing in this decompile writes any of the three, and an exhaustive
    whole-binary Ghidra reference search confirms the real UU.exe agrees -- their only references)... */
@@ -353,7 +354,7 @@ void commit_player_move()
   uVar5 = DAT_00201c70;
   if (_DAT_002048a1 != (short)DAT_00201c78) {
     DAT_00201c78 = _DAT_002048a1;
-    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000;
+    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000 - g_move_facing_offset;
     if ((((DAT_00204897 & 0x80) != 0) &&
         (uVar6 = (int)(short)DAT_00201c70 - ((int)(uVar3 * 0x10000) >> 0x10),
         uVar4 = (int)uVar6 >> 0x1f, uVar5 = (ushort)uVar3, 0x3ff < (int)((uVar6 ^ uVar4) - uVar4)))
