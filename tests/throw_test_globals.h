@@ -2,10 +2,13 @@
 extern ushort arena[0x4000], held[4];
 extern char character[256], game_mode[32];
 extern int cursor_y, mobile_allocations, static_allocations, freed;
-extern bool wall, bridge_fixture;
+extern bool wall, bridge_fixture, real_angles;
 extern byte bridge_heights[3];
 extern int bridge_count;
 extern ushort *thrown;
+/* Frame-by-frame driver for the movement clock / mobile object scheduler (throw_fixture.c). */
+extern int thrown_steps, pacing_scheduler_ticks, pacing_movement_ticks, pacing_tick_flags_total;
+extern int frame_number;
 #include <math.h>
 
 /* Isolated storage for the original throw/physics functions. */

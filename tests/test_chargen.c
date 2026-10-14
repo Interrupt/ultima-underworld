@@ -271,6 +271,129 @@ static void test_equipment_slots_apply_bonuses_to_original_armor_regions(void)
     }
 }
 
+/* ---- CHRGEN.DAT record-layout normalization -------------------------------
+ *
+ * The Pocket PC and DOS asset sets ship the same eight records at different
+ * strides (0x14 vs 0x12), and chargen.c hardcodes the Pocket PC one at a
+ * couple of dozen sites, so run_character_generator converts the DOS layout
+ * up at load time. These check the conversion against the real shipped file
+ * plus a synthesized DOS-layout copy of it, so no DOS install is needed. */
+
+#define CHRGEN_RECORDS 8
+#define CHRGEN_PPC_STRIDE 0x14
+#define CHRGEN_DOS_STRIDE 0x12
+
+static unsigned chrgen_load_shipped(unsigned char *out, unsigned cap)
+{
+    FILE *f = fopen(UW_TEST_DATA_DIR "/DATA/CHRGEN.DAT", "rb");
+    TEST_ASSERT_NOT_NULL_MESSAGE(f, "shipped data/DATA/CHRGEN.DAT is missing");
+    size_t n = fread(out, 1, cap, f);
+    fclose(f);
+    return (unsigned)n;
+}
+
+/* The inverse of the loader's conversion: squeeze 0x14-byte records down to
+   0x12 by dropping the two bytes the port added to the +6 field. */
+static unsigned chrgen_to_dos_layout(const unsigned char *ppc, unsigned ppc_size,
+                                     unsigned char *out)
+{
+    const unsigned tail = ppc_size - CHRGEN_RECORDS * CHRGEN_PPC_STRIDE;
+    for (int i = 0; i < CHRGEN_RECORDS; i++) {
+        const unsigned char *in = ppc + i * CHRGEN_PPC_STRIDE;
+        unsigned char *rec = out + i * CHRGEN_DOS_STRIDE;
+        memcpy(rec, in, 6);
+        memset(rec + 6, 0, 2);
+        memcpy(rec + 8, in + 10, CHRGEN_DOS_STRIDE - 8);
+    }
+    memcpy(out + CHRGEN_RECORDS * CHRGEN_DOS_STRIDE,
+           ppc + CHRGEN_RECORDS * CHRGEN_PPC_STRIDE, tail);
+    return CHRGEN_RECORDS * CHRGEN_DOS_STRIDE + tail;
+}
+
+static void test_shipped_chrgen_is_already_the_ports_layout(void)
+{
+    unsigned char shipped[1680], copy[1680];
+    unsigned size = chrgen_load_shipped(shipped, sizeof shipped);
+    TEST_ASSERT_EQUAL_UINT(CHRGEN_RECORDS * CHRGEN_PPC_STRIDE + 94, size);
+    memcpy(copy, shipped, size);
+
+    TEST_ASSERT_EQUAL_UINT(size,
+        chargen_normalize_record_stride(copy, size, sizeof copy));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(shipped, copy, size);
+}
+
+static void test_dos_layout_converts_to_exactly_the_shipped_bytes(void)
+{
+    unsigned char shipped[1680], dos[1680];
+    unsigned size = chrgen_load_shipped(shipped, sizeof shipped);
+    unsigned dos_size = chrgen_to_dos_layout(shipped, size, dos);
+    TEST_ASSERT_EQUAL_UINT(size - CHRGEN_RECORDS * 2, dos_size);
+
+    TEST_ASSERT_EQUAL_UINT(size,
+        chargen_normalize_record_stride(dos, dos_size, sizeof dos));
+    /* Not just "the records line up" -- the whole buffer, trailing button
+       lists included, must come out byte-identical to the shipped file. */
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(shipped, dos, size);
+}
+
+static void test_conversion_is_idempotent(void)
+{
+    unsigned char shipped[1680], dos[1680];
+    unsigned size = chrgen_load_shipped(shipped, sizeof shipped);
+    unsigned dos_size = chrgen_to_dos_layout(shipped, size, dos);
+
+    unsigned once = chargen_normalize_record_stride(dos, dos_size, sizeof dos);
+    unsigned twice = chargen_normalize_record_stride(dos, once, sizeof dos);
+    TEST_ASSERT_EQUAL_UINT(once, twice);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(shipped, dos, size);
+}
+
+/* Each record's first field is its own one-based id -- that is the signal the
+   detector reads, and a buffer that satisfies it at neither stride has to be
+   left alone rather than mangled on a guess. */
+static void test_buffer_matching_neither_stride_is_left_untouched(void)
+{
+    unsigned char junk[1680], copy[1680];
+    for (unsigned i = 0; i < sizeof junk; i++) junk[i] = (unsigned char)(i * 7 + 3);
+    memcpy(copy, junk, sizeof junk);
+
+    TEST_ASSERT_EQUAL_UINT(300, chargen_normalize_record_stride(copy, 300, sizeof copy));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(junk, copy, sizeof junk);
+}
+
+static void test_short_buffer_is_left_untouched(void)
+{
+    unsigned char buf[1680] = {0};
+    /* Only enough for seven DOS records: too short to confirm either stride. */
+    for (int i = 0; i < 7; i++) buf[i * CHRGEN_DOS_STRIDE] = (unsigned char)(i + 1);
+    buf[4 * CHRGEN_DOS_STRIDE] = 0;
+    unsigned short_size = 7 * CHRGEN_DOS_STRIDE;
+
+    TEST_ASSERT_EQUAL_UINT(short_size,
+        chargen_normalize_record_stride(buf, short_size, sizeof buf));
+}
+
+/* The DOS file grows by 16 bytes; refuse rather than run off the end of the
+   buffer run_character_generator hands over. */
+static void test_conversion_refuses_when_the_buffer_cannot_grow(void)
+{
+    unsigned char shipped[1680], dos[1680];
+    unsigned size = chrgen_load_shipped(shipped, sizeof shipped);
+    unsigned dos_size = chrgen_to_dos_layout(shipped, size, dos);
+    unsigned char before[1680];
+    memcpy(before, dos, dos_size);
+
+    /* One byte short of what the grown records need. */
+    TEST_ASSERT_EQUAL_UINT(dos_size,
+        chargen_normalize_record_stride(dos, dos_size, size - 1));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(before, dos, dos_size);
+}
+
+static void test_null_buffer_is_rejected(void)
+{
+    TEST_ASSERT_EQUAL_UINT(254, chargen_normalize_record_stride(NULL, 254, 1680));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -291,5 +414,12 @@ int main(void)
     RUN_TEST(test_empty_skill_nodes_use_unselected_sentinel);
     RUN_TEST(test_confirmed_picks_train_valid_skills_and_skip_sentinels);
     RUN_TEST(test_confirmed_picks_resume_without_retraining_previous_choices);
+    RUN_TEST(test_shipped_chrgen_is_already_the_ports_layout);
+    RUN_TEST(test_dos_layout_converts_to_exactly_the_shipped_bytes);
+    RUN_TEST(test_conversion_is_idempotent);
+    RUN_TEST(test_buffer_matching_neither_stride_is_left_untouched);
+    RUN_TEST(test_short_buffer_is_left_untouched);
+    RUN_TEST(test_conversion_refuses_when_the_buffer_cannot_grow);
+    RUN_TEST(test_null_buffer_is_rejected);
     return UNITY_END();
 }

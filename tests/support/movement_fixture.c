@@ -32,9 +32,12 @@ undefined1 DAT_00202c70_backing[64];
 uw_object_type_props_t g_object_type_props[512];
 undefined1 DAT_00202c38_backing[1536];
 int DAT_00204870;
+int g_debug_noclip;
+int uw_wall_turn_step(void) { return 0x400; }  /* original wall-turn step (--wall-turn 1.0) */
 undefined4 DAT_00204878;
 char *DAT_002046b8 = (char *)movement_fixture.object_arena + 0x4000;
 short DAT_00201c70, DAT_00202080, DAT_00202088;
+int g_move_facing_offset;
 undefined2 DAT_00201c78;
 undefined4 DAT_000858a0;
 char *DAT_002029cc;

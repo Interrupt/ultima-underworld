@@ -2,6 +2,7 @@
    transform/projection, near-plane clipping, and the triangle rasterizer (edge setup, perspective-
    correct texture span drawing). */
 #include "headers/3d.h"
+#include "headers/tmap.h"
 #include "headers/options.h"
 #include "headers/debug.h"
 #include <stdio.h>
@@ -31,6 +32,7 @@ void update_fullbright_palette_mask()
 {
   int index, row;
 
+  g_shade_rows_dirty = 1;
   for (index = 0; index < 256; index++) {
     g_fullbright_palette_mask[index] = DAT_0024fa2c != 0;
     for (row = 1; row < 16 && g_fullbright_palette_mask[index]; row++)
@@ -702,12 +704,35 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
     puVar10 = (ushort *)(local_4 + iVar6 * 2);
     do {
       iVar6 = ordint_divmod(local_38,0x1000000).quot;
-      iVar12 = (local_34 >> 6) * iVar6 >> 0x12;
+      // HACK: not original behaviour -- exact texel division replaces the ARM integer-truncated path.
+      /* HACK: the original truncates the depth quotient iVar6 = 2^24/(1/w) to an integer and then
+         multiplies the (v/w)>>6 / (u/w)>>6 terms by it. Close to a wall w is small, so iVar6 is only
+         a handful of units and the texel coordinate steps in coarse, uneven jumps (a repeating
+         sawtooth along lines that should be straight). Both products are mathematically (v/w)/(1/w),
+         so divide at full precision with floor semantics instead; iVar6 stays for lighting. */
+      long long tex_u, tex_v;
+      if (local_38 > 0) {
+        long long inv = local_38;
+        long long nv = local_34, nu = iVar14;
+        tex_v = nv >= 0 ? nv / inv : -((-nv + inv - 1) / inv);
+        tex_u = nu >= 0 ? nu / inv : -((-nu + inv - 1) / inv);
+      } else {
+        tex_v = (local_34 >> 6) * iVar6 >> 0x12;
+        tex_u = (iVar14 >> 6) * iVar6 >> 0x12;
+      }
+      iVar12 = (intptr_t)tex_v;
       bVar1 = shade;
-      if ((texture_pixels != 0) && (-1 < iVar12)) {
-        for (iVar12 = (int)(iVar12) * texture_stride + ((iVar14 >> 6) * iVar6 >> 0x12); texture_size < iVar12;
+      if (texture_pixels != 0 && texture_size > 0) {
+        /* HACK: a pixel whose centre lands just outside the polygon's texture rectangle (the edges
+           round up to whole scanlines, and axis-aligned views land v/u right on the boundary) used to
+           take the flat `shade` colour for a negative row, painting a stripe along the top edge of
+           the texture, or read one byte past the end of the texture when the index hit exactly
+           texture_size. Clamp to the first texel instead and wrap with `>=`. */
+        if (iVar12 < 0) iVar12 = 0;
+        for (iVar12 = (int)(iVar12) * texture_stride + (int)tex_u; texture_size <= iVar12;
             iVar12 = iVar12 - texture_size) {
         }
+        if (iVar12 < 0) iVar12 = 0;
         bVar1 = *(byte *)(iVar12 + texture_pixels);
       }
       if (bVar1 != 0) {
@@ -803,106 +828,59 @@ void build_view_matrix()
 
 
 // was FUN_0001dfe8 -- per visible-tile vertex: subtract the camera position (ordfloat_add) to get camera-relative coords; also clears the per-tile visible flags
-void translate_verts_to_camera_space(int *vertex_list)
+void translate_verts_to_camera_space(uw_geom_arena_t *arena)
 {
-  undefined4 uVar1;
-  int *piVar2;
-  int iVar3;
-  
-  iVar3 = 0;
-  if (0 < *vertex_list) {
-    piVar2 = vertex_list;
-    do {
-      uVar1 = ordfloat_add(piVar2[2],vertex_list[0x1202]);
-      *(char *)(piVar2 + 0x602) = (char)uVar1;
-      *(char *)((char *)piVar2 + 0x1809) = (char)((uint)uVar1 >> 8);
-      *(char *)((char *)piVar2 + 0x180a) = (char)((uint)uVar1 >> 0x10);
-      *(char *)((char *)piVar2 + 0x180b) = (char)((uint)uVar1 >> 0x18);
-      uVar1 = ordfloat_add(piVar2[3],vertex_list[0x1203]);
-      *(char *)(piVar2 + 0x603) = (char)uVar1;
-      *(char *)((char *)piVar2 + 0x180d) = (char)((uint)uVar1 >> 8);
-      *(char *)((char *)piVar2 + 0x180e) = (char)((uint)uVar1 >> 0x10);
-      *(char *)((char *)piVar2 + 0x180f) = (char)((uint)uVar1 >> 0x18);
-      uVar1 = ordfloat_add(piVar2[4],vertex_list[0x1204]);
-      *(char *)(piVar2 + 0x604) = (char)uVar1;
-      *(char *)((char *)piVar2 + 0x1811) = (char)((uint)uVar1 >> 8);
-      *(char *)((char *)piVar2 + 0x1812) = (char)((uint)uVar1 >> 0x10);
-      iVar3 = iVar3 + 1;
-      *(char *)((char *)piVar2 + 0x1813) = (char)((uint)uVar1 >> 0x18);
-      piVar2 = piVar2 + 3;
-    } while (iVar3 < *vertex_list);
+  int i;
+
+  for (i = 0; i < arena->vert_count; i++) {
+    undefined4 x = ordfloat_add(*(int *)&arena->model_verts[i].x, *(int *)&arena->cam_offset.x);
+    undefined4 y = ordfloat_add(*(int *)&arena->model_verts[i].y, *(int *)&arena->cam_offset.y);
+    undefined4 z = ordfloat_add(*(int *)&arena->model_verts[i].z, *(int *)&arena->cam_offset.z);
+    memcpy(&arena->camera_verts[i].x, &x, sizeof x);
+    memcpy(&arena->camera_verts[i].y, &y, sizeof y);
+    memcpy(&arena->camera_verts[i].z, &z, sizeof z);
   }
-  iVar3 = 0;
-  piVar2 = vertex_list;
-  if (0 < vertex_list[1]) {
-    do {
-      *(undefined1 *)(piVar2 + 0x121b) = 1;
-      iVar3 = iVar3 + 1;
-      *(undefined1 *)((char *)piVar2 + 0x486d) = 0;
-      *(undefined1 *)((char *)piVar2 + 0x486e) = 0;
-      *(undefined1 *)((char *)piVar2 + 0x486f) = 0;
-      *(undefined1 *)(piVar2 + 0x121c) = 0;
-      *(undefined1 *)((char *)piVar2 + 0x4871) = 0;
-      *(undefined1 *)((char *)piVar2 + 0x4872) = 0;
-      *(undefined1 *)((char *)piVar2 + 0x4873) = 0;
-      piVar2 = piVar2 + 0x18;
-    } while (iVar3 < vertex_list[1]);
+  for (i = 0; i < arena->rec_count; i++) {
+    arena->records[i].visible = 1;
+    arena->records[i].clipped = 0;
   }
 }
 
 
 
 // was FUN_0001e274 -- per vertex: multiply-accumulate the camera-relative coord through the 4x4 view matrix DAT_000c8ac0 (ordfloat_mul mul, ordfloat_add add) -> projected x,y,z,w
-void project_verts_through_view_matrix(int *vertex_list)
+void project_verts_through_view_matrix(uw_geom_arena_t *arena)
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  int *piVar6;
-  int iVar7;
-  
-  iVar7 = 0;
-  piVar6 = vertex_list;
-  if (-1 < *vertex_list) {
-    do {
-      iVar1 = piVar6[0x604];
-      iVar2 = piVar6[0x603];
-      iVar3 = piVar6[0x602];
-      uVar4 = ordfloat_mul(iVar3,DAT_000c8ac0);
-      uVar5 = ordfloat_mul(iVar2,DAT_000c8ad0);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar5 = ordfloat_mul(iVar1,DAT_000c8ae0);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar4 = ordfloat_add(uVar4,DAT_000c8af0);
-      *(char *)(piVar6 + 0xc02) = (char)uVar4;
-      *(char *)((char *)piVar6 + 0x3009) = (char)((uint)uVar4 >> 8);
-      *(char *)((char *)piVar6 + 0x300a) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)piVar6 + 0x300b) = (char)((uint)uVar4 >> 0x18);
-      uVar4 = ordfloat_mul(iVar3,DAT_000c8ac4);
-      uVar5 = ordfloat_mul(iVar2,DAT_000c8ad4);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar5 = ordfloat_mul(iVar1,DAT_000c8ae4);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar4 = ordfloat_add(uVar4,DAT_000c8af4);
-      *(char *)(piVar6 + 0xc03) = (char)uVar4;
-      *(char *)((char *)piVar6 + 0x300d) = (char)((uint)uVar4 >> 8);
-      *(char *)((char *)piVar6 + 0x300e) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)piVar6 + 0x300f) = (char)((uint)uVar4 >> 0x18);
-      uVar4 = ordfloat_mul(iVar3,DAT_000c8ac8);
-      uVar5 = ordfloat_mul(iVar2,DAT_000c8ad8);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar5 = ordfloat_mul(iVar1,DAT_000c8ae8);
-      uVar4 = ordfloat_add(uVar4,uVar5);
-      uVar4 = ordfloat_add(uVar4,DAT_000c8af8);
-      *(char *)(piVar6 + 0xc04) = (char)uVar4;
-      iVar7 = iVar7 + 1;
-      *(char *)((char *)piVar6 + 0x3011) = (char)((uint)uVar4 >> 8);
-      *(char *)((char *)piVar6 + 0x3012) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)piVar6 + 0x3013) = (char)((uint)uVar4 >> 0x18);
-      piVar6 = piVar6 + 3;
-    } while (iVar7 <= *vertex_list);
+  int i;
+
+  /* The loop runs one past vert_count (`<=`), as in the original. */
+  for (i = 0; i <= arena->vert_count && i < UW_ARENA_MAX_VERTS; i++) {
+    int cx = *(int *)&arena->camera_verts[i].x;
+    int cy = *(int *)&arena->camera_verts[i].y;
+    int cz = *(int *)&arena->camera_verts[i].z;
+    undefined4 x, y, z, t;
+
+    x = ordfloat_mul(cx,DAT_000c8ac0);
+    t = ordfloat_mul(cy,DAT_000c8ad0);
+    x = ordfloat_add(x,t);
+    t = ordfloat_mul(cz,DAT_000c8ae0);
+    x = ordfloat_add(x,t);
+    x = ordfloat_add(x,DAT_000c8af0);
+    y = ordfloat_mul(cx,DAT_000c8ac4);
+    t = ordfloat_mul(cy,DAT_000c8ad4);
+    y = ordfloat_add(y,t);
+    t = ordfloat_mul(cz,DAT_000c8ae4);
+    y = ordfloat_add(y,t);
+    y = ordfloat_add(y,DAT_000c8af4);
+    z = ordfloat_mul(cx,DAT_000c8ac8);
+    t = ordfloat_mul(cy,DAT_000c8ad8);
+    z = ordfloat_add(z,t);
+    t = ordfloat_mul(cz,DAT_000c8ae8);
+    z = ordfloat_add(z,t);
+    z = ordfloat_add(z,DAT_000c8af8);
+    memcpy(&arena->projected_verts[i].x, &x, sizeof x);
+    memcpy(&arena->projected_verts[i].y, &y, sizeof y);
+    memcpy(&arena->projected_verts[i].z, &z, sizeof z);
   }
 }
 
@@ -950,70 +928,70 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
   }
   else {
     local_48 = 0;
-    if (0 < *(int *)(tile_base + 4)) {
+    if (0 < *(int *)(tile_base + UW_ARENA_OFF(rec_count))) {
       local_74 = 0;
       local_7c = DAT_000c8c98;
       local_4c = 0;
       iVar14 = tile_base;
       do {
-        if ((*(int *)(iVar14 + 0x486c) != 0) && (*(int *)(iVar14 + 0x4870) == 0)) {
+        if ((*(int *)(iVar14 + (UW_REC_OFF(visible))) != 0) && (*(int *)(iVar14 + (UW_REC_OFF(clipped))) == 0)) {
           iVar19 = local_7c * 0x88;
           puVar20 = &DAT_000bc038 + iVar19;
-          uVar10 = *(undefined4 *)(iVar14 + 0x4860);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(tex)));
           (&DAT_000bc0ac)[iVar19] = (char)uVar10;
           (&DAT_000bc0ad)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0ae)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0af)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          uVar10 = *(undefined4 *)(iVar14 + 0x4864);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(tex) + 4));
           (&DAT_000bc0b0)[iVar19] = (char)uVar10;
           (&DAT_000bc0b1)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0b2)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0b3)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          uVar10 = *(undefined4 *)(iVar14 + 0x4868);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(tex) + 8));
           (&DAT_000bc0b4)[iVar19] = (char)uVar10;
           (&DAT_000bc0b5)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0b6)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0b7)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          iVar4 = *(int *)(iVar14 + 0x486c);
+          iVar4 = *(int *)(iVar14 + (UW_REC_OFF(visible)));
           (&DAT_000bc0b8)[iVar19] = (char)iVar4;
           (&DAT_000bc0b9)[iVar19] = (char)((uint)iVar4 >> 8);
           (&DAT_000bc0ba)[iVar19] = (char)((uint)iVar4 >> 0x10);
           (&DAT_000bc0bb)[iVar19] = (char)((uint)iVar4 >> 0x18);
-          iVar4 = *(int *)(iVar14 + 0x4870);
+          iVar4 = *(int *)(iVar14 + (UW_REC_OFF(clipped)));
           (&DAT_000bc0bc)[iVar19] = (char)iVar4;
           (&DAT_000bc0bd)[iVar19] = (char)((uint)iVar4 >> 8);
           (&DAT_000bc0be)[iVar19] = (char)((uint)iVar4 >> 0x10);
           iVar18 = 0;
           local_78 = 0;
           (&DAT_000bc0bf)[iVar19] = (char)((uint)iVar4 >> 0x18);
-          uVar10 = *(undefined4 *)(iVar14 + 0x482c);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(attr)));
           (&DAT_000bc0a0)[iVar19] = (char)uVar10;
           (&DAT_000bc0a1)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0a2)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0a3)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          uVar10 = *(undefined4 *)(iVar14 + 0x4830);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(attr) + 4));
           (&DAT_000bc0a4)[iVar19] = (char)uVar10;
           (&DAT_000bc0a5)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0a6)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0a7)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          uVar10 = *(undefined4 *)(iVar14 + 0x4834);
+          uVar10 = *(undefined4 *)(iVar14 + (UW_REC_OFF(attr) + 8));
           (&DAT_000bc0a8)[iVar19] = (char)uVar10;
           (&DAT_000bc0a9)[iVar19] = (char)((uint)uVar10 >> 8);
           (&DAT_000bc0aa)[iVar19] = (char)((uint)uVar10 >> 0x10);
           (&DAT_000bc0ab)[iVar19] = (char)((uint)uVar10 >> 0x18);
-          iVar4 = *(int *)(iVar14 + 0x4814);
+          iVar4 = *(int *)(iVar14 + (UW_REC_OFF(vert_count)));
           local_64 = iVar4 + -1;
           if (0 < iVar4) {
             puVar16 = &DAT_000bc044 + iVar19;
             puVar15 = puVar20;
             local_50 = iVar14;
             do {
-              iVar7 = *(int *)(local_50 + 0x4818);
-              iVar5 = *(int *)(local_4c + local_64 * 4 + tile_base + 0x4818) * 0xc + tile_base;
-              uVar10 = *(undefined4 *)(iVar5 + 0x3010);
+              iVar7 = *(int *)(local_50 + (UW_REC_OFF(vert_idx)));
+              iVar5 = *(int *)(local_4c + local_64 * 4 + tile_base + (UW_REC_OFF(vert_idx))) * 0xc + tile_base;
+              uVar10 = *(undefined4 *)(iVar5 + (UW_ARENA_OFF(projected_verts) + 8));
               iVar6 = ordfloat_ge(uVar10,DAT_00084608);
               iVar7 = iVar7 * 0xc + tile_base;
-              puVar8 = (undefined4 *)(iVar7 + 0x3010);
+              puVar8 = (undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 8));
               uVar11 = *puVar8;
               if (iVar6 == 0) {
                 iVar6 = ordfloat_ge(uVar11,DAT_00084608);
@@ -1021,16 +999,16 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   uVar9 = ordfloat_sub(DAT_00084608,uVar10);
                   uVar10 = ordfloat_sub(uVar11,uVar10);
                   uVar11 = ordfloat_div(uVar9,uVar10);
-                  uVar10 = *(undefined4 *)(iVar5 + 0x3008);
-                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + 0x3008),uVar10);
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_ARENA_OFF(projected_verts)));
+                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts))),uVar10);
                   uVar9 = ordfloat_mul(uVar9,uVar11);
                   uVar10 = ordfloat_add(uVar9,uVar10);
                   puVar15[4] = (char)uVar10;
                   puVar15[5] = (char)((uint)uVar10 >> 8);
                   puVar15[6] = (char)((uint)uVar10 >> 0x10);
                   puVar15[7] = (char)((uint)uVar10 >> 0x18);
-                  uVar10 = *(undefined4 *)(iVar5 + 0x300c);
-                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + 0x300c),uVar10); /* dropped 2nd arg (vert0 ref coord) */
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_ARENA_OFF(projected_verts) + 4));
+                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 4)),uVar10); /* dropped 2nd arg (vert0 ref coord) */
                   uVar9 = ordfloat_mul(uVar9,uVar11);
                   uVar10 = ordfloat_add(uVar9,uVar10);
                   puVar15[8] = (char)uVar10;
@@ -1044,9 +1022,9 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   puVar16[3] = (char)((uint)uVar10 >> 0x18);
                   iVar6 = tile_base + (local_74 + local_78) * 8;
                   iVar12 = tile_base + (local_74 + local_64) * 8;
-                  iVar5 = *(int *)(iVar12 + 0x4838);
+                  iVar5 = *(int *)(iVar12 + (UW_REC_OFF(uv)));
                   iVar13 = local_7c * 0x11;
-                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + 0x4838) - iVar5);
+                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + (UW_REC_OFF(uv))) - iVar5);
                   uVar10 = ordfloat_mul(uVar10,uVar11);
                   uVar9 = ordfloat_int_to_float2(iVar5);
                   uVar10 = ordfloat_uint_to_float(ordfloat_add(uVar10,uVar9));
@@ -1055,8 +1033,8 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   (&DAT_000bc039)[iVar5] = (char)((uint)uVar10 >> 8);
                   (&DAT_000bc03a)[iVar5] = (char)((uint)uVar10 >> 0x10);
                   (&DAT_000bc03b)[iVar5] = (char)((uint)uVar10 >> 0x18);
-                  iVar5 = *(int *)(iVar12 + 0x483c);
-                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + 0x483c) - iVar5);
+                  iVar5 = *(int *)(iVar12 + (UW_REC_OFF(uv) + 4));
+                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + (UW_REC_OFF(uv) + 4)) - iVar5);
                   uVar10 = ordfloat_mul(uVar10,uVar11);
                   uVar11 = ordfloat_int_to_float2(iVar5);
                   uVar10 = ordfloat_uint_to_float(ordfloat_add(uVar10,uVar11));
@@ -1065,14 +1043,14 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   (&DAT_000bc07d)[iVar5] = (char)((uint)uVar10 >> 8);
                   (&DAT_000bc07e)[iVar5] = (char)((uint)uVar10 >> 0x10);
                   (&DAT_000bc07f)[iVar5] = (char)((uint)uVar10 >> 0x18);
-                  uVar1 = *(undefined1 *)(iVar7 + 0x3009);
-                  uVar2 = *(undefined1 *)(iVar7 + 0x300a);
-                  uVar3 = *(undefined1 *)(iVar7 + 0x300b);
-                  puVar15[0x10] = *(undefined1 *)(iVar7 + 0x3008);
+                  uVar1 = *(undefined1 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 1));
+                  uVar2 = *(undefined1 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 2));
+                  uVar3 = *(undefined1 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 3));
+                  puVar15[0x10] = *(undefined1 *)(iVar7 + (UW_ARENA_OFF(projected_verts)));
                   puVar15[0x11] = uVar1;
                   puVar15[0x12] = uVar2;
                   puVar15[0x13] = uVar3;
-                  uVar10 = *(undefined4 *)(iVar7 + 0x300c);
+                  uVar10 = *(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 4));
                   puVar15[0x14] = (char)uVar10;
                   puVar15[0x15] = (char)((uint)uVar10 >> 8);
                   puVar15[0x16] = (char)((uint)uVar10 >> 0x10);
@@ -1085,14 +1063,14 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   puVar16[0xf] = (char)((uint)uVar10 >> 0x18);
                   iVar7 = (iVar13 + 8 + iVar18 + 1) * 8;
                   iVar5 = (iVar13 + iVar18 + 1) * 8;
-                  uVar1 = *(undefined1 *)(iVar6 + 0x4839);
-                  uVar2 = *(undefined1 *)(iVar6 + 0x483a);
-                  uVar3 = *(undefined1 *)(iVar6 + 0x483b);
-                  (&DAT_000bc038)[iVar7] = *(undefined1 *)(iVar6 + 0x4838);
+                  uVar1 = *(undefined1 *)(iVar6 + (UW_REC_OFF(uv) + 1));
+                  uVar2 = *(undefined1 *)(iVar6 + (UW_REC_OFF(uv) + 2));
+                  uVar3 = *(undefined1 *)(iVar6 + (UW_REC_OFF(uv) + 3));
+                  (&DAT_000bc038)[iVar7] = *(undefined1 *)(iVar6 + (UW_REC_OFF(uv)));
                   (&DAT_000bc039)[iVar7] = uVar1;
                   (&DAT_000bc03a)[iVar7] = uVar2;
                   (&DAT_000bc03b)[iVar7] = uVar3;
-                  iVar7 = *(int *)(iVar6 + 0x483c);
+                  iVar7 = *(int *)(iVar6 + (UW_REC_OFF(uv) + 4));
                   (&DAT_000bc07c)[iVar5] = (char)iVar7;
                   (&DAT_000bc07d)[iVar5] = (char)((uint)iVar7 >> 8);
                   (&DAT_000bc07e)[iVar5] = (char)((uint)iVar7 >> 0x10);
@@ -1108,16 +1086,16 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   uVar9 = ordfloat_sub(DAT_00084608,uVar10);
                   uVar10 = ordfloat_sub(uVar11,uVar10);
                   uVar11 = ordfloat_div(uVar9,uVar10);
-                  uVar10 = *(undefined4 *)(iVar5 + 0x3008);
-                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + 0x3008),uVar10); /* dropped 2nd arg (vert0 ref coord) */
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_ARENA_OFF(projected_verts)));
+                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts))),uVar10); /* dropped 2nd arg (vert0 ref coord) */
                   uVar9 = ordfloat_mul(uVar9,uVar11);
                   uVar10 = ordfloat_add(uVar9,uVar10);
                   puVar15[4] = (char)uVar10;
                   puVar15[5] = (char)((uint)uVar10 >> 8);
                   puVar15[6] = (char)((uint)uVar10 >> 0x10);
                   puVar15[7] = (char)((uint)uVar10 >> 0x18);
-                  uVar10 = *(undefined4 *)(iVar5 + 0x300c);
-                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + 0x300c),uVar10); /* dropped 2nd arg (vert0 ref coord) */
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_ARENA_OFF(projected_verts) + 4));
+                  uVar9 = ordfloat_sub(*(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 4)),uVar10); /* dropped 2nd arg (vert0 ref coord) */
                   uVar9 = ordfloat_mul(uVar9,uVar11);
                   uVar10 = ordfloat_add(uVar9,uVar10);
                   puVar15[8] = (char)uVar10;
@@ -1131,8 +1109,8 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   puVar16[3] = (char)((uint)uVar10 >> 0x18);
                   iVar6 = tile_base + (local_74 + local_78) * 8;
                   iVar5 = tile_base + (local_74 + local_64) * 8;
-                  iVar7 = *(int *)(iVar5 + 0x4838);
-                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + 0x4838) - iVar7);
+                  iVar7 = *(int *)(iVar5 + (UW_REC_OFF(uv)));
+                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + (UW_REC_OFF(uv))) - iVar7);
                   uVar10 = ordfloat_mul(uVar10,uVar11);
                   uVar9 = ordfloat_int_to_float2(iVar7);
                   uVar10 = ordfloat_uint_to_float(ordfloat_add(uVar10,uVar9));
@@ -1141,19 +1119,19 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   (&DAT_000bc039)[iVar7] = (char)((uint)uVar10 >> 8);
                   (&DAT_000bc03a)[iVar7] = (char)((uint)uVar10 >> 0x10);
                   (&DAT_000bc03b)[iVar7] = (char)((uint)uVar10 >> 0x18);
-                  iVar7 = *(int *)(iVar5 + 0x483c);
-                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + 0x483c) - iVar7);
+                  iVar7 = *(int *)(iVar5 + (UW_REC_OFF(uv) + 4));
+                  uVar10 = ordfloat_int_to_float2(*(int *)(iVar6 + (UW_REC_OFF(uv) + 4)) - iVar7);
                   uVar10 = ordfloat_mul(uVar10,uVar11);
                   uVar11 = ordfloat_int_to_float2(iVar7);
                   uVar10 = ordfloat_uint_to_float(ordfloat_add(uVar10,uVar11));
                 }
                 else {
-                  uVar10 = *(undefined4 *)(iVar7 + 0x3008);
+                  uVar10 = *(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts)));
                   puVar15[4] = (char)uVar10;
                   puVar15[5] = (char)((uint)uVar10 >> 8);
                   puVar15[6] = (char)((uint)uVar10 >> 0x10);
                   puVar15[7] = (char)((uint)uVar10 >> 0x18);
-                  uVar10 = *(undefined4 *)(iVar7 + 0x300c);
+                  uVar10 = *(undefined4 *)(iVar7 + (UW_ARENA_OFF(projected_verts) + 4));
                   puVar15[8] = (char)uVar10;
                   puVar15[9] = (char)((uint)uVar10 >> 8);
                   puVar15[10] = (char)((uint)uVar10 >> 0x10);
@@ -1165,12 +1143,12 @@ void near_clip_visible_tiles(void *tile_list, int clip_mode)
                   puVar16[3] = (char)((uint)uVar10 >> 0x18);
                   iVar5 = tile_base + (local_74 + local_78) * 8;
                   iVar7 = (local_7c * 0x11 + iVar18 + 8) * 8;
-                  uVar10 = *(undefined4 *)(iVar5 + 0x4838);
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_REC_OFF(uv)));
                   (&DAT_000bc038)[iVar7] = (char)uVar10;
                   (&DAT_000bc039)[iVar7] = (char)((uint)uVar10 >> 8);
                   (&DAT_000bc03a)[iVar7] = (char)((uint)uVar10 >> 0x10);
                   (&DAT_000bc03b)[iVar7] = (char)((uint)uVar10 >> 0x18);
-                  uVar10 = *(undefined4 *)(iVar5 + 0x483c);
+                  uVar10 = *(undefined4 *)(iVar5 + (UW_REC_OFF(uv) + 4));
                 }
                 iVar7 = (local_7c * 0x11 + iVar18) * 8;
                 (&DAT_000bc07c)[iVar7] = (char)uVar10;
@@ -1206,7 +1184,7 @@ LAB_0002029c:
         local_4c = local_4c + 0x60;
         iVar14 = iVar14 + 0x60;
         local_74 = local_74 + 0xc;
-      } while (local_48 < *(int *)(tile_base + 4));
+      } while (local_48 < *(int *)(tile_base + UW_ARENA_OFF(rec_count)));
     }
   }
 }
@@ -1518,6 +1496,15 @@ void render_dungeon_view_frame()
   DAT_00110fc0 = DAT_00110fc0 + 1;
   set_viewport_clip_rect(0,0,DAT_0023b020 + -1,DAT_0023aed4 + -1);
   set_viewport_clip_rect(0x34,0x13,DAT_0023b020 + 0x33,DAT_0023aed4 + 0x12);
+  if (DAT_0023b830 != 0 && DAT_0023cca0 != 0) {
+    /* HACK: not original behaviour -- the ARM code only zeroes the id buffer once at startup
+       (game.c) and its viewport fill in render_dungeon_view clears colour only. A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
+       uncovered would keep the previous frame's ids (a hall-of-mirrors smear in the pick view, and
+       clicks there picking whatever used to be drawn). Clear the viewport to "nothing" first. */
+    int row;
+    for (row = 0; row < DAT_0023aed4; row++)
+      memset(DAT_0023cca0 + (0x13 + row) * 0x140 + 0x34, 0, (size_t)DAT_0023b020);
+  }
   render_dungeon_view();
   set_viewport_clip_rect(0,0,0x13f,199);
 }
@@ -2024,146 +2011,44 @@ LAB_0001ea18:
 
 
 
-// was FUN_0001ecb0 -- apply a matrix built by build_euler_rotation_matrix to a point/vertex list
-void transform_points_by_matrix(int *matrix, void *points_ptr)
+// was FUN_0001ecb0 -- append a model's vertices and faces (the model scratch `points`: counts, 12-byte
+// vertices from +8, a translation at +0xc08, 0x60-byte faces from +0xc14) to the geometry arena,
+// offsetting each face's vertex indices by the vertices already there
+void transform_points_by_matrix(uw_geom_arena_t *arena, void *points_ptr)
 {
-  int *points = (int *)points_ptr;
-  int iVar1;
-  undefined4 uVar2;
-  int *piVar3;
-  int *piVar4;
-  int *piVar5;
-  int *piVar6;
-  int *piVar7;
-  int iVar8;
-  int iVar9;
-  int *piVar10;
-  int *piVar11;
-  int local_30;
-  int local_2c;
-  
-  iVar9 = 0;
-  iVar1 = *matrix;
-  local_30 = matrix[1];
-  iVar8 = iVar1;
-  if (0 < *points) {
-    piVar4 = matrix + iVar1 * 3;
-    piVar3 = points;
-    do {
-      uVar2 = ordfloat_add(piVar3[2],points[0x302]);
-      *(char *)(piVar4 + 2) = (char)uVar2;
-      *(char *)((char *)piVar4 + 9) = (char)((uint)uVar2 >> 8);
-      *(char *)((char *)piVar4 + 10) = (char)((uint)uVar2 >> 0x10);
-      *(char *)((char *)piVar4 + 0xb) = (char)((uint)uVar2 >> 0x18);
-      uVar2 = ordfloat_add(piVar3[3],points[0x303]);
-      *(char *)(piVar4 + 3) = (char)uVar2;
-      *(char *)((char *)piVar4 + 0xd) = (char)((uint)uVar2 >> 8);
-      *(char *)((char *)piVar4 + 0xe) = (char)((uint)uVar2 >> 0x10);
-      *(char *)((char *)piVar4 + 0xf) = (char)((uint)uVar2 >> 0x18);
-      uVar2 = ordfloat_add(piVar3[4],points[0x304]);
-      *(char *)(piVar4 + 4) = (char)uVar2;
-      *(char *)((char *)piVar4 + 0x11) = (char)((uint)uVar2 >> 8);
-      *(char *)((char *)piVar4 + 0x12) = (char)((uint)uVar2 >> 0x10);
-      *(char *)((char *)piVar4 + 0x13) = (char)((uint)uVar2 >> 0x18);
-      iVar9 = iVar9 + 1;
-      iVar8 = iVar8 + 1;
-      piVar4 = piVar4 + 3;
-      piVar3 = piVar3 + 3;
-    } while (iVar9 < *points);
+  const int *points = (const int *)points_ptr;
+  const char *src_faces = (const char *)points + 0xc14;
+  int first_vert = arena->vert_count;
+  int first_rec = arena->rec_count;
+  int i, k;
+
+  for (i = 0; i < points[0]; i++) {
+    uw_vec3 *dst = &arena->model_verts[first_vert + i];
+    undefined4 x = ordfloat_add(points[2 + i * 3], points[0x302]);
+    undefined4 y = ordfloat_add(points[3 + i * 3], points[0x303]);
+    undefined4 z = ordfloat_add(points[4 + i * 3], points[0x304]);
+    memcpy(&dst->x, &x, sizeof x);
+    memcpy(&dst->y, &y, sizeof y);
+    memcpy(&dst->z, &z, sizeof z);
   }
-  *(char *)matrix = (char)iVar8;
-  *(char *)((char *)matrix + 1) = (char)((uint)iVar8 >> 8);
-  local_2c = 0;
-  *(char *)((char *)matrix + 2) = (char)((uint)iVar8 >> 0x10);
-  *(char *)((char *)matrix + 3) = (char)((uint)iVar8 >> 0x18);
-  if (0 < points[1]) {
-    piVar4 = matrix + local_30 * 0x18;
-    piVar3 = points;
-    do {
-      iVar8 = piVar3[0x318];
-      *(char *)(piVar4 + 0x1218) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4861) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4862) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4863) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x319];
-      *(char *)(piVar4 + 0x1219) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4865) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4866) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4867) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x31a];
-      *(char *)(piVar4 + 0x121a) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4869) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x486a) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x486b) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x31b];
-      *(char *)(piVar4 + 0x121b) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x486d) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x486e) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x486f) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x31c];
-      *(char *)(piVar4 + 0x121c) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4871) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4872) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4873) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x30b];
-      *(char *)(piVar4 + 0x120b) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x482d) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x482e) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x482f) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x30c];
-      *(char *)(piVar4 + 0x120c) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4831) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4832) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4833) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x30d];
-      *(char *)(piVar4 + 0x120d) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4835) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4836) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4837) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x305];
-      *(char *)(piVar4 + 0x1205) = (char)iVar8;
-      *(char *)((char *)piVar4 + 0x4815) = (char)((uint)iVar8 >> 8);
-      *(char *)((char *)piVar4 + 0x4816) = (char)((uint)iVar8 >> 0x10);
-      *(char *)((char *)piVar4 + 0x4817) = (char)((uint)iVar8 >> 0x18);
-      iVar8 = piVar3[0x305];
-      if (0 < iVar8) {
-        piVar5 = piVar4 + 0x1206;
-        piVar6 = piVar3;
-        piVar7 = piVar3;
-        piVar11 = piVar4;
-        do {
-          piVar10 = piVar7 + 0x306;
-          iVar8 = iVar8 + -1;
-          piVar7 = piVar7 + 1;
-          iVar9 = *piVar10 + iVar1;
-          *(char *)piVar5 = (char)iVar9;
-          *(char *)((char *)piVar5 + 1) = (char)((uint)iVar9 >> 8);
-          *(char *)((char *)piVar5 + 2) = (char)((uint)iVar9 >> 0x10);
-          *(char *)((char *)piVar5 + 3) = (char)((uint)iVar9 >> 0x18);
-          piVar5 = piVar5 + 1;
-          iVar9 = piVar6[0x30e];
-          *(char *)(piVar11 + 0x120e) = (char)iVar9;
-          *(char *)((char *)piVar11 + 0x4839) = (char)((uint)iVar9 >> 8);
-          *(char *)((char *)piVar11 + 0x483a) = (char)((uint)iVar9 >> 0x10);
-          *(char *)((char *)piVar11 + 0x483b) = (char)((uint)iVar9 >> 0x18);
-          piVar10 = piVar6 + 0x30f;
-          piVar6 = piVar6 + 2;
-          iVar9 = *piVar10;
-          *(char *)(piVar11 + 0x120f) = (char)iVar9;
-          *(char *)((char *)piVar11 + 0x483d) = (char)((uint)iVar9 >> 8);
-          *(char *)((char *)piVar11 + 0x483e) = (char)((uint)iVar9 >> 0x10);
-          *(char *)((char *)piVar11 + 0x483f) = (char)((uint)iVar9 >> 0x18);
-          piVar11 = piVar11 + 2;
-        } while (iVar8 != 0);
-      }
-      local_2c = local_2c + 1;
-      local_30 = local_30 + 1;
-      piVar4 = piVar4 + 0x18;
-      piVar3 = piVar3 + 0x18;
-    } while (local_2c < points[1]);
+  arena->vert_count = first_vert + points[0];
+
+  for (i = 0; i < points[1]; i++) {
+    const int *src = (const int *)(src_faces + i * 0x60);
+    uw_geom_record_t *dst = &arena->records[first_rec + i];
+    int *dst_idx = dst->vert_idx;
+    int *dst_uv = dst->uv;
+
+    dst->vert_count = src[0];
+    memcpy(dst->attr, src + 6, sizeof dst->attr);
+    memcpy(dst->tex, src + 0x13, sizeof dst->tex);
+    dst->visible = src[0x16];
+    dst->clipped = src[0x17];
+    for (k = 0; k < src[0]; k++) {
+      dst_idx[k] = src[1 + k] + first_vert;
+      dst_uv[k * 2] = src[9 + k * 2];
+      dst_uv[k * 2 + 1] = src[10 + k * 2];
+    }
   }
-  *(char *)(matrix + 1) = (char)local_30;
-  *(char *)((char *)matrix + 5) = (char)((uint)local_30 >> 8);
-  *(char *)((char *)matrix + 6) = (char)((uint)local_30 >> 0x10);
-  *(char *)((char *)matrix + 7) = (char)((uint)local_30 >> 0x18);
+  arena->rec_count = first_rec + points[1];
 }

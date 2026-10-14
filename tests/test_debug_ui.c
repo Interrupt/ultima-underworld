@@ -183,32 +183,40 @@ static void test_text_field_is_read_only(void)
     TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(before[1], vals[1], "selection did not pass through the text row to f1");
 }
 
-/* A panel that shrinks between frames (toggle panel -> object/texture
- * inspector, in real usage) must still clear the rows a taller earlier
- * panel left behind -- the fill is the only thing that ever repaints
- * that screen region (see dbgui_draw's own comment), so if it only
- * covers the CURRENT, smaller row count, an old row's text is left
- * sitting there as a stale ghost (confirmed live: picking a wall left
- * a leftover "pick_diag:" row below a 3-row Texture Inspector). */
+/* When the drawn panel's size changes between frames (any cause: panel switch, an inspector whose
+ * row count varies per object), dbgui_draw must invalidate -- restore + have the game repaint the HUD
+ * via the close hook -- and then fill only the new size. An unchanged size must not invalidate. */
 extern int g_last_bg_fill_y1;
-static void test_shrinking_panel_clears_the_now_unused_rows(void)
+static int g_inval_hook_calls;
+static void count_inval_hook(void) { g_inval_hook_calls++; }
+
+static void draw_panel_with_fields(int n)
 {
-    dbgui_begin("Tall Panel");
-    dbgui_field_toggle("f0", &vals[0]);
-    dbgui_field_toggle("f1", &vals[1]);
-    dbgui_field_toggle("f2", &vals[2]);
-    dbgui_field_toggle("f3", &vals[3]);
+    dbgui_begin("Panel");
+    for (int i = 0; i < n; i++) dbgui_field_toggle("f", &vals[i]);
     dbgui_end();
     dbgui_draw();
+}
+
+static void test_panel_size_change_invalidates_and_fills_own_size(void)
+{
+    g_inval_hook_calls = 0;
+    dbgui_console_set_close_hook(count_inval_hook);
+    draw_panel_with_fields(4);
     int tall_y1 = g_last_bg_fill_y1;
     TEST_ASSERT_GREATER_THAN_INT_MESSAGE(0, tall_y1, "background fill never ran");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(0, g_inval_hook_calls, "first draw invalidated");
 
-    dbgui_begin("Short Panel");
-    dbgui_field_toggle("g0", &vals[0]);
-    dbgui_end();
-    dbgui_draw();
-    TEST_ASSERT_GREATER_OR_EQUAL_INT_MESSAGE(tall_y1, g_last_bg_fill_y1,
-        "shrinking panel's fill didn't cover the taller previous panel's rows");
+    draw_panel_with_fields(4);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(0, g_inval_hook_calls, "same-size redraw invalidated");
+
+    draw_panel_with_fields(1);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, g_inval_hook_calls, "shrinking did not invalidate");
+    TEST_ASSERT_LESS_THAN_INT_MESSAGE(tall_y1, g_last_bg_fill_y1, "fill still covers the old height");
+
+    draw_panel_with_fields(4);
+    TEST_ASSERT_EQUAL_INT_MESSAGE(2, g_inval_hook_calls, "growing did not invalidate");
+    dbgui_console_set_close_hook(0);
 }
 
 /* A toggle-action row (debug panel's door "locked" field, in real
@@ -249,6 +257,155 @@ static void test_toggle_action_field_calls_its_callback(void)
     TEST_ASSERT_NOT_EQUAL_INT_MESSAGE(before[1], vals[1], "selection did not pass through the action row to f1");
 }
 
+/* ---- console ---- */
+#define DBGUI_KEY_ESCAPE    27
+#define DBGUI_KEY_BACKSPACE 8
+
+static char g_con_lines[8][64];
+static int g_con_line_count;
+static void record_console_line(const char *line)
+{
+    if (g_con_line_count < 8) {
+        strncpy(g_con_lines[g_con_line_count], line, 63);
+        g_con_lines[g_con_line_count][63] = 0;
+    }
+    g_con_line_count++;
+}
+
+static void open_console(void)
+{
+    g_con_line_count = 0;
+    dbgui_console_set_handler(record_console_line);
+    build_fields();
+    dbgui_draw();
+    dbgui_console_open();
+}
+
+static void type_line(const char *text)
+{
+    dbgui_feed_text(text);
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+}
+
+static int g_close_hook_calls;
+static void count_close_hook(void) { g_close_hook_calls++; }
+
+void test_console_close_calls_redraw_hook_for_esc_and_toggle(void)
+{
+    g_close_hook_calls = 0;
+    dbgui_console_set_close_hook(count_close_hook);
+    open_console();
+    dbgui_feed_key(DBGUI_KEY_ESCAPE);
+    TEST_ASSERT_EQUAL_INT(1, g_close_hook_calls);
+    dbgui_console_open();
+    dbgui_toggle();
+    TEST_ASSERT_EQUAL_INT(2, g_close_hook_calls);
+    dbgui_console_set_close_hook(0);
+}
+
+void test_console_scroll_api_clamps_and_moves(void)
+{
+    int i;
+    char buf[16];
+    open_console();
+    for (i = 0; i < 30; i++) { snprintf(buf, sizeof(buf), "line %d", i); dbgui_console_print(buf); }
+    dbgui_console_scroll(-1);   /* already at the newest line: no underflow */
+    dbgui_console_scroll(1000); /* clamps to the oldest page */
+    dbgui_console_scroll(-1);
+    dbgui_draw();
+    TEST_ASSERT_TRUE(dbgui_console_active());
+}
+
+void test_console_button_style_open_makes_console_active(void)
+{
+    TEST_ASSERT_FALSE(dbgui_console_active());
+    open_console();
+    TEST_ASSERT_TRUE(dbgui_console_active());
+    TEST_ASSERT_TRUE_MESSAGE(dbgui_visible(), "console must keep owning input via dbgui_visible()");
+}
+
+void test_console_submits_typed_line_to_handler(void)
+{
+    open_console();
+    type_line("TELEPORT 56 45");
+    TEST_ASSERT_EQUAL_INT(1, g_con_line_count);
+    TEST_ASSERT_EQUAL_STRING("TELEPORT 56 45", g_con_lines[0]);
+}
+
+void test_console_backspace_edits_the_line(void)
+{
+    open_console();
+    dbgui_feed_text("OPENMAPP");
+    dbgui_feed_key(DBGUI_KEY_BACKSPACE);
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+    TEST_ASSERT_EQUAL_STRING("OPENMAP", g_con_lines[0]);
+}
+
+void test_console_empty_line_and_clear_do_not_reach_handler(void)
+{
+    open_console();
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+    type_line("clear");
+    TEST_ASSERT_EQUAL_INT(0, g_con_line_count);
+}
+
+void test_console_up_recalls_previous_commands(void)
+{
+    open_console();
+    type_line("REVEAL");
+    type_line("OPENMAP");
+    dbgui_feed_key(DBGUI_KEY_UP);
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+    TEST_ASSERT_EQUAL_STRING("OPENMAP", g_con_lines[2]);
+    dbgui_feed_key(DBGUI_KEY_UP);
+    dbgui_feed_key(DBGUI_KEY_UP);
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+    TEST_ASSERT_EQUAL_STRING("REVEAL", g_con_lines[3]);
+}
+
+void test_console_ignores_backtick_text_and_does_not_edit_panel_fields(void)
+{
+    open_console();
+    dbgui_feed_text("`W");
+    dbgui_feed_key(DBGUI_KEY_RETURN);
+    TEST_ASSERT_EQUAL_STRING("W", g_con_lines[0]);
+    /* Panel rows must not react to clicks or keys while the console owns input. */
+    dbgui_feed_mouse_down(dbgui_test_row_x(), dbgui_test_row_y(0));
+    TEST_ASSERT_EQUAL_INT(0, vals[0]);
+}
+
+void test_console_escape_returns_to_panel_and_backtick_closes_all(void)
+{
+    open_console();
+    dbgui_feed_key(DBGUI_KEY_ESCAPE);
+    TEST_ASSERT_FALSE(dbgui_console_active());
+    TEST_ASSERT_TRUE(dbgui_visible());
+
+    dbgui_console_open();
+    TEST_ASSERT_TRUE(dbgui_console_active());
+    dbgui_toggle();
+    TEST_ASSERT_FALSE(dbgui_console_active());
+    TEST_ASSERT_FALSE(dbgui_visible());
+}
+
+void test_console_open_requires_visible_panel(void)
+{
+    dbgui_toggle(); /* hide */
+    dbgui_console_open();
+    TEST_ASSERT_FALSE(dbgui_console_active());
+}
+
+void test_console_draw_does_not_crash_with_long_output(void)
+{
+    int i;
+    open_console();
+    for (i = 0; i < 400; i++) dbgui_console_print("a long line of output that keeps scrolling the log around\nsecond");
+    dbgui_feed_key(0x4000004B); /* PageUp */
+    dbgui_draw();
+    dbgui_feed_key(0x4000004E); /* PageDown */
+    dbgui_draw();
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -260,7 +417,18 @@ int main(void)
     RUN_TEST(test_mouse_click_dispatches_the_clicked_row);
     RUN_TEST(test_mouse_click_outside_panel_dispatches_nothing);
     RUN_TEST(test_text_field_is_read_only);
-    RUN_TEST(test_shrinking_panel_clears_the_now_unused_rows);
+    RUN_TEST(test_panel_size_change_invalidates_and_fills_own_size);
     RUN_TEST(test_toggle_action_field_calls_its_callback);
+    RUN_TEST(test_console_button_style_open_makes_console_active);
+    RUN_TEST(test_console_submits_typed_line_to_handler);
+    RUN_TEST(test_console_backspace_edits_the_line);
+    RUN_TEST(test_console_empty_line_and_clear_do_not_reach_handler);
+    RUN_TEST(test_console_up_recalls_previous_commands);
+    RUN_TEST(test_console_ignores_backtick_text_and_does_not_edit_panel_fields);
+    RUN_TEST(test_console_escape_returns_to_panel_and_backtick_closes_all);
+    RUN_TEST(test_console_open_requires_visible_panel);
+    RUN_TEST(test_console_scroll_api_clamps_and_moves);
+    RUN_TEST(test_console_close_calls_redraw_hook_for_esc_and_toggle);
+    RUN_TEST(test_console_draw_does_not_crash_with_long_output);
     return UNITY_END();
 }

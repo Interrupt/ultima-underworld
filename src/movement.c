@@ -2,41 +2,22 @@
    resolution, and the reticle object pick. Split out of uw.c (the original monolithic decompile)
    once these functions' real roles were confirmed. */
 #include "headers/movement.h"
+#include "headers/input.h"
 #include "headers/options.h"
 #include "headers/debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #define _DAT_002048c2 (*(uint*)&DAT_002048c2)
-#define _DAT_00204982 (*(uint*)&DAT_00204982)
-#define _DAT_00204986 (*(uint*)&DAT_00204986)
-#define _DAT_00204992 (*(uint*)&DAT_00204992)
 /* Sizing pass: one of 4 interchangeable collision-response-profile buffers (siblings
    DAT_00204980/990/9b0 below) -- see their own combined sizing-pass comment a few lines down for
    the full trace. Real max touched offset is 7 (8 bytes); sized to 32 for headroom. */
 undefined2 DAT_002049a0_backing[16];
-static undefined2 DAT_002048cc;
-static undefined2 DAT_002048ce;
-static undefined1 DAT_002048d7;
-static undefined2 DAT_002048fc;
-static undefined2 DAT_002048fe;
-static undefined1 DAT_00204907;
-static undefined2 DAT_0020492c;
-static undefined2 DAT_0020492e;
-static undefined1 DAT_00204937;
-static undefined2 DAT_0020495c;
-static undefined2 DAT_0020495e;
-static undefined1 DAT_00204967;
 /* Written as a 1-byte scalar but also read/written as a `uint` (4 bytes) via the _DAT_00204982
    macro below -- widened to its own real backing storage so that wider access can't spill into
    whatever global happens to follow (it used to rely on uw.c's own incidental layout). */
-static undefined DAT_00204982_backing[8];
-#define DAT_00204982 DAT_00204982_backing[0]
-static undefined2 DAT_00204984;
 /* Same wider-access-than-declared-size issue as DAT_00204982 above (see
    its comment), via the _DAT_00204986 macro below. */
-static undefined DAT_00204986_backing[8];
-#define DAT_00204986 DAT_00204986_backing[0]
 /* Sizing pass: this and its 3 siblings (DAT_00204990/9a0/9b0, and DAT_00204982/84/86/88 right above
    -- all really one struct Ghidra split into separate globals) are the 4 interchangeable collision-
    response-profile buffers npc_ai_tick selects between... */
@@ -44,21 +25,11 @@ undefined1 DAT_00204980_backing[32];
 static int (*DAT_00204988)(ushort *);
 /* Same wider-access-than-declared-size issue as DAT_00204982 above (see
    its comment), via the _DAT_00204992 macro below. */
-static undefined DAT_00204992_backing[8];
-#define DAT_00204992 DAT_00204992_backing[0]
-static undefined2 DAT_00204994;
-static undefined2 DAT_00204996;
 /* Sizing pass: sibling of DAT_00204980 above -- see its combined
    comment for the full trace. Sized to 16 elements (32 bytes). */
 undefined2 DAT_00204990_backing[16];
 static int (*DAT_00204998)(ushort *);
-static undefined2 DAT_002049a2;
-static undefined2 DAT_002049a4;
-static undefined2 DAT_002049a6;
 static int (*DAT_002049a8)(ushort *);
-static undefined2 DAT_002049b2;
-static undefined2 DAT_002049b4;
-static undefined2 DAT_002049b6;
 /* Sizing pass: sibling of DAT_00204980 above -- see its combined
    comment for the full trace. Sized to 16 elements (32 bytes). */
 undefined2 DAT_002049b0_backing[16];
@@ -165,6 +136,13 @@ static char DAT_00087944_backing[128];
 static char *DAT_00087944 = DAT_00087944_backing;
 /* Port clock for movement_pacing_handler, in the original 4ms units. GX input polling samples
    elapsed time at 60Hz, including inside the original blocking input waits. */
+/* HACK: not original behaviour -- the player's X/Y position below the 1/256-tile resolution the
+   movement block stores, valid while the block still holds (x, y). See sweep_init_position. */
+struct player_move_fraction {
+  short x, y;
+  byte x_frac, y_frac;
+};
+static struct player_move_fraction g_player_move_fraction = {0};
 unsigned int g_uw_frame_clock_units;
 static char DAT_00087950_backing[128];
 static char *DAT_00087950 = DAT_00087950_backing;
@@ -265,6 +243,18 @@ void sweep_init_position()
   g_sweep_foot_pos[2] = *(short *)(DAT_00204874 + 4) >> 3;
   DAT_00086980 = (*DAT_00204874 & 0x1f) << 8;
   DAT_00086982 = (DAT_00204874[2] & 0x1f) << 8;
+  /* HACK: not original behaviour -- the position is stored back as whole 1/256-tile units, so the
+     remainder below that was thrown away every tick: a positive move lost up to one unit per tick
+     and a negative one gained up to one (floor), skewing slow movement toward -x/-y and off the
+     camera's heading. Carry the remainder over while the stored position is still the one we left. */
+  if (DAT_00204874 == (char *)&DAT_00204880) {
+    if (*(short *)(DAT_00204874 + 0) == g_player_move_fraction.x) {
+      DAT_00086980 |= g_player_move_fraction.x_frac;
+    }
+    if (*(short *)(DAT_00204874 + 2) == g_player_move_fraction.y) {
+      DAT_00086982 |= g_player_move_fraction.y_frac;
+    }
+  }
   DAT_00086984 = (DAT_00204874[4] & 7) << 8;
 }
 
@@ -413,10 +403,32 @@ int movement_sweep_setup(int is_initial, int use_remaining)
   short local_1e;
   
   angle_to_screen_delta((int)*(short *)(DAT_00204874 + 0x21),&local_20,&local_1e);
-  iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_20 >> 0xf;
-  *(char *)(DAT_00204874 + 6) = (char)iVar10;
-  *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
-  iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_1e >> 0xf;
+  /* HACK: not original behaviour -- speed * sin/cos >> 15 floors, which pushes a negative component
+     up to a whole velocity unit further from zero than the matching positive one. At walking speeds
+     a unit is a large fraction of the vector, so the player drifted off the camera's heading (worst
+     slowly, at 45 degrees, and biased toward -x/-y). The player's rounding remainder is carried from
+     tick to tick instead, so the net direction and distance are exact. */
+  if (DAT_00204874 == (char *)&DAT_00204880 && is_initial != 0) {
+    static int carry_x, carry_y;
+    int speed = (int)*(short *)(DAT_00204874 + 0x14);
+    if (speed == 0) {
+      carry_x = carry_y = 0;
+    }
+    iVar10 = speed * (int)local_20 + carry_x;
+    carry_x = iVar10 & 0x7fff;
+    iVar10 = iVar10 >> 0xf;
+    *(char *)(DAT_00204874 + 6) = (char)iVar10;
+    *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
+    iVar10 = speed * (int)local_1e + carry_y;
+    carry_y = iVar10 & 0x7fff;
+    iVar10 = iVar10 >> 0xf;
+  }
+  else {
+    iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_20 >> 0xf;
+    *(char *)(DAT_00204874 + 6) = (char)iVar10;
+    *(char *)(DAT_00204874 + 7) = (char)((uint)iVar10 >> 8);
+    iVar10 = (int)*(short *)(DAT_00204874 + 0x14) * (int)local_1e >> 0xf;
+  }
   *(char *)(DAT_00204874 + 8) = (char)iVar10;
   *(char *)(DAT_00204874 + 9) = (char)((uint)iVar10 >> 8);
   *g_sweep_velocity = *g_sweep_velocity + *(short *)(DAT_00204874 + 0x12) * *(short *)(DAT_00204874 + 0xc);
@@ -470,6 +482,18 @@ int movement_sweep_setup(int is_initial, int use_remaining)
     iVar10 = iVar10 * 2;
     (&DAT_00086986)[iVar10] = 0;
     (&DAT_00086987)[iVar10] = uVar5;
+    /* HACK: not original behaviour -- the ratio above is only kept to 1/32 of a unit (one byte, and
+       truncated), so the minor axis always came out short of the heading by up to ~3%. For the
+       player keep the full 16-bit, rounded ratio (dominant step * minor / dominant velocity). */
+    if (DAT_00204874 == (char *)&DAT_00204880) {
+      int dominant_step = (int)*(short *)(&DAT_00086986 + (short)DAT_0008698c * 2);
+      int dominant_velocity = (int)g_sweep_velocity[(short)DAT_0008698c];
+      long long scaled = (long long)dominant_step * (int)g_sweep_velocity[iVar10 / 2];
+      long long half = dominant_velocity < 0 ? -(long long)dominant_velocity / 2 : dominant_velocity / 2;
+      int ratio = (int)((scaled + (scaled < 0 ? -half : half)) / dominant_velocity);
+      (&DAT_00086986)[iVar10] = (char)ratio;
+      (&DAT_00086987)[iVar10] = (char)(ratio >> 8);
+    }
     psVar11 = g_sweep_velocity;
     iVar10 = (int)*(short *)(state_rec + 0x12) * (int)g_sweep_velocity[(short)DAT_0008698c] * 0x10000;
     uVar1 = iVar10 >> 0x1f;
@@ -590,6 +614,14 @@ void sweep_writeback_position()
        (short)(g_sweep_foot_pos[1] * 0x20 + (((int)DAT_00086982 << 0x10) >> 0x18));
   *(short *)(DAT_00204874 + 4) =
        (short)(g_sweep_foot_pos[2] * 8 + (((int)DAT_00086984 << 0x10) >> 0x18));
+  /* HACK: not original behaviour -- keep the player's sub-1/256-tile X/Y fraction (see
+     g_player_move_fraction), which the whole-unit position stored above cannot hold. */
+  if (DAT_00204874 == (char *)&DAT_00204880) {
+    g_player_move_fraction.x = *(short *)(DAT_00204874 + 0);
+    g_player_move_fraction.y = *(short *)(DAT_00204874 + 2);
+    g_player_move_fraction.x_frac = (byte)(DAT_00086980 & 0xff);
+    g_player_move_fraction.y_frac = (byte)(DAT_00086982 & 0xff);
+  }
   if (((((DAT_002049d4 & 0x2000) != 0) &&
        (uVar1 = (int)((int)g_sweep_foot_pos[2] - (uint)DAT_002049d8) >> 0x1f,
        (int)(((int)g_sweep_foot_pos[2] - (uint)DAT_002049d8 ^ uVar1) - uVar1) <=
@@ -652,6 +684,14 @@ int sweep_integrate_substep(short sub_step, short axis)
   else {
     iVar1 = (int)DAT_0008698e;
     sVar3 = (*(short *)(&DAT_00086986 + iVar1 * 2) >> 5) * (short)(char)((ushort)DAT_00086992 >> 8);
+    /* HACK: not original behaviour -- that product keeps only the top 5 bits of the leftover
+       fraction and floors a negative step, so the minor axis lost up to a whole 1/256 tile every
+       tick. Use the full fraction, rounded symmetrically, for the player. */
+    if (DAT_00204874 == (char *)&DAT_00204880) {
+      int minor_step = (int)*(short *)(&DAT_00086986 + iVar1 * 2);
+      int magnitude = ((minor_step < 0 ? -minor_step : minor_step) * (int)DAT_00086992 + 0x1000) >> 13;
+      sVar3 = (short)(minor_step < 0 ? -magnitude : magnitude);
+    }
     if (iVar2 != 1) {
       sVar3 = -sVar3;
     }
@@ -1185,6 +1225,11 @@ void sweep_apply_collision()
      reads it from -- undefined behavior, latent since this line predates any work this session. */
   uVar1 = collision_flags_to_locomotion_code(local_14[0]);
   *(undefined1 *)(DAT_00204874 + 0x28) = uVar1;
+  /* Debug noclip: the player ignores wall/object/step blocking. The map border (0x8000) still
+     stops the move. */
+  if (g_debug_noclip && DAT_00204874 == (char *)&DAT_00204880 && (local_14[0] & 0x8000) == 0) {
+    return;
+  }
   if ((local_14[0] & 0xc000) == 0) {
     local_14[0] = local_14[0] & ~*(ushort *)DAT_002048bc;
     if (local_14[0] == 0) {
@@ -1243,11 +1288,78 @@ void sweep_apply_collision()
 
 
 
+/* Per-tick facing change commit_player_move applies when a wall deflects the player's travel
+   heading: the original's 0x400 (~5.6 degrees) scaled by --wall-turn (1.0 = original, 0 = off). */
+int uw_wall_turn_step(void) {
+  float scale = g_opts.wall_turn;
+  if (scale < 0.0f) scale = 0.0f;
+  return (int)(0x400 * scale);
+}
+
 /* Fixed turn-rate accelerator value for decode_movement_command's turn branches -- see that
    function's own comment for why turning was decoupled from DAT_0024af6c (the held-key ramp, still
    used as-is for forward/back). */
 int uw_turn_rate_accel(void) {
   return g_opts.turn_accel;
+}
+
+/* Port, DOS style (do_player_keyboard): turn the held movement keys into the forward rate
+   DAT_0023bf48, turn rate DAT_0023bf4c and movement mode, without going through the pending-key
+   slot. Turning wins over the single-direction moves; forward and a turn combine into a diagonal. */
+static void decode_held_movement_keys(void)
+{
+  ushort held = g_held_move_keys;
+  int turning = 0;
+  int forward = (held & (HELD_MOVE_RUN | HELD_MOVE_WALK)) != 0;
+  int walk_slow;
+  int accel;
+
+  if ((held & HELD_MOVE_LEFT) && !(held & HELD_MOVE_RIGHT)) {
+    turning = -1;
+  }
+  else if ((held & HELD_MOVE_RIGHT) && !(held & HELD_MOVE_LEFT)) {
+    turning = 1;
+  }
+  int backward = (held & HELD_MOVE_BACK) && !forward;
+  int strafe = ((held & HELD_MOVE_STRAFE_RIGHT) != 0) - ((held & HELD_MOVE_STRAFE_LEFT) != 0);
+  /* S walks: pin the accelerator below the step clamp so it is a genuine slow walk. */
+  walk_slow = (held & HELD_MOVE_WALK) && (turning != 0 || !(held & HELD_MOVE_RUN));
+  accel = walk_slow ? (int)g_opts.walk_accel : (int)DAT_0024af6c;
+
+  if (g_opts.strafe_while_walking && strafe != 0 && (forward || backward)) {
+    /* Strafing while walking: move on the diagonal (resolve_move_vector modes 0x10-0x13), at the walk
+       speed. Turning keys still turn the facing meanwhile. */
+    if (forward) {
+      DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    }
+    if (turning != 0) {
+      DAT_0023bf4c = ordint_divmod(100,(int)((long long)uw_turn_rate_accel() *
+                                             (turning < 0 ? -0x5a0000 : 0x5a0000) >> 0x10)).quot;
+    }
+    g_movement_mode = 0x10 + (backward ? 2 : 0) + (strafe > 0);
+    return;
+  }
+  if (turning != 0) {
+    if (forward) {
+      DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    }
+    DAT_0023bf4c = ordint_divmod(100,(int)((long long)uw_turn_rate_accel() *
+                                           (turning < 0 ? -0x5a0000 : 0x5a0000) >> 0x10)).quot;
+    g_movement_mode = 1;
+  }
+  else if (forward) {
+    DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    g_movement_mode = 1;
+  }
+  else if (held & HELD_MOVE_BACK) {
+    g_movement_mode = 8;
+  }
+  else if ((held & HELD_MOVE_STRAFE_LEFT) && !(held & HELD_MOVE_STRAFE_RIGHT)) {
+    g_movement_mode = 9;
+  }
+  else if ((held & HELD_MOVE_STRAFE_RIGHT) && !(held & HELD_MOVE_STRAFE_LEFT)) {
+    g_movement_mode = 10;
+  }
 }
 
 // was FUN_000685e8 -- turn the latched input code (DAT_0023c448) into the analog forward rate
@@ -1276,6 +1388,10 @@ void decode_movement_command()
   if (*DAT_00087944 != '\0') {
     DAT_0023bf48 = 0;
     DAT_0023bf4c = 0;
+    return;
+  }
+  if (g_held_move_keys != 0) {
+    decode_held_movement_keys();
     return;
   }
   if (DAT_0023c448 < 0x2f) {
@@ -1433,6 +1549,11 @@ void movement_pacing_handler()
   bVar1 = DAT_0023bf58;
   DAT_0023bf58 = bVar2;
   movement_tick(uVar6 & 0xffff,bVar1,0);
+  /* HACK: not original behaviour -- with --physics-fps, thrown items and projectiles are stepped on
+     their own finer tick (the same gate movement_tick applies to the mobile object pass). */
+  if (g_npc_tick_enabled != 0 && DAT_002020d0 == 0) {
+    tick_physics_objects(uVar6);
+  }
 }
 
 
@@ -1570,7 +1691,7 @@ void apply_movement_tick(int elapsed)
   sVar4 = g_movement_mode;
   bVar1 = DAT_0023bf18;
   if ((DAT_002048a8 & 0x10) == 0) {
-    if (((int)DAT_00202078 >> 2 < (int)g_jump_ascent_timer) && (g_movement_mode == 1)) {
+    if (((int)DAT_00202078 >> 2 < (int)g_jump_ascent_timer) && (g_movement_mode == 1 || g_movement_mode >= 0x10)) {
       cVar2 = ordint_divmod((int)DAT_00202078 >> 1,(int)g_jump_ascent_timer << 2).quot;
       cVar3 = (char)(cVar2 + -1);
       DAT_0023bea8 = 1;
@@ -1599,38 +1720,52 @@ void apply_movement_tick(int elapsed)
 // and their respective callback slots...
 void init_collision_response_profiles()
 {
-  DAT_002048cc = 0;
-  DAT_002048ce = 0;
-  DAT_002048d7 = 0x80;
-  DAT_002048fc = 0;
-  DAT_002048fe = 0;
-  DAT_00204907 = 0x80;
-  DAT_0020492c = 0;
-  DAT_0020492e = 0;
-  DAT_00204937 = 0;
-  DAT_0020495c = 0;
-  DAT_0020495e = 0;
-  DAT_00204967 = 0x80;
-  _DAT_00204982 = 0x1f30;
-  DAT_00204984 = 0x1010;
-  _DAT_00204986 = 0x20;
-  _DAT_00204980 = 0;
+  /* The snapshot buffers (DAT_002048c0/f0/204920/950) and the four collision-response profiles
+     (DAT_00204980/990/9a0/9b0) are real contiguous structs, but Ghidra split every field into its
+     own global and the sizing pass then gave each split-off field its own separate storage -- so
+     the writes below used to land in dead variables and the structs npc_ai_tick actually hands to
+     the sweep stayed all zero. For NPCs that meant no response masks at all: nothing stopped land
+     walkers entering water (and the like) and swimmers never stayed in it. Write the fields into
+     the real buffers (offsets confirmed against ARM 0x2b63c). */
+#define SNAPSHOT_FIELD16(buffer, offset) (*(ushort *)((char *)(buffer) + (offset)))
+#define SNAPSHOT_FIELD8(buffer, offset) (*((byte *)(buffer) + (offset)))
+  SNAPSHOT_FIELD16(DAT_002048c0_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_002048c0_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_002048c0_backing, 0x17) = 0x80;
+  SNAPSHOT_FIELD16(DAT_002048f0_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_002048f0_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_002048f0_backing, 0x17) = 0x80;
+  SNAPSHOT_FIELD16(DAT_00204920_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_00204920_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_00204920_backing, 0x17) = 0;
+  SNAPSHOT_FIELD16(DAT_00204950_backing, 0xc) = 0;
+  SNAPSHOT_FIELD16(DAT_00204950_backing, 0xe) = 0;
+  SNAPSHOT_FIELD8(DAT_00204950_backing, 0x17) = 0x80;
+
+  /* Profile layout: +0 ignored flags, +2 response-callback trigger flags, +4 blocking flags,
+     +6 line-of-sight flags; the callback pointer is kept in the separate DAT_002049x8 variables. */
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 0) = 0;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 2) = 0x1f30;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 4) = 0x1010;
+  SNAPSHOT_FIELD16(DAT_00204980_backing, 6) = 0x20;
   DAT_00204988 = collision_response_default;
-  _DAT_00204992 = 0x700;
-  DAT_00204994 = 0x80;
-  DAT_00204996 = 0;
-  DAT_00204990 = 0x1000;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 0) = 0x1000;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 2) = 0x700;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 4) = 0x80;
+  SNAPSHOT_FIELD16(DAT_00204990_backing, 6) = 0;
   DAT_00204998 = collision_response_alt_locomotion;
-  DAT_002049a2 = 0;
-  DAT_002049a4 = 0;
-  DAT_002049a6 = 0;
-  DAT_002049a0 = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 0) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 2) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 4) = 0;
+  SNAPSHOT_FIELD16(DAT_002049a0_backing, 6) = 0;
   DAT_002049a8 = collision_response_mobile_object;
-  DAT_002049b2 = 0x1728;
-  DAT_002049b4 = 0x10a8;
-  DAT_002049b6 = 0;
-  DAT_002049b0 = 0x10;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 0) = 0x10;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 2) = 0x1728;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 4) = 0x10a8;
+  SNAPSHOT_FIELD16(DAT_002049b0_backing, 6) = 0;
   DAT_002049b8 = collision_response_other_locomotion;
+#undef SNAPSHOT_FIELD16
+#undef SNAPSHOT_FIELD8
 }
 
 

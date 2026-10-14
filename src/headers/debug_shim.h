@@ -19,10 +19,23 @@ void populate_debug_panel(void);
 /* Debug view (--debug-pick-view): paint the per-pixel object-pick buffer over the 3D viewport
    instead of the rendered dungeon. */
 void uw_debug_blit_pick_buffer(void);
+/* --show-fps: call once per rendered 3D frame; draws frame stats in the view's upper left. */
+void uw_debug_draw_frame_stats(void);
+/* --max-fps: sleep out the rest of this main-loop iteration's time slice. */
+void uw_limit_frame_rate(void);
 /* Debug tool (--dump-critter-sheet): systematically drive decode_critter_sprite_page across every
    (tier, direction, frame) combination for one or more critter type indices. */
 void uw_debug_dump_critter_sheet_once(void);
 /* Debug tool (--dump-sprite-frames / --dump-sprite-ids): dump individual sprites to standalone
    BMP files by real resource id. */
 void uw_debug_dump_sprite_frames_once(void);
+/* Console object commands: OBJIDS name lookup, SPAWNOBJ (returns 1 + tile), GIVEOBJ (returns slot, or
+   -1 bad id / -2 backpack full / -3 no object slot free). */
+void dbgui_object_name(int id, char *out, size_t n);
+int dbgui_spawn_object(int id, int *tile_x, int *tile_y);
+int dbgui_give_object(int id, int quantity);
+int dbgui_all_runes(void);
+void dbgui_spell_name(int i, char *out, size_t n);
+int dbgui_spell_count(void);
+int dbgui_cast_spell(int i);
 #endif

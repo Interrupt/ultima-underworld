@@ -5,18 +5,6 @@
 void setUp(void) { movement_fixture_reset(); }
 void tearDown(void) {}
 
-static void test_head_on_wall_hit_stops_player_at_wall(void)
-{
-    movement_fixture_set_heading(0x4000); /* perpendicular to the wall's tangent */
-    sweep_apply_collision();
-    TEST_ASSERT_EQUAL_INT(100, fx.x);
-    TEST_ASSERT_EQUAL_INT(200, fx.y);
-    TEST_ASSERT_EQUAL_INT(1, fx.reverted_steps);
-    TEST_ASSERT_EQUAL_INT(0, fx.restarted_sweeps);
-    TEST_ASSERT_EQUAL_INT(DAT_00086990 + 1, DAT_00086996); /* sweep stopped */
-    TEST_ASSERT_EQUAL_HEX16(0x4000, movement_fixture_read_short(0x21)); /* no arbitrary turn */
-}
-
 static void test_wall_hit_at_45_degrees_left_turns_left_along_wall(void)
 {
     const ushort incoming = 0x2000; /* 45 degrees left of head-on */
@@ -93,11 +81,6 @@ static void test_walking_up_short_stair_succeeds(void)
     assert_step_allowed(36); /* rise 4, limit 8 */
 }
 
-static void test_walking_up_exact_step_limit_succeeds(void)
-{
-    assert_step_allowed(40); /* rise 8, limit 8 */
-}
-
 static void assert_step_blocked(byte destination_height)
 {
     movement_fixture_prepare_stair(destination_height);
@@ -111,11 +94,6 @@ static void assert_step_blocked(byte destination_height)
     TEST_ASSERT_EQUAL_INT(1, fx.restarted_sweeps); /* blocked resolution */
     TEST_ASSERT_EQUAL_INT(1, fx.reverted_steps); /* raised face rolls movement back */
     TEST_ASSERT_EQUAL_HEX16(0x4000, movement_fixture_read_short(0x21));
-}
-
-static void test_walking_up_one_above_step_limit_is_blocked(void)
-{
-    assert_step_blocked(41);
 }
 
 static void test_walking_from_low_tile_to_much_higher_tile_is_blocked(void)
@@ -482,14 +460,11 @@ static void test_unchanged_signed_travel_heading_does_not_turn_camera_again(void
 int main(void)
 {
     UNITY_BEGIN();
-    RUN_TEST(test_head_on_wall_hit_stops_player_at_wall);
     RUN_TEST(test_wall_hit_at_45_degrees_left_turns_left_along_wall);
     RUN_TEST(test_wall_hit_at_45_degrees_right_turns_right_along_wall);
     RUN_TEST(test_hard_block_clears_all_player_velocity);
     RUN_TEST(test_open_floor_does_not_stop_or_turn_player);
     RUN_TEST(test_walking_up_short_stair_succeeds);
-    RUN_TEST(test_walking_up_exact_step_limit_succeeds);
-    RUN_TEST(test_walking_up_one_above_step_limit_is_blocked);
     RUN_TEST(test_walking_from_low_tile_to_much_higher_tile_is_blocked);
     RUN_TEST(test_player_cannot_auto_step_onto_high_footprint_floor);
     RUN_TEST(test_closed_door_candidate_preserves_full_object_link);

@@ -1,5 +1,6 @@
 #include "headers/ordinal_stubs.h"
 #include "headers/options.h"
+#include "headers/unit_test_hooks.h"
 #include "headers/file_io.h"
 #include "headers/debug.h"
 #include <ctype.h>
@@ -357,6 +358,7 @@ long Sleep(unsigned int ms)
         fast = g_opts.fast_sleep;
     }
     if (fast) {
+        if (uw_test_clock_active()) uw_test_clock_advance_us((uint64_t)ms * 1000);
         SDL_PumpEvents();
         return 0;
     }
@@ -392,6 +394,7 @@ long LoadResource(long resource)
 /* GetTickCount-shaped: real elapsed milliseconds since startup. */
 long GetTickCount()
 {
+    if (uw_test_clock_active()) return (long)(uw_test_clock_us() / 1000);
     return (long)SDL_GetTicks();
 }
 
@@ -511,9 +514,37 @@ void LocalFree(void *ptr)
     (void)ptr;
 }
 
+/* CRT _itoa/_ltoa: write `value` in `radix` (2..36; negative numbers get a '-' only in radix 10) into
+   `buffer` and return it. These were stubs returning NULL without writing anything, so every caller that
+   printed a number through them (inventory stack counts, the "You see N arrows" look text, the barter
+   counts, the "Move how many?" echo) drew or printed an empty string. */
+static void ce_integer_to_text(long value, char *buffer, long radix)
+{
+    char tmp[40];
+    int n = 0, neg = 0;
+    unsigned long u;
+    if (buffer == 0) return;
+    if (radix < 2 || radix > 36) radix = 10;
+    if (radix == 10 && value < 0) {
+        neg = 1;
+        u = 0UL - (unsigned long)value;
+    } else {
+        u = (unsigned long)(unsigned int)value;
+    }
+    do {
+        int digit = (int)(u % (unsigned long)radix);
+        tmp[n++] = (char)(digit < 10 ? '0' + digit : 'a' + digit - 10);
+        u /= (unsigned long)radix;
+    } while (u != 0 && n < (int)sizeof tmp - 1);
+    if (neg) *buffer++ = '-';
+    while (n > 0) *buffer++ = tmp[--n];
+    *buffer = '\0';
+}
+
 char *_itoa(long value, char *buffer, long radix)
 {
-    return 0;
+    ce_integer_to_text(value, buffer, radix);
+    return buffer;
 }
 
 long ordfloat_log(long lo, long hi)
@@ -523,7 +554,8 @@ long ordfloat_log(long lo, long hi)
 
 char *_ltoa(long value, char *buffer, long radix)
 {
-    return 0;
+    ce_integer_to_text(value, buffer, radix);
+    return buffer;
 }
 
 void *ce_malloc(unsigned int size)

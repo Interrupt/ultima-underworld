@@ -25,7 +25,7 @@ undefined1 DAT_001006d8_backing[8192];
 short DAT_00100770_backing[1024];
 undefined1 DAT_001007a0_backing[2048];
 char *DAT_000bbf80;
-ushort *DAT_00100674;
+uw_mobile_object_t *DAT_00100674;
 uw_mobile_object_t *g_player_object;
 char *DAT_00086df8;
 uw_object_type_props_t g_object_type_props[512];
@@ -69,7 +69,7 @@ void babl_fixture_reset(void)
     DAT_000bbf80 = (char *)script_words;
     DAT_000bbf1c = DAT_000bbf78 = DAT_000bbf2c = DAT_000bbf74 = 0;
     DAT_00086df8 = character;
-    DAT_00100674 = npc;
+    DAT_00100674 = (uw_mobile_object_t *)npc;
     g_player_object = (uw_mobile_object_t *)player;
     memset(babl_items, 0, sizeof babl_items);
     memset(((byte *)g_object_type_props), 0, sizeof g_object_type_props);

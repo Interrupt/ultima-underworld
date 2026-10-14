@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 /* ---- Extra lights (--extralights) --------------------------------------------------------------
    Small point lights around campfires, glowing rocks, lit torches on the floor and magic
@@ -93,7 +94,7 @@ void extra_lights_transform_to_eye(void)
   }
   if (g_extra_light_count == 0) return;
   memcpy(m, DAT_000c8ac0_mtx, sizeof m);
-  memcpy(cam_offset, (char *)DAT_000a85d0_backing + 0x4808, sizeof cam_offset);
+  memcpy(cam_offset, &g_geom_arena.cam_offset, sizeof cam_offset);
   for (i = 0; i < g_extra_light_count; i++) {
     uw_extra_light_t *light = &g_extra_lights[i];
     float a = light->world[0] + cam_offset[0];
@@ -103,6 +104,199 @@ void extra_lights_transform_to_eye(void)
     light->eye[1] = (float)((a * m[1] + b * m[5] + c * m[9] + m[13]) * UW_EYE_TO_LIGHT_UNITS);
     light->eye[2] = (float)((a * m[2] + b * m[6] + c * m[10] + m[14]) * UW_EYE_TO_LIGHT_UNITS);
   }
+}
+
+/* ARM mode takes its brightness from the DOS shade table so the two modes light the same: row r of
+   LIGHT.DAT/MONO.DAT is a darker version of every palette colour, so its average luminance relative
+   to row 0 is how bright the row is. Those 16 factors (4096 = full) give the brightness next to the
+   player and, through a fit A * (1 - x/D)^k, the shade D at which the light reaches black rather than
+   holding the table's darkest row. The falloff curves themselves (--light-mode smooth / linear) are functions of the
+   true distance. Refitted after the table is (re)loaded (update_fullbright_palette_mask sets the flag). */
+int g_shade_rows_dirty = 1;
+static double g_shade_row_factor[16] = {0};
+static double g_fit_a = 4096.0, g_fit_d = 16.0, g_fit_k = 1.0;
+
+static int palette_luminance(int texel)
+{
+  unsigned int c = (unsigned short)(&g_palette_rgb565)[texel];
+  unsigned int r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+  return (int)(r * 8 * 77 + g * 4 * 150 + b * 8 * 29);
+}
+
+/* Least-squares fit of A, D and k to the row factors by grid search over D and k (A is closed form). */
+static void fit_formula_to_rows(void)
+{
+  double best = 1e30, d, k;
+  int row;
+  for (d = 15.5; d <= 28.0; d += 0.25) {
+    for (k = 0.4; k <= 4.0; k += 0.05) {
+      double num = 0.0, den = 0.0, a, err = 0.0;
+      for (row = 0; row < 16; row++) {
+        double b = pow(1.0 - row / d, k);
+        num += b * g_shade_row_factor[row];
+        den += b * b;
+      }
+      a = num / den;
+      if (a > 4096.0) a = 4096.0;
+      for (row = 0; row < 16; row++) {
+        double e = a * pow(1.0 - row / d, k) - g_shade_row_factor[row];
+        err += e * e;
+      }
+      if (err < best) { best = err; g_fit_a = a; g_fit_d = d; g_fit_k = k; }
+    }
+  }
+}
+
+static void rebuild_shade_row_factors(void)
+{
+  long total[16];
+  int row, texel;
+  g_shade_rows_dirty = 0;
+  for (row = 0; row < 16; row++) {
+    total[row] = 0;
+    for (texel = 1; texel < 256; texel++)
+      total[row] += palette_luminance((byte)DAT_0024fa2c[row * 256 + texel]);
+  }
+  for (row = 0; row < 16; row++) {
+    double f = total[0] > 0 ? (double)total[row] * 4096.0 / (double)total[0] : 4096.0;
+    if (f > 4096.0) f = 4096.0;
+    if (row > 0 && f > g_shade_row_factor[row - 1]) f = g_shade_row_factor[row - 1];
+    g_shade_row_factor[row] = f;
+  }
+  fit_formula_to_rows();
+}
+
+/* The falloff curves (light modes "smooth", the default, and "linear") are textbook functions of the true distance from the player,
+   in tiles. Both keep the near brightness of the level's start row and reach black at the shade D of the
+   fit, converted back to tiles through the level's falloff and offset. */
+static double light_max_distance_tiles(void)
+{
+  double falloff = DAT_0025063c < 1 ? 1 : DAT_0025063c;
+  double m = (g_fit_d - DAT_0025064c - DAT_002506dc) * 2048.0 / falloff / 256.0;
+  return m < 0.25 ? 0.25 : m;
+}
+
+static double near_start_factor(void)
+{
+  int init = DAT_0025064c;
+  return g_shade_row_factor[init < 0 ? 0 : init > 15 ? 15 : init];
+}
+
+/* Mode "smooth" (default): (1 - s^2)^2 / (1 + F s^2), s = d / max distance, F = max distance / 1.3.
+   The windowed attenuation from https://lisyarus.github.io/blog/posts/point-light-attenuation.html: it is 1 at
+   the light, reaches exactly 0 at the maximum distance, and eases out there. */
+static double windowed_factor(double d_tiles)
+{
+  double m = light_max_distance_tiles(), s, s2, w;
+  if (d_tiles >= m) return 0.0;
+  s = d_tiles / m;
+  s2 = s * s;
+  w = 1.0 - s2;
+  return near_start_factor() * (w * w) / (1.0 + (m / 1.3) * s2);
+}
+
+/* Mode "linear": the DOS shade rows' brightness factors, interpolated linearly. Distance maps to a fractional shade row
+   exactly as the DOS table does (max(0, world*F/2048 + offset) + start); the two nearest rows' factors are averaged
+   by the fraction, and a final knot of zero at the fit's black shade D carries the last row down to black. Same near
+   brightness and black distance as the other modes, following the table's own (near-linear) steps with no extra shaping. */
+static double linear_factor(double d_tiles)
+{
+  const double far_scale = 1.23;
+  double falloff = DAT_0025063c < 1 ? 1 : DAT_0025063c;
+  double shade = d_tiles * 256.0 * falloff / 2048.0 + DAT_002506dc, lo_f, hi_f, t;
+  int row;
+  if (shade < 0.0) shade = 0.0;
+  /* HACK: not original behaviour -- the averaged row brightnesses stay brighter than the DOS table's per-colour rows, which
+     go black around shade 14.6 rather than at the fit's D (~18). Bring the whole falloff in by this factor (measured from
+     the start shade) so the linear ramp ends where the DOS lighting does. */
+  shade = shade * far_scale + DAT_0025064c;
+  if (shade >= g_fit_d) return 0.0;
+  row = (int)shade;
+  t = shade - row;
+  lo_f = g_shade_row_factor[row > 15 ? 15 : row];
+  if (row >= 15) {
+    /* Past the last table row: fall from its brightness to zero at D. */
+    double span = g_fit_d - 15.0;
+    return span <= 0.0 ? 0.0 : lo_f * (1.0 - (shade - 15.0) / span);
+  }
+  hi_f = g_shade_row_factor[row + 1];
+  return lo_f + (hi_f - lo_f) * t;
+}
+
+/* Brightness factor (0..4096) at the span's radial distance, in 4096*w units (world units * 4096/1500).
+   The light mode picks the curve; "dos" never gets here. */
+static int dos_shade_factor(int light_distance)
+{
+  double tiles = light_distance * 1500.0 / 4096.0 / 256.0, f;
+  if (g_shade_rows_dirty) rebuild_shade_row_factors();
+  if (g_opts.light_mode && strcasecmp(g_opts.light_mode, "linear") == 0) f = linear_factor(tiles);
+  else f = windowed_factor(tiles);
+  return f > 4096.0 ? 4096 : (int)f;
+}
+
+/* HACK: not original behaviour -- the --light-depth-rounding=N option. DOS shades from distances that come in
+   whole 32-world-unit steps (`sar ax,5` on each coordinate before the squares are summed; reference:
+   cimmerianpit/openabyss src/uw_shade.c uw_rast_vertex_shade, MIT). Rounding the camera-space x, y and z of every
+   pixel does not reproduce that: the steps follow the screen's axes, so near the screen edge a wall at an angle
+   steps x up while z steps down, the rounded distance rises and falls and the bands repeat. Round the pixel's
+   *world* position instead: undo the camera transform (the inverse of the one extra_lights_transform_to_eye
+   applies), snap the world x, y and z to a grid of N * 32 world units, and measure the distance from the camera
+   to the snapped point. The bands then lie on a grid fixed in the world, so they are coherent on any surface at
+   any angle. Returns that distance in the same 4096*w units as `depth` (4096*w; ray_x, ray_y are the pixel's
+   offsets from screen centre in focal-length units, as in shade_span_pixel). */
+/* The camera transform the rounding inverts, prepared once per frame (light_pass_prepare) rather than for
+   every pixel: eye = Q * (world + cam_offset) + t, with `inv` the inverse of Q. */
+struct light_round_frame {
+  double q[9], inv[9], t[3], cam_offset[3];
+  int state; /* 0 = not prepared, 1 = ready, 2 = singular matrix (fall back to the exact distance) */
+};
+static struct light_round_frame g_light_round_frame = {{0}};
+
+/* Call once per frame, after the view matrix and camera offset are built and before any pixel is shaded. */
+void light_pass_prepare(void)
+{
+  struct light_round_frame *f = &g_light_round_frame;
+  float m[16], cam_offset[3];
+  double *q = f->q, *inv = f->inv, det;
+  int i;
+  memcpy(m, DAT_000c8ac0_mtx, sizeof m);
+  memcpy(cam_offset, &g_geom_arena.cam_offset, sizeof cam_offset);
+  for (i = 0; i < 3; i++) { f->t[i] = m[12 + i]; f->cam_offset[i] = cam_offset[i]; }
+  q[0] = m[0]; q[1] = m[4]; q[2] = m[8];
+  q[3] = m[1]; q[4] = m[5]; q[5] = m[9];
+  q[6] = m[2]; q[7] = m[6]; q[8] = m[10];
+  det = q[0] * (q[4] * q[8] - q[5] * q[7]) - q[1] * (q[3] * q[8] - q[5] * q[6]) + q[2] * (q[3] * q[7] - q[4] * q[6]);
+  if (fabs(det) < 1e-12) {
+    f->state = 2;
+    return;
+  }
+  inv[0] = (q[4] * q[8] - q[5] * q[7]) / det; inv[1] = (q[2] * q[7] - q[1] * q[8]) / det; inv[2] = (q[1] * q[5] - q[2] * q[4]) / det;
+  inv[3] = (q[5] * q[6] - q[3] * q[8]) / det; inv[4] = (q[0] * q[8] - q[2] * q[6]) / det; inv[5] = (q[2] * q[3] - q[0] * q[5]) / det;
+  inv[6] = (q[3] * q[7] - q[4] * q[6]) / det; inv[7] = (q[1] * q[6] - q[0] * q[7]) / det; inv[8] = (q[0] * q[4] - q[1] * q[3]) / det;
+  f->state = 1;
+}
+
+int light_rounded_distance(int depth, double ray_x, double ray_y)
+{
+  const double eye_units = 1500.0 / 4096.0;
+  const struct light_round_frame *f = &g_light_round_frame;
+  double eye[3], world[3], step = 32.0 * (g_opts.light_depth_rounding > 0 ? g_opts.light_depth_rounding : 1);
+  int i;
+  if (f->state == 0) {
+    light_pass_prepare();
+  }
+  if (f->state != 1) return (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
+  /* the pixel's eye-space point, as shade_span_pixel builds it for the extra lights, in world units */
+  eye[0] = depth * ray_x * eye_units - f->t[0];
+  eye[1] = -depth * ray_y * eye_units - f->t[1];
+  eye[2] = depth * eye_units - f->t[2];
+  for (i = 0; i < 3; i++)
+    world[i] = f->inv[i * 3] * eye[0] + f->inv[i * 3 + 1] * eye[1] + f->inv[i * 3 + 2] * eye[2] - f->cam_offset[i];
+  for (i = 0; i < 3; i++)
+    world[i] = floor(world[i] / step + 0.5) * step + f->cam_offset[i];
+  for (i = 0; i < 3; i++)
+    eye[i] = f->q[i * 3] * world[0] + f->q[i * 3 + 1] * world[1] + f->q[i * 3 + 2] * world[2] + f->t[i];
+  return (int)(sqrt(eye[0] * eye[0] + eye[1] * eye[1] + eye[2] * eye[2]) / eye_units);
 }
 
 /* Light one textured pixel and return its RGB565 colour. `depth` is the span's 4096*w depth for the pixel;
@@ -115,6 +309,7 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
                                 bool dos_light_mode, bool fullbright_enabled)
 {
   int light_distance = (int)(depth * sqrt(1.0 + ray_x * ray_x + ray_y * ray_y));
+  if (g_opts.light_depth_rounding > 0) light_distance = light_rounded_distance(depth, ray_x, ray_y);
   bool use_extra = g_opts.extralights && g_extra_light_count > 0;
   double pixel[3];
   int i;
@@ -124,6 +319,10 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     pixel[1] = -depth * ray_y;
     pixel[2] = depth;
   }
+  /* Shading level 5 loads MONO.DAT instead of LIGHT.DAT (load_shading_level_config): the black and
+     * white view. DOS mode gets it through its row lookups below; the ARM-style RGB scaling does not use the
+     * table's rows, so map the texel through row 0 (full-brightness grey) first and scale that. */
+  if (!dos_light_mode && DAT_000872a0 == 5 && DAT_0024fa2c) texel = (byte)DAT_0024fa2c[texel];
   if (dos_light_mode) {
     /* HACK: palette shading uses SHADES.DAT's selected light strength.
        tmap supplies w = world_depth/1500. Edge setup scales 1/w by
@@ -166,15 +365,13 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     return (unsigned short)(&g_palette_rgb565)[texel];
   }
   else {
-    int index = ((light_distance >> 4) + (int)DAT_000842b0) * 0x10000 >> 0x10;
+    /* The DOS brightness and light distance as a smooth RGB scale (see dos_shade_factor). */
     unsigned int colour;
     int factor;
     int round;
     int red, green, blue;
-    if (index < 0) index = 0;
     colour = (unsigned int)(unsigned short)(&g_palette_rgb565)[texel];
-    if (0x9f < (short)index) index = 0x9f;
-    factor = (int)(&DAT_000b5638)[(short)index];
+    factor = DAT_0024fa2c ? dos_shade_factor(light_distance) : 4096;
     if (use_extra) {
       /* Same falloff table, indexed by the distance to each light scaled so that the table's last
          entry lands on the light's radius; the contributions add up, capped at full brightness. */

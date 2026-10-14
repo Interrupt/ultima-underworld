@@ -46,10 +46,12 @@ set(UW_SOURCES
   src/collision.c
   src/input.c
   src/object_actions.c
+  src/spells.c
   src/weapon_swing.c
   src/level.c
   src/doors.c
   src/winfile_wrappers.c
+  src/models_dos.c
   src/models.c
   src/math.c
   src/registration.c
@@ -59,8 +61,10 @@ set(UW_SOURCES
   src/platform_voice.c
   src/platform_dosmidi.c
   src/main.c
+  src/unit_test_hooks.c
   src/options.c
   src/gx_stub.c
+  src/mouselook.c
   src/ordinal_stubs.c
   src/file_io.c
   src/demomode.c
@@ -79,7 +83,18 @@ set(UW_SOURCES
   src/debug_shim.c
 )
 
-add_executable(uw_dbg ${UW_SOURCES})
+# The whole game minus its main(), compiled once and shared by the game executable and the
+# unit-test game harness (tests/CMakeLists.txt: add_test_game_executable), whose tests supply their own main().
+add_library(uw_game_objs OBJECT ${UW_SOURCES})
+target_include_directories(uw_game_objs PUBLIC ${SDL2_INCLUDE_DIRS} third_party/hxcmod third_party/openabyss)
+target_compile_options(uw_game_objs PRIVATE
+  ${SDL2_CFLAGS_OTHER}
+  -Wno-pointer-sign
+  -fno-common
+)
+target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+
+add_executable(uw_dbg src/program_main.c $<TARGET_OBJECTS:uw_game_objs>)
 
 target_include_directories(uw_dbg PRIVATE ${SDL2_INCLUDE_DIRS} third_party/hxcmod third_party/openabyss)
 target_link_directories(uw_dbg PRIVATE ${SDL2_LIBRARY_DIRS})
@@ -101,7 +116,7 @@ set_target_properties(uw_dbg PROPERTIES
 # adjacent heap memory. Kept as a separate target rather than folding into
 # uw_dbg itself so day-to-day interactive playtesting isn't slowed down by
 # ASan's overhead.
-add_executable(uw_asan ${UW_SOURCES})
+add_executable(uw_asan src/program_main.c ${UW_SOURCES})
 
 target_include_directories(uw_asan PRIVATE ${SDL2_INCLUDE_DIRS} third_party/hxcmod third_party/openabyss)
 target_link_directories(uw_asan PRIVATE ${SDL2_LIBRARY_DIRS})

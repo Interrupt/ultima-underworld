@@ -107,7 +107,7 @@ void *tilemap_lookup(short x, short y)
    light effect with a success stub and hiding the pointer truncation. */
 #define UNUSED_EFFECT(name) void name(void) { TEST_FAIL_MESSAGE("Unexpected " #name); }
 void trigger_player_jump_if_grounded(char *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected trigger_player_jump_if_grounded"); }
-void apply_healing_item_effect(ushort *object, char effect_code) { (void)object; (void)effect_code; TEST_FAIL_MESSAGE("Unexpected apply_healing_item_effect"); }
+void apply_healing_effect(ushort *object, char effect_code) { (void)object; (void)effect_code; TEST_FAIL_MESSAGE("Unexpected apply_healing_effect"); }
 void cast_cone_damage_spell(void *caster, uint spell_variant) { (void)caster; (void)spell_variant; TEST_FAIL_MESSAGE("Unexpected cast_cone_damage_spell"); }
 void cast_targeted_search_effect(void *caster, uint spell_variant) { (void)caster; (void)spell_variant; TEST_FAIL_MESSAGE("Unexpected cast_targeted_search_effect"); }
 void cast_summon_or_spawn_effect(void *caster, char variant) { (void)caster; (void)variant; TEST_FAIL_MESSAGE("Unexpected cast_summon_or_spawn_effect"); }
@@ -180,3 +180,5 @@ void spells_fixture_reset(void)
     spells_fixture.equipment_refreshes=0;
     spells_fixture.sound=-1;
 }
+
+int g_debug_godmode;

@@ -9,3 +9,6 @@ current-demo.txt
 # Python bytecode from tests/tools/*.py (the test-function extractor)
 __pycache__/
 *.pyc
+
+# macOS Finder metadata
+.DS_Store

@@ -1,9 +1,11 @@
 /* Top-level program flow: WinMain's real body (window/subsystem init and the OS message pump) and
    the title/main menu loop. Split out of uw.c (the original monolithic decompile) once these
    functions' real roles were confirmed. */
+#include "headers/mouselook.h"
 #include "headers/game.h"
 #include "headers/options.h"
 #include "headers/debug.h"
+#include "headers/unit_test_hooks.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -304,10 +306,21 @@ int app_main_loop(int instance, int prev_instance, int command_line, int show_co
       compute_dimension_volume();
       run_game_startup_sequence();
       build_trig_tables();
-      wait_and_show_intro_page();
-      main_menu_loop(1);
+      if (uw_test_game_active()) {
+        /* Unit-test harness: no intro, no title menu -- straight into a fresh game. */
+        if (!start_headless_new_game()) {
+          return 0;
+        }
+        begin_gameplay();
+        uw_test_hook_on_game_start();
+      }
+      else {
+        wait_and_show_intro_page();
+        main_menu_loop(1);
+      }
       DAT_00201c98 = 1;
       while (DAT_00201b6c != 0) {
+        uw_test_hook_pre_game_tick();
         if (DAT_000876c8 == 0) {
           /* Was gated on `(DAT_0024af60 == 0) || ...` -- DAT_0024af60 was always 1 throughout this
              loop (set once at session start, never cleared in practice; see its init comment
@@ -334,7 +347,9 @@ int app_main_loop(int instance, int prev_instance, int command_line, int show_co
           }
           main_loop_hud_flush();
         }
+        uw_test_hook_post_game_tick();
       }
+      uw_test_hook_on_game_exit();
       iVar2 = window_message_noop_handler(instance,local_38);
       return iVar2;
     }
@@ -699,6 +714,14 @@ void init_gameplay_session()
   register_key_binding(0x32,0,0x11,&debug_adjust_view_heading);
   register_key_binding(0x6a,7,0x1b,move_command_dispatch);
   register_key_binding(0x4a,6,0x1b,move_command_dispatch);
+  /* Quality-of-life desktop keys (not in the original): F toggles mouselook, E uses / picks up the
+     object under the cursor, Q looks at it. */
+  register_key_binding(0x46,0,0x1b,uw_toggle_mouselook);
+  register_key_binding(0x66,0,0x1b,uw_toggle_mouselook);
+  register_key_binding(0x45,0,0x1b,quick_use_object_at_cursor);
+  register_key_binding(0x65,0,0x1b,quick_use_object_at_cursor);
+  register_key_binding(0x51,0,0x1b,quick_look_at_cursor);
+  register_key_binding(0x71,0,0x1b,quick_look_at_cursor);
   register_key_binding(0x86,0,0x1b,toggle_stats_panel);
   register_key_binding(0x89,0,0x1b,&debug_force_rest_action);
   register_key_binding(0x88,2,0x1b,&print_debug_stat_message);
@@ -720,7 +743,24 @@ void init_gameplay_session()
   register_key_binding(0x2e,3,1,tick_weapon_swing_state);
   register_key_binding(0x3b,6,1,tick_weapon_swing_state);
   register_key_binding(0x4a3,0x4a3,7,noop_key_handler);
-  register_key_binding(9,9,7,noop_key_handler);
+  /* Mask 6, not 7: mode 1 (the 3D view) is left out so the TAB combat toggle below can bind there --
+     dispatch_key_binding takes the FIRST matching entry. */
+  register_key_binding(9,9,6,noop_key_handler);
+  /* Desktop QoL (the TAB noop above excludes mode 1): TAB toggles
+     combat (attack) mode -- the attack icon's own handler, button index 1 -- and M opens the
+     automap, or closes it again from inside it (like its ESC binding). */
+  register_key_binding(9,1,1,cursor_mode_button_click);
+  register_key_binding(0x4d,2,1,change_game_mode);
+  register_key_binding(0x6d,2,1,change_game_mode);
+  register_key_binding(0x4d,1,2,change_game_mode);
+  register_key_binding(0x6d,1,2,change_game_mode);
+  /* R: rune bag page, V: skills page -- each also closes itself back to the inventory.
+     Shift+R (the 'R' character) casts the spell currently set in the rune slots, the same call
+     as the 0x87 cast binding. */
+  register_key_binding(0x52,1,0x1b,handle_cast_spell_click);
+  register_key_binding(0x72,1,1,toggle_hud_panel_page);
+  register_key_binding(0x56,2,1,toggle_hud_panel_page);
+  register_key_binding(0x76,2,1,toggle_hud_panel_page);
   register_key_binding(0x8d,0x8d,7,noop_key_handler);
   register_key_binding(0x93,0x93,7,noop_key_handler);
   register_key_binding(0x8f,0x8f,7,noop_key_handler);
@@ -833,26 +873,42 @@ void set_custom_view_target(short mode)
 // was FUN_00067b98 -- moves the "custom view target" position (DAT_0023be90/be92, set up by
 // set_custom_view_target) based on the live mouse cursor position relative to the game-view rect
 // (DAT_0023bd80/be88 from register_game_view_interact_zones)...
+/* Far sight's per-step camera deltas were tuned for the original device's slow main loop, and this
+   runs once per 60Hz game frame (see handle_game_view_click_hold) -- about this many times faster.
+   Each delta is divided down, keeping the remainder so slow movement still accumulates. */
+#define FAR_SIGHT_TURN_DIVISOR 5
+#define FAR_SIGHT_MOVE_DIVISOR 20
+
+static int far_sight_scale_step(int *remainder, int delta, int divisor)
+{
+  int total = *remainder + delta;
+  int out = total / divisor;
+  *remainder = total - out * divisor;
+  return out;
+}
+
 void move_custom_view_target(int unused)
 {
+  /* The facing delta wraps mod 0x10000 (0x40 * 0x400), so it is a signed turn -- it must be
+     divided as a signed value or a small left turn becomes a large right one. */
+  static int rem_facing, rem_x, rem_y;
   short *psVar1;
   short sVar2;
   uint uVar3;
   int iVar4;
-  undefined1 local_14;
-  char cStack_13;
-  undefined1 local_12;
-  char cStack_11;
+  short far_sine;    /* was local_14/cStack_13: angle_to_screen_delta's 2-byte outputs */
+  short far_cosine;  /* was local_12/cStack_11 */
   
   psVar1 = DAT_00085a6c;
   sVar2 = ordint_divmod((int)DAT_0023be88,DAT_00085a6c[1] * 3).quot;
   uVar3 = ordint_divmod((int)DAT_0023bd80,*psVar1 * 3).quot;
-  iVar4 = (uint)DAT_0023bf00 + ((uVar3 & 0xffff) + 0x3f) * 0x400;
+  iVar4 = (uint)DAT_0023bf00 +
+          far_sight_scale_step(&rem_facing, (short)(((uVar3 & 0xffff) + 0x3f) * 0x400), FAR_SIGHT_TURN_DIVISOR);
   DAT_0023bf00 = (ushort)iVar4;
   if (sVar2 != 1) {
-    angle_to_screen_delta(iVar4,&local_14,&local_12);
-    DAT_0023be90 = (short)cStack_13 * (sVar2 + -1) + DAT_0023be90;
-    DAT_0023be92 = (short)cStack_11 * (sVar2 + -1) + DAT_0023be92;
+    angle_to_screen_delta(iVar4,&far_sine,&far_cosine);
+    DAT_0023be90 = far_sight_scale_step(&rem_x, (far_sine >> 8) * (sVar2 + -1), FAR_SIGHT_MOVE_DIVISOR) + DAT_0023be90;
+    DAT_0023be92 = far_sight_scale_step(&rem_y, (far_cosine >> 8) * (sVar2 + -1), FAR_SIGHT_MOVE_DIVISOR) + DAT_0023be92;
   }
   if (DAT_0023be90 < 0x180) {
     DAT_0023be90 = 0x180;
@@ -1012,6 +1068,10 @@ void handle_game_view_click_hold()
 
 {
   if (DAT_002020d8 == 0) {
+    /* Mouselook: the cursor sits at the viewport centre, which this click-and-hold-to-walk logic
+       reads as "walk forward slowly" -- a held button (attack swing, drag) must not move the
+       player; WASD does that. */
+    if (uw_mouselook_active()) return;
     move_command_dispatch(-1);
     if (DAT_0023bf0c == '\0') {
       set_cursor_confine_rect((int)DAT_0023be5c,(int)DAT_0023be80,(int)DAT_0023bd80 + (int)DAT_0023be5c + -1,
@@ -1020,7 +1080,15 @@ void handle_game_view_click_hold()
     DAT_0023bf0c = '\x02';
   }
   else {
-    move_custom_view_target(0);
+    /* This handler runs once per main-loop poll, which on a modern host is far faster than the
+       original device's loop -- step the far-sight camera once per game frame instead (the same
+       clock the player's own movement is paced by). */
+    static unsigned int last_step_clock = ~0u;
+    unsigned int now = uw_frame_clock_ms();
+    if (now != last_step_clock) {
+      last_step_clock = now;
+      move_custom_view_target(0);
+    }
   }
   return;
 }
@@ -2406,6 +2474,27 @@ void show_error_dialog_stub_thunk()
 // testable function.
 bool prepare_new_game()
 {
+    g_new_game_entry_pause_pending = false;
+    if (!character_generator_start()) return false;
+    return start_game_with_current_character();
+}
+
+// Unit-test harness version of prepare_new_game: the same new-game sequence, but the character is
+// the real initializer's default one (no chargen UI); pre_game_start gets to adjust it first.
+bool start_headless_new_game()
+{
+    g_new_game_entry_pause_pending = false;
+    init_new_character_record(1);
+    ce_strncpy(DAT_00086df8, "Test Avatar", 0x1d);
+    load_weapon_combat_maneuver_data();
+    uw_test_hook_pre_game_start();
+    return start_game_with_current_character();
+}
+
+// The part of starting a new game that follows character creation: saves the character, seeds
+// \SAVE0\lev.ark from \DATA\lev.ark, loads level 1 and places the player.
+bool start_game_with_current_character()
+{
     char save_directory[264];
     char destination_path[264];
     undefined1 source_copy_path[520];
@@ -2413,9 +2502,6 @@ bool prepare_new_game()
     char *converted_path;
     char *source;
     char *destination;
-
-    g_new_game_entry_pause_pending = false;
-    if (!character_generator_start()) return false;
 
     ce_memset(save_directory, 0, 0x104);
     source = (char *)&DAT_0023cca8;

@@ -1,9 +1,11 @@
 /* See demomode.h. */
 #include "headers/demomode.h"
+#include "headers/debug_ui.h"
 #include "headers/options.h"
 #include "headers/uw.h"
 
 #include <SDL.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +55,64 @@ static int g_demo_hold_shift;
 /* WAIT <ticks> state: how many more idle pump ticks to burn with no
  * input at all before reading the next line. */
 static int g_demo_wait_ticks;
+
+/* All demo diagnostics go through here: stderr as before, plus the debug console's scrollback so
+   a command typed there shows its own output. */
+static void demo_printf(const char *fmt, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    fputs(buf, stderr);
+    dbgui_console_print(buf);
+}
+
+/* Lines typed into the debug console. They run through the same executor as demofile lines
+   (demo_exec_line), paced by the same pump, so every demofile command works there unchanged. */
+#define CONSOLE_QUEUE_MAX 32
+#define CONSOLE_DELAY_MS 30
+static char g_console_queue[CONSOLE_QUEUE_MAX][256];
+static int g_console_q_head, g_console_q_count;
+
+static void demomode_console_submit(const char *line) {
+    if (g_console_q_count >= CONSOLE_QUEUE_MAX) {
+        dbgui_console_print("command queue full, line dropped");
+        return;
+    }
+    char *dst = g_console_queue[(g_console_q_head + g_console_q_count) % CONSOLE_QUEUE_MAX];
+    strncpy(dst, line, 255);
+    dst[255] = '\0';
+    g_console_q_count++;
+}
+
+static int demo_console_pop(char *out, size_t n) {
+    if (g_console_q_count == 0) return 0;
+    strncpy(out, g_console_queue[g_console_q_head], n - 1);
+    out[n - 1] = '\0';
+    g_console_q_head = (g_console_q_head + 1) % CONSOLE_QUEUE_MAX;
+    g_console_q_count--;
+    return 1;
+}
+
+/* "NAME" or "NAME <arg>" (any case) -> 1 and *arg = the trimmed argument ("" if none). */
+static int demo_match_cmd(const char *p, const char *name, const char **arg) {
+    size_t n = strlen(name);
+    if (strncasecmp(p, name, n) != 0) return 0;
+    if (p[n] != '\0' && p[n] != ' ' && p[n] != '\t') return 0;
+    p += n;
+    while (*p == ' ' || *p == '\t') p++;
+    *arg = p;
+    return 1;
+}
+
+/* Optional on/off argument for the mode commands: none toggles. Returns -1 if unparseable. */
+static int demo_parse_onoff(const char *arg, int current) {
+    if (*arg == '\0') return !current;
+    if (strcasecmp(arg, "on") == 0 || strcmp(arg, "1") == 0) return 1;
+    if (strcasecmp(arg, "off") == 0 || strcmp(arg, "0") == 0) return 0;
+    return -1;
+}
 
 static int demo_translate_vk(const char *name) {
     if (strcasecmp(name, "UP") == 0) return VK_UP;
@@ -110,13 +170,25 @@ static int demo_translate_sdlkey(const char *name) {
     return 0;
 }
 
+/* A debug window closing: don't trust its saved pixels (the game redraws the HUD underneath while
+   it is open) -- force a full HUD/inventory repaint and flag the whole screen dirty. */
+static void demomode_console_closed(void) {
+    redraw_hud_panels();
+    redraw_active_hud_panel();
+    redraw_container_icon_slot();
+    set_pending_update_flags(0x7ffe);
+    dirty_rect_union(0, 200, 0, 0x140);
+}
+
 void demomode_init(void) {
+    dbgui_console_set_handler(demomode_console_submit);
+    dbgui_console_set_close_hook(demomode_console_closed);
     const char *path = g_opts.demo_file;
     if (!path) return;
 
     g_demo_file = fopen(path, "r");
     if (!g_demo_file) {
-        fprintf(stderr, "[demo] failed to open --demo-file=%s\n", path);
+        demo_printf("[cmd] failed to open --demo-file=%s\n", path);
         return;
     }
 
@@ -130,7 +202,7 @@ void demomode_init(void) {
 
     g_demo_active = 1;
     g_demo_next_tick = SDL_GetTicks() + (Uint32)g_demo_delay_ms;
-    fprintf(stderr, "[demo] playing back input from %s (delay=%dms)\n", path, g_demo_delay_ms);
+    demo_printf("[cmd] playing back input from %s (delay=%dms)\n", path, g_demo_delay_ms);
 }
 
 int demomode_active(void) {
@@ -163,12 +235,20 @@ void demomode_abort(const char *reason) {
         fclose(g_demo_file);
         g_demo_file = NULL;
     }
-    fprintf(stderr, "[demo] aborted (%s) -- playback stopped, window still live\n",
+    demo_printf("[cmd] aborted (%s) -- playback stopped, window still live\n",
             reason ? reason : "requested");
 }
 
+/* True while a HOLD/WAIT/TYPE started by an earlier line is still running out its ticks. */
+static int demo_mid_action(void) {
+    return g_demo_wait_ticks > 0 || g_demo_hold_vk != 0 || (g_demo_type_pos && *g_demo_type_pos);
+}
+
+static void demo_exec_line(char *p, Uint32 now);
+
 void demomode_pump(void) {
-    if (!g_demo_active || g_demo_done) return;
+    int file_live = g_demo_active && !g_demo_done;
+    if (!file_live && g_console_q_count == 0 && !demo_mid_action()) return;
     Uint32 now = SDL_GetTicks();
     /* g_demo_delay_ms == 0 (via a DELAY 0 line or --demo-delay-ms=0) means tick-native playback:
        no wall-clock gate at all, process exactly one line every real uw_pump_events() call -- the
@@ -193,7 +273,7 @@ void demomode_pump(void) {
             g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
             return;
         }
-        fprintf(stderr, "[demo] releasing held key %s=0x%x\n",
+        demo_printf("[cmd] releasing held key %s=0x%x\n",
                 g_demo_hold_is_sdl ? "sdlkey" : "vk", g_demo_hold_vk);
         if (g_demo_hold_is_sdl) {
             uw_inject_key_up(g_demo_hold_vk);
@@ -201,7 +281,7 @@ void demomode_pump(void) {
             handle_keyboard_message(0, 0x101u, (unsigned int)g_demo_hold_vk);
         }
         if (g_demo_hold_shift) {
-            fprintf(stderr, "[demo] releasing held SHIFT\n");
+            demo_printf("[cmd] releasing held SHIFT\n");
             uw_inject_key_up(SDLK_LSHIFT);
         }
         g_demo_hold_vk = 0;
@@ -216,7 +296,7 @@ void demomode_pump(void) {
      * for the rest, rather than dumping the whole string in one frame. */
     if (g_demo_type_pos && *g_demo_type_pos) {
         unsigned char c = (unsigned char)*g_demo_type_pos++;
-        fprintf(stderr, "[demo] typing '%c'\n", c);
+        demo_printf("[cmd] typing '%c'\n", c);
         handle_keyboard_message(0, 0x102u, (unsigned int)c);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -224,7 +304,13 @@ void demomode_pump(void) {
     g_demo_type_pos = NULL;
 
     char line[256];
-    if (!fgets(line, sizeof(line), g_demo_file)) {
+    if (demo_console_pop(line, sizeof(line))) {
+        /* A console line when no demofile is pacing things: type/hold at a usable speed rather than
+           the 250ms-per-line playback default. A DELAY line can still change it. */
+        if (!file_live) g_demo_delay_ms = CONSOLE_DELAY_MS;
+    } else if (!file_live) {
+        return;
+    } else if (!fgets(line, sizeof(line), g_demo_file)) {
         g_demo_done = 1;
         fclose(g_demo_file);
         g_demo_file = NULL;
@@ -232,10 +318,10 @@ void demomode_pump(void) {
            self-terminating -- pass --demo-keep-running to keep the window open after playback
            finishes (e.g. to keep manually poking at the resulting state). */
         if (!g_opts.demo_keep_running) {
-            fprintf(stderr, "[demo] end of input, exiting\n");
+            demo_printf("[cmd] end of input, exiting\n");
             exit(0);
         }
-        fprintf(stderr, "[demo] end of input, stopping playback\n");
+        demo_printf("[cmd] end of input, stopping playback\n");
         return;
     }
 
@@ -243,7 +329,12 @@ void demomode_pump(void) {
     if (nl) *nl = '\0';
     char *p = line;
     while (*p == ' ' || *p == '\t') p++;
+    demo_exec_line(p, now);
+}
 
+/* Runs one demofile-syntax line: everything from the command dispatch down. Shared by demofile
+   playback and the debug console. Sets g_demo_next_tick for the pump's pacing. */
+static void demo_exec_line(char *p, Uint32 now) {
     if (*p == '\0' || *p == '#') {
         /* Blank/comment line -- retry immediately on the next pump
          * instead of burning a full delay slot on nothing. */
@@ -257,11 +348,11 @@ void demomode_pump(void) {
            the new value)... */
         int ms = -1;
         if (sscanf(p + 6, "%d", &ms) != 1 || ms < 0) {
-            fprintf(stderr, "[demo] malformed DELAY line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed DELAY line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] setting delay=%dms\n", ms);
+        demo_printf("[cmd] setting delay=%dms\n", ms);
         g_demo_delay_ms = ms;
         g_demo_next_tick = now;
         return;
@@ -270,11 +361,11 @@ void demomode_pump(void) {
     if (strncasecmp(p, "WAIT ", 5) == 0) {
         int ticks = 0;
         if (sscanf(p + 5, "%d", &ticks) != 1 || ticks < 0) {
-            fprintf(stderr, "[demo] malformed WAIT line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed WAIT line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] waiting %d idle ticks\n", ticks);
+        demo_printf("[cmd] waiting %d idle ticks\n", ticks);
         g_demo_wait_ticks = ticks;
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -284,17 +375,17 @@ void demomode_pump(void) {
         char keyname[32];
         int ticks = 0;
         if (sscanf(p + 5, "%31s %d", keyname, &ticks) != 2 || ticks < 0) {
-            fprintf(stderr, "[demo] malformed HOLD line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed HOLD line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
         int vk = demo_translate_vk(keyname);
         if (vk == 0) {
-            fprintf(stderr, "[demo] HOLD: unrecognized key '%s', skipping\n", keyname);
+            demo_printf("[cmd] HOLD: unrecognized key '%s', skipping\n", keyname);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] holding %s (vk=0x%x) for %d ticks\n", keyname, vk, ticks);
+        demo_printf("[cmd] holding %s (vk=0x%x) for %d ticks\n", keyname, vk, ticks);
         handle_keyboard_message(0, 0x100u, (unsigned int)vk);
         g_demo_hold_vk = vk;
         g_demo_hold_is_sdl = 0;
@@ -310,7 +401,7 @@ void demomode_pump(void) {
         char keyname[32];
         int ticks = 0;
         if (sscanf(p + 8, "%31s %d", keyname, &ticks) != 2 || ticks < 0) {
-            fprintf(stderr, "[demo] malformed SDLHOLD line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed SDLHOLD line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
@@ -319,7 +410,7 @@ void demomode_pump(void) {
         if (plus) {
             *plus = '\0';
             if (strcasecmp(keyname, "SHIFT") != 0) {
-                fprintf(stderr, "[demo] SDLHOLD: unrecognized modifier '%s', skipping\n", keyname);
+                demo_printf("[cmd] SDLHOLD: unrecognized modifier '%s', skipping\n", keyname);
                 g_demo_next_tick = now;
                 return;
             }
@@ -328,15 +419,15 @@ void demomode_pump(void) {
         }
         int kc = demo_translate_sdlkey(keyname);
         if (kc == 0) {
-            fprintf(stderr, "[demo] SDLHOLD: unrecognized key '%s', skipping\n", keyname);
+            demo_printf("[cmd] SDLHOLD: unrecognized key '%s', skipping\n", keyname);
             g_demo_next_tick = now;
             return;
         }
         if (want_shift) {
-            fprintf(stderr, "[demo] SDL-holding SHIFT+%s (sdlkey=0x%x) for %d ticks\n", keyname, kc, ticks);
+            demo_printf("[cmd] SDL-holding SHIFT+%s (sdlkey=0x%x) for %d ticks\n", keyname, kc, ticks);
             uw_inject_key_down(SDLK_LSHIFT);
         } else {
-            fprintf(stderr, "[demo] SDL-holding %s (sdlkey=0x%x) for %d ticks\n", keyname, kc, ticks);
+            demo_printf("[cmd] SDL-holding %s (sdlkey=0x%x) for %d ticks\n", keyname, kc, ticks);
         }
         uw_inject_key_down(kc);
         g_demo_hold_vk = kc;
@@ -352,17 +443,17 @@ void demomode_pump(void) {
            produces, with no UW_SYNTH_KEY stamp. */
         char keyname[32];
         if (sscanf(p + 7, "%31s", keyname) != 1) {
-            fprintf(stderr, "[demo] malformed RAWKEY line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed RAWKEY line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
         int kc = demo_translate_sdlkey(keyname);
         if (kc == 0) {
-            fprintf(stderr, "[demo] RAWKEY: unrecognized key '%s', skipping\n", keyname);
+            demo_printf("[cmd] RAWKEY: unrecognized key '%s', skipping\n", keyname);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] RAWKEY %s (sdlkey=0x%x)\n", keyname, kc);
+        demo_printf("[cmd] RAWKEY %s (sdlkey=0x%x)\n", keyname, kc);
         SDL_Event e = {0};
         e.type = SDL_KEYDOWN;
         e.key.state = SDL_PRESSED;
@@ -383,17 +474,17 @@ void demomode_pump(void) {
            SDLKEYUP line. */
         char keyname[32];
         if (sscanf(p + 11, "%31s", keyname) != 1) {
-            fprintf(stderr, "[demo] malformed SDLKEYDOWN line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed SDLKEYDOWN line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
         int kc = demo_translate_sdlkey(keyname);
         if (kc == 0) {
-            fprintf(stderr, "[demo] SDLKEYDOWN: unrecognized key '%s', skipping\n", keyname);
+            demo_printf("[cmd] SDLKEYDOWN: unrecognized key '%s', skipping\n", keyname);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] SDLKEYDOWN %s (sdlkey=0x%x)\n", keyname, kc);
+        demo_printf("[cmd] SDLKEYDOWN %s (sdlkey=0x%x)\n", keyname, kc);
         uw_inject_key_down(kc);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -403,17 +494,17 @@ void demomode_pump(void) {
         /* See SDLKEYDOWN. */
         char keyname[32];
         if (sscanf(p + 9, "%31s", keyname) != 1) {
-            fprintf(stderr, "[demo] malformed SDLKEYUP line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed SDLKEYUP line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
         int kc = demo_translate_sdlkey(keyname);
         if (kc == 0) {
-            fprintf(stderr, "[demo] SDLKEYUP: unrecognized key '%s', skipping\n", keyname);
+            demo_printf("[cmd] SDLKEYUP: unrecognized key '%s', skipping\n", keyname);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] SDLKEYUP %s (sdlkey=0x%x)\n", keyname, kc);
+        demo_printf("[cmd] SDLKEYUP %s (sdlkey=0x%x)\n", keyname, kc);
         uw_inject_key_up(kc);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -423,7 +514,7 @@ void demomode_pump(void) {
         const char *text = p + 5;
         strncpy(g_demo_type_buf, text, sizeof(g_demo_type_buf) - 1);
         g_demo_type_buf[sizeof(g_demo_type_buf) - 1] = '\0';
-        fprintf(stderr, "[demo] queued typing '%s'\n", g_demo_type_buf);
+        demo_printf("[cmd] queued typing '%s'\n", g_demo_type_buf);
         g_demo_type_pos = g_demo_type_buf;
         /* Retry immediately so the first character goes out on the next
          * pump rather than burning a delay slot on the TYPE line itself. */
@@ -432,14 +523,62 @@ void demomode_pump(void) {
     }
 
     if (strncasecmp(p, "TELEPORT ", 9) == 0) {
-        int tx = 0, ty = 0;
-        if (sscanf(p + 9, "%d %d", &tx, &ty) != 2) {
-            fprintf(stderr, "[demo] malformed TELEPORT line '%s', skipping\n", p);
+        /* TELEPORT <x> <y> [level] -- with a level, queues the same level change a teleport trap
+           does (teleport_object_to_level_tile: flood-fills a free spot near x,y on the new level
+           and runs the real level transition on the next tick). Without one, moves within the
+           current level directly. */
+        int tx = 0, ty = 0, level = 0;
+        int n = sscanf(p + 9, "%d %d %d", &tx, &ty, &level);
+        if (n < 2) {
+            demo_printf("[cmd] malformed TELEPORT line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] teleporting to tile (%d,%d)\n", tx, ty);
-        set_player_tile_position(tx, ty, 1);
+        if (n == 3) {
+            if (level < 1 || level > 9) {
+                demo_printf("[cmd] TELEPORT: level %d out of range 1-9, skipping\n", level);
+                g_demo_next_tick = now;
+                return;
+            }
+            demo_printf("[cmd] teleporting to tile (%d,%d) on level %d\n", tx, ty, level);
+            teleport_object_to_level_tile(g_player_object, tx, ty, (short)level);
+            /* Run the queued transition now (the way player.c's own teleports do) rather than
+               waiting for the pending-flag dispatch. */
+            dungeon_view_anim_tick();
+        } else {
+            demo_printf("[cmd] teleporting to tile (%d,%d)\n", tx, ty);
+            set_player_tile_position(tx, ty, 1);
+        }
+        g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
+        return;
+    }
+
+    if (strncasecmp(p, "GOTOLEVEL ", 10) == 0) {
+        /* GOTOLEVEL <level> -- load another level and put the player on exactly the same tile.
+           Unlike a teleport trap (TELEPORT x y level), which flood-fills for a free spot and kills
+           the player if it finds none, this never moves the player; if that tile happens to be
+           solid on the new level it just says so. */
+        extern short DAT_00201b68;
+        int level = 0;
+        if (sscanf(p + 10, "%d", &level) != 1 || level < 1 || level > 9) {
+            demo_printf("[cmd] GOTOLEVEL: need a level number 1-9, got '%s'\n", p + 10);
+        } else if (level == DAT_00201b68) {
+            demo_printf("[cmd] already on level %d\n", level);
+        } else {
+            int tx = g_player_object->tile_x, ty = g_player_object->tile_y;
+            demo_printf("[cmd] going to level %d at tile (%d,%d)\n", level, tx, ty);
+            if (transition_to_level(DAT_00201b68, level) == 0) {
+                demo_printf("[cmd] GOTOLEVEL: level %d failed to load\n", level);
+            } else {
+                DAT_00201b68 = (short)level;
+                set_player_tile_position(tx, ty, 1);
+                unsigned char *tile = (unsigned char *)tilemap_lookup(tx, ty);
+                if (tile && (tile[0] & 0xf) == 0)
+                    demo_printf("[cmd] note: tile (%d,%d) is solid on level %d\n", tx, ty, level);
+                full_dungeon_redraw();
+                set_pending_update_flags(0x7ffe);
+            }
+        }
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -447,11 +586,11 @@ void demomode_pump(void) {
     if (strncasecmp(p, "SETPLAYERPOS ", 13) == 0) {
         double x = 0, y = 0, z = 0, yaw = 0, pitch = 0;
         if (sscanf(p + 13, "%lf %lf %lf %lf %lf", &x, &y, &z, &yaw, &pitch) != 5) {
-            fprintf(stderr, "[demo] malformed SETPLAYERPOS line '%s', skipping\n", p);
+            demo_printf("[cmd] malformed SETPLAYERPOS line '%s', skipping\n", p);
             g_demo_next_tick = now;
             return;
         }
-        fprintf(stderr, "[demo] SETPLAYERPOS tile=(%.3f,%.3f) z=%.0f yaw=%.1f pitch=%.1f\n",
+        demo_printf("[cmd] SETPLAYERPOS tile=(%.3f,%.3f) z=%.0f yaw=%.1f pitch=%.1f\n",
                 x, y, z, yaw, pitch);
         demo_set_player_pos(x, y, z, yaw, pitch);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
@@ -462,7 +601,7 @@ void demomode_pump(void) {
         /* set_game_mode(2) is the real mode switch: DAT_00201b60 = 2 maps to game-mode index
            DAT_00201b64 = 1 (the automap), whose entry handler in DAT_00085668's mode-1 row is
            enter_automap_screen. */
-        fprintf(stderr, "[demo] switching to automap mode (change_game_mode(2))\n");
+        demo_printf("[cmd] switching to automap mode (change_game_mode(2))\n");
         change_game_mode(2);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -472,14 +611,14 @@ void demomode_pump(void) {
         /* Calls full_dungeon_redraw (the "full dungeon redraw" wrapper, directly at the player's
            current position. */
         // was FUN_0005bb5c
-        fprintf(stderr, "[demo] forcing a full dungeon redraw (automap reveal update)\n");
+        demo_printf("[cmd] forcing a full dungeon redraw (automap reveal update)\n");
         {
             /* Print the player's tile so a scripted TELEPORT/REVEAL sweep
                can be correlated with what's on screen. */
             extern uw_mobile_object_t *g_player_object;
             unsigned short *pl = (unsigned short *)g_player_object;
             if (pl)
-                fprintf(stderr, "[demo] player tile = (%d,%d)\n",
+                demo_printf("[cmd] player tile = (%d,%d)\n",
                         ((uw_mobile_object_t *)pl)->tile_x,
                         ((uw_mobile_object_t *)pl)->tile_y);
         }
@@ -495,9 +634,9 @@ void demomode_pump(void) {
         extern char *DAT_002046b8;
         int slot = atoi(p + 12);
         unsigned char *rec = (unsigned char *)DAT_002046b8 + slot * 0x1b;
-        fprintf(stderr, "[dumpobjslot] slot=%d addr=%p bytes:", slot, (void *)rec);
-        for (int i = 0; i < 0x1b; i++) fprintf(stderr, " %02x", rec[i]);
-        fprintf(stderr, "\n[dumpobjslot] slot=%d word0=0x%04x word1=0x%04x type=0x%03x\n",
+        demo_printf("[dumpobjslot] slot=%d addr=%p bytes:", slot, (void *)rec);
+        for (int i = 0; i < 0x1b; i++) demo_printf(" %02x", rec[i]);
+        demo_printf("\n[dumpobjslot] slot=%d word0=0x%04x word1=0x%04x type=0x%03x\n",
                 slot, (unsigned)(rec[0] | (rec[1] << 8)), (unsigned)(rec[2] | (rec[3] << 8)),
                 (unsigned)((rec[0] | (rec[1] << 8)) & 0x1ff));
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
@@ -509,9 +648,9 @@ void demomode_pump(void) {
            the in-world mantra-statue click path (dispatch_world_object_interaction_by_family /
            family 1, low nibble 7)... */
         extern void handle_mantra_chant();
-        fprintf(stderr, "[callmantra] invoking handle_mantra_chant()\n");
+        demo_printf("[callmantra] invoking handle_mantra_chant()\n");
         handle_mantra_chant();
-        fprintf(stderr, "[callmantra] returned\n");
+        demo_printf("[callmantra] returned\n");
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -528,7 +667,7 @@ void demomode_pump(void) {
             unsigned char *rec = (unsigned char *)DAT_002046b8 + i * 0x1b;
             unsigned type = (rec[0] | (rec[1] << 8)) & 0x1ff;
             if (type == (unsigned)want) {
-                fprintf(stderr, "[scanobjtype] small-table slot=%d addr=%p word0=0x%04x word1=0x%04x\n",
+                demo_printf("[scanobjtype] small-table slot=%d addr=%p word0=0x%04x word1=0x%04x\n",
                         i, (void *)rec, (unsigned)(rec[0] | (rec[1] << 8)), (unsigned)(rec[2] | (rec[3] << 8)));
                 found++;
             }
@@ -540,12 +679,12 @@ void demomode_pump(void) {
             unsigned char *rec = (unsigned char *)DAT_002046c4 + (i - 0x100) * 8;
             unsigned type = (rec[0] | (rec[1] << 8)) & 0x1ff;
             if (type == (unsigned)want) {
-                fprintf(stderr, "[scanobjtype] large-table slot=%d addr=%p word0=0x%04x word1=0x%04x\n",
+                demo_printf("[scanobjtype] large-table slot=%d addr=%p word0=0x%04x word1=0x%04x\n",
                         i, (void *)rec, (unsigned)(rec[0] | (rec[1] << 8)), (unsigned)(rec[2] | (rec[3] << 8)));
                 found++;
             }
         }
-        fprintf(stderr, "[scanobjtype] type=0x%03x total_found=%d\n", want, found);
+        demo_printf("[scanobjtype] type=0x%03x total_found=%d\n", want, found);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -557,7 +696,7 @@ void demomode_pump(void) {
         extern char *DAT_002046c4;
         int slot = atoi(p + 8);
         void *target = (void *)((char *)DAT_002046c4 + (slot - 0x100) * 8);
-        fprintf(stderr, "[findobj] searching for slot=%d addr=%p across all tiles\n", slot, target);
+        demo_printf("[findobj] searching for slot=%d addr=%p across all tiles\n", slot, target);
         int hits = 0;
         for (int row = 0; row < 64; row++) {
             for (int col = 0; col < 64; col++) {
@@ -568,14 +707,14 @@ void demomode_pump(void) {
                 int guard = 0;
                 while ((obj = resolve_object_link(link)) != NULL && guard++ < 64) {
                     if (obj == target) {
-                        fprintf(stderr, "[findobj]   FOUND on tile (%d,%d)\n", row, col);
+                        demo_printf("[findobj]   FOUND on tile (%d,%d)\n", row, col);
                         hits++;
                     }
                     link = (unsigned short *)obj + 2;
                 }
             }
         }
-        fprintf(stderr, "[findobj] total tile-chain hits=%d\n", hits);
+        demo_printf("[findobj] total tile-chain hits=%d\n", hits);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -588,7 +727,7 @@ void demomode_pump(void) {
         extern long uw_debug_pickbuf_capacity(void);
         long drift = uw_debug_pickbuf_drift();
         long cap = uw_debug_pickbuf_capacity();
-        fprintf(stderr, "[pickbufdrift] drift=%ld capacity=%ld headroom=%ld%s\n",
+        demo_printf("[pickbufdrift] drift=%ld capacity=%ld headroom=%ld%s\n",
                 drift, cap, cap - drift, (drift < 0 || drift >= cap) ? " *** OUT OF BOUNDS ***" : "");
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -601,13 +740,13 @@ void demomode_pump(void) {
         unsigned char *slot1 = (unsigned char *)DAT_002046b8 + 1 * 0x1b;
         unsigned word0 = slot1[0] | (slot1[1] << 8);
         int is_quant = (word0 >> 15) & 1;
-        fprintf(stderr, "[dumpplayerinv] slot1 word0=0x%04x (is_quant=%d) link/special word=0x%02x%02x\n",
+        demo_printf("[dumpplayerinv] slot1 word0=0x%04x (is_quant=%d) link/special word=0x%02x%02x\n",
                 word0, is_quant, slot1[7], slot1[6]);
         unsigned short *link_field = (unsigned short *)(slot1 + 6);
         void *contents = resolve_object_link(link_field);
         if (contents) {
             unsigned short *c = (unsigned short *)contents;
-            fprintf(stderr, "[dumpplayerinv] sp_link resolves to obj=%p type=0x%03x word0=0x%04x\n",
+            demo_printf("[dumpplayerinv] sp_link resolves to obj=%p type=0x%03x word0=0x%04x\n",
                     contents, ((uw_object_hdr_t *)c)->object_id,
                     ((uw_object_hdr_t *)c)->type_flags);
             int n = 0;
@@ -616,14 +755,14 @@ void demomode_pump(void) {
                 void *nx = resolve_object_link(next_link);
                 if (!nx) break;
                 unsigned short *nc = (unsigned short *)nx;
-                fprintf(stderr, "[dumpplayerinv]   +sibling #%d obj=%p type=0x%03x word0=0x%04x\n",
+                demo_printf("[dumpplayerinv]   +sibling #%d obj=%p type=0x%03x word0=0x%04x\n",
                         n, nx, ((uw_object_hdr_t *)nc)->object_id,
                         ((uw_object_hdr_t *)nc)->type_flags);
                 next_link = nc + 2;
                 if (++n > 32) break;
             }
         } else {
-            fprintf(stderr, "[dumpplayerinv] sp_link is empty/NULL (no contents linked)\n");
+            demo_printf("[dumpplayerinv] sp_link is empty/NULL (no contents linked)\n");
         }
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -634,16 +773,16 @@ void demomode_pump(void) {
            bypassing pause-menu UI navigation, so a demo script can test the save path without
            reproducing its exact keypress sequence. */
         extern short DAT_00201b68;
-        fprintf(stderr, "[triggersave] calling commit_level_to_save_slot(%d)\n", (int)DAT_00201b68);
+        demo_printf("[triggersave] calling commit_level_to_save_slot(%d)\n", (int)DAT_00201b68);
         unsigned int _r = commit_level_to_save_slot((int)DAT_00201b68);
-        fprintf(stderr, "[triggersave] result=%u\n", _r);
+        demo_printf("[triggersave] result=%u\n", _r);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
 
     if (strcasecmp(p, "CASTALLSPELLS") == 0) {
         /* Diagnostic/regression hook for the "Spell crashes - test each" bug report: directly
-           drives dispatch_special_action (the real per-spell effect dispatcher
+           drives execute_spell_effect (the real per-spell effect dispatcher
            cast_spell_from_rune_combo calls after its mana/skill checks pass) once for each of... */
         extern uw_mobile_object_t *g_player_object;
         extern undefined DAT_00087530_backing[212];
@@ -652,11 +791,11 @@ void demomode_pump(void) {
             unsigned char byte0 = DAT_00087530_backing[i * 4];
             unsigned char byte3 = DAT_00087530_backing[i * 4 + 3];
             unsigned int type = byte0 >> 3;
-            fprintf(stderr, "[castallspells] spell %d: type=%u param=%u\n", i, type, byte3);
-            dispatch_special_action(type, byte3, g_player_object, g_player_object);
-            fprintf(stderr, "[castallspells] spell %d: survived\n", i);
+            demo_printf("[castallspells] spell %d: type=%u param=%u\n", i, type, byte3);
+            execute_spell_effect(type, byte3, g_player_object, g_player_object);
+            demo_printf("[castallspells] spell %d: survived\n", i);
         }
-        fprintf(stderr, "[castallspells] all 48 spells dispatched\n");
+        demo_printf("[castallspells] all 48 spells dispatched\n");
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -672,20 +811,20 @@ void demomode_pump(void) {
             int col = ((uw_mobile_object_t *)pl)->tile_y;
             void *tile_rec = tilemap_lookup(row, col);
             unsigned short *link = (unsigned short *)((char *)tile_rec + 2);
-            fprintf(stderr, "[dumptileobjs] tile=(%d,%d) tile_rec=%p raw_link_field=0x%04x\n",
+            demo_printf("[dumptileobjs] tile=(%d,%d) tile_rec=%p raw_link_field=0x%04x\n",
                     row, col, tile_rec, *link);
             int n = 0;
             unsigned short *obj;
             while ((obj = (unsigned short *)resolve_object_link(link)) != NULL) {
-                fprintf(stderr, "[dumptileobjs]   #%d obj=%p type=0x%03x word0=0x%04x word1=0x%04x\n",
+                demo_printf("[dumptileobjs]   #%d obj=%p type=0x%03x word0=0x%04x word1=0x%04x\n",
                         n, (void *)obj, ((uw_object_hdr_t *)obj)->object_id,
                         ((uw_object_hdr_t *)obj)->type_flags,
                         ((uw_object_hdr_t *)obj)->position_word);
                 link = obj + 2;
                 n++;
-                if (n > 64) { fprintf(stderr, "[dumptileobjs]   ...giving up after 64\n"); break; }
+                if (n > 64) { demo_printf("[dumptileobjs]   ...giving up after 64\n"); break; }
             }
-            if (n == 0) fprintf(stderr, "[dumptileobjs]   (empty chain)\n");
+            if (n == 0) demo_printf("[dumptileobjs]   (empty chain)\n");
         }
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -695,7 +834,7 @@ void demomode_pump(void) {
         /* Reveal the entire current level's automap in one pass, with no per-tile teleport or
            dungeon redraw. Much faster than a TELEPORT+REVEAL sweep for exercising the automap
            renderer on a fully-explored map. */
-        fprintf(stderr, "[demo] revealing the entire level automap\n");
+        demo_printf("[cmd] revealing the entire level automap\n");
         automap_reveal_all_tiles();
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -707,7 +846,7 @@ void demomode_pump(void) {
            coordinates directly, bypassing gx_stub.c's SDL window->portrait transform entirely. */
         int px = 0, py = 0;
         sscanf(p + 6, "%d %d", &px, &py);
-        fprintf(stderr, "[demo] CLICK portrait=(%d,%d)\n", px, py);
+        demo_printf("[cmd] CLICK portrait=(%d,%d)\n", px, py);
         int lparam = (py << 16) | (px & 0xffff);
         handle_mouse_message(0, 0x201u, 0, lparam);
         handle_mouse_message(0, 0x202u, 0, lparam);
@@ -721,7 +860,7 @@ void demomode_pump(void) {
            path end to end, including g_mouse_event_pending/PeekMessageW. */
         int wx = 0, wy = 0;
         sscanf(p + 9, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLCLICK window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLCLICK window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_click(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -731,7 +870,7 @@ void demomode_pump(void) {
         /* SDLRCLICK <window_x> <window_y> -- right-button click (interact). */
         int wx = 0, wy = 0;
         sscanf(p + 10, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLRCLICK window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLRCLICK window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_rclick(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -743,7 +882,7 @@ void demomode_pump(void) {
            timing) rather than both queued in the same instant. */
         int wx = 0, wy = 0;
         sscanf(p + 8, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLDOWN window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLDOWN window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_down(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -752,7 +891,7 @@ void demomode_pump(void) {
     if (strncasecmp(p, "SDLUP ", 6) == 0) {
         int wx = 0, wy = 0;
         sscanf(p + 6, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLUP window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLUP window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_up(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -764,7 +903,7 @@ void demomode_pump(void) {
          * dragging a picked-up item onto the inventory HUD). */
         int wx = 0, wy = 0;
         sscanf(p + 9, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLRDOWN window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLRDOWN window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_rdown(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -773,8 +912,18 @@ void demomode_pump(void) {
     if (strncasecmp(p, "SDLRUP ", 7) == 0) {
         int wx = 0, wy = 0;
         sscanf(p + 7, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLRUP window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLRUP window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_rup(wx, wy);
+        g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
+        return;
+    }
+
+    if (strncasecmp(p, "SDLREL ", 7) == 0) {
+        /* SDLREL <dx> <dy> -- relative pointer motion (mouselook steering). */
+        int dx = 0, dy = 0;
+        sscanf(p + 7, "%d %d", &dx, &dy);
+        demo_printf("[cmd] SDLREL rel=(%d,%d)\n", dx, dy);
+        uw_inject_mouse_relmotion(dx, dy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
     }
@@ -782,7 +931,7 @@ void demomode_pump(void) {
     if (strncasecmp(p, "SDLMOVE ", 8) == 0) {
         int wx = 0, wy = 0;
         sscanf(p + 8, "%d %d", &wx, &wy);
-        fprintf(stderr, "[demo] SDLMOVE window=(%d,%d)\n", wx, wy);
+        demo_printf("[cmd] SDLMOVE window=(%d,%d)\n", wx, wy);
         uw_inject_mouse_motion(wx, wy);
         g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
         return;
@@ -801,14 +950,292 @@ void demomode_pump(void) {
         return;
     }
 
+    if (strncasecmp(p, "CONSOLE ", 8) == 0) {
+        /* CONSOLE <line> -- types <line> into the open debug console and presses Enter, as untagged
+           (human-looking) SDL events so they reach the console rather than the game. For scripting
+           the console itself; a line typed by hand needs none of this. */
+        for (const char *c = p + 8; *c; c++) {
+            SDL_Event ti = {0};
+            ti.type = SDL_TEXTINPUT;
+            ti.text.text[0] = *c;
+            SDL_PushEvent(&ti);
+        }
+        SDL_Event e = {0};
+        e.type = SDL_KEYDOWN;
+        e.key.state = SDL_PRESSED;
+        e.key.keysym.sym = SDLK_RETURN;
+        e.key.keysym.scancode = SDL_SCANCODE_RETURN;
+        SDL_PushEvent(&e);
+        e.type = SDL_KEYUP;
+        e.key.state = SDL_RELEASED;
+        SDL_PushEvent(&e);
+        g_demo_next_tick = now + (Uint32)g_demo_delay_ms;
+        return;
+    }
+
+    {
+        const char *arg;
+        int want;
+        if (demo_match_cmd(p, "FLY", &arg)) {
+            /* FLY [on|off] -- the player's real hover/fly movement state (the bit a flying effect
+               sets in the movement-effect mask: gravity off, K/L fly down/up). */
+            if ((want = demo_parse_onoff(arg, g_debug_fly)) < 0) {
+                demo_printf("[cmd] usage: FLY [on|off]\n");
+            } else {
+                g_debug_fly = want;
+                refresh_player_equipment_effects();
+                demo_printf("[cmd] fly %s\n", want ? "on" : "off");
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "FARSIGHT", &arg)) {
+            /* FARSIGHT [on|off] -- the far sight spell's free-camera mode (what dispatch_player_
+               command 7 does), held until switched off instead of expiring. */
+            if ((want = demo_parse_onoff(arg, g_debug_farsight)) < 0) {
+                demo_printf("[cmd] usage: FARSIGHT [on|off]\n");
+            } else {
+                g_debug_farsight = want;
+                if (want) {
+                    refresh_player_equipment_effects();
+                    set_custom_view_target(0);
+                    set_view_subject_by_command(-1);
+                } else {
+                    set_view_subject_by_command(1);
+                    refresh_player_equipment_effects();
+                }
+                demo_printf("[cmd] farsight %s\n", want ? "on" : "off");
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "OBJIDS", &arg)) {
+            /* OBJIDS -- every object type that has a name: id (hex) and name. */
+            char nm[96];
+            int id, n = 0;
+            for (id = 0; id < 0x200; id++) {
+                dbgui_object_name(id, nm, sizeof nm);
+                if (!nm[0]) continue;
+                demo_printf("0x%03x %s\n", id, nm);
+                n++;
+            }
+            demo_printf("[cmd] %d named objects\n", n);
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "SPAWNOBJ", &arg) || demo_match_cmd(p, "GIVEOBJ", &arg)) {
+            /* SPAWNOBJ <id> -- new object on a free tile in front of the player.
+               GIVEOBJ <id> [quantity] -- new object in the first free top-level backpack slot. */
+            int give = (strncasecmp(p, "GIVEOBJ", 7) == 0);
+            char *end;
+            long id = strtol(arg, &end, 0);
+            long qty = 1;
+            char nm[96];
+            if (give && *end == ' ') qty = strtol(end, &end, 0);
+            if (*arg == '\0' || *end != '\0' || id < 0 || id > 0x1ff) {
+                demo_printf("[cmd] usage: %s <id 0-0x1ff>%s  (see OBJIDS)\n", give ? "GIVEOBJ" : "SPAWNOBJ", give ? " [quantity]" : "");
+            } else {
+                dbgui_object_name((int)id, nm, sizeof nm);
+                if (give) {
+                    int slot = dbgui_give_object((int)id, (int)qty);
+                    if (slot >= 0) demo_printf("[cmd] gave 0x%03lx %s (backpack slot %d)\n", id, nm, slot - 0xb);
+                    else demo_printf("[cmd] %s\n", slot == -2 ? "no free backpack slot" : "no free object slot");
+                } else {
+                    int tx = 0, ty = 0;
+                    if (dbgui_spawn_object((int)id, &tx, &ty) == 1)
+                        demo_printf("[cmd] spawned 0x%03lx %s at tile (%d,%d)\n", id, nm, tx, ty);
+                    else demo_printf("[cmd] could not place 0x%03lx %s\n", id, nm);
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "ALLRUNES", &arg)) {
+            /* ALLRUNES -- every spell rune, plus a Rune Bag in the backpack if there isn't one. */
+            int r = dbgui_all_runes();
+            demo_printf("[cmd] all runes set%s\n", r == 1 ? ", rune bag added" :
+                        r == -2 ? " (no backpack room for a rune bag)" : "");
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "CASTSPELL", &arg)) {
+            /* CASTSPELL [id] -- no id: list the spell ids and names. With an id: cast that spell now,
+               ignoring mana cost (and the level / skill-roll checks), via execute_spell_effect. */
+            char nm[64];
+            int i;
+            if (*arg == '\0') {
+                for (i = 0; i < dbgui_spell_count(); i++) {
+                    dbgui_spell_name(i, nm, sizeof nm);
+                    demo_printf("%d %s\n", i, nm);
+                }
+            } else {
+                char *end;
+                long id = strtol(arg, &end, 0);
+                if (*end != '\0' || id < 0 || id >= dbgui_spell_count()) {
+                    demo_printf("[cmd] usage: CASTSPELL [0-%d]  (no id lists spells)\n", dbgui_spell_count() - 1);
+                } else {
+                    dbgui_spell_name((int)id, nm, sizeof nm);
+                    demo_printf("[cmd] casting %ld %s: %s\n", id, nm, dbgui_cast_spell((int)id) ? "ok" : "no effect");
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "GODMODE", &arg)) {
+            /* GODMODE [on|off] -- the player can't die (damage never takes the last hit point) and
+               spells cost no mana. */
+            if ((want = demo_parse_onoff(arg, g_debug_godmode)) < 0) {
+                demo_printf("[cmd] usage: GODMODE [on|off]\n");
+            } else {
+                g_debug_godmode = want;
+                demo_printf("[cmd] godmode %s\n", want ? "on" : "off");
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "PLAYERLEVEL", &arg)) {
+            /* PLAYERLEVEL <1-16> -- set the character level (and its starting XP), refill hp/mana. */
+            char *end;
+            long lv = strtol(arg, &end, 10);
+            if (*arg == '\0' || *end != '\0') {
+                demo_printf("[cmd] usage: PLAYERLEVEL <1-16>\n");
+            } else {
+                demo_printf("[cmd] player level %d\n", debug_set_player_level((int)lv));
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "SETSKILL", &arg)) {
+            /* SETSKILL <skill|all> <0-30> -- skill by name (see usage), or every skill at once. */
+            char name[32];
+            size_t nl = 0;
+            const char *lvl;
+            char *end;
+            long v = 0;
+            int idx = -2, ok = 0, i;
+            while (arg[nl] && arg[nl] != ' ' && arg[nl] != '\t' && nl < sizeof name - 1) { name[nl] = arg[nl]; nl++; }
+            name[nl] = '\0';
+            lvl = arg + nl;
+            while (*lvl == ' ' || *lvl == '\t') lvl++;
+            if (nl && *lvl) v = strtol(lvl, &end, 10), ok = (*end == '\0');
+            if (ok) {
+                if (strcasecmp(name, "all") == 0) idx = -1;
+                else for (i = 0; i < DEBUG_SKILL_COUNT; i++) if (strcasecmp(name, g_debug_skill_names[i]) == 0) idx = i;
+            }
+            if (!ok || idx == -2) {
+                char list[256] = "";
+                for (i = 0; i < DEBUG_SKILL_COUNT; i++) { strcat(list, i ? " " : ""); strcat(list, g_debug_skill_names[i]); }
+                demo_printf("[cmd] usage: SETSKILL <all|%s> <0-30>\n", list);
+            } else {
+                int shown = 0;
+                for (i = 0; i < DEBUG_SKILL_COUNT; i++) if (idx == -1 || idx == i) shown = debug_set_skill(i, (int)v);
+                debug_skills_changed();
+                demo_printf("[cmd] %s skill = %d\n", idx == -1 ? "all" : g_debug_skill_names[idx], shown);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "LIGHTLEVEL", &arg)) {
+            /* LIGHTLEVEL <0-7> -- set_ambient_bias_with_light(n): the light strength a lit light item
+               gives, i.e. the SHADES.DAT row. Held until the next equipment refresh recomputes it from
+               what is carried (lighting or snuffing a light, ...). */
+            char *end;
+            long level = strtol(arg, &end, 0);
+            if (*arg == '\0' || *end != '\0' || level < 0 || level > 7) {
+                demo_printf("[cmd] usage: LIGHTLEVEL <0-7>\n");
+            } else {
+                set_ambient_bias_with_light((char)level);
+                demo_printf("[cmd] light level %d\n", (int)level);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        if (demo_match_cmd(p, "NOCLIP", &arg)) {
+            /* NOCLIP [on|off] -- fly mode on, and the player ignores walls/objects. Turning it off
+               puts collisions back and drops fly only if NOCLIP was what turned it on. */
+            static int fly_was_off_before_noclip;
+            if ((want = demo_parse_onoff(arg, g_debug_noclip)) < 0) {
+                demo_printf("[cmd] usage: NOCLIP [on|off]\n");
+            } else {
+                if (want && !g_debug_noclip) fly_was_off_before_noclip = !g_debug_fly;
+                g_debug_noclip = want;
+                if (want) g_debug_fly = 1;
+                else if (fly_was_off_before_noclip) g_debug_fly = 0;
+                refresh_player_equipment_effects();
+                demo_printf("[cmd] noclip %s (fly %s)\n", want ? "on" : "off", g_debug_fly ? "on" : "off");
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+    }
+
+    /* Runtime options (options.c): OPTIONS lists them, "<option> [value]" shows or sets one. A bool with
+       no value flips; anything else with no value just shows. */
+    {
+        char val[160], tok[64];
+        size_t tl = 0;
+        const char *rest;
+        int type;
+        if (strcasecmp(p, "OPTIONS") == 0) {
+            for (size_t i = 0; i < options_count(); i++) {
+                const char *nm = options_name_at(i, val, sizeof val);
+                demo_printf("[cmd] %s = %s\n", nm, val);
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+        while (p[tl] && p[tl] != ' ' && p[tl] != '\t' && tl < sizeof tok - 1) { tok[tl] = p[tl]; tl++; }
+        tok[tl] = '\0';
+        rest = p + tl;
+        while (*rest == ' ' || *rest == '\t') rest++;
+        if ((type = options_get(tok, val, sizeof val)) >= 0) {
+            if (*rest == '\0' && type != 0) {
+                demo_printf("[cmd] %s = %s\n", tok, val);
+            } else {
+                const char *v = rest;
+                if (*rest == '\0') v = strcmp(val, "on") == 0 ? "0" : "1";
+                if (options_set(tok, v) != 0) {
+                    demo_printf("[cmd] bad value '%s' for %s\n", v, tok);
+                } else {
+                    options_get(tok, val, sizeof val);
+                    demo_printf("[cmd] %s = %s\n", tok, val);
+                }
+            }
+            g_demo_next_tick = now;
+            return;
+        }
+    }
+
+    if (strcasecmp(p, "HELP") == 0) {
+        /* Mainly for the debug console; harmless in a demofile. */
+        demo_printf(
+                    "debug: DUMPOBJSLOT <n> | SCANOBJTYPE <hex> | FINDOBJ <n>\n"
+                    "  DUMPTILEOBJS | DUMPPLAYERINV | PICKBUFDRIFT\n"
+                    "  SCREENSHOT <path>\n"
+                    "world: TELEPORT <x> <y> [level] | GOTOLEVEL <level>\n"
+                    "  OPENMAP | REVEAL | REVEALALL\n"
+                    "  FLY | FARSIGHT | NOCLIP | GODMODE  (each takes optional on/off)\n"
+                    "  PLAYERLEVEL <1-16> | SETSKILL <skill|all> <0-30>\n"
+                    "  OBJIDS | SPAWNOBJ <id> | GIVEOBJ <id> [qty] | ALLRUNES\n"
+                    "  CASTSPELL [id]  (no id lists spells)\n"
+                    "  OPTIONS | <option> [value]\n"
+                    "  LIGHTLEVEL <0-7>\n"
+                    "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
+                    "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
+                    "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"
+                    "  ESC back to panel | ` close\n");
+        g_demo_next_tick = now;
+        return;
+    }
+
     /* Was a direct handle_keyboard_message(WM_KEYDOWN)+(WM_KEYUP) pair, on the theory (see the
        removed comment's own explanation) that Enter's WM_KEYDOWN alone was enough once
        GXGetDefaultKeys's "start" button field really held VK_RETURN -- true at the time... */
     int sdlkey = demo_translate_sdlkey(p);
     if (sdlkey == 0) {
-        fprintf(stderr, "[demo] unrecognized input '%s', skipping\n", p);
+        demo_printf("[cmd] unrecognized input '%s', skipping\n", p);
     } else {
-        fprintf(stderr, "[demo] sending %s\n", p);
+        demo_printf("[cmd] sending %s\n", p);
         uw_inject_key_down(sdlkey);
         uw_inject_key_up(sdlkey);
     }
@@ -833,6 +1260,6 @@ void uw_debug_dump_inventory_state(void) {
     for (int i = 0; i < 28; i++)
       if (*(unsigned short *)&g_backpack_slot_table[i*2] & 0xffc0) occupied++;
   }
-  fprintf(stderr, "[demo] post-screenshot state: g_cursor_holding_state(holding)=%d occupied_slots=%d g_current_container_record=%p\n",
+  demo_printf("[cmd] post-screenshot state: g_cursor_holding_state(holding)=%d occupied_slots=%d g_current_container_record=%p\n",
           (int)g_cursor_holding_state, occupied, (void *)g_current_container_record);
 }

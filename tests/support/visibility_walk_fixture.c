@@ -21,6 +21,7 @@ short g_visibility_ring_depth;
 
 short g_visibility_max_ring_passes;
 short DAT_0025063c, DAT_0025064c, DAT_002506dc;
+int DAT_000db448;   /* camera pitch angle; 0 keeps the near-tile ray widening inactive */
 
 /* Exercise the actual equipment light scan; unrelated HUD/equipment
    services do nothing in this visibility fixture. */
@@ -47,8 +48,10 @@ void *get_scanned_object_class_effect_ptr(void)
 int compute_object_weight(ushort *object) { (void)object; return 0; }
 void request_weapon_swing_graphic(char category) {}
 void reset_player_derived_state(void) {}
-void set_ambient_bias_with_light(char strength) {}
-void set_ambient_bias_without_light(char strength) { visibility_ambient_strength = strength; }
+void load_shading_level_config(char record);
+/* The real one loads the SHADES.DAT row for the level it is given. */
+void set_ambient_bias_with_light(char level) { visibility_ambient_strength = level; load_shading_level_config(level); }
+void set_ambient_bias_without_light(char level) {}
 int is_valid_equipment_slot_item(ushort item, short slot) { return 0; }
 int resolve_object_variant_or_special_link(void *object, void *type, void *level, void *result) { return 0; }
 int apply_equipped_item_effect(byte type, byte level, ushort *effects, int slot) { return 0; }

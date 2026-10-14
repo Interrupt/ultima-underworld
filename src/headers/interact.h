@@ -31,6 +31,9 @@ void interact_talk_npc();
 void interact_look();
 void interact_use();
 void interact_attack();
+/* E / Q hotkeys: act on the object under the cursor without a click. */
+void quick_use_object_at_cursor(int unused);
+void quick_look_at_cursor(int unused);
 void trigger_terrain_discovery_illustration();
 void trigger_inscription_illustration(int first_char);
 int roll_container_lockpick_check(void *container, int skill);

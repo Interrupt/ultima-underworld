@@ -5,6 +5,7 @@
 #include "headers/options.h"
 #include "headers/gx_stub.h"
 #include "headers/debug.h"
+#include "headers/visibility.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -551,7 +552,8 @@ void fade_in(ushort *framebuffer, char *palette, int palette_flag)
       puVar6 = puVar6 + 1;
     } while (iVar7 != 0);
     flush_dirty_rect_to_display(1);
-    while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+    /* Not under --fast-sleep: that makes Sleep() a no-op, which would leave this a busy-wait. */
+    while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
       Sleep(40 - fade_step_elapsed);
     fade_step_start = (uint)GetTickCount();
     iVar9 = iVar9 + 1;
@@ -624,7 +626,8 @@ void fade_out(ushort *framebuffer, char *palette, int palette_flag)
       *puVar8 = uVar3 | (ushort)(((int)((uVar2 & 0x1f) << 0xc) >> 6) * iVar6 >> 0x12);
     } while (iVar9 != 0);
     flush_dirty_rect_to_display(1);
-    while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+    /* Not under --fast-sleep: that makes Sleep() a no-op, which would leave this a busy-wait. */
+    while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
       Sleep(40 - fade_step_elapsed);
     fade_step_start = (uint)GetTickCount();
     iVar11 = iVar11 + -1;
@@ -634,7 +637,7 @@ void fade_out(ushort *framebuffer, char *palette, int palette_flag)
     framebuffer = framebuffer + 1;
   }
   flush_dirty_rect_to_display(1);
-  while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+  while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
     Sleep(40 - fade_step_elapsed);
   LocalFree(puVar4);
   uw_end_modal_present();
@@ -658,10 +661,14 @@ int render_dungeon_view()
   rect_fill_or_save_restore(0x34,0x13,0xe0,0x83);
   build_view_matrix();
   extra_lights_transform_to_eye();
+  /* HACK: not original behaviour -- --light-depth-rounding needs the inverse of this frame's view matrix. */
+  if (g_opts.light_depth_rounding > 0) {
+    light_pass_prepare();
+  }
   near_clip_visible_tiles(0,0);
-  translate_verts_to_camera_space(&DAT_000a85d0);
-  project_verts_through_view_matrix(&DAT_000a85d0);
-  near_clip_visible_tiles(&DAT_000a85d0,1);
+  translate_verts_to_camera_space(&g_geom_arena);
+  project_verts_through_view_matrix(&g_geom_arena);
+  near_clip_visible_tiles(&g_geom_arena,1);
   render_visible_tile_list();
   free_frame_geometry_buffers();
   return 0;
@@ -706,10 +713,17 @@ static int get_ambient_bias_reduction()
 
 
 // was FUN_00014324. ARM lighting bias: -32 when a light is active.
-// HACK: optional project calibration is added to the original formula;
-// default 64; an override of zero preserves ARM lighting. Negative values brighten it.
+// HACK: the port makes this the single place the light level is applied. `light_level` is the real
+// light strength, 0-7: the brightness byte of the light item (OBJECTS.DAT), which is also the row of
+// SHADES.DAT that sets the falloff, start shade and light range for both the ARM and DOS lighting
+// modes. It loads that row (a no-op if it is already loaded) before the bias is set. Optional
+// project calibration is added to the original formula; default 64; an override of zero preserves
+// ARM lighting. Negative values brighten it.
 void set_ambient_bias_with_light(char light_level)
 {
+  if (light_level < 0) light_level = 0;
+  if (light_level > 7) light_level = 7;   /* SHADES.DAT has rows 0-7 */
+  load_shading_level_config(light_level);
   DAT_000842b0 = -0x20 - light_level + get_ambient_bias_reduction();
 }
 

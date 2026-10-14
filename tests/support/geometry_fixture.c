@@ -1,11 +1,11 @@
 #include "geometry_fixture.h"
 #include "src/headers/3d.h"
 
-/* The real arena layout: counts at 0/4, projected vertices at 0x3008,
-   input polygons at 0x4814 (0x60-byte stride). Old bytes survive a reset
-   between frames, as in the game; only the current counts delimit the list. */
-undefined4 DAT_000a85d0_backing[16384];
+/* The real geometry arena. Old contents survive a reset between frames, as in the game; only the
+   current counts delimit the list. */
+uw_geom_arena_t g_geom_arena;
 undefined4 DAT_00084608 = 0x40a00000;
+undefined4 DAT_000c8ac0_mtx[16];
 int DAT_000c8c98;
 void *DAT_000c4838_backing[4096];
 void *g_tile_texptr_emit[UW_MAX_VIS_TILES], *g_tile_texptr_out[UW_MAX_VIS_TILES];
@@ -31,31 +31,31 @@ int message_scroll_print_wrapped(char *text) { (void)text; TEST_FAIL_MESSAGE("Un
 
 void geometry_fixture_reset(void)
 {
-    memset(DAT_000a85d0_backing, 0, sizeof DAT_000a85d0_backing);
+    memset(&g_geom_arena, 0, sizeof g_geom_arena);
     geometry_triangles = 0;
     DAT_000c8c98 = 0;
 }
 void geometry_fixture_wall(unsigned records, float x, float depth)
 {
-    TEST_ASSERT_LESS_OR_EQUAL_UINT(490, records);
-    DAT_000a85d0_backing[0] = 4;
-    DAT_000a85d0_backing[1] = records;
-    float points[4][3] = {{x,0,depth},{x+1,0,depth},{x+1,1,depth},{x,1,depth}};
-    memcpy((byte *)DAT_000a85d0_backing + 0x3008, points, sizeof points);
+    TEST_ASSERT_LESS_OR_EQUAL_UINT(UW_ARENA_MAX_RECORDS, records);
+    g_geom_arena.vert_count = 4;
+    g_geom_arena.rec_count = records;
+    uw_vec3 points[4] = {{x,0,depth},{x+1,0,depth},{x+1,1,depth},{x,1,depth}};
+    memcpy(g_geom_arena.projected_verts, points, sizeof points);
     for (unsigned i=0;i<records;i++) {
-        int *record=(int *)((byte *)DAT_000a85d0_backing + 0x4814 + i*0x60);
-        memset(record,0,0x60);
-        record[0]=4;
-        for (int j=0;j<4;j++) record[j+1]=j;
-        record[7]=16; record[8]=16;
-        record[20]=0x20+i; /* draw surface ID */
-        record[22]=1;
+        uw_geom_record_t *record=&g_geom_arena.records[i];
+        memset(record,0,sizeof *record);
+        record->vert_count=4;
+        for (int j=0;j<4;j++) record->vert_idx[j]=j;
+        record->attr[1]=16; record->attr[2]=16;
+        record->tex[1]=0x20+i; /* draw surface ID */
+        record->visible=1;
     }
 }
 void geometry_fixture_render(void)
 {
     geometry_triangles=0;
     near_clip_visible_tiles(0,0);
-    near_clip_visible_tiles(DAT_000a85d0_backing,1);
+    near_clip_visible_tiles(&g_geom_arena,1);
     render_visible_tile_list();
 }

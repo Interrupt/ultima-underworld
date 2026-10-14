@@ -1685,8 +1685,8 @@ int try_npc_special_ability_ranged()
          (iVar3 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                                            (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                                            (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                                           (ushort)(byte) g_object_type_props[(*DAT_00101400 & 0x1ff)].height +
-                                           ((byte)DAT_00101400[1] & 0x7f)), iVar3 != 0)))) &&
+                                           (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
+                                           (((byte)DAT_00101400[2]) & 0x7f)), iVar3 != 0)))) &&
       (iVar3 = check_npc_target_alignment(1), iVar3 != 0)) {
     uVar4 = ce_rand();
     bVar1 = DAT_00101404->spell_flags;
@@ -1723,12 +1723,16 @@ int try_npc_special_ability_alt()
   int extraout_r1;
   uint uVar4;
   
+  /* The target's Z is the position word's low 7 bits (ARM 0x30e50 reads bytes 2-3 of the target);
+     this was `DAT_00101400[1]` on a `char *`, i.e. byte 1 of the object-id word -- always 0 for the
+     player -- so the sight line ran 20-odd units under the floor and every ranged attack was
+     blocked (same bug at the other two sight checks, here and in npc_ai_tick). */
   if (((DAT_00101900 < 0x10) &&
       (iVar2 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                             (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                             (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                            (ushort)(byte) g_object_type_props[(*DAT_00101400 & 0x1ff)].height +
-                            ((byte)DAT_00101400[1] & 0x7f)), iVar2 != 0)) &&
+                            (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
+                            (((byte)DAT_00101400[2]) & 0x7f)), iVar2 != 0)) &&
      (iVar2 = check_npc_target_alignment(1), iVar2 != 0)) {
     uVar3 = ce_rand();
     bVar1 = DAT_00101404->dexterity;
@@ -1936,6 +1940,8 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
   bool bVar6;
   uint attacker_id = 0;  /* was the `attacker` pointer param itself, reused as an integer id (truncating cast) */
 
+  /* GODMODE: the player takes no damage (every damage path funnels through here). */
+  if (g_debug_godmode && target == (ushort *)g_player_object) return 0;
   bVar6 = attacker == (ushort *)0x0;
   iVar5 = (((int)(short)*target & 0xfU) + (short)((*target & 0x30) >> 4) * 0x10) * 0x30;
   *(byte *)((char *)target + 0x11) = *(char *)((char *)target + 0x11) + damage;
@@ -2225,62 +2231,6 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
   message_scroll_print_wrapped(acStack_4d + 1);
   redraw_backpack_slot_widget(slot);
   return uVar7;
-}
-
-
-// was FUN_000542f8 -- grants the player a new active light source: fails (returns 0) if the
-// active-light count (DAT_00086df8+0x5f bits 6-9) is already at its cap; otherwise stages a new
-// slot with type param_1 and radius param_2...
-int add_active_light_source(uint light_id, uint duration, char flag)
-{
-  undefined4 uVar1;
-  int iVar2;
-  uint uVar3;
-  undefined1 *puVar4;
-  uint uVar5;
-  byte local_14;
-  
-  if ((*(ushort *)(DAT_00086df8 + 0x5f) & 0x3c0) == 0xc0) {
-    uVar1 = 0;
-  }
-  else {
-    uVar5 = *(ushort *)(DAT_00086df8 + 0x5f) >> 6 & 0xf;
-    iVar2 = (uint)*(byte *)(DAT_00086df8 + uVar5 * 2 + 0x3f) * 0x100 + (duration & 0xff) * 0x10 +
-            (light_id & 0xff);
-    puVar4 = (undefined1 *)(DAT_00086df8 + (uVar5 + 0x1f) * 2);
-    *puVar4 = (char)iVar2;
-    puVar4[1] = (char)((uint)iVar2 >> 8);
-    if (flag == '\0') {
-      uVar5 = roll_dice_sum(2,3);
-      uVar5 = uVar5 & 0xff;
-    }
-    else if (flag == '\x01') {
-      uVar5 = 1;
-    }
-    else if (flag == '@') {
-      uVar5 = roll_dice_sum(2,8);
-      uVar5 = (uVar5 & 0xff) + 6;
-    }
-    else if (flag == -0x80) {
-      uVar5 = roll_dice_sum(3,0x14);
-      uVar5 = (uVar5 & 0xff) + 0x18;
-    }
-    else {
-      uVar5 = (uint)local_14;
-    }
-    uVar3 = *(ushort *)(DAT_00086df8 + 0x5f) >> 6 & 0xf;
-    iVar2 = (uint)*(byte *)(DAT_00086df8 + uVar3 * 2 + 0x3e) + (uVar5 & 0xff) * 0x100;
-    puVar4 = (undefined1 *)(DAT_00086df8 + (uVar3 + 0x1f) * 2);
-    *puVar4 = (char)iVar2;
-    puVar4[1] = (char)((uint)iVar2 >> 8);
-    uVar5 = (uint)*(ushort *)(DAT_00086df8 + 0x5f);
-    uVar5 = ((uVar5 & 0xffc0) + 0x40 ^ uVar5) & 0x3c0 ^ uVar5;
-    *(char *)(DAT_00086df8 + 0x5f) = (char)uVar5;
-    *(char *)(DAT_00086df8 + 0x60) = (char)(uVar5 >> 8);
-    refresh_player_equipment_effects();
-    uVar1 = 1;
-  }
-  return uVar1;
 }
 
 

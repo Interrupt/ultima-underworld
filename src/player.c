@@ -45,6 +45,14 @@ static char s_You_died_000857b8[] = "    You died\n";
 static byte DAT_00085730;
 code *DAT_00201c9c;
 byte DAT_0020208c;
+/* Debug-console overrides (FLY / FARSIGHT / NOCLIP in demomode.c). The real effects live in
+   DAT_0020208c / DAT_002020d8, which reset_player_derived_state zeroes on every effects refresh, so
+   it re-applies these after the reset. g_debug_noclip is read by sweep_apply_collision. */
+int g_debug_fly;
+int g_debug_farsight;
+int g_debug_noclip;
+/* GODMODE: the player's hp never reaches 0 and spells cost no mana (combat.c, hud.c, object_actions.c). */
+int g_debug_godmode;
 undefined2 DAT_00203304;
 undefined1 DAT_00203303;
 short DAT_00202078;
@@ -64,6 +72,7 @@ undefined4 DAT_000858a0;
   0x00,0x03, 0x40,0x03, 0x00,0x00, 0x00,0x00, 0x00,0x04, 0x00,0x00,
 };
 short DAT_00202088;
+int g_move_facing_offset; /* travel heading minus facing (16-bit), for the diagonal walk+strafe modes */
 /* DAT_0008589c/85898/85894 are link-time-initialized read-only data, same situation as DAT_00086e68
    right above's fix (nothing in this decompile writes any of the three, and an exhaustive
    whole-binary Ghidra reference search confirms the real UU.exe agrees -- their only references)... */
@@ -340,16 +349,18 @@ void commit_player_move()
   if ((_DAT_002048a9 != 0) && (_DAT_002048a1 == (short)DAT_00201c78)) {
     g_jump_ascent_timer = 0;
   }
+  /* A wall hit that deflects the travel heading also swings the player's FACING toward the slide
+     direction by 0x400 (~5.6 degrees) per tick; --wall-turn scales that step (0 = never turns). */
   uVar5 = DAT_00201c70;
   if (_DAT_002048a1 != (short)DAT_00201c78) {
     DAT_00201c78 = _DAT_002048a1;
-    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000;
+    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000 - g_move_facing_offset;
     if ((((DAT_00204897 & 0x80) != 0) &&
         (uVar6 = (int)(short)DAT_00201c70 - ((int)(uVar3 * 0x10000) >> 0x10),
         uVar4 = (int)uVar6 >> 0x1f, uVar5 = (ushort)uVar3, 0x3ff < (int)((uVar6 ^ uVar4) - uVar4)))
-       && (uVar5 = DAT_00201c70 - 0x400, 0x7ffe < ((uint)DAT_00201c70 - (uVar3 & 0xffff) & 0xffff)))
+       && (uVar5 = DAT_00201c70 - uw_wall_turn_step(), 0x7ffe < ((uint)DAT_00201c70 - (uVar3 & 0xffff) & 0xffff)))
     {
-      uVar5 = DAT_00201c70 + 0x400;
+      uVar5 = DAT_00201c70 + uw_wall_turn_step();
     }
   }
   DAT_00201c70 = uVar5;
@@ -724,8 +735,9 @@ LAB_000669a8:
       bVar1 = iVar7->brightness;
       if (bVar10 < bVar1) {
         /* ARM 0x66a54 sets r0 = 0 before the call at 0x66a5c;
-           Ghidra omitted the reused-register argument. */
-        set_ambient_bias_with_light(0);
+           Ghidra omitted the reused-register argument. HACK: the port passes the light's real
+           brightness (see set_ambient_bias_with_light). */
+        set_ambient_bias_with_light(bVar1);
         iVar5 = iVar4;
         bVar9 = bVar1;
         bVar10 = bVar1;
@@ -764,23 +776,10 @@ LAB_000669a8:
     iVar4 = (iVar4 + 1) * 0x10000 >> 0x10;
   } while (iVar4 < 0xb);
   apply_equipment_effect_penalties(local_30);
-  if (DAT_002020d8 == 0) {
-    /* Keep the tile-light grid in sync in both render modes. ARM's RGB
-       bias controls drawing, but does not update the SHADES.DAT grid
-       used to decide which tiles the automap can discover. */
-    load_shading_level_config(*(byte *)(DAT_00086df8 + 99) >> 4);
-    const char *light_mode = g_opts.light_mode;
-    if (!light_mode || strcasecmp(light_mode, "dos") != 0) {
-      /* HACK: the ARM build only distinguished lit from unlit here.
-         Restore per-strength brightness: start at the unlit bias (+8),
-         subtract 16 for every light level, and retain the calibration
-         adjustment. The low nibble identifies the source, not strength. */
-      set_ambient_bias_without_light((*(byte *)(DAT_00086df8 + 99) >> 4) * 16);
-    }
-  }
-  else {
-    load_shading_level_config(6);
-  }
+  /* The light level (0-7) selects the SHADES.DAT row in both render modes; far sight lights the view
+     at level 6 regardless of carried light. Applying it also keeps the tile-light grid in sync, which
+     decides which tiles the automap can discover. */
+  set_ambient_bias_with_light(DAT_002020d8 == 0 ? *(byte *)(DAT_00086df8 + 99) >> 4 : 6);
   update_screen_flicker_effect((*(byte *)(DAT_00086df8 + 0x61) & 0xc) != 0);
   force_locomotion_state_refresh();
   apply_movement_mode_profile(0xff);
@@ -924,6 +923,8 @@ void reset_player_derived_state()
     DAT_000858c4 = 400;
   }
   DAT_002046cc = 0;
+  if (g_debug_fly) DAT_0020208c |= 0x10;   /* same bit a real flying effect sets (hover, gravity off) */
+  if (g_debug_farsight) DAT_002020d8 = 1;  /* same flag the far-sight (free camera) effect sets */
   return;
 }
 
@@ -2876,29 +2877,6 @@ void restore_stat_capped(void *object_ptr, uint amount)
 
 
 
-// was FUN_00073fc4 -- dispatch_special_action's "healing item" handler (its own case 4): only
-// applies if the target object's quality bits match 0x40 (a food/potion-shaped flag), then restores
-// HP via restore_stat_capped -- param_2==0xf is a full-heal sentinel (-1)...
-void apply_healing_item_effect(ushort *object, char effect_code)
-{
-  char cVar1;
-  int iVar2;
-  
-  if ((*object & 0x1c0) == 0x40) {
-    if (effect_code == '\x0f') {
-      iVar2 = -1;
-    }
-    else {
-      cVar1 = roll_dice_sum((int)effect_code,8);
-      iVar2 = (int)cVar1;
-    }
-    restore_stat_capped(object,iVar2);
-  }
-}
-
-
-
-
 
 // was FUN_00077f30 -- draws the stats panel's name/title/level header. Called from
 // draw_stats_panel_content.
@@ -3382,6 +3360,7 @@ void handle_player_death_and_menu_transition(short reason)
 void apply_level9_random_hazard_tick()
 
 {
+  if (g_debug_godmode) return;   /* the one hit-point write that bypasses apply_damage_to_object */
   int uw_ord2005_rem_106 = 0; int uw_ord2005_rem_107 = 0; int uw_ord2005_rem_108 = 0; int uw_ord2005_rem_109 = 0; int uw_ord2005_rem_110 = 0;
   uint uVar1;
   ushort uVar2;
@@ -3434,19 +3413,6 @@ LAB_0003c780:
   uVar2 = ce_rand();
   set_hud_status_value(2,uVar2 & 0xf);
   return;
-}
-
-
-// was FUN_0003dba0 -- dispatch_special_action's case-1 handler for sub-codes 3/5 (uw.c,
-// src/object_actions.c:896).
-void trigger_player_jump_if_grounded(char *object)
-{
-  if ((void *)object == (void *)g_player_object) {
-    if ((DAT_002048a8 & 0x10) == 0) {
-      g_vertical_velocity = 0x8d;
-    }
-    g_fall_accel = 0;
-  }
 }
 
 
@@ -3829,4 +3795,44 @@ int dungeon_view_anim_tick()
     }
   }
   return 1;
+}
+
+
+/* Debug console: PLAYERLEVEL. Sets the level byte and the XP that level starts at, then refreshes
+   max hp/mana (full refill) and the HUD. Returns the clamped level. */
+int debug_set_player_level(int level)
+{
+  if (level < 1) level = 1;
+  if (level > 16) level = 16;
+  *(byte *)(DAT_00086df8 + 0x3d) = (byte)level;
+  uint xp = (uint)DAT_00086e87_backing[level - 1] * 500;
+  DAT_00086df8[0x4e] = (char)xp;
+  DAT_00086df8[0x4f] = (char)(xp >> 8);
+  DAT_00086df8[0x50] = (char)(xp >> 16);
+  DAT_00086df8[0x51] = (char)(xp >> 24);
+  recalculate_player_stats(1);
+  g_player_object->npc_hp = *(byte *)(DAT_0023be74 + 4);
+  refresh_experience_display();
+  return level;
+}
+
+/* Debug console: SETSKILL. Skills are the 20 bytes at DAT_00086df8 + 0x21 (max 30). */
+const char *const g_debug_skill_names[DEBUG_SKILL_COUNT] = {
+  "attack", "defense", "unarmed", "sword", "axe", "mace", "missile", "mana", "lore", "casting",
+  "traps", "search", "track", "sneak", "repair", "charm", "picklock", "acrobat", "appraise", "swimming",
+};
+
+int debug_set_skill(int index, int value)
+{
+  if (index < 0 || index >= DEBUG_SKILL_COUNT) return -1;
+  if (value < 0) value = 0;
+  if (value > 30) value = 30;
+  *(byte *)(DAT_00086df8 + 0x21 + index) = (byte)value;
+  return value;
+}
+
+void debug_skills_changed(void)
+{
+  recalculate_player_stats(0);   /* max mana depends on the mana skill */
+  refresh_experience_display();
 }

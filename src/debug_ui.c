@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <strings.h>
 
 /* g_text_use_palette_color/g_draw_color_index are already declared in
    uw.h; g_text_flat_color (uw.c:32, `undefined2`) isn't -- declare it
@@ -26,6 +27,10 @@ typedef struct {
   int is_toggle_action;
   double *dval;
   int *ival;
+  /* When set, an int field shows names[*ival] instead of the number, steps through the names with
+     LEFT/RIGHT/RETURN/click (wrapping), and has no numeric-edit mode. */
+  const char *const *names;
+  int name_count;
   void (*on_press)(void);
   double step;
   /* Snapshotted fresh every dbgui_field_text()/dbgui_field_toggle_
@@ -52,9 +57,8 @@ static int g_selected = 0;
 static int g_editing = 0;
 static char g_edit_buf[32];
 static int g_edit_len = 0;
-/* How many rows dbgui_draw's own background fill covered last time it
-   ran -- see its own comment on why the fill has to track this instead
-   of just this frame's g_field_count. */
+/* Row count of the panel currently drawn (0 = nothing drawn); a change triggers an invalidate in
+   dbgui_draw. */
 static int g_last_rows = 0;
 
 /* Real pixel save/restore for the panel's own screen region, so closing it doesn't leave stale
@@ -91,8 +95,9 @@ static void dbgui_restore_backing()
     memcpy(&fb[fy * DBGUI_FB_STRIDE + DBGUI_PANEL_X], &g_saved_px[y * DBGUI_PANEL_W],
            DBGUI_PANEL_W * sizeof(unsigned short));
   }
-  dirty_rect_union(DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W,
-                    DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H);
+  /* dirty_rect_union takes (y0, y1, x0, x1), as bitmap.c's own callers pass it -- not (x0, x1, y0, y1). */
+  dirty_rect_union(DBGUI_PANEL_Y, DBGUI_PANEL_Y + DBGUI_SAVE_H,
+                    DBGUI_PANEL_X, DBGUI_PANEL_X + DBGUI_PANEL_W);
   g_saved_valid = 0;
 }
 
@@ -111,10 +116,18 @@ static void dbgui_restore_backing()
    this region afterward. Call this whenever the caller is about to
    switch content and the panel was already visible (not on a fresh
    open -- dbgui_toggle's own save already started it clean then). */
+static void dbgui_con_close_redraw(void);
+
 void dbgui_invalidate_region(void)
 {
   dbgui_restore_backing();
+  /* The saved pixels can be stale (the game redraws under the panel), so also have the game repaint
+     the HUD for the old panel's area -- matters when the new content is smaller. */
+  dbgui_con_close_redraw();
   dbgui_save_backing();
+  /* The old panel's rows are gone from the framebuffer now, so dbgui_draw's fill must not keep
+     covering max(old, new) rows -- that painted the old height as a gray block over the restored HUD. */
+  g_last_rows = 0;
 }
 
 /* SDL_Keycode values duplicated here (not #include <SDL.h>) to keep
@@ -127,6 +140,250 @@ void dbgui_invalidate_region(void)
 #define DBGUI_KEY_DOWN      0x40000051
 #define DBGUI_KEY_LEFT      0x40000050
 #define DBGUI_KEY_RIGHT     0x4000004F
+#define DBGUI_KEY_PAGEUP    0x4000004B
+#define DBGUI_KEY_PAGEDOWN  0x4000004E
+
+/* ---- Quake-style console -------------------------------------------------------------------
+   Opened from the panel's "console" button. Same input ownership as the panel (dbgui_visible()
+   stays true while it is open, so gx_stub.c keeps routing raw keys/text here), but drawn as a
+   full-width drop-down with a scrollback log and an input line. Submitted lines go to whatever
+   handler the owner registered with dbgui_console_set_handler -- demomode.c registers the demofile
+   command executor, so the console accepts exactly the commands a demofile does. This file stays
+   free of any dependency on that: it only knows "call the handler with a line". */
+#define CON_W 320
+#define CON_ROW_H 8                       /* tighter than the panel's DBGUI_ROW_H */
+#define CON_ROWS 8                        /* log rows shown above the input row */
+#define CON_H (CON_ROW_H * (CON_ROWS + 1) + 4)
+#define CON_LOG_LINES 1024
+#define CON_LINE_MAX 120
+#define CON_INPUT_MAX 120
+#define CON_HIST_MAX 64
+
+static int g_console_open = 0;
+static char g_con_log[CON_LOG_LINES][CON_LINE_MAX];
+static int g_con_log_count = 0;           /* total lines ever added, ring-indexed by % CON_LOG_LINES */
+static int g_con_scroll = 0;              /* lines scrolled back from the newest */
+static char g_con_input[CON_INPUT_MAX];
+static int g_con_input_len = 0;
+static char g_con_hist[CON_HIST_MAX][CON_INPUT_MAX];
+static int g_con_hist_count = 0;
+static int g_con_hist_pos = -1;           /* -1 = editing a fresh line */
+static unsigned g_con_frame = 0;          /* caret blink */
+static void (*g_con_handler)(const char *line) = 0;
+static void (*g_con_close_hook)(void) = 0;
+static unsigned short g_con_saved_px[CON_W * CON_H];
+static int g_con_saved_valid = 0;
+
+static void dbgui_con_save_backing()
+{
+  unsigned short *fb = (unsigned short *)g_uw_framebuffer;
+  int y;
+  if (!fb) return;
+  for (y = 0; y < CON_H && y < DBGUI_FB_HEIGHT; y++)
+    memcpy(&g_con_saved_px[y * CON_W], &fb[y * DBGUI_FB_STRIDE], CON_W * sizeof(unsigned short));
+  g_con_saved_valid = 1;
+}
+
+static void dbgui_con_restore_backing()
+{
+  unsigned short *fb = (unsigned short *)g_uw_framebuffer;
+  int y;
+  if (!fb || !g_con_saved_valid) return;
+  for (y = 0; y < CON_H && y < DBGUI_FB_HEIGHT; y++)
+    memcpy(&fb[y * DBGUI_FB_STRIDE], &g_con_saved_px[y * CON_W], CON_W * sizeof(unsigned short));
+  /* dirty_rect_union takes the portrait "hardware" frame (left, bottom, right, top) =
+     (landscape y0, y1, x0, x1) -- the console spans the whole screen width. */
+  dirty_rect_union(0, CON_H, 0, CON_W);
+  g_con_saved_valid = 0;
+}
+
+void dbgui_console_set_handler(void (*handler)(const char *line))
+{
+  g_con_handler = handler;
+}
+
+void dbgui_console_set_close_hook(void (*hook)(void))
+{
+  g_con_close_hook = hook;
+}
+
+/* Debug-window redraw hook (registered by the owner via dbgui_console_set_close_hook): runs when
+   the console closes or the panel switches content. The saved pixels were captured when the console opened, so anything the game redrew underneath
+   since (the inventory panel above all) would come back stale or black -- let the game repaint the
+   region it owns. */
+static void dbgui_con_close_redraw(void)
+{
+  if (g_con_close_hook) g_con_close_hook();
+}
+
+static void dbgui_con_add_line(const char *s, size_t n)
+{
+  char *dst = g_con_log[g_con_log_count % CON_LOG_LINES];
+  if (n > CON_LINE_MAX - 1) n = CON_LINE_MAX - 1;
+  memcpy(dst, s, n);
+  dst[n] = 0;
+  g_con_log_count++;
+  /* Keep a reader who scrolled back parked on the same text as new lines arrive. */
+  if (g_con_scroll > 0 && g_con_scroll < CON_LOG_LINES - CON_ROWS) g_con_scroll++;
+}
+
+/* Splits on '\n' (a trailing newline does not add an empty line) and wraps anything longer than a
+   log line, so callers can hand over printf-style output as is. */
+void dbgui_console_print(const char *text)
+{
+  const char *p = text;
+  if (!text) return;
+  while (*p) {
+    const char *nl = strchr(p, '\n');
+    size_t n = nl ? (size_t)(nl - p) : strlen(p);
+    while (n > CON_LINE_MAX - 1) {
+      dbgui_con_add_line(p, CON_LINE_MAX - 1);
+      p += CON_LINE_MAX - 1;
+      n -= CON_LINE_MAX - 1;
+    }
+    dbgui_con_add_line(p, n);
+    p += n;
+    if (*p == '\n') p++;
+  }
+}
+
+int dbgui_console_active(void) { return g_visible && g_console_open; }
+
+void dbgui_console_open(void)
+{
+  if (!g_visible || g_console_open) return;
+  /* Put the real pixels back under the small panel, then snapshot the larger console region. */
+  dbgui_restore_backing();
+  dbgui_con_save_backing();
+  g_console_open = 1;
+  g_editing = 0;
+  if (g_con_log_count == 0)
+    dbgui_console_print("UW1 debug console -- type HELP for commands, ESC for the panel");
+}
+
+/* Back to the small panel (ESC), keeping the panel open. */
+static void dbgui_console_close_to_panel(void)
+{
+  if (!g_console_open) return;
+  dbgui_con_restore_backing();
+  g_console_open = 0;
+  dbgui_con_close_redraw();
+  dbgui_save_backing();
+}
+
+static void dbgui_con_submit(void)
+{
+  char line[CON_INPUT_MAX + 4];
+  char *s = g_con_input;
+  g_con_input[g_con_input_len] = 0;
+  while (*s == ' ' || *s == '\t') s++;
+  if (*s) {
+    snprintf(line, sizeof(line), "> %s", s);
+    dbgui_console_print(line);
+    if (g_con_hist_count == 0 || strcmp(g_con_hist[(g_con_hist_count - 1) % CON_HIST_MAX], s) != 0) {
+      strncpy(g_con_hist[g_con_hist_count % CON_HIST_MAX], s, CON_INPUT_MAX - 1);
+      g_con_hist[g_con_hist_count % CON_HIST_MAX][CON_INPUT_MAX - 1] = 0;
+      g_con_hist_count++;
+    }
+    if (strcasecmp(s, "CLEAR") == 0) {
+      g_con_log_count = 0;
+      g_con_scroll = 0;
+    } else if (g_con_handler) {
+      g_con_handler(s);
+    } else {
+      dbgui_console_print("no command handler registered");
+    }
+  }
+  g_con_input_len = 0;
+  g_con_input[0] = 0;
+  g_con_hist_pos = -1;
+  g_con_scroll = 0;
+}
+
+static void dbgui_con_set_input(const char *s)
+{
+  strncpy(g_con_input, s, CON_INPUT_MAX - 1);
+  g_con_input[CON_INPUT_MAX - 1] = 0;
+  g_con_input_len = (int)strlen(g_con_input);
+}
+
+/* Positive = back toward older lines. Clamped to what the log holds. */
+void dbgui_console_scroll(int lines)
+{
+  int max_scroll = g_con_log_count < CON_LOG_LINES ? g_con_log_count : CON_LOG_LINES;
+  max_scroll = max_scroll > CON_ROWS ? max_scroll - CON_ROWS : 0;
+  g_con_scroll += lines;
+  if (g_con_scroll > max_scroll) g_con_scroll = max_scroll;
+  if (g_con_scroll < 0) g_con_scroll = 0;
+}
+
+static void dbgui_con_feed_key(int key)
+{
+  int shown = g_con_hist_count < CON_HIST_MAX ? g_con_hist_count : CON_HIST_MAX;
+  int max_scroll = g_con_log_count < CON_LOG_LINES ? g_con_log_count : CON_LOG_LINES;
+  max_scroll = max_scroll > CON_ROWS ? max_scroll - CON_ROWS : 0;
+  if (key == DBGUI_KEY_RETURN) {
+    dbgui_con_submit();
+  } else if (key == DBGUI_KEY_ESCAPE) {
+    dbgui_console_close_to_panel();
+  } else if (key == DBGUI_KEY_BACKSPACE) {
+    if (g_con_input_len > 0) g_con_input[--g_con_input_len] = 0;
+  } else if (key == DBGUI_KEY_UP) {
+    if (g_con_hist_pos + 1 < shown) {
+      g_con_hist_pos++;
+      dbgui_con_set_input(g_con_hist[(g_con_hist_count - 1 - g_con_hist_pos) % CON_HIST_MAX]);
+    }
+  } else if (key == DBGUI_KEY_DOWN) {
+    if (g_con_hist_pos > 0) {
+      g_con_hist_pos--;
+      dbgui_con_set_input(g_con_hist[(g_con_hist_count - 1 - g_con_hist_pos) % CON_HIST_MAX]);
+    } else if (g_con_hist_pos == 0) {
+      g_con_hist_pos = -1;
+      dbgui_con_set_input("");
+    }
+  } else if (key == DBGUI_KEY_PAGEUP) {
+    g_con_scroll += CON_ROWS - 1;
+    if (g_con_scroll > max_scroll) g_con_scroll = max_scroll;
+  } else if (key == DBGUI_KEY_PAGEDOWN) {
+    g_con_scroll -= CON_ROWS - 1;
+    if (g_con_scroll < 0) g_con_scroll = 0;
+  }
+}
+
+static void dbgui_con_draw()
+{
+  int x0 = 0, y0 = 0, x1 = CON_W, y1 = CON_H;
+  int avail = g_con_log_count < CON_LOG_LINES ? g_con_log_count : CON_LOG_LINES;
+  int newest = g_con_log_count - 1 - g_con_scroll;   /* absolute index of the bottom visible line */
+  int r;
+
+  /* Palette index 0 is real black (see the panel's selected-row highlight). */
+  set_draw_color(0);
+  rect_fill_or_save_restore(x0, y0, x1, y1);
+
+  for (r = 0; r < CON_ROWS; r++) {
+    int idx = newest - (CON_ROWS - 1 - r);
+    char line[CON_LINE_MAX];
+    int len;
+    if (idx < 0 || g_con_log_count - idx > avail) continue;
+    strncpy(line, g_con_log[idx % CON_LOG_LINES], sizeof(line) - 1);
+    line[sizeof(line) - 1] = 0;
+    len = (int)strlen(line);
+    while (len > 0 && measure_text_width(line) > CON_W - 6) line[--len] = 0;
+    draw_text_string(line, x0 + 3, y0 + 2 + r * CON_ROW_H);
+  }
+
+  {
+    char in[CON_INPUT_MAX + 4];
+    int len, skip = 0;
+    g_con_frame++;
+    snprintf(in, sizeof(in), "> %s%s", g_con_input, (g_con_frame / 16) & 1 ? "" : "_");
+    /* Keep the tail (where typing happens) visible once the line outgrows the console width. */
+    len = (int)strlen(in);
+    while (len - skip > 2 && measure_text_width(in + skip) > CON_W - 6) skip++;
+    draw_text_string(in + skip, x0 + 3, y1 - CON_ROW_H - 1);
+  }
+}
 
 void dbgui_begin(const char *title)
 {
@@ -170,6 +427,17 @@ void dbgui_field_int(const char *name, int *value, int step)
   f->is_int = 1;
   f->ival = value;
   f->step = (double)step;
+}
+
+void dbgui_field_int_names(const char *name, int *value, const char *const *names, int count)
+{
+  DbgField *f = dbgui_new_field(name);
+  if (!f) return;
+  f->is_int = 1;
+  f->ival = value;
+  f->step = 1;
+  f->names = names;
+  f->name_count = count;
 }
 
 void dbgui_field_button(const char *name, void (*on_press)(void))
@@ -237,6 +505,11 @@ static double dbgui_field_get(const DbgField *f)
 
 static void dbgui_field_set(DbgField *f, double v)
 {
+  if (f->is_int && f->names && f->name_count > 0) {
+    int n = f->name_count, i = (int)v % n;
+    *f->ival = i < 0 ? i + n : i;
+    return;
+  }
   if (f->is_int) *f->ival = (int)v; else *f->dval = v;
 }
 
@@ -254,22 +527,25 @@ void dbgui_draw()
   /* Called once per frame from app_main_loop, AFTER main_loop_hud_flush() -- i.e. after the 3D view
      and every other HUD element for this frame have already drawn into the shared software
      framebuffer. */
+  if (g_visible && g_console_open) {
+    int _up = g_text_use_palette_color;
+    unsigned short _fc = g_text_flat_color;
+    g_text_use_palette_color = 0;
+    g_text_flat_color = (unsigned short)0xffff;
+    dbgui_con_draw();
+    g_text_use_palette_color = _up;
+    g_text_flat_color = _fc;
+    return;
+  }
   if (!g_visible || g_field_count == 0) return;
 
-  /* The background fill below covers max(this frame's rows, last
-     frame's rows), not just this frame's -- the panel can legitimately
-     get SHORTER between one frame and the next now (toggle panel ->
-     object/texture inspector, 4 rows -> 3), and without this the newly
-     -uncovered row(s) from the taller previous panel are never
-     repainted by anything (this fill is the only thing that ever
-     touches that screen region -- see dbgui_toggle's own save/restore
-     comment), so their old text just sits there as a stale ghost row
-     forever. Confirmed live: picking a wall left a leftover
-     "pick_diag:" row below the 3-row Texture Inspector's own "desc"
-     row. Shrinks to the real size cleanly one frame later once
-     g_last_rows itself catches down to g_field_count. */
-  int fill_rows = g_field_count > g_last_rows ? g_field_count : g_last_rows;
-  int panel_h = DBGUI_ROW_H * (fill_rows + 1) + 4;
+  /* The panel's height follows g_field_count, which can change at any time (the object inspector's
+     row count differs per object type, panels switch, ...). When the drawn size differs from what
+     was drawn last, put the real pixels back and have the game repaint the HUD under the old rect
+     first, so nothing from the old size is left behind; then fill only this frame's own size.
+     g_last_rows == 0 means nothing is currently drawn (fresh open / just invalidated). */
+  if (g_last_rows != 0 && g_last_rows != g_field_count) dbgui_invalidate_region();
+  int panel_h = DBGUI_ROW_H * (g_field_count + 1) + 4;
   int x0 = DBGUI_PANEL_X, y0 = DBGUI_PANEL_Y;
   int x1 = x0 + DBGUI_PANEL_W, y1 = y0 + panel_h;
   g_last_rows = g_field_count;
@@ -315,6 +591,9 @@ void dbgui_draw()
       snprintf(line, sizeof(line), "%s: %s", f->name, *f->ival ? "ON" : "OFF");
     } else if (f->is_toggle_action) {
       snprintf(line, sizeof(line), "%s: %s", f->name, f->toggle_display_value ? "ON" : "OFF");
+    } else if (f->names && f->name_count > 0) {
+      int v = *f->ival;
+      snprintf(line, sizeof(line), "%s: %s", f->name, v >= 0 && v < f->name_count ? f->names[v] : "?");
     } else if (g_editing && i == g_selected) {
       snprintf(line, sizeof(line), "%s: %s_", f->name, g_edit_buf);
     } else {
@@ -349,8 +628,18 @@ int dbgui_visible(void) { return g_visible; }
 void dbgui_toggle()
 {
   int was_visible = g_visible;
+  /* Backtick closes everything, console included. */
+  if (g_console_open) {
+    dbgui_con_restore_backing();
+    g_console_open = 0;
+    dbgui_con_close_redraw();
+  }
   g_visible = !g_visible;
   g_editing = 0;
+  /* Whatever height the last panel had is gone (closed: restored below; opening: fresh save), so the
+     next draw's fill must start from its own row count, not max(old, new) -- else a small panel opened
+     after a big inspector paints the big one's height as gray over the HUD. */
+  g_last_rows = 0;
   /* Closing the panel stops it from drawing (dbgui_draw's own `if (!g_visible ...) return`), but
      the panel sits in the static golden-border UI chrome at the screen's top-left corner, outside
      the 3D viewport -- nothing else ever redraws that region... */
@@ -363,7 +652,7 @@ void dbgui_toggle()
 
 void dbgui_feed_mouse_down(int lx, int ly)
 {
-  if (!g_visible) return;
+  if (!g_visible || g_console_open) return;
   int i;
   for (i = 0; i < g_field_count; i++) {
     DbgField *f = &g_fields[i];
@@ -383,6 +672,10 @@ void dbgui_feed_mouse_down(int lx, int ly)
         if (f->on_press) f->on_press();
         return;
       }
+      if (f->names) {
+        dbgui_field_set(f, dbgui_field_get(f) + 1);
+        return;
+      }
       g_editing = 1;
       snprintf(g_edit_buf, sizeof(g_edit_buf), "%g", dbgui_field_get(f));
       g_edit_len = (int)strlen(g_edit_buf);
@@ -393,6 +686,10 @@ void dbgui_feed_mouse_down(int lx, int ly)
 
 void dbgui_feed_key(int sdl_keycode)
 {
+  if (g_visible && g_console_open) {
+    dbgui_con_feed_key(sdl_keycode);
+    return;
+  }
   if (!g_visible || g_field_count == 0) return;
   DbgField *f = &g_fields[g_selected];
 
@@ -429,6 +726,8 @@ void dbgui_feed_key(int sdl_keycode)
     dbgui_field_set(f, dbgui_field_get(f) - f->step);
   } else if (sdl_keycode == DBGUI_KEY_RIGHT) {
     dbgui_field_set(f, dbgui_field_get(f) + f->step);
+  } else if (sdl_keycode == DBGUI_KEY_RETURN && f->names) {
+    dbgui_field_set(f, dbgui_field_get(f) + 1);
   } else if (sdl_keycode == DBGUI_KEY_RETURN) {
     g_editing = 1;
     snprintf(g_edit_buf, sizeof(g_edit_buf), "%g", dbgui_field_get(f));
@@ -445,6 +744,15 @@ void dbgui_test_reset(void)
   g_visible = 0;
   g_saved_valid = 0;
   g_last_rows = 0;
+  g_console_open = 0;
+  g_con_saved_valid = 0;
+  g_con_log_count = 0;
+  g_con_scroll = 0;
+  g_con_input_len = 0;
+  g_con_input[0] = 0;
+  g_con_hist_count = 0;
+  g_con_hist_pos = -1;
+  g_con_handler = 0;
 }
 
 int dbgui_test_row_x(void) { return DBGUI_PANEL_X + 1; }
@@ -457,6 +765,19 @@ int dbgui_test_row_y(int field_index)
 
 void dbgui_feed_text(const char *utf8)
 {
+  if (g_visible && g_console_open) {
+    const char *q;
+    for (q = utf8; *q; q++) {
+      unsigned char c = (unsigned char)*q;
+      /* Printable ASCII only; backtick is the close key, not text. */
+      if (c >= 0x20 && c < 0x7f && c != '`' && g_con_input_len < CON_INPUT_MAX - 1) {
+        g_con_input[g_con_input_len++] = (char)c;
+        g_con_input[g_con_input_len] = 0;
+        g_con_hist_pos = -1;
+      }
+    }
+    return;
+  }
   if (!g_visible || !g_editing || g_field_count == 0) return;
   const char *p;
   for (p = utf8; *p; p++) {

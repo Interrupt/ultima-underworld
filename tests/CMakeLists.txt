@@ -116,11 +116,16 @@ add_fixture_game_unit_test(chargen
   src/player.c:reset_player_derived_state src/player.c:apply_equipped_item_effect
   src/object_actions.c:check_object_carry_weight
   src/player.c:compute_object_weight
+  src/chargen.c:chargen_normalize_record_stride
   src/chargen.c:advance_skill_tree_node
   src/chargen.c:apply_confirmed_skill_picks
   src/chargen.c:reroll_attributes_for_class_race)
+# test_chargen reads the real shipped data/DATA/CHRGEN.DAT to check the
+# record-layout normalization, so the executable needs the path too (the
+# fixture library's own copy of the define is PRIVATE).
+target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
 add_fixture_game_unit_test(new_game
-  src/game.c:prepare_new_game src/game.c:begin_gameplay
+  src/game.c:prepare_new_game src/game.c:start_game_with_current_character src/game.c:begin_gameplay
   src/level.c:load_level_object_table src/level.c:load_level
   src/game.c:set_game_mode
   src/ordinal_stubs.c:ce_wcscpy src/ordinal_stubs.c:CopyFileW
@@ -159,6 +164,8 @@ target_include_directories(uw_test_dosmidi PUBLIC
   "${PROJECT_SOURCE_DIR}/third_party/openabyss")
 add_supported_game_unit_test(dosmidi uw_test_dosmidi)
 add_game_test_library(uw_test_movement
+  src/ai.c:@physics_vz_remainder src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks src/ai.c:physics_subtick_units
+  src/movement.c:@player_move_fraction src/movement.c:@g_player_move_fraction
   src/movement.c:sweep_kill_velocity src/movement.c:sweep_deflect_heading
   src/movement.c:sweep_slide_along_wall src/movement.c:sweep_apply_collision
   src/movement.c:collision_flags_to_locomotion_code src/movement.c:sweep_collision_flags
@@ -219,7 +226,18 @@ add_fixture_game_unit_test(traps src/traps.c:dispatch_trap_type_effect
 add_fixture_game_unit_test(hotspot_marker src/babl.c:draw_hotspot_crosshair_marker)
 add_fixture_game_unit_test(noise
   src/ai.c:alert_npc_to_noise_callback src/ai.c:emit_noise_alert)
-add_fixture_game_unit_test(keyboard src/input.c:handle_keyboard_message)
+add_fixture_game_unit_test(keyboard
+  src/input.c:handle_keyboard_message)
+# Jumping while a movement key is held: the shared key latch and the jump key's dispatch.
+add_fixture_game_unit_test(jump_walking
+  src/input.c:@DAT_00086e70_backing src/input.c:%DAT_00086e70
+  src/input.c:handle_keyboard_message src/input.c:move_command_dispatch
+  src/input.c:set_held_movement_keys
+  src/movement.c:@DAT_00087944 src/movement.c:@DAT_00087948
+  src/movement.c:@DAT_0008794c src/movement.c:@DAT_00087950
+  src/movement.c:uw_turn_rate_accel src/movement.c:decode_held_movement_keys
+  src/movement.c:decode_movement_command)
+target_link_libraries(uw_test_jump_walking PUBLIC uw_test_division)
 add_fixture_game_unit_test(visibility_walk
   src/visibility.c:@DAT_00086af0_arr
   src/visibility.c:@DAT_00086af8_region
@@ -306,6 +324,8 @@ add_fixture_game_unit_test(inventory
 add_fixture_game_unit_test(geometry
   src/3d.c:@DAT_000bc038_backing
   src/3d.c:near_clip_visible_tiles src/tmap.c:render_visible_tile_list
+  src/3d.c:translate_verts_to_camera_space src/3d.c:project_verts_through_view_matrix
+  src/3d.c:transform_points_by_matrix
   src/ordinal_stubs.c:ordfloat_bits_to_float src/ordinal_stubs.c:ordfloat_float_to_bits
   src/ordinal_stubs.c:ordfloat_add src/ordinal_stubs.c:ordfloat_sub
   src/ordinal_stubs.c:ordfloat_mul src/ordinal_stubs.c:ordfloat_div
@@ -316,12 +336,12 @@ add_fixture_game_unit_test(spells
   src/hud.c:@DAT_00087530_backing
   src/hud.c:handle_cast_spell_click src/hud.c:cast_spell_from_rune_combo
   src/hud.c:report_spell_cast_failure
-  src/object_actions.c:dispatch_special_action
+  src/spells.c:execute_spell_effect
   src/object_actions.c:reduce_item_quality_on_use
-  src/combat.c:add_active_light_source src/tmap.c:tile_is_no_magic
-  src/object_actions.c:complete_cast_spell_on_target
-  src/object_actions.c:apply_targeted_spell_effect
-  src/object_actions.c:spawn_object_near_actor
+  src/spells.c:add_active_light_source src/tmap.c:tile_is_no_magic
+  src/spells.c:complete_cast_spell_on_target
+  src/spells.c:apply_targeted_spell_effect
+  src/spells.c:spawn_object_near_actor
   src/game.c:handle_game_view_click
   src/item_use.c:compute_drop_aim_from_cursor
   src/objects.c:spawn_object_near_player
@@ -363,6 +383,14 @@ add_fixture_game_unit_test(weapon_ready
   src/inventory.c:toggle_weapon_ready
   src/weapon_swing.c:advance_action_animation_frame
   src/weapon_swing.c:weapon_swing_draw_tick)
+
+# The weapon charge state machine (tick_weapon_swing_state) with a controlled clock and button.
+add_fixture_game_unit_test(weapon_charge
+  src/weapon_swing.c:@DAT_000870e4
+  src/weapon_swing.c:@DAT_00084f0b_backing src/weapon_swing.c:%DAT_00084f0b
+  src/combat.c:@DAT_00084eff_backing
+  src/weapon_swing.c:tick_weapon_swing_state src/weapon_swing.c:reset_weapon_swing_state
+  src/weapon_swing.c:update_weapon_ready_hud_icon)
 
 add_fixture_game_unit_test(head_bob
   src/movement.c:@DAT_00086e38_backing src/movement.c:@DAT_00086e48_backing
@@ -695,6 +723,7 @@ add_game_test_library(uw_test_npc_ai
   src/ai.c:npc_set_walk_target
   src/combat.c:npc_combat_engage_close_tick
   src/combat.c:npc_combat_engage_wide_tick
+  src/combat.c:try_npc_special_ability_alt
   src/combat.c:npc_combat_set_stance
   src/combat.c:load_monster_combat_stats)
 target_sources(uw_test_npc_ai PRIVATE support/npc_ai_fixture.c)
@@ -705,6 +734,10 @@ target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURC
 
 add_game_test_library(uw_test_throw
   src/ai.c:@DAT_000868c0_backing
+  src/ai.c:@physics_vz_remainder
+  src/ai.c:@g_physics_vz_remainder src/ai.c:@g_stat_physics_ticks
+  src/movement.c:@player_move_fraction
+  src/movement.c:@g_player_move_fraction
   src/item_use.c:drop_held_object_near_player
   src/objects.c:spawn_object_near_player
   src/item_use.c:compute_drop_aim_from_cursor
@@ -712,6 +745,20 @@ add_game_test_library(uw_test_throw
   src/ai.c:build_object_placement_snapshot
   src/collision.c:apply_placement_collision_sweep
   src/ai.c:mobile_object_tick
+  src/ai.c:tick_mobile_objects
+  src/ai.c:tick_physics_objects
+  src/ai.c:physics_subtick_units
+  src/ai.c:object_tick_is_due
+  src/ai.c:@DAT_00101948
+  src/movement.c:movement_pacing_handler
+  src/movement.c:uw_frame_clock_ms
+  src/gx_stub.c:@uw_frame_pacing
+  src/gx_stub.c:@g_display_pacing
+  src/gx_stub.c:@g_game_pacing
+  src/gx_stub.c:uw_set_present_refresh_rate
+  src/gx_stub.c:uw_reset_frame_pacing
+  src/gx_stub.c:uw_claim_frame
+  src/gx_stub.c:uw_service_game_clock
   src/ai.c:sync_object_tile_position
   src/input.c:set_locomotion_state
   src/input.c:apply_movement_mode_profile
@@ -744,6 +791,12 @@ target_compile_definitions(uw_test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOU
 add_supported_game_unit_test(throw uw_test_throw)
 target_compile_definitions(test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
 target_sources(test_throw PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
+add_supported_game_unit_test(player_move_direction uw_test_throw)
+target_compile_definitions(test_player_move_direction PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_sources(test_player_move_direction PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
+add_supported_game_unit_test(throw_tick_rate uw_test_throw)
+target_compile_definitions(test_throw_tick_rate PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_sources(test_throw_tick_rate PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_throw_cursor
   src/item_use.c:drop_held_object_near_player
@@ -769,6 +822,14 @@ add_game_test_library(uw_test_lighting
   src/math.c:integer_sqrt
   src/lights.c:%UW_EYE_TO_LIGHT_UNITS src/lights.c:@g_extra_light_sources src/lights.c:%UW_EXTRA_LIGHT_SOURCE_COUNT
   src/lights.c:extra_light_add src/lights.c:extra_lights_reset src/lights.c:extra_lights_consider_object
+  src/lights.c:@g_shade_rows_dirty src/lights.c:@g_shade_row_factor src/lights.c:@g_fit_a
+  src/lights.c:palette_luminance src/lights.c:fit_formula_to_rows src/lights.c:rebuild_shade_row_factors
+  src/lights.c:light_max_distance_tiles src/lights.c:near_start_factor
+  src/lights.c:windowed_factor src/lights.c:linear_factor src/lights.c:dos_shade_factor
+  src/lights.c:@light_round_frame
+  src/lights.c:@g_light_round_frame
+  src/lights.c:light_pass_prepare
+  src/lights.c:light_rounded_distance
   src/lights.c:shade_span_pixel
   src/3d.c:raster_textured_span src/3d.c:update_fullbright_palette_mask
   src/graphics.c:build_shade_lut
@@ -850,6 +911,7 @@ target_compile_definitions(test_gx_pacing PRIVATE UW_TEST_DATA_DIR="${PROJECT_SO
 
 add_game_test_library(uw_test_look_pacing
   src/gx_stub.c:poll_dungeon_movement_keys
+  src/input.c:set_held_movement_keys
   src/gx_stub.c:@uw_frame_pacing
   src/gx_stub.c:@g_display_pacing
   src/gx_stub.c:@g_game_pacing
@@ -895,6 +957,38 @@ endforeach()
 set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/uw_test_look_pacing_functions.c"
   PROPERTIES HEADER_FILE_ONLY TRUE)
 target_include_directories(uw_test_look_pacing PUBLIC ${SDL2_INCLUDE_DIRS} "${CMAKE_CURRENT_BINARY_DIR}")
+
+# platform_voice.c's voice_source_load picks between the Pocket PC asset
+# set's RIFF \SOUND\VOCnn.WAV and the DOS set's Creative \SOUND\nn.VOC for
+# the same sample id. It is static and stays that way -- its real body is
+# compiled into the fixture, the arrangement uw_test_look_pacing uses for
+# its own static poller -- so this needs the real SDL, file_io.c and the
+# vendored OpenAbyss VOC reader rather than stubs for any of them.
+add_game_test_library(uw_test_voice
+  src/platform_voice.c:@voice_source
+  src/platform_voice.c:voice_source_load)
+set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/uw_test_voice_functions.c"
+  PROPERTIES HEADER_FILE_ONLY TRUE)
+target_sources(uw_test_voice PRIVATE support/voice_fixture.c
+  "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c"
+  "${PROJECT_SOURCE_DIR}/third_party/openabyss/uw_sound.c"
+  "${PROJECT_SOURCE_DIR}/third_party/openabyss/uw_blob.c")
+target_include_directories(uw_test_voice PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/support" "${CMAKE_CURRENT_BINARY_DIR}"
+  ${SDL2_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/third_party/openabyss")
+target_link_directories(uw_test_voice PUBLIC ${SDL2_LIBRARY_DIRS})
+target_link_libraries(uw_test_voice PUBLIC ${SDL2_LIBRARIES})
+target_compile_definitions(uw_test_voice PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+add_supported_game_unit_test(voice uw_test_voice)
+
+# models_dos.c decodes the DOS asset set's 3D models out of UW.EXE. The suite
+# assembles its own UW.EXE-shaped file, so it needs no DOS install -- just the
+# real models_dos.c, file_io.c and debug.c.
+add_library(uw_test_models_dos STATIC
+  "${PROJECT_SOURCE_DIR}/src/models_dos.c"
+  "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c")
+uw_configure_test_target(uw_test_models_dos)
+add_supported_game_unit_test(models_dos uw_test_models_dos)
 
 add_library(uw_test_division STATIC support/division.c)
 uw_configure_test_target(uw_test_division)
@@ -947,6 +1041,7 @@ add_game_test_library(uw_test_transitions
   src/graphics.c:bitmap_blit_to_framebuffer
   src/graphics.c:fade_in
   src/graphics.c:fade_out
+  src/chargen.c:chargen_normalize_record_stride
   src/chargen.c:run_character_generator
   src/level.c:enter_dungeon_view
   src/hud.c:run_pause_menu_modal_loop
@@ -1012,24 +1107,23 @@ endforeach()
 
 add_game_test_library(uw_test_spell_effects
   src/hud.c:@DAT_00087530_backing
-  src/object_actions.c:@DAT_00087604_backing
-  src/object_actions.c:@PTR_FUN_00087614_backing
+  src/spells.c:@DAT_00087604_backing
   src/object_actions.c:@DAT_0008762c_backing
   src/traps.c:dispatch_trap_special_or_tile_action
   src/object_actions.c:dispatch_tile_special_action
-  src/object_actions.c:cast_cone_damage_spell
-  src/object_actions.c:cast_targeted_search_effect
+  src/spells.c:cast_cone_damage_spell
+  src/spells.c:cast_targeted_search_effect
   src/object_actions.c:scan_area_ahead_of_object
-  src/object_actions.c:force_unlock_target_object
-  src/object_actions.c:cast_single_tile_spell_effect
-  src/object_actions.c:cast_area_spell_effect
-  src/object_actions.c:trigger_type_flagged_trap_effect
-  src/object_actions.c:trigger_tile_damage_trap_effect
-  src/object_actions.c:morph_tile_object_state
-  src/object_actions.c:trigger_permanent_object_state_effect
-  src/object_actions.c:apply_tile_morph_variant_2
-  src/object_actions.c:apply_tile_morph_variant_6
-  src/object_actions.c:apply_tile_morph_variant_7
+  src/spells.c:force_unlock_target_object
+  src/spells.c:cast_single_tile_spell_effect
+  src/spells.c:cast_area_spell_effect
+  src/spells.c:trigger_type_flagged_trap_effect
+  src/spells.c:trigger_tile_damage_trap_effect
+  src/spells.c:morph_tile_object_state
+  src/spells.c:trigger_permanent_object_state_effect
+  src/spells.c:apply_tile_morph_variant_2
+  src/spells.c:apply_tile_morph_variant_6
+  src/spells.c:apply_tile_morph_variant_7
   src/object_actions.c:damage_all_objects_at_tile
   src/ai.c:@DAT_000853b0_backing
   src/ai.c:@DAT_000853c0_backing
@@ -1067,7 +1161,7 @@ add_fixture_game_unit_test(special_use
   src/item_use.c:dispatch_use_special_item_by_type
   src/traps.c:dispatch_trap_special_or_tile_action
   src/object_actions.c:dispatch_tile_special_action
-  src/object_actions.c:dispatch_special_action
+  src/spells.c:execute_spell_effect
   src/object_actions.c:resolve_object_variant_or_special_link
   src/objects.c:find_object_in_chain
   src/objects.c:resolve_object_link
@@ -1076,7 +1170,7 @@ add_fixture_game_unit_test(special_use
   src/object_actions.c:scan_area_ahead_of_object
   src/player.c:detect_unsafe_rest_object_callback
   src/player.c:check_rest_area_unsafe
-  src/player.c:apply_healing_item_effect
+  src/spells.c:apply_healing_effect
   src/player.c:restore_stat_capped
   src/tmap.c:tilemap_lookup)
 
@@ -1118,8 +1212,23 @@ endforeach()
 
 # Independent packing checks before object-pointer/field migrations.
 add_supported_game_unit_test(object_layout)
-find_program(UW_SPATCH_EXECUTABLE spatch)
-if(UW_SPATCH_EXECUTABLE)
+# Coccinelle semantic-patch checks: they re-parse the whole of src/ with spatch
+# and take minutes where the rest of the suite takes seconds (530s against 6s
+# when measured on this tree). They are a tool for large type-conversion
+# batches -- proving a field migration reached every access -- not something to
+# pay for on an ordinary run, so they are OFF unless asked for:
+#
+#   cmake -S . -B build -DUW_SPATCH_TESTS=ON && ctest --test-dir build
+#
+option(UW_SPATCH_TESTS
+  "Register the Coccinelle (spatch) semantic-patch tests. Slow; for large type-conversion batches." OFF)
+if(UW_SPATCH_TESTS)
+  find_program(UW_SPATCH_EXECUTABLE spatch)
+  if(NOT UW_SPATCH_EXECUTABLE)
+    message(FATAL_ERROR
+      "UW_SPATCH_TESTS=ON but spatch was not found. Install Coccinelle (brew install coccinelle) "
+      "or configure without -DUW_SPATCH_TESTS=ON.")
+  endif()
   add_test(NAME object_semantic_patches
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_object_semantic_patches.py"
@@ -1220,16 +1329,9 @@ if(UW_SPATCH_EXECUTABLE)
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_stack_split_fields.py"
       "${UW_SPATCH_EXECUTABLE}")
-  add_test(NAME held_drop_fields
-    COMMAND "${Python3_EXECUTABLE}"
-      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_held_drop_fields.py")
   add_test(NAME durability_fields
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_durability_fields.py"
-      "${UW_SPATCH_EXECUTABLE}")
-  add_test(NAME blood_splat_fields
-    COMMAND "${Python3_EXECUTABLE}"
-      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_blood_splat_fields.py"
       "${UW_SPATCH_EXECUTABLE}")
   add_test(NAME light_decay_fields
     COMMAND "${Python3_EXECUTABLE}"
@@ -1302,3 +1404,29 @@ add_game_test_library(uw_test_save_inventory
 target_compile_options(uw_test_save_inventory PRIVATE
   -include "${CMAKE_CURRENT_SOURCE_DIR}/save_inventory_test_globals.h")
 add_supported_game_unit_test(save_inventory uw_test_save_inventory uw_test_division)
+
+# NPC collision-response profiles must be populated in the buffers the sweep actually reads.
+add_fixture_game_unit_test(collision_profiles src/movement.c:init_collision_response_profiles)
+
+# Real-game tests: the whole game (uw_game_objs) with a test-supplied main(), run headless through
+# start_test_game (src/unit_test_hooks.c). These link no fixtures -- fixtures replace game code, these
+# run it. Unity is linked without the options library because the game objects already define g_opts.
+add_library(unity_bare STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c")
+target_include_directories(unity_bare PUBLIC "${PROJECT_SOURCE_DIR}/third_party/unity/src")
+function(add_test_game_executable name)
+  add_executable(test_${name} "${CMAKE_CURRENT_SOURCE_DIR}/test_${name}.c"
+    $<TARGET_OBJECTS:uw_game_objs>)
+  target_include_directories(test_${name} PRIVATE "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/support"
+    ${SDL2_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/third_party/hxcmod" "${PROJECT_SOURCE_DIR}/third_party/openabyss")
+  target_link_directories(test_${name} PRIVATE ${SDL2_LIBRARY_DIRS})
+  target_link_libraries(test_${name} PRIVATE unity_bare ${SDL2_LIBRARIES})
+  add_dependencies(unit_tests test_${name})
+  add_test(NAME ${name} COMMAND test_${name} WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+endfunction()
+add_test_game_executable(game_hooks)
+add_test_game_executable(teleport_game)
+add_test_game_executable(new_game_game)
+add_test_game_executable(traps_game)
+add_test_game_executable(visibility_walk_game)
+add_test_game_executable(npc_ai_game)
+add_test_game_executable(movement_game)

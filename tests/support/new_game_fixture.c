@@ -302,3 +302,6 @@ void new_game_fixture_end(void)
     rmdir(save_path);
     rmdir(workspace);
 }
+
+/* The real game runs unit-test lifecycle hooks from load_level; this fixture has none. */
+void uw_test_hook_pre_level_load(int level_number) { (void)level_number; }

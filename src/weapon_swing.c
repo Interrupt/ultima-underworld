@@ -16,7 +16,11 @@ static short DAT_00100618;
 // Original ARM .data defaults: idle frame counter and pending action.
 short DAT_000870e4 = -1;
 static short DAT_001005e8;
-static undefined DAT_001005f0;
+/* Was a 1-byte `undefined`: ARM 0x278ac/0x278e8 store the whole 32-bit clock reading here (`str`)
+   and 0x278c4 reloads its low 16 bits (`ldrsh`) to get the elapsed time. With only the low byte
+   kept, the delta was clock - (0..255) -- garbage -- so the charge advanced in random jumps (often
+   straight to full) instead of one step per 16 clock units. */
+static uint DAT_001005f0;
 static byte DAT_00100614;
 /* Was a lone `undefined` scalar, same bug as DAT_00084eff just above -- tick_weapon_swing_state
    indexes it as `(&DAT_00084f0b)[iVar5]` with iVar5 = attack-type/3 (0-3), selecting which of a

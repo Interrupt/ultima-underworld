@@ -189,6 +189,40 @@ A copy of the extracted game data also lives at `data/` in this repo for
 local convenience (`UW_DATA_DIR=$(pwd)/data ./build/uw`) — it's
 gitignored, not checked in, since it's copyrighted game data.
 
+### Running against an original DOS install
+
+`--data-dir` is the one and only data directory, and it can point either at
+the extracted Pocket PC assets or straight at a DOS Ultima Underworld 1
+directory:
+
+```sh
+./build/uw --data-dir=/path/to/UW1/UW
+./run.sh --data-dir=/path/to/UW1/UW     # or UW_DATA_DIR=/path/to/UW1/UW ./run.sh
+```
+
+`./run.sh` and `./debug.sh` pass the repo's own `data/` by default, seeded
+from `UW_DATA_DIR` when that is set, and forward any further arguments — so a
+`--data-dir` of your own wins, being later on the command line.
+
+Supply one asset set or the other, not both; the port works out which it has
+been given and adapts:
+
+- `DATA/CHRGEN.DAT` uses 18-byte records on DOS instead of the port's 20,
+  and is converted at load time (`src/chargen.c`).
+- Cutscene speech ships as Creative `SOUND/NN.VOC` rather than RIFF
+  `SOUND/VOCnn.wav`; `src/platform_voice.c` reads either.
+- Music and sound effects come from the DOS `SOUND` set automatically: with
+  no `--audio-mode` given, a data directory that is a DOS install (detected
+  by `SOUND/UW.AD`, the timbre bank) selects `hybrid`, because such a
+  directory has no `.MOD` music or WAVE effects to fall back on. Pass
+  `--audio-mode` explicitly — including `--audio-mode=arm` — to override.
+  `--dos-data-dir` is only needed to borrow DOS music *while playing the
+  Pocket PC assets*; it does not by itself turn DOS audio on.
+- The 3D models are read out of `UW.EXE` itself, where DOS kept them
+  compiled as bytecode. There is no `DATA3D/` in a DOS install and no `.E`
+  source anywhere in the executable, so there is nothing for the `.E`
+  parser to read — see `src/models_dos.c`.
+
 Dungeon lighting defaults to ARM RGB shading. As a project deviation, each
 light strength level subtracts 16 from the unlit starting bias of +8.
 Use `UW_LIGHT_MODE=dos ./run.sh` for palette shading based on the equipped

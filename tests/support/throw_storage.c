@@ -62,4 +62,18 @@ short * g_sweep_velocity;
 
 ushort DAT_00202084;
 byte DAT_0020208c;
+int g_debug_noclip;
 short DAT_00085890, DAT_00202074, DAT_00202078, DAT_0020207a, DAT_0020207c;
+
+/* Movement clock, object tick scheduler and 60Hz game-frame pacing, so a test can drive the real
+   movement_pacing_handler -> tick_mobile_objects -> mobile_object_tick chain frame by frame. */
+unsigned int g_uw_frame_clock_units;
+undefined4 DAT_0023bf54;
+byte DAT_0023bf58;
+int DAT_000879ac, g_npc_tick_enabled;
+undefined4 DAT_002020d4;
+undefined4 DAT_002020d0;
+short DAT_00201b64, DAT_00201c84;
+undefined2 DAT_00201c90;
+byte * DAT_002046c0;
+byte * DAT_002046c8;

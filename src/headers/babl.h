@@ -16,7 +16,7 @@ extern char DAT_00085244_backing[16];
 extern char DAT_00085248_backing[16];
 #define DAT_00085248 DAT_00085248_backing[0]
 extern undefined4 DAT_00085c54;
-extern ushort * DAT_00100674;
+extern uw_mobile_object_t * DAT_00100674;
 extern undefined2 DAT_0024cfac;
 extern undefined1 DAT_0023c698_backing[1024];
 #define DAT_0023c698 DAT_0023c698_backing[0]

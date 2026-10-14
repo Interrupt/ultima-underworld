@@ -113,9 +113,9 @@ static byte DAT_00101434;
 /* Was a bare 1-byte `undefined` -- same split-symbol class as DAT_00204980/990/9b0's own
    backing-array fixes just above: build_object_placement_snapshot (called with this as its param_2
    "object state" out-buffer, via DAT_0010172c) writes fields up to offset 0x28 into it... */
-static undefined1 DAT_002048f0_backing[128];
+undefined1 DAT_002048f0_backing[128];
 #define DAT_002048f0 DAT_002048f0_backing[0]
-static undefined1 DAT_00204950_backing[128];
+undefined1 DAT_00204950_backing[128];
 #define DAT_00204950 DAT_00204950_backing[0]
 undefined4 DAT_00101944;
 /* ARM UU.exe 0x853d8: sixteen little-endian attack-strength scales.
@@ -136,7 +136,9 @@ char DAT_0010194c;
 char DAT_000853d0;
 int DAT_00101940;
 char DAT_00101928;
-static char DAT_00101948;
+/* Previous value of the 0..15 mobile-object tick counter (DAT_00101928). Not `static` so the throw
+   test fixture can reset it and extract tick_mobile_objects. */
+char DAT_00101948 = 0;
 static undefined4 DAT_00101950;
 static byte DAT_0010195c;
 static ushort *DAT_00101958;
@@ -165,9 +167,27 @@ static undefined1 DAT_0024ac18_backing[256];
    creature's look text ran the words together... */
 static char s_named_00085d18[] = " named ";
 /* Original binary 0x868c0..0x868d7 maps locomotion bit values to
-   the compact mobile-record state (indexed by snapshot byte 0x28). */
-static undefined DAT_000868c0_backing[24] = {
-  0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0
+   the compact mobile-record state (indexed by snapshot byte 0x28). The index is a full byte, and the
+   original keeps indexing past the 24-byte table into the data that follows it (0x868d8 onward,
+   where index 0x20 lands on the low byte of a code pointer), so the array carries the 256 bytes the
+   original ARM image has there (read from the Ghidra project; the data/UU.exe file is the MIPS build). */
+static undefined DAT_000868c0_backing[256] = {
+  0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,
+  4,0,0,0,0,0,0,0,2,0,0,0,7,0,0,0,
+  236,103,5,0,236,103,5,0,100,104,5,0,100,104,5,0,
+  60,105,5,0,56,104,5,0,192,103,5,0,0,0,0,0,
+  220,107,5,0,220,107,5,0,192,105,5,0,24,106,5,0,
+  112,106,5,0,136,108,5,0,72,107,5,0,0,0,0,0,
+  0,24,36,34,32,30,0,0,24,36,34,32,30,0,0,0,
+  26,22,20,0,0,0,0,26,22,20,0,0,28,44,42,40,
+  38,0,0,0,0,0,59,57,0,0,18,16,14,12,10,8,
+  6,0,0,0,111,112,116,98,116,110,115,0,0,0,0,0,
+  100,0,0,0,100,0,0,0,255,255,0,0,0,0,0,0,
+  255,255,0,0,255,255,0,0,0,0,0,0,200,73,32,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,224,0,192,0,160,
+  0,128,0,96,0,64,0,32,98,97,100,32,116,109,97,112
 };
 #define DAT_000868c0 DAT_000868c0_backing[0]
 /* was `int` -- truncated pointer to a 64-bit address on assignment in spawn_creature_death_loot
@@ -862,18 +882,108 @@ LAB_00033860:
 
 
 
+/* HACK: not original behaviour -- the --physics-fps option. A mobile object keeps its vertical
+   velocity between steps only as the 5-bit `pitch` field (64 units per count), which is exact when a
+   step integrates 16 clock units (gravity adds exactly 64) but drops the gain of a shorter step
+   (16 units at 4ms-multiple ticks), so the item would never fall. The sub-count remainder is kept here
+   per mobile slot, tagged with the pitch it belongs to so a recycled slot's stale value is ignored. */
+struct physics_vz_remainder {
+  byte pitch;
+  short remainder;
+};
+static struct physics_vz_remainder g_physics_vz_remainder[256] = {{0}};
+
+/* HACK: not original behaviour -- the --physics-fps option. Returns the length, in 4ms game clock
+   units, of the finer tick that non-NPC mobile objects (thrown/dropped items, projectiles) are
+   stepped at, or 0 for the original 16-unit (64ms, 15.625Hz) game tick. */
+int physics_subtick_units(void)
+{
+  float fps = g_opts.physics_fps;
+  int units;
+  if (!(fps > 15.7f)) {
+    return 0;
+  }
+  units = (int)(250.0f / fps + 0.5f);
+  if (units < 1) {
+    units = 1;
+  }
+  return units >= 16 ? 0 : units;
+}
+
+/* HACK: not original behaviour -- the --physics-fps option. Steps every non-NPC mobile object once
+   per `subtick` (physics_subtick_units() clock units) for each unit of `elapsed_units` clock time
+   that has passed, instead of tick_mobile_objects' once per 64ms game tick. An object of speed class
+   N steps every N subticks, and each step integrates N * subtick clock units (see
+   apply_placement_collision_sweep), so the trajectory is the original one sampled more finely.
+   The original's per-object tick_phase ring is not used here: it is only meaningful for 64ms ticks
+   and a fresh thrown item does not seed it. */
+unsigned g_stat_physics_ticks = 0;  /* --show-fps: physics steps run (a tick_mobile_objects call, or a subtick) */
+
+void tick_physics_objects(int elapsed_units)
+{
+  static int carry_units;
+  static unsigned subtick_count;
+  int subtick = physics_subtick_units();
+  int subticks;
+  byte *pbVar2;
+  int speed_class;
+  uw_mobile_object_t *object;
+
+  if (subtick == 0) {
+    carry_units = 0;
+    return;
+  }
+  carry_units += elapsed_units;
+  subticks = carry_units / subtick;
+  carry_units %= subtick;
+  if (subticks > 64) {
+    subticks = 64;
+  }
+  while (subticks-- > 0) {
+    subtick_count++;
+    g_stat_physics_ticks++;
+    pbVar2 = DAT_002046c0;
+    while (pbVar2 < DAT_002046c8) {
+      object = (uw_mobile_object_t *)((uint)*pbVar2 * 0x1b + DAT_002046b8);
+      if ((object->hdr.object_id & 0x1c0) == 0x40) {
+        pbVar2++;
+        continue;
+      }
+      speed_class = object->attack_pitch & 7;
+      if (speed_class == 0) {
+        speed_class = 1;
+      }
+      if (subtick_count % (unsigned)speed_class != 0) {
+        pbVar2++;
+        continue;
+      }
+      DAT_0010190c = object;
+      if (mobile_object_tick() != 0) {
+        pbVar2++;
+      }
+      /* else the object left the active list and the next one has moved into this index */
+    }
+    set_pending_update_flags(2);
+  }
+}
+
 // was FUN_000349bc.
 void tick_mobile_objects(char elapsed)
 {
   int iVar1;
   byte *pbVar2;
 
+  if (physics_subtick_units() == 0) g_stat_physics_ticks++;
   DAT_0010190c = (uw_mobile_object_t *)0x0;
   DAT_00101928 = DAT_00101948 + elapsed & 0xf;
   pbVar2 = DAT_002046c0;
   if (DAT_002046c0 < DAT_002046c8) {
     do {
       DAT_0010190c = (uw_mobile_object_t *)((uint)*pbVar2 * 0x1b + DAT_002046b8);
+      /* HACK: not original behaviour -- --physics-fps steps these in tick_physics_objects instead. */
+      if ((DAT_0010190c->hdr.object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+        goto LAB_00034a98;
+      }
       do {
         iVar1 = object_tick_is_due(DAT_0010190c->tick_phase,
                                    DAT_0010190c->attack_pitch & 7);
@@ -1095,6 +1205,15 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
       apply_typed_damage_to_object(object,0,(int)(short)DAT_0010144c,(int)DAT_00101454,1,8);
     }
   }
+  /* HACK: not original behaviour -- --physics-fps keeps a sub-pitch vertical velocity (see
+     g_physics_vz_remainder) that the original's 64-unit pitch rounds away. A projectile with no
+     gravity (a magic missile) that has hit something has had its horizontal velocity zeroed but is
+     left a tiny vertical one, so it never settled and drifted slowly to the floor instead of being
+     destroyed. Zero it too, as the horizontal velocity already is. */
+  if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0 &&
+      (char *)object < DAT_002046c4 && position[10] == 0 && position[8] == 0) {
+    position[5] = 0;
+  }
   if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40) {
     if (DAT_002046c4 < (char *)object) {
       if ((position[10] != 0 || position[8] != 0) || position[5] != 0) {
@@ -1145,6 +1264,15 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
       sVar4 = 0x1f;
     }
     ((uw_mobile_object_t *)object)->pitch = (byte)sVar4 & 0x1f;
+    /* HACK: not original behaviour -- see g_physics_vz_remainder. */
+    if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+      int slot = (int)(((char *)object - DAT_002046b8) / 0x1b);
+      if (slot >= 0 && slot < 256) {
+        g_physics_vz_remainder[slot].pitch = (byte)sVar4 & 0x1f;
+        g_physics_vz_remainder[slot].remainder =
+            (sVar4 == 0 || sVar4 == 0x1f) ? 0 : (short)position[5] - (sVar4 - 0x10) * 0x40;
+      }
+    }
     bVar3 = ordint_divmod(0x2f,(int)(short)position[10]).quot;
     ((uw_mobile_object_t *)object)->speed = bVar3 & 0x7f;
     ((uw_mobile_object_t *)object)->movement_mode = (&DAT_000868c0)[(byte)position[0x14]] & 7;
@@ -1554,18 +1682,14 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
 // per-class record in the same table as g_monster_max_stats_table...
 void spawn_creature_death_loot(ushort *creature)
 {
-  undefined2 uVar1;
-
-  if ((creature[7] & 0x10) == 0) {
+  if (!((uw_mobile_object_t *)creature)->npc_loot_spawned) {
     g_despawn_creature_record = &DAT_001007d0 +
                    (((int)(short)*creature & 0xfU) + (short)((*creature & 0x30) >> 4) * 0x10) * 0x30;
     spawn_creature_treasure_drop(creature);
     spawn_creature_special_item_drop(creature);
     spawn_creature_equipment_drop(creature);
     spawn_creature_misc_item_drop(creature);
-    uVar1 = *(undefined2 *)((char *)creature + 0xd);
-    *(char *)((char *)creature + 0xd) = (char)uVar1;
-    *(byte *)(creature + 7) = (byte)((ushort)uVar1 >> 8) | 0x10;
+    ((uw_mobile_object_t *)creature)->npc_loot_spawned = 1;
   }
 }
 
@@ -2689,8 +2813,8 @@ LAB_000323ac:
          (iVar5 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                                (ushort)(byte) g_object_type_props[(((uw_object_hdr_t *)puVar7)->object_id)].height +
                                (uVar3 & 0x7f),DAT_00101908,DAT_00101418,
-                               (ushort)(byte) g_object_type_props[(*DAT_00101400 & 0x1ff)].height +
-                               ((byte)DAT_00101400[1] & 0x7f)), puVar7 = DAT_0010190c, iVar5 != 0))
+                               (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
+                               (((byte)DAT_00101400[2]) & 0x7f)), puVar7 = DAT_0010190c, iVar5 != 0))
       {
         DAT_0010190c->npc_ai_flags = DAT_0010190c->npc_ai_flags | 1;
         goto LAB_000323ac;
@@ -4955,6 +5079,14 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     snapshot[0x22] = bVar6;
     snapshot[0x28] = (byte)(1 << (((uw_mobile_object_t *)object)->movement_mode));
     iVar7 = ((byte)(((uw_mobile_object_t *)object)->pitch) - 0x10) * 0x40;
+    /* HACK: not original behaviour -- see g_physics_vz_remainder. */
+    if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+      int slot = (int)(((char *)object - DAT_002046b8) / 0x1b);
+      if (slot >= 0 && slot < 256 &&
+          g_physics_vz_remainder[slot].pitch == ((uw_mobile_object_t *)object)->pitch) {
+        iVar7 += g_physics_vz_remainder[slot].remainder;
+      }
+    }
     snapshot[10] = (byte)iVar7;
     snapshot[0xb] = (byte)((uint)iVar7 >> 8);
     iVar7 = (uint)(((uw_mobile_object_t *)object)->gravity_flag) * -4;

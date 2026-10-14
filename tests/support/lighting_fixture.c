@@ -70,8 +70,21 @@ int seek_file_handle(int h, int offset, int whence) { return uw_file_seek(h, off
 long CloseHandle(int h) { return uw_file_close(h); }
 void *ce_memset(void *p, int value, unsigned n) { return memset(p, value, n); }
 char *ce_strcat(char *p, char *s) { return strcat(p, s); }
+/* The camera: the view matrix and the camera offset the eye transform of --light-depth-rounding inverts. */
+undefined4 DAT_000c8ac0_mtx[16];
+uw_geom_arena_t g_geom_arena;
+void lighting_fixture_set_camera(const float m[16], const float cam_offset[3])
+{
+    memcpy(DAT_000c8ac0_mtx, m, 16 * sizeof(float));
+    memcpy(&g_geom_arena.cam_offset, cam_offset, 3 * sizeof(float));
+    light_pass_prepare(); /* the game does this once per frame, before shading */
+}
 void lighting_fixture_reset(void)
 {
+    static const float identity[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+    static const float no_offset[3] = {0, 0, 0};
+    lighting_fixture_set_camera(identity, no_offset);
+    options_unset("light-depth-rounding");
     options_set("data-dir", UW_TEST_DATA_DIR);
     options_unset("light-mode");
     options_unset("fullbright");

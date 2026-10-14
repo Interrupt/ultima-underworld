@@ -20,6 +20,7 @@ uint read_realtime_clock_units(void) { return 0; }
 int DAT_0024af60;              /* "command-input mode" -- game.c */
 ushort DAT_0023c448;           /* latched pending input code -- game.c */
 short DAT_0024af6c;            /* held-key repeat accelerator -- game.c */
+ushort g_held_move_keys;
 int DAT_000876c8;              /* set by WM_KEYUP -- game.c */
 undefined1 DAT_0023ce10_backing[128]; /* GXGetDefaultKeys() VK-code table -- input.c */
 int g_text_input_active;       /* scroll_text_entry_prompt's raw-text-field flag -- hud.c */

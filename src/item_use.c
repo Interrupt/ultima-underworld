@@ -388,7 +388,9 @@ void use_light_source(ushort *object, int turn_on)
       if ((uVar10 & 0xf) < 4) {
         *(byte *)object = (bVar2 + 4 ^ bVar2) & 0xf ^ bVar2;
         *(byte *)((char *)object + 1) = bVar1;
-        set_ambient_bias_with_light(0);
+        /* HACK: pass the lit light's real brightness (see set_ambient_bias_with_light). */
+        g_scratch_object_ptr = (uw_object_hdr_t *)object;
+        set_ambient_bias_with_light(((uw_light_type_props_t *)get_scanned_object_class_effect_ptr())->brightness);
       }
       else {
         *(byte *)object = (bVar2 - 4 ^ bVar2) & 0xf ^ bVar2;
@@ -2486,12 +2488,13 @@ int reduce_object_count(ushort *stack_object, uint amount)
 // depending on what the extracted slot held.
 /* Was a bare K&R `()` reading an implicit `short in_r3;` for its 4th arg, and forwarding to
    FUN_00045b20 via a bare `FUN_00045b20()` call with no explicit arguments at all. */
-ushort *extract_clicked_backpack_item(int category, int subcategory, int quality, short slot)
+/* `count` is how many of a stack to take: 0 takes the whole object (the original's click path), n splits n off. */
+static ushort *extract_backpack_item_count(int category, int subcategory, int quality, short slot, ushort count)
 {
   ushort *uVar1;
   ushort *puVar2;
 
-  uVar1 = extract_and_refresh_slot_item(category,subcategory,quality,slot,0);
+  uVar1 = extract_and_refresh_slot_item(category,subcategory,quality,slot,count);
   puVar2 = (ushort *)resolve_object_link(&g_equipped_items + slot * 2);
   if ((((puVar2 != (ushort *)0x0) && ((((uw_object_hdr_t *)puVar2)->object_id & 0x1c0) == 0x80)) && ((((uw_object_hdr_t *)puVar2)->object_id & 0x30) == 0)) &&
       (g_current_container_record != 0)) {
@@ -2505,11 +2508,20 @@ ushort *extract_clicked_backpack_item(int category, int subcategory, int quality
 
 
 
-// was FUN_00045a7c -- byte-for-byte identical to extract_clicked_backpack_item (see its own comment
-// on the shared bug); kept as a thin forwarding call to avoid the duplication.
+ushort *extract_clicked_backpack_item(int category, int subcategory, int quality, short slot)
+{
+  return extract_backpack_item_count(category,subcategory,quality,slot,0);
+}
+
+
+
+// was FUN_00045a7c -- the same extract as extract_clicked_backpack_item, but for firing one piece of
+// ammunition. The decompile showed the two as identical because the extra argument (how many to take)
+// was lost: with 0 the whole stack was extracted and then fired as a single projectile, so shooting a
+// stack of arrows used the entire stack up. Take exactly one, leaving the rest in the slot.
 ushort *extract_ammo_and_refresh(int category, int subcategory, int quality, short slot)
 {
-  return extract_clicked_backpack_item(category,subcategory,quality,slot);
+  return extract_backpack_item_count(category,subcategory,quality,slot,1);
 }
 
 
@@ -2798,15 +2810,15 @@ byte *prompt_split_object_stack(byte *object)
   int iVar3;
   undefined1 *puVar4;
   uint uVar5;
-  undefined1 local_1c;
-  undefined1 local_1b;
+  /* Was two separate locals (`local_1c = 0x31; local_1b = 0;`) passed as `&local_1c` -- a 2-byte "1\0" string
+     whose terminator was not guaranteed to follow the '1' on this host's stack, so the prompt could show
+     leftover bytes after the default "1" ("Move how many? 12"). */
+  char default_text[2] = { '1', '\0' };
   undefined1 auStack_18 [4];
   
   puVar4 = (undefined1 *)0x0;
-  uVar1 = *(ushort *)(object + 6) >> 6;
-  local_1c = 0x31;
-  local_1b = 0;
-  sVar2 = scroll_text_entry_prompt(s_Move_how_many__00085c68,&local_1c,auStack_18,0,3);
+  uVar1 = ((uw_object_hdr_t *)object)->link;
+  sVar2 = scroll_text_entry_prompt(s_Move_how_many__00085c68,default_text,auStack_18,0,3);
   if ((sVar2 != 0x1b) && (sVar2 != 3)) {
     if ((sVar2 == 0) || (3 < sVar2)) {
       sVar2 = ce_atoi(auStack_18);
@@ -2824,21 +2836,14 @@ byte *prompt_split_object_stack(byte *object)
     }
     message_scroll_print_wrapped(&s_scroll_newline_0008522c);
     if (((int)(short)uVar5 != 0) &&
-       (puVar4 = object, (int)(short)uVar5 != (uint)(*(ushort *)(object + 6) >> 6))) {
+       (puVar4 = object, (int)(short)uVar5 != (uint)((uw_object_hdr_t *)object)->link)) {
+      uw_object_hdr_t *whole = (uw_object_hdr_t *)object;
+      uw_object_hdr_t *split;
       puVar4 = (undefined1 *)alloc_object_slot(0);
-      *puVar4 = *object;
-      puVar4[1] = object[1];
-      puVar4[2] = object[2];
-      puVar4[3] = object[3];
-      puVar4[4] = object[4];
-      puVar4[5] = object[5];
-      puVar4[6] = object[6];
-      puVar4[7] = object[7];
-      iVar3 = (*(ushort *)(puVar4 + 6) & 0xffc0) + uVar5 * -0x40;
-      puVar4[6] = (byte)iVar3 ^ (byte)*(ushort *)(puVar4 + 6) & 0x3f;
-      puVar4[7] = (char)((uint)iVar3 >> 8);
-      object[6] = object[6] & 0x3f | (byte)((uVar5 & 0x3ff) << 6);
-      object[7] = (char)((uVar5 << 0x16) >> 0x18);
+      split = (uw_object_hdr_t *)puVar4;
+      *split = *whole;
+      split->link = whole->link - uVar5;
+      whole->link = uVar5;
     }
   }
   wait_for_key_or_mouse_move(1);

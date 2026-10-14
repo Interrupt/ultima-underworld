@@ -12,6 +12,7 @@
 #include "headers/platform_voice.h"
 #include "headers/debug.h"
 #include "headers/file_io.h"
+#include "uw_sound.h"  /* vendored OpenAbyss VOC reader, for the DOS asset set */
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -175,6 +176,107 @@ void platform_voice_init(void)
   SDL_PauseAudioDevice(g_voice_audiodev, 0);
 }
 
+/* One loaded voice sample, in whatever format its file happened to be:
+   always an SDL_malloc'd buffer the caller owns and frees with SDL_free,
+   so the two source formats below converge before the resampler.
+
+   Spelled as a named struct starting its own line, rather than the
+   anonymous `typedef struct {`, so tests/tools/extract_functions.py can
+   select it with `@voice_source` and compile voice_source_load's real body
+   into the voice test suite without un-staticing it -- the same shape
+   uw_test_look_pacing uses for its own static poller. */
+struct voice_source {
+  Uint8 *buf;
+  Uint32 len;
+  SDL_AudioFormat format;
+  int channels;
+  int freq;
+  char path[4096];
+};
+typedef struct voice_source voice_source;
+
+/* The Pocket PC asset set ships this pool as RIFF WAV ("\SOUND\VOCnn.wav",
+   see the path derivation above). The DOS set ships exactly the same 42
+   ids -- confirmed id-for-id against the shipped set, no holes on either
+   side -- as Creative VOC under their bare number ("\SOUND\nn.VOC"), which
+   SDL_LoadWAV cannot read.
+
+   The DOS game never parsed VOC either: its voc_play_file staged the file
+   in EMS and handed the raw bytes to the digital driver, so the four things
+   it assumed without checking are what matter, and all 42 files satisfy
+   them (verified with the vendored reader: data offset 26, version 0x010a,
+   a single type-1 block with its samples at byte 32, pack byte 0 -- plain
+   8-bit unsigned PCM -- and a time constant of 173, i.e. 1000000/(256-173)
+   = 12048Hz). That is squarely inside what the existing resampler below
+   already handles, so the DOS files need no conversion step of their own;
+   they just enter as AUDIO_U8/1ch/12048Hz instead of whatever the WAV's
+   own header said. */
+static int voice_source_load(int sample_id, char tens, char ones, voice_source *out)
+{
+  memset(out, 0, sizeof(*out));
+
+  char win_path[32];
+  snprintf(win_path, sizeof(win_path), "\\SOUND\\VOC%c%c.WAV", tens, ones);
+  char real_path[4096];
+  if (uw_resolve_win_path(win_path, real_path, sizeof(real_path))) {
+    SDL_AudioSpec wav_spec;
+    Uint8 *wav_buf = NULL;
+    Uint32 wav_len = 0;
+    if (SDL_LoadWAV(real_path, &wav_spec, &wav_buf, &wav_len) != NULL) {
+      /* Copy out of SDL_LoadWAV's own allocation so both source formats
+         hand back one uniformly-owned SDL_malloc'd buffer. These are at
+         most a few tens of KB and loaded once per spoken line. */
+      out->buf = (Uint8 *)SDL_malloc(wav_len ? wav_len : 1);
+      if (!out->buf) {
+        DEBUG(ERR, "[audio] platform_voice_play: out of memory loading sample %d\n", sample_id);
+        SDL_FreeWAV(wav_buf);
+        return 0;
+      }
+      memcpy(out->buf, wav_buf, wav_len);
+      SDL_FreeWAV(wav_buf);
+      out->len = wav_len;
+      out->format = wav_spec.format;
+      out->channels = wav_spec.channels;
+      out->freq = wav_spec.freq;
+      snprintf(out->path, sizeof(out->path), "%s", real_path);
+      return 1;
+    }
+  }
+
+  snprintf(win_path, sizeof(win_path), "\\SOUND\\%c%c.VOC", tens, ones);
+  if (!uw_resolve_win_path(win_path, real_path, sizeof(real_path))) {
+    DEBUG(WARN, "[audio] platform_voice_play: could not resolve path for sample %d (%s)\n",
+          sample_id, win_path);
+    return 0;
+  }
+  uw_voc voc;
+  if (!uw_voc_open(&voc, real_path)) {
+    DEBUG(WARN, "[audio] platform_voice_play: no readable WAV or VOC file for sample %d (%s)\n",
+          sample_id, real_path);
+    return 0;
+  }
+  if (!voc.sound_blocks || voc.pack != 0 || !voc.samples) {
+    DEBUG(WARN, "[audio] platform_voice_play: sample %d (%s) has %d sound block(s), pack %u, %zu samples -- not plain 8-bit PCM, skipping\n",
+          sample_id, real_path, voc.sound_blocks, voc.pack, voc.samples);
+    uw_voc_close(&voc);
+    return 0;
+  }
+  out->buf = (Uint8 *)SDL_malloc(voc.samples);
+  if (!out->buf) {
+    DEBUG(ERR, "[audio] platform_voice_play: out of memory loading sample %d\n", sample_id);
+    uw_voc_close(&voc);
+    return 0;
+  }
+  memcpy(out->buf, voc.file.data + voc.samples_at, voc.samples);
+  out->len = (Uint32)voc.samples;
+  out->format = AUDIO_U8;
+  out->channels = 1;
+  out->freq = (int)uw_voc_rate(&voc);
+  snprintf(out->path, sizeof(out->path), "%s", real_path);
+  uw_voc_close(&voc);
+  return 1;
+}
+
 void platform_voice_play(int sample_id)
 {
   if (!g_voice_audiodev) {
@@ -194,51 +296,39 @@ void platform_voice_play(int sample_id)
   char tens = (char)('0' + sample_id / 10);
   char ones = (char)('0' + sample_id % 10);
 
-  char win_path[32];
-  snprintf(win_path, sizeof(win_path), "\\SOUND\\VOC%c%c.WAV", tens, ones);
-  char real_path[4096];
-  if (!uw_resolve_win_path(win_path, real_path, sizeof(real_path))) {
-    DEBUG(WARN, "[audio] platform_voice_play: could not resolve path for sample %d (%s)\n",
-          sample_id, win_path);
-    return;
+  voice_source src;
+  if (!voice_source_load(sample_id, tens, ones, &src)) {
+    return; /* voice_source_load already warned */
   }
-
-  SDL_AudioSpec wav_spec;
-  Uint8 *wav_buf = NULL;
-  Uint32 wav_len = 0;
-  if (SDL_LoadWAV(real_path, &wav_spec, &wav_buf, &wav_len) == NULL) {
-    DEBUG(WARN, "[audio] platform_voice_play: SDL_LoadWAV failed for sample %d (%s): %s\n",
-          sample_id, real_path, SDL_GetError());
-    return;
-  }
+  const char *real_path = src.path;
 
   Uint8 *new_pcm;
   unsigned int new_len;
   SDL_AudioCVT cvt;
-  int cvt_ok = SDL_BuildAudioCVT(&cvt, wav_spec.format, wav_spec.channels, wav_spec.freq,
+  int cvt_ok = SDL_BuildAudioCVT(&cvt, src.format, (Uint8)src.channels, src.freq,
                                   AUDIO_S16SYS, 1, g_voice_device_rate);
   if (cvt_ok < 0) {
     DEBUG(WARN, "[audio] platform_voice_play: SDL_BuildAudioCVT failed for sample %d: %s\n",
           sample_id, SDL_GetError());
-    SDL_FreeWAV(wav_buf);
+    SDL_free(src.buf);
     return;
   }
   if (cvt_ok == 0) {
     /* Already exactly the device's own format -- no conversion buffer
-       needed, just take ownership of SDL_LoadWAV's own buffer. */
-    new_pcm = wav_buf;
-    new_len = wav_len;
+       needed, just take ownership of the loader's own buffer. */
+    new_pcm = src.buf;
+    new_len = src.len;
   } else {
-    cvt.len = (int)wav_len;
+    cvt.len = (int)src.len;
     Uint8 *cvt_buf = (Uint8 *)SDL_malloc((size_t)cvt.len * cvt.len_mult);
     if (!cvt_buf) {
       DEBUG(ERR, "[audio] platform_voice_play: out of memory converting sample %d\n", sample_id);
-      SDL_FreeWAV(wav_buf);
+      SDL_free(src.buf);
       return;
     }
-    memcpy(cvt_buf, wav_buf, wav_len);
+    memcpy(cvt_buf, src.buf, src.len);
     cvt.buf = cvt_buf;
-    SDL_FreeWAV(wav_buf);
+    SDL_free(src.buf);
     if (SDL_ConvertAudio(&cvt) != 0) {
       DEBUG(WARN, "[audio] platform_voice_play: SDL_ConvertAudio failed for sample %d: %s\n",
             sample_id, SDL_GetError());

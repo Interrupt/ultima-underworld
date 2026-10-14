@@ -21,3 +21,9 @@ extern undefined1 DAT_00086d60_backing[64];
 
 #define DAT_00086d68 (*(const undefined1 *)DAT_00086d68_region)
 #define DAT_00086d69 (*(const undefined1 *)(DAT_00086d68_region + 1))
+
+/* emit_catalog_object consults this for a DOS-decoded per-face colour. The
+   fixture answers -1 for every face, which is exactly what the Pocket PC path
+   sees at runtime -- so these tests passing unchanged is the check that the
+   per-face colour deviation cannot affect that path. */
+int uw_dos_model_face_colour(int dos_index, int part);

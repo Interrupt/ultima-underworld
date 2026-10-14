@@ -1,0 +1,39 @@
+# Cast every spell once through dispatch_special_action (godmode, no mana) and keep running.
+# Regression for the Flame Wind (spell 45) crash: cast_cone_damage_spell indexed past the end of
+# its 4-entry callback table. Run under ASan (run-regressions.sh).
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+TYPE Avatar
+WAIT 3
+SDLCLICK 38 180
+WAIT 3
+SDLCLICK 320 150
+WAIT 30
+WAIT 100
+LIGHTLEVEL 7
+GODMODE on
+DELAY 1
+GOTOLEVEL 2
+WAIT 5
+CASTALLSPELLS
+WAIT 200

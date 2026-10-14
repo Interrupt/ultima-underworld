@@ -1039,33 +1039,6 @@ Use `--reference PATH` with the original `item_use.c` and `--asan` for the
 same oracle under AddressSanitizer. The worklist now contains 190 byte views
 (14 fewer); named full-word copies and retained captures remain intentional.
 
-`generate_held_drop_rules.py`, `held-drop-fields.json` and
-`apply_held_drop_rules.py` convert the common-header accesses in
-`drop_held_object_near_player`. The held record uses a header pointer and the
-spawned record uses the projectile layout already established by the spawn
-path. Named quantity, link, owner, flag, position and object-ID writes replace
-byte reconstruction and self-stores. Full scalar captures, callback order,
-clearance retries and the existing placement behavior remain intact. The
-diagnostic read at offset 0xe remains raw because arbitrary held records do
-not establish a particular extension layout.
-
-This batch uses an exact-source Python rule because the full-body Coccinelle
-match did not convert this function. The applier masks comments and literals
-when locating the definition, then requires the entire original function to
-match byte for byte. Changed callbacks, captures, constants or function scope
-reject conversion. The test requires an actual change and the exact expected
-result, checks generation and idempotence, and verifies rejection guards,
-including an original body embedded in a comment.
-
-`test_held_drop_fields.py` compares 1,310,720 real before/after executions across
-all source type words, projectile creation failures, callback-mutated records,
-clearance retries, fallback exits and light-ID changes. Record and guard bytes,
-player/tile state, return values and callback arguments/events/counts are
-compared. Use `--reference PATH` with the original `item_use.c` and `--asan`
-for the same oracle under AddressSanitizer. The refreshed worklist contains
-180 byte views (10 fewer), 462 packed-word uses, seven raw audited accesses
-and nine signed-word views; retained snapshots remain intentional.
-
 `generate_durability_rules.py` / `durability-fields.cocci` convert
 `apply_object_durability_damage` to a local common-header pointer and named
 `quality` and `owner` stores. The special object-ID range retains its existing
@@ -1086,28 +1059,6 @@ callback events/counts are compared. Use `--reference PATH` with the original
 `combat.c` and `--asan` for AddressSanitizer. The refreshed worklist contains
 176 byte views (four fewer); the full captured words remain intentional.
 
-`generate_blood_splat_rules.py` / `blood-splat-fields.cocci` convert the newly
-allocated blood-splat header in `spawn_blood_splat_object` to a typed pointer
-and named `xpos`, `ypos` and `zpos` stores. The full position-word and byte
-captures remain intact. The x/y writes use the already captured high-byte
-values; the z write retains the fresh collision-snapshot read. Coordinate
-captures before sound/scheduler callbacks, search retries, allocation failure,
-scheduler failure and insertion order remain unchanged. Collision-snapshot
-offsets are outside this object-header conversion.
-
-The complete-body rule rejects changed callbacks, volatile/escaping captures,
-altered masks and intervening writes. Generation strips comments when forming
-the semantic patch and explicitly re-emits the historical pointer-truncation
-comment beside the typed declaration. The test requires the exact expected C
-tokens and an actual change, checks generation/idempotence/rejection guards,
-and compares 917,504 before/after executions. Cases cover every packed position
-word, signed snapshot coordinates, both boundary flags, search retries and
-exhaustion, spawn/scheduler failures, sound gates, callback-mutated records
-and replacement of the shared snapshot pointer. Record/guard/snapshot/tile
-bytes and callback events/counts/arguments are compared. Use `--reference PATH`
-with the original `combat.c` and `--asan` for AddressSanitizer. The worklist now
-contains 170 byte views (six fewer); retained packed-word captures remain
-intentional.
 
 `generate_light_decay_rules.py` / `light-decay-fields.cocci` convert the
 equipped-light loop in `decay_equipped_light_sources` to a typed header pointer
@@ -1426,3 +1377,31 @@ completion. Use `--reference PATH` with the original `scheduler.c` and
 `--asan` for AddressSanitizer. The audit contains 79 byte views (six fewer),
 440 packed accesses (three fewer), seven raw object accesses and nine signed
 word views. This batch does not resolve the five excluded broad catalog tests.
+## Geometry arena
+
+`generate_geom_arena_rules.py` writes three files that fold the decompiler's four-byte stores
+into the per-frame geometry arena (`uw_geom_arena_t`, `src/headers/geom_arena.h`) back into one
+member store, e.g. four `(&DAT_000a85d8)[I] = ...` byte stores become
+`UW_BITS(UW_VERT_AT(g_geom_arena.model_verts, I)->x) = V;`. `I` is still the byte offset the
+decompiler computed (vertex * 0xc, record * 0x60). Run them on `src/tmap.c` in this order:
+
+```
+python3 tools/coccinelle/generate_geom_arena_rules.py
+spatch --sp-file tools/coccinelle/geom-arena-temps.cocci --no-includes src/tmap.c --in-place   # repeat until unchanged
+spatch --sp-file tools/coccinelle/geom-arena-dead-temps.cocci --no-includes src/tmap.c --in-place
+spatch --sp-file tools/coccinelle/geom-arena.cocci --no-includes src/tmap.c --in-place
+```
+
+* `geom-arena-temps.cocci` folds a shifted-byte temporary (`T = (undefined1)((uint)V >> 8);
+  (&N)[I] = T;`) into the store, one use per run. The decompiler reuses these temporaries for
+  several stores, so a use is only folded while `V` is not reassigned between it and the
+  temporary's assignment.
+* `geom-arena-dead-temps.cocci` drops an assignment only when the temporary is never mentioned
+  again in the function; a reused temporary keeps its assignment (and so keeps the stores that read it).
+* `geom-arena.cocci` collapses the four stores (low byte, then the three shifted bytes; or a
+  byte followed by three zeros; or a constant followed by three zeros; or four zeros) when `V`
+  and the index are not touched between them.
+
+Stores the rules do not recognise (the sign-extended `tex` word, single-byte constant stores of
+float exponent bytes, temporaries reused after their value changed) stay as byte stores through
+the `DAT_000a85d8`-style macros in `tmap.h`.

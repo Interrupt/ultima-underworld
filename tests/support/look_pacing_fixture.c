@@ -8,6 +8,8 @@ short DAT_00201b64, DAT_00201c84, DAT_0023beb4, DAT_0024af6c;
 undefined2 DAT_00201c90;
 ushort DAT_0023c448;
 int DAT_000876c8;
+short g_movement_mode;
+ushort g_held_move_keys;
 int freelook;
 
 const Uint8 *SDL_GetKeyboardState(int *count)
@@ -16,7 +18,10 @@ const Uint8 *SDL_GetKeyboardState(int *count)
     return keyboard;
 }
 int in_dungeon_freelook(void) { return freelook; }
-void uw_set_analog_move_turn(int forward, int turn) {}
+int dbgui_visible(void) { return 0; }
+int mouselook;
+int uw_look_pitch_limit(void) { return 0x1800; }
+int uw_mouselook_active(void) { return mouselook; }
 int GXEndDraw(void) { return 1; }
 
 /* Exercise the static port poller without changing its linkage in the game. */
@@ -28,6 +33,7 @@ void look_pacing_fixture_reset(void)
     memset(g_synth_scancode_held, 0, sizeof g_synth_scancode_held);
     uw_reset_frame_pacing();
     freelook = 1;
+    mouselook = 0;
     DAT_00201b64 = DAT_00201c90 = DAT_00201c84 = DAT_0023beb4 = 0;
     DAT_0023c448 = DAT_000876c8 = 0;
     poll_dungeon_movement_keys(0); /* Release any movement from the previous test. */

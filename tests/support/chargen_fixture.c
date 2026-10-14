@@ -130,6 +130,7 @@ short read_xor_scrambled_block(int handle, byte key, char *buffer, short size)
 
 undefined1 DAT_0010060c_backing[8];
 byte DAT_0020330c, DAT_002046cc, DAT_0020208c;
+int g_debug_fly, g_debug_farsight, g_debug_noclip;
 char DAT_00086db0, DAT_00086db1;
 int DAT_00086db8_backing[256], DAT_0023bc94;
 undefined4 DAT_0023bc9c, DAT_0023bc98, DAT_002020dc;

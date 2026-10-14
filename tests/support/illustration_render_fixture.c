@@ -65,6 +65,8 @@ void exit_talk_mode(void);
 void dirty_rect_set(int top, int bottom, int left, int right);
 void dispatch_sticky_mode_handlers(void);
 void uw_debug_blit_pick_buffer(void);
+void uw_debug_draw_frame_stats(void);
+void uw_limit_frame_rate(void);
 void render_dungeon_view_frame(void);
 void uw_debug_draw_inv_hotspot_positions(void);
 void populate_debug_panel(void);
@@ -180,6 +182,7 @@ undefined2 DAT_0008696a, DAT_0008696c;
 short g_mouse_x, g_mouse_y;
 
 ushort DAT_0023c448;
+int DAT_000876c8;
 
 undefined2 DAT_00201b60;
 
@@ -464,6 +467,8 @@ void dispatch_sticky_mode_handlers(void)
 }
 
 void uw_debug_blit_pick_buffer(void) {}
+void uw_debug_draw_frame_stats(void) {}
+void uw_limit_frame_rate(void) {}
 
 void render_dungeon_view_frame(void) {}
 

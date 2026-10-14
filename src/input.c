@@ -191,6 +191,7 @@ void resolve_move_vector(short movement_mode, short step_scale, short *out_step)
   
   sVar3 = DAT_00201c70;
   sVar1 = DAT_0020207a;
+  g_move_facing_offset = 0;
   switch(movement_mode) {
   case 0:
     *out_step = 0;
@@ -289,6 +290,36 @@ LAB_0003da74:
     break;
   case 0xb:
     sVar3 = DAT_00201c70;
+    break;
+  case 0x10:
+  case 0x11:
+  case 0x12:
+  case 0x13:
+    /* Strafing while walking (--strafe-while-walking): turn as mode 1 does, then travel on the
+       diagonal at the forward (0x10/0x11) or backward (0x12/0x13) speed. */
+    iVar4 = (int)DAT_0023bf4c;
+    if (iVar4 < 0) {
+      iVar4 = iVar4 + 3;
+    }
+    iVar4 = (iVar4 >> 2) * (int)DAT_00086e68 * (int)step_scale;
+    if (iVar4 < 0) {
+      iVar4 = iVar4 + 3;
+    }
+    DAT_00201c70 = DAT_00201c70 + (short)(iVar4 >> 2);
+    if (movement_mode < 0x12) {
+      iVar4 = ((int)DAT_0023bf48 >> 2) * (int)DAT_00202078;
+      if (iVar4 < 0) {
+        iVar4 = iVar4 + 0x1f;
+      }
+      *out_step = (short)(iVar4 >> 5);
+      g_move_facing_offset = (movement_mode & 1) ? 0x2000 : -0x2000;
+    }
+    else {
+      *out_step = DAT_0020207c;
+      g_move_facing_offset = (movement_mode & 1) ? 0x6000 : -0x6000;
+    }
+    DAT_00202088 = 0;
+    sVar3 = DAT_00201c70 + g_move_facing_offset;
     break;
   case 0xc:
     g_vertical_velocity = 0x8d;
@@ -444,32 +475,12 @@ void unregister_key_binding(short binding_id)
       if ((uint)(sVar6 - 1) < 128 && (uint)(iVar5 - 1) < 128) {
         g_click_region_handler[sVar6 - 1] = g_click_region_handler[iVar5 - 1];
       }
-      sVar6 = DAT_00202890[iVar5 * 9 + -9];
-      *(char *)psVar7 = (char)sVar6;
-      *(char *)((char *)psVar7 + 1) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[3];
-      *(char *)(psVar7 + 3) = (char)sVar6;
-      *(char *)((char *)psVar7 + 7) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[4];
-      *(char *)(psVar7 + 4) = (char)sVar6;
-      *(char *)((char *)psVar7 + 9) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[1];
-      *(char *)(psVar7 + 1) = (char)sVar6;
-      *(char *)((char *)psVar7 + 3) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[2];
-      *(char *)(psVar7 + 2) = (char)sVar6;
-      *(char *)((char *)psVar7 + 5) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[5];
-      *(char *)(psVar7 + 5) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xb) = (char)((ushort)sVar6 >> 8);
-      sVar6 = DAT_00202890[6];
-      *(char *)(psVar7 + 6) = (char)sVar6;
-      *(char *)((char *)psVar7 + 0xd) = (char)((ushort)sVar6 >> 8);
-      uVar4 = *(undefined4 *)(DAT_00202890 + 7);
-      *(char *)(psVar7 + 7) = (char)uVar4;
-      *(char *)((char *)psVar7 + 0xf) = (char)((uint)uVar4 >> 8);
-      *(char *)(psVar7 + 8) = (char)((uint)uVar4 >> 0x10);
-      *(char *)((char *)psVar7 + 0x11) = (char)((uint)uVar4 >> 0x18);
+      /* Was a field-by-field copy whose first field (the id) came from the LAST record but whose
+         others (`DAT_00202890[3]`, `[4]`, `[1]`, ... -- Ghidra dropped the last-record base) came
+         from record 0, so the surviving last region ended up with region 0's rect/mode/handler
+         and its own was lost: after a HUD panel swap unregistered a non-last region, click regions
+         stopped responding. Copy the whole 0x12-byte last record, as the keybinding branch does. */
+      memmove(psVar7,(char *)DAT_00202890 + (iVar5 - 1) * 0x12,0x12);
     }
     if (g_click_region_handler_n > 0) g_click_region_handler_n--;
     sVar6 = DAT_00202898;
@@ -576,6 +587,22 @@ void wait_for_click_release(int mode)
   }
   while( true ) {
     sVar1 = peek_input_event();
+    /* Desktop input adaptation: the original only sees mouse codes (0..3) here, so any other event
+       meant the stylus had lifted. A held movement key latches its code in DAT_0023c448, and that
+       made peek_input_event return the key instead of the button state, ending the wait and
+       dropping the dragged item the moment the player moved (a key's own message pump also reads
+       back as -1, "nothing pending", which the original takes for a lifted stylus). Only while an
+       item is held, keys and "nothing pending" leave the wait running; the button's own state
+       decides when it ends. */
+    if ((sVar1 > 3 || sVar1 == -1) && g_selected_object != 0) {
+      if (sVar1 > 3 && DAT_000876c8 != 0) {
+        DAT_0023c448 = 0; /* key released: stop the walk, as app_main_loop does */
+      }
+      sVar1 = (short)poll_mouse_button_flags();
+      if (sVar1 == 0) {
+        sVar1 = -1;
+      }
+    }
     if (((((int)sVar2 | 0xfffcU) & (int)sVar1) != (int)sVar2) || (DAT_0008696e != -1)) break;
     if (mode != 0) {
       dispatch_sticky_mode_handlers();
@@ -827,6 +854,27 @@ void move_command_dispatch(short command)
 
 
 
+/* Port, DOS style: the polled movement keys (W/S/X/A/D/Z/C) are not funnelled through the one
+   pending-key slot (DAT_0023c448) a typed key or button code lands in. They are a held-key state
+   of their own, like DOS's key array read by do_player_keyboard, which decode_movement_command
+   reads directly. A jump (or any other key) pressed while walking therefore reaches its binding
+   untouched, and decodes together with the held walk. */
+ushort g_held_move_keys;
+
+void set_held_movement_keys(ushort mask)
+{
+  if (mask != 0) {
+    if (g_held_move_keys == 0) {
+      DAT_0024af6c = 0x14; /* press edge: restart the held-key accelerator ramp */
+    }
+    DAT_000876c8 = 0;
+  }
+  else if (g_held_move_keys != 0) {
+    DAT_000876c8 = 1; /* all released: the main loop clears the pending-key slot */
+  }
+  g_held_move_keys = mask;
+}
+
 /* Sets DAT_0023bf48 (forward rate, same 0x500000 scale decode_movement_command's own forward code
    0x8d uses) and DAT_0023bf4c (turn rate, via uw_turn_rate_accel()) together in one call, then
    g_movement_mode = 1... */
@@ -985,8 +1033,18 @@ int handle_keyboard_message(int window, int message, uint wparam)
   uVar1 = (ushort)wparam;
   if (message != 0x100) {
     if (message == 0x101) {
-      DAT_000876c8 = 1;
-      DAT_0024af6c = 0;
+      /* Releasing some other key (the jump key) must not stall a walk the polled movement keys
+         still hold. */
+      if (g_held_move_keys == 0) {
+        DAT_000876c8 = 1;
+        DAT_0024af6c = 0;
+      }
+      else {
+        /* The walk goes on, but the released key's own pending code must still be dropped. The
+           main loop only clears the slot when DAT_000876c8 says a key came up, which a held
+           movement key keeps at 0, so a jump would otherwise repeat for as long as it is held. */
+        DAT_0023c448 = 0;
+      }
       return 0;
     }
     if (message != 0x102) {

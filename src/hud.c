@@ -1,6 +1,7 @@
 /* The HUD: dirty-rect tracking/flush, mode icons, cursor-mode button clicks, the per-frame HUD
    draw/tick dispatch (vitals bar, dragon reaction, compass needle, panel transitions), and the
    message scroll panel (word-wrap, line-by-line scroll, draw). */
+#include "headers/mouselook.h"
 #include "headers/hud.h"
 #include "headers/options.h"
 #include "headers/debug.h"
@@ -360,7 +361,8 @@ static const unsigned short DAT_000871b8_arr[14] = {
 static undefined DAT_0023c124_backing[4];
 #define DAT_0023c124 DAT_0023c124_backing[0]
 static short DAT_0023c254;
-static short DAT_00087258;
+/* Next frame (above 0x2098) of the full-charge gem pulse (9..13). Initial value 9 is from the original .data. */
+static short DAT_00087258 = 9;
 static short DAT_0023c258;
 static int DAT_0023c20c;
 static byte DAT_0023c25c;
@@ -428,7 +430,9 @@ static short DAT_00250724;
 static short DAT_00250728;
 static short DAT_00250710;
 static char s__MORE__00087994[] = "[MORE]";
-static undefined4 DAT_00250720;
+/* Message scroll: read_realtime_clock_units() stamp of the last line added. Not static so real-game
+   tests (tests/test_traps_game.c) can observe that a message was printed. */
+undefined4 DAT_00250720;
 static short DAT_0025070c;
 /* Was a bare 1-byte `undefined` scalar -- FUN_0008090c's yes/no dialog takes its address and passes
    it to message_scroll_print_wrapped, so it needs to be a real string. Real bytes confirmed via a
@@ -905,6 +909,8 @@ void cursor_mode_button_click_restricted(int button_y)
 void main_loop_hud_flush()
 
 {
+  /* HACK: not original behaviour -- --max-fps holds each main-loop iteration to a minimum length. */
+  if (g_opts.max_fps > 0.0f) uw_limit_frame_rate();
   uw_begin_present_batch();
   dirty_rect_set(100,100,100,100);
   /* HACK: redraw the 3D dungeon view on every main-loop iteration. */
@@ -929,6 +935,7 @@ void main_loop_hud_flush()
          buffer, then paint it over the viewport (see
          uw_debug_blit_pick_buffer). */
       if (g_opts.debug_pick_view) { render_dungeon_view_frame(); uw_debug_blit_pick_buffer(); }
+      if (g_opts.show_fps) uw_debug_draw_frame_stats();
     }
   }
   if (DAT_00201c84 != 0) {
@@ -1644,8 +1651,10 @@ LAB_0006de54:
           psVar9 = (short *)(&DAT_0023c24c + iVar1);
           sVar4 = *psVar11;
           *psVar9 = *psVar9 + -1;
-          sprite_list_set_frame_id((int)sVar4,*psVar9); 
+          // HACK: not original behaviour -- was draw-then-check, which drew the frame one before
+          // this pose's first (the previous pose's last frame) for a tick before hiding the sprite.
           if (local_40[iVar6 * 3 + 1] <= *psVar9) {
+            sprite_list_set_frame_id((int)sVar4,*psVar9);
             return;
           }
           goto LAB_0006de54;
@@ -1653,12 +1662,14 @@ LAB_0006de54:
         psVar9 = (short *)(&DAT_0023c24c + iVar1);
         sVar4 = *psVar11;
         *psVar9 = *psVar9 + 1;
-        sprite_list_set_frame_id((int)sVar4,*psVar9); 
         iVar5 = iVar6 * 3 + 1;
+        // HACK: not original behaviour -- was draw-then-check, which drew the frame one past this
+        // pose's last (the next pose's frame, or the 12x28 vine frame) for a tick before wrapping.
         if (local_30[iVar5] < *psVar9) {
           *psVar9 = local_40[iVar5] + 2;
           *(short *)(&DAT_0023c124 + iVar1) = *(short *)(&DAT_0023c124 + iVar1) + -1;
         }
+        sprite_list_set_frame_id((int)sVar4,*psVar9);
         if ((&DAT_0023c11c)[iVar6] == '\0') {
           sVar4 = *(short *)(&DAT_0023c124 + iVar1);
           goto LAB_0006df34;
@@ -1733,8 +1744,10 @@ LAB_0006dd88:
       psVar9 = (short *)(&DAT_0023c24c + iVar1);
       sVar4 = *psVar11;
       *psVar9 = *psVar9 + 1;
-      sprite_list_set_frame_id((int)sVar4,*psVar9); 
+      // HACK: not original behaviour -- was draw-then-check: it drew frame local_30+1 (0x207b, the
+      // 12x28 vine frame) into the 37x23 dragon rect for a tick, a stray strip on screen.
       if ((int)*psVar9 <= (int)local_30[iVar6 * 3 + 2]) {
+        sprite_list_set_frame_id((int)sVar4,*psVar9);
         return;
       }
       *psVar9 = (short)((uint)((*psVar9 + -1) * 0x10000) >> 0x10);
@@ -4328,7 +4341,7 @@ int report_spell_cast_failure(int failure_reason)
 
 // was FUN_00044e9c -- resolves and attempts to cast the spell matched by handle_cast_spell_click's
 // rune-combo lookup: checks caster-level requirement, mana cost, rolls a casting skill check, and
-// on success dispatches the actual spell effect via dispatch_special_action...
+// on success dispatches the actual spell effect via execute_spell_effect...
 int cast_spell_from_rune_combo(uint circle_hint)
 {
   byte bVar1;
@@ -4346,7 +4359,7 @@ int cast_spell_from_rune_combo(uint circle_hint)
   if ((uint)((int)(*(byte *)(DAT_00086df8 + 0x3d) + 1) >> 1) < (uint)bVar6) {
     uVar4 = 0;
   }
-  else if ((uint)*(byte *)(DAT_00086df8 + 0x37) < (uint)bVar6 * 3) {
+  else if (!g_debug_godmode && (uint)*(byte *)(DAT_00086df8 + 0x37) < (uint)bVar6 * 3) {
     uVar4 = 1;
   }
   else {
@@ -4367,10 +4380,10 @@ int cast_spell_from_rune_combo(uint circle_hint)
       DAT_002028d8 = *(undefined4 *)(DAT_00086df8 + 0xce);
       DAT_0023c3e0 = bVar6 * '\x03';
       if (bVar7 != 5) {
-        *(byte *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) + bVar6 * -3;
+        if (!g_debug_godmode) *(byte *)(DAT_00086df8 + 0x37) = *(char *)(DAT_00086df8 + 0x37) + bVar6 * -3;
         DAT_0023c3e0 = '\0';
       }
-      iVar5 = dispatch_special_action(bVar7,bVar1,g_player_object,g_player_object);
+      iVar5 = execute_spell_effect(bVar7,bVar1,g_player_object,g_player_object);
       if (iVar5 != 0) {
         play_sound_effect_with_pan(0x10,0x40,0);
         return 1;
@@ -4381,6 +4394,26 @@ int cast_spell_from_rune_combo(uint circle_hint)
   }
   uVar4 = report_spell_cast_failure(uVar4);
   return uVar4;
+}
+
+
+/* Debug console CASTSPELL (declared in debug_shim.h; lives here for the statics it shares with
+   cast_spell_from_rune_combo). */
+/* Cast spell i: the effect half of cast_spell_from_rune_combo (hud.c) -- the same power globals it
+   sets, then execute_spell_effect with the spell's table entry -- skipping its level, mana and
+   skill-roll checks. DAT_0023c3e0 (deferred mana cost, charged by the spawn-type spells) stays 0.
+   Returns execute_spell_effect's result (nonzero = took effect). */
+int dbgui_cast_spell(int i)
+{
+  if (i < 0 || i >= 48) return -1;
+  uint type = DAT_00087530_backing[i * 4] >> 3;
+  byte param = DAT_00087530_backing[i * 4 + 3];
+  DAT_002028d4 = (char)((i / 6 + 9) * 8 + *(char *)(DAT_00086df8 + 0x3d) * -4);
+  DAT_002028d8 = *(undefined4 *)(DAT_00086df8 + 0xce);
+  DAT_0023c3e0 = 0;
+  int r = execute_spell_effect(type, param, g_player_object, g_player_object);
+  if (r != 0) play_sound_effect_with_pan(0x10, 0x40, 0);
+  return r;
 }
 
 
@@ -5735,6 +5768,16 @@ void update_hotspot_cursor_icon()
   int iVar1;
   int iVar2;
   
+  /* Mouselook pins the cursor to the viewport centre: show the plain default ('X') cursor, not
+     whatever walk-arrow hotspot the (unused) real pointer position would select. Same override
+     guard as the body below, so a held item / targeting icon keeps its own cursor. */
+  if (uw_mouselook_active()) {
+    if (DAT_00204858 < '\x01') {
+      DAT_00086970 = -1;   /* force a fresh hotspot scan once mouselook ends */
+      if (DAT_00204788 != 0x106c) set_cursor_sprite_id(0x106c);
+    }
+    return;
+  }
   if ((DAT_00204858 < '\x01') &&
      ((((DAT_00086970 == -1 || (g_mouse_x < DAT_00086970)) || (DAT_002047a8 < g_mouse_x)) ||
       ((DAT_0020478c < g_mouse_y || (g_mouse_y < DAT_002047ac)))))) {
@@ -5892,6 +5935,16 @@ uint poll_mouse_button_flags()
     }
   }
   return uVar1;
+}
+
+
+/* Desktop hotkeys R (rune bag page, 1) and V (skills/stats page, 2): show that page of the HUD
+   panel, or return to the inventory (page 0) if it is already showing. Same panel switch
+   toggle_stats_panel and the rune-bag click use; ignored while the panel is mid-transition. */
+void toggle_hud_panel_page(int page)
+{
+  if (g_active_hud_panel == '\x04') return;
+  set_hud_status_value(6, g_active_hud_panel == (char)page ? 0 : page);
 }
 
 

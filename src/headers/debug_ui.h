@@ -15,6 +15,9 @@ extern "C" {
 void dbgui_begin(const char *title);
 void dbgui_field_double(const char *name, double *value, double step);
 void dbgui_field_int(const char *name, int *value, int step);
+/* An int field that shows names[*value] instead of the number. LEFT, RIGHT, RETURN and click step
+   through the names, wrapping; there is no numeric-edit mode. `names` must outlive the frame. */
+void dbgui_field_int_names(const char *name, int *value, const char *const *names, int count);
 /* A row with no value -- shown as "[ name ]". Selecting it and pressing
    RETURN (or clicking it) calls on_press() immediately, instead of
    entering the numeric-edit mode double/int fields use. */
@@ -70,6 +73,21 @@ void dbgui_invalidate_region(void);
 void dbgui_feed_mouse_down(int lx, int ly);
 void dbgui_feed_key(int sdl_keycode);
 void dbgui_feed_text(const char *utf8);
+
+/* Quake-style console: a full-width drop-down with scrollback and an input line, entered from the
+   panel's "console" button and left with ESC (back to the panel) or backtick (close everything).
+   Keyboard, text and mouse input are owned by it while open, through the same dbgui_feed_* calls.
+   Submitted lines go to the handler registered here (CLEAR is handled internally); output is added
+   to the scrollback with dbgui_console_print, which splits on newlines. */
+void dbgui_console_open(void);
+int dbgui_console_active(void);
+void dbgui_console_print(const char *text);
+void dbgui_console_set_handler(void (*handler)(const char *line));
+/* Called after the console closes and its saved pixels are put back, so the game can repaint what
+   it owns under that region (the inventory panel) instead of leaving the console's black behind. */
+/* Scrolls the scrollback by `lines` (positive = older). SHIFT+UP/DOWN call this with +/-1. */
+void dbgui_console_scroll(int lines);
+void dbgui_console_set_close_hook(void (*hook)(void));
 
 /* Test-only accessors (tests/test_debug_ui.c) -- never called by game
  * code. dbgui_test_reset() clears all panel/selection/edit state back

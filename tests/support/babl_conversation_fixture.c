@@ -25,7 +25,7 @@ short DAT_00100788;
 short DAT_00100770_backing[1024];
 undefined1 DAT_001007a0_backing[2048];
 char *DAT_000bbf80;
-ushort *DAT_00100674;
+uw_mobile_object_t *DAT_00100674;
 short *DAT_000bc020, *DAT_000bc000;
 short DAT_000bc004, DAT_000bc024;
 undefined2 DAT_000bbfbc, DAT_000bbfb8;
@@ -494,7 +494,7 @@ void conv_talk_as(unsigned slot, unsigned conversation)
 void conv_talk(unsigned slot)
 {
     conv_npc = conv_npc_record(slot);
-    DAT_00100674 = conv_npc;
+    DAT_00100674 = (uw_mobile_object_t *)conv_npc;
     DAT_001007c4 = ((byte *)conv_npc)[0x1a];
     DAT_00100784 = calloc(1, 0x10000);
     DAT_001007c0 = DAT_00100784;

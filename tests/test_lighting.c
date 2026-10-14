@@ -1,5 +1,6 @@
 #include "lighting_fixture.h"
 #include "src/headers/options.h"
+#include <stdio.h>
 
 void setUp(void) { lighting_fixture_reset(); }
 void tearDown(void) { lighting_fixture_dispose(); }
@@ -60,6 +61,20 @@ static ushort draw_one_texel(int inverse_depth)
 {
     return lighting_draw_texel((0x1000000 / inverse_depth) * 4, 140, 80);
 }
+/* The fixture's distinct-per-index palette has no brightness ordering, so the shade-table row
+   brightness (derived from the palette's luminance) needs the game's real colours. */
+static void use_real_palette(void)
+{
+    unsigned char pals[768];
+    FILE *f = fopen(UW_TEST_DATA_DIR "/DATA/PALS.DAT", "rb");
+    TEST_ASSERT_NOT_NULL(f);
+    TEST_ASSERT_EQUAL_INT(768, (int)fread(pals, 1, sizeof pals, f));
+    fclose(f);
+    for (int i = 0; i < 256; i++)
+        g_palette_rgb565_backing[i] = (pals[i * 3] >> 1 & 31) << 11 | (pals[i * 3 + 1] & 63) << 5 | (pals[i * 3 + 2] >> 1 & 31);
+    update_fullbright_palette_mask();
+}
+
 static void test_textured_surfaces_use_palette_mapping_and_light_strength(void)
 {
     options_set("dither", "1");
@@ -123,32 +138,98 @@ static void test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid(void)
         slots[5] = lights[0]; lights[0][2] = 63; lights[0][0] = 0x91;
         use_light_source(lights[0], 1);
         TEST_ASSERT_EQUAL_HEX16(0x95, lights[0][0]);
-        TEST_ASSERT_EQUAL_INT(-24, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-34, DAT_000842b0); /* -32 - the torch's light level (2) */
         TEST_ASSERT_EQUAL_HEX8(0x20, (byte)player[99]);
         TEST_ASSERT_EQUAL_INT(2, DAT_000872a0);
         TEST_ASSERT_GREATER_THAN_INT(0, rebuilds);
         use_light_source(lights[0], 1);
         TEST_ASSERT_EQUAL_HEX16(0x91, lights[0][0]);
-        TEST_ASSERT_EQUAL_INT(8, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0); /* level 0 again */
     }
 }
-static void test_arm_surfaces_use_original_rgb_lut_and_clamps(void)
+static void test_arm_surfaces_scale_rgb_by_the_dos_shade(void)
 {
+    use_real_palette();
+    options_set("light-mode", "smooth"); /* the default is linear */
+    /* ARM mode takes the DOS brightness and light distance (SHADES.DAT strength, LIGHT.DAT rows) but
+       scales the colour smoothly instead of snapping to a table row. */
     g_palette_rgb565_backing[88] = 0xffff;
-    TEST_ASSERT_EQUAL_INT(4096, DAT_000b5638_backing[0]);
-    TEST_ASSERT_EQUAL_INT(3276, DAT_000b5638_backing[32]);
-    TEST_ASSERT_EQUAL_INT(25, DAT_000b5638_backing[159]);
-    set_ambient_bias_with_light(0);
-    TEST_ASSERT_EQUAL_HEX16(0xffff, draw_one_texel(512)); /* distance 32 - 32 */
-    TEST_ASSERT_EQUAL_HEX16(0xffff, draw_one_texel(128)); /* near clamp */
-    TEST_ASSERT_EQUAL_HEX16(0xc658, draw_one_texel(1024)); /* distance 64 - 32 */
-    set_ambient_bias_without_light(0);
-    TEST_ASSERT_EQUAL_HEX16(0xbdf7, draw_one_texel(512)); /* distance 32 + 8 */
-    TEST_ASSERT_EQUAL_HEX16(0, draw_one_texel(8192)); /* far clamp */
+    load_shading_level_config(0);
+    ushort near_clamp = draw_one_texel(128), mid = draw_one_texel(512), far_mid = draw_one_texel(1024);
+    ushort far_clamp = draw_one_texel(8192);
+    TEST_ASSERT_LESS_THAN_UINT16(near_clamp, mid);
+    TEST_ASSERT_LESS_THAN_UINT16(mid, far_mid);
+    TEST_ASSERT_TRUE(far_clamp <= far_mid);
+    TEST_ASSERT_EQUAL_HEX16(0, far_clamp); /* the fade reaches black instead of stopping at a dim value */
+    load_shading_level_config(4);
+    TEST_ASSERT_GREATER_THAN_UINT16(mid, draw_one_texel(512)); /* a lit light is brighter at the same distance */
+    load_shading_level_config(0);
+    DAT_000842b0 = -80; /* the old RGB bias no longer matters */
+    TEST_ASSERT_EQUAL_HEX16(mid, draw_one_texel(512));
     options_set("light-mode", "arm");
-    TEST_ASSERT_EQUAL_HEX16(0xbdf7, draw_one_texel(512));
+    TEST_ASSERT_EQUAL_HEX16(mid, draw_one_texel(512));
     options_set("light-mode", "unknown");
-    TEST_ASSERT_EQUAL_HEX16(0xbdf7, draw_one_texel(512));
+    TEST_ASSERT_EQUAL_HEX16(mid, draw_one_texel(512));
+}
+static void test_arm_falloff_never_brightens_with_distance_and_ends_in_black(void)
+{
+    use_real_palette();
+    g_palette_rgb565_backing[88] = 0xffff;
+    load_shading_level_config(4);
+    ushort last = 0xffff;
+    int first_black = -1;
+    for (int depth = 128; depth < 20000; depth += 16) {
+        ushort c = draw_one_texel(depth);
+        TEST_ASSERT_TRUE(c <= last);
+        if (c == 0 && first_black < 0) first_black = depth;
+        last = c;
+    }
+    TEST_ASSERT_TRUE(first_black > 0);
+}
+static void test_arm_falloffs_are_monotone_and_reach_black_near_the_dos_distance(void)
+{
+    use_real_palette();
+    g_palette_rgb565_backing[88] = 0xffff;
+    load_shading_level_config(2);
+    int black[2];
+    for (int mode = 0; mode <= 1; mode++) {
+        options_set("light-mode", mode == 0 ? "smooth" : "linear");
+        ushort last = 0xffff;
+        black[mode] = -1;
+        for (int depth = 128; depth < 30000; depth += 16) {
+            ushort c = draw_one_texel(depth);
+            TEST_ASSERT_TRUE(c <= last);
+            if (c == 0 && black[mode] < 0) black[mode] = depth;
+            last = c;
+        }
+        TEST_ASSERT_TRUE(black[mode] > 0);
+    }
+    options_unset("light-mode");
+    /* linear is deliberately pulled in to end where the DOS rows go black */
+    TEST_ASSERT_TRUE(black[1] <= black[0]);
+    TEST_ASSERT_INT_WITHIN(1200, black[0], black[1]);
+}
+static void test_arm_surfaces_are_smoother_than_dos_rows(void)
+{
+    use_real_palette();
+    g_palette_rgb565_backing[88] = 0xffff;
+    load_shading_level_config(0);
+    int distinct = 0;
+    ushort last = 0;
+    for (int depth = 512; depth < 2048; depth += 8) {
+        ushort c = draw_one_texel(depth);
+        if (c != last) distinct++;
+        last = c;
+    }
+    options_set("light-mode", "dos");
+    int rows = 0;
+    last = 0;
+    for (int depth = 512; depth < 2048; depth += 8) {
+        ushort c = draw_one_texel(depth);
+        if (c != last) rows++;
+        last = c;
+    }
+    TEST_ASSERT_GREATER_THAN_INT(rows, distinct);
 }
 static void test_ambient_bias_calibration_restores_default_and_env_override(void)
 {
@@ -161,13 +242,10 @@ static void test_ambient_bias_calibration_restores_default_and_env_override(void
     options_set("ambient-bias-reduction", "-8");
     set_ambient_bias_with_light(0); TEST_ASSERT_EQUAL_INT(-40, DAT_000842b0);
     set_ambient_bias_without_light(0); TEST_ASSERT_EQUAL_INT(0, DAT_000842b0);
-    g_palette_rgb565_backing[88] = 0xffff;
-    TEST_ASSERT_EQUAL_HEX16(0xc658, draw_one_texel(512));
     options_set("ambient-bias-reduction", "8");
     set_ambient_bias_without_light(0); TEST_ASSERT_EQUAL_INT(16, DAT_000842b0);
-    TEST_ASSERT_EQUAL_HEX16(0xad95, draw_one_texel(512));
 }
-static void test_arm_light_types_step_bias_by_sixteen_and_keep_calibration(void)
+static void test_light_types_pass_their_light_level_and_keep_calibration(void)
 {
     const int strengths[] = {4,2,1,3}; /* lantern, torch, candle, taper */
     slots[5] = lights[0]; lights[0][2] = 63;
@@ -175,20 +253,20 @@ static void test_arm_light_types_step_bias_by_sixteen_and_keep_calibration(void)
     for (int type = 0; type < 4; type++) {
         lights[0][0] = 0x90 + type;
         use_light_source(lights[0], 1);
-        TEST_ASSERT_EQUAL_INT(72 - strengths[type]*16, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(32 - strengths[type], DAT_000842b0);
         use_light_source(lights[0], 1);
-        TEST_ASSERT_EQUAL_INT(72, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(32, DAT_000842b0);
     }
     /* Source index 3 must not affect the strength calculation. */
     slots[5] = NULL; slots[8] = lights[1]; lights[1][0] = 0x95;
     refresh_player_equipment_effects();
     TEST_ASSERT_EQUAL_HEX8(0x23, (byte)player[99]);
-    TEST_ASSERT_EQUAL_INT(40, DAT_000842b0);
+    TEST_ASSERT_EQUAL_INT(30, DAT_000842b0);
     /* An intrinsic light stronger than the torch wins, using the same steps. */
     player[0x5f] = 0x40; player[0x3e] = 0x30;
-    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(24, DAT_000842b0);
+    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(29, DAT_000842b0);
     options_set("ambient-bias-reduction", "0");
-    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(-40, DAT_000842b0);
+    refresh_player_equipment_effects(); TEST_ASSERT_EQUAL_INT(-35, DAT_000842b0);
 }
 static void test_dos_shading_uses_radial_distance_horizontally_and_vertically(void)
 {
@@ -211,7 +289,9 @@ static void test_dos_shading_uses_radial_distance_horizontally_and_vertically(vo
 }
 static void test_arm_shading_uses_the_same_radial_distance(void)
 {
+    use_real_palette();
     g_palette_rgb565_backing[88] = 0xffff;
+    load_shading_level_config(0);
     const char *modes[] = {"arm", "unknown"};
     for (int i = 0; i < 2; i++) {
         options_set("light-mode", modes[i]);
@@ -230,10 +310,12 @@ static void test_arm_shading_uses_the_same_radial_distance(void)
 }
 static void test_span_advances_radial_distance_and_respects_left_clipping(void)
 {
+    use_real_palette();
     const char *modes[] = {"dos", "arm"};
     for (int i = 0; i < 2; i++) {
         options_set("light-mode", modes[i]);
         load_shading_level_config(2);
+        g_palette_rgb565_backing[88] = 0xffff;
         ushort span[111];
         int reciprocal = (int)(16384.0f / (528.0f / 1500.0f));
         lighting_draw_span(reciprocal, 85, 80, 111, 85, span);
@@ -297,15 +379,31 @@ static void test_dos_bias_clamps_before_initial_shade_and_uses_all_sixteen_rows(
     TEST_ASSERT_EQUAL_HEX16(far, draw_at_world_point(1200, 140, 80));
     TEST_ASSERT_EQUAL_HEX16(far, draw_at_world_point(1200, 141, 80));
 }
+/* A distance at which the shade falls between two brightness steps, so the two dither thresholds
+   round the RGB channels differently. */
+static int fractional_shade_reciprocal(void)
+{
+    const char *dither = "1";
+    options_set("dither", dither);
+    for (int depth = 100; depth < 4000; depth += 4) {
+        int reciprocal = (int)(16384.0f / (depth / 1500.0f));
+        if (lighting_draw_texel(reciprocal, 140, 80) != lighting_draw_texel(reciprocal, 141, 80))
+            return reciprocal;
+    }
+    TEST_FAIL_MESSAGE("no distance dithers");
+    return 0;
+}
+
 static void test_dither_defaults_on_and_zero_or_empty_disables_it_in_both_modes(void)
 {
+    use_real_palette();
     const char *modes[] = {"dos", "arm"};
     for (int i = 0; i < 2; i++) {
         options_set("light-mode", modes[i]);
         g_palette_rgb565_backing[88] = 0xffff;
         DAT_0025063c = 64;
         DAT_002506dc = DAT_0025064c = 0;
-        int reciprocal = i == 0 ? (int)(16384.0f / (272.0f / 1500.0f)) : 131072;
+        int reciprocal = fractional_shade_reciprocal();
         options_set("dither", "0");
         ushort first = lighting_draw_texel(reciprocal, 140, 80);
         ushort second = lighting_draw_texel(reciprocal, 141, 80);
@@ -326,25 +424,28 @@ static void test_dither_defaults_on_and_zero_or_empty_disables_it_in_both_modes(
 }
 static void test_arm_dithers_rgb565_fractional_channels_with_stable_row_parity(void)
 {
+    use_real_palette();
     options_set("light-mode", "arm");
     options_set("dither", "1");
     g_palette_rgb565_backing[88] = 0xffff;
-    /* Shade 40 gives 75% brightness: RGB fractions are .25. The two
-       thresholds yield (23,47,23) or (24,48,24) without changing falloff. */
-    int reciprocal = (0x1000000 / 512) * 4;
-    TEST_ASSERT_EQUAL_HEX16(0xbdf7, lighting_draw_texel(reciprocal, 140, 80));
-    TEST_ASSERT_EQUAL_HEX16(0xc618, lighting_draw_texel(reciprocal, 141, 80));
-    TEST_ASSERT_EQUAL_HEX16(0xc618, lighting_draw_texel(reciprocal, 140, 81));
-    TEST_ASSERT_EQUAL_HEX16(0xbdf7, lighting_draw_texel(reciprocal, 141, 81));
+    DAT_0025063c = 64;
+    DAT_002506dc = DAT_0025064c = 0;
+    /* A fractional shade gives fractional RGB channels, so the two thresholds disagree. */
+    int reciprocal = fractional_shade_reciprocal();
+    ushort a = lighting_draw_texel(reciprocal, 140, 80);
+    ushort b = lighting_draw_texel(reciprocal, 141, 80);
+    TEST_ASSERT_NOT_EQUAL(a, b);
+    TEST_ASSERT_EQUAL_HEX16(b, lighting_draw_texel(reciprocal, 140, 81));
+    TEST_ASSERT_EQUAL_HEX16(a, lighting_draw_texel(reciprocal, 141, 81));
     ushort whole[4], clipped[4];
     lighting_draw_span(reciprocal, 139, 80, 4, 139, whole);
     lighting_draw_span(reciprocal, 139, 80, 4, 140, clipped);
     TEST_ASSERT_EQUAL_HEX16(0, clipped[0]);
     for (int i = 1; i < 4; i++) TEST_ASSERT_EQUAL_HEX16(whole[i], clipped[i]);
     /* Full brightness must not overflow any RGB channel. */
-    set_ambient_bias_with_light(0);
-    TEST_ASSERT_EQUAL_HEX16(0xffff, lighting_draw_texel(reciprocal, 140, 80));
-    TEST_ASSERT_EQUAL_HEX16(0xffff, lighting_draw_texel(reciprocal, 141, 80));
+    int near_reciprocal = 1 << 28;
+    TEST_ASSERT_EQUAL_HEX16(0xffff, lighting_draw_texel(near_reciprocal, 140, 80));
+    TEST_ASSERT_EQUAL_HEX16(0xffff, lighting_draw_texel(near_reciprocal, 141, 80));
     g_palette_rgb565_backing[88] = 0;
     TEST_ASSERT_EQUAL_HEX16(0, lighting_draw_texel(reciprocal, 141, 80));
 }
@@ -359,9 +460,8 @@ static void test_dos_mode_is_case_insensitive_for_equipment_and_surface_shading(
         DAT_000842b0 = 37;
         refresh_player_equipment_effects();
         assert_mode(2, 39, 2, -2);
-        /* Original light scanning sets -32. ARM-only strength calibration
-           would overwrite that with -24; DOS must skip that final step. */
-        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0);
+        /* The light level (2) is passed to set_ambient_bias_with_light in both modes. */
+        TEST_ASSERT_EQUAL_INT(-34, DAT_000842b0);
         ushort expected = g_palette_rgb565_backing[(byte)mappings[5*256+88]];
         TEST_ASSERT_EQUAL_HEX16(expected, draw_at_world_depth(272));
         /* DOS ignores ARM brightness calibration, regardless of spelling. */
@@ -370,7 +470,7 @@ static void test_dos_mode_is_case_insensitive_for_equipment_and_surface_shading(
         lights[0][0] = 0x91;
         refresh_player_equipment_effects();
         assert_mode(0, 56, 5, -3);
-        TEST_ASSERT_EQUAL_INT(-80, DAT_000842b0);
+        TEST_ASSERT_EQUAL_INT(-32, DAT_000842b0); /* level 0: the refresh passes it in DOS mode too */
     }
 }
 static void test_fullbright_mask_is_the_indices_light_dat_never_changes(void)
@@ -417,8 +517,9 @@ static void put_light_at_pixel(float radius, float intensity)
 
 static void test_extra_lights_are_ignored_unless_enabled(void)
 {
+    use_real_palette();
     g_palette_rgb565_backing[88] = 0xffff;
-    set_ambient_bias_without_light(0);
+    load_shading_level_config(0);
     ushort lit_by_player = shade_span_pixel(88, 2000, 0, 0, 0, false, false);
     TEST_ASSERT_NOT_EQUAL(0xffff, lit_by_player);
     put_light_at_pixel(256, 1.0f);
@@ -429,8 +530,9 @@ static void test_extra_lights_are_ignored_unless_enabled(void)
 
 static void test_extra_light_falls_off_with_distance_and_stops_at_its_radius(void)
 {
+    use_real_palette();
     g_palette_rgb565_backing[88] = 0xffff;
-    set_ambient_bias_without_light(0);
+    load_shading_level_config(0);
     options_set("extralights", "1");
     ushort player_only = shade_span_pixel(88, 2000, 0, 0, 0, false, false);
     put_light_at_pixel(256, 1.0f);
@@ -454,6 +556,83 @@ static void test_extra_lights_light_the_dos_shade_table_rows_too(void)
     ushort lit = shade_span_pixel(88, 40000, 0, 0, 0, true, false);
     TEST_ASSERT_EQUAL_HEX16(g_palette_rgb565_backing[88], lit); /* row 0 leaves the colour alone */
     TEST_ASSERT_NOT_EQUAL(lit, dark);
+}
+
+/* --light-depth-rounding=N snaps each pixel's world x, y and z to a grid of N * 32 world units, then measures the
+   distance from the camera to the snapped point (DOS's distances come in whole 32-world-unit steps). */
+static const double eye_units = 1500.0 / 4096.0;
+
+/* A camera turned 30 degrees about the vertical axis and shifted, so the world grid is not aligned with the
+   screen: eye = Q * (world + offset) + t, as extra_lights_transform_to_eye applies it. */
+static void set_turned_camera(void)
+{
+    const float c = 0.8660254f, s = 0.5f;
+    const float m[16] = { c, 0, -s, 0,   0, 1, 0, 0,   s, 0, c, 0,   5, 0, 500, 1 };
+    const float offset[3] = { 100, 0, 200 };
+    lighting_fixture_set_camera(m, offset);
+}
+/* Distance the option reports for the pixel showing the world point (wx, wy, wz) through the turned camera. */
+static int rounded_distance_of_world_point(double wx, double wy, double wz)
+{
+    const double a = wx + 100, b = wy, c = wz + 200;
+    const double c30 = 0.8660254, s30 = 0.5;
+    double ex = a * c30 + c * s30 + 5, ey = b, ez = -a * s30 + c * c30 + 500;
+    TEST_ASSERT_TRUE_MESSAGE(ez > 0, "the test point must be in front of the camera");
+    return light_rounded_distance((int)(ez / eye_units), ex / ez, -ey / ez);
+}
+
+static void test_depth_rounding_snaps_the_world_position_to_the_grid(void)
+{
+    /* Identity camera: the eye point is the world point. (60, 0, 100) snaps to (64, 0, 96) at 32 units. */
+    options_set("light-depth-rounding", "1");
+    int depth = (int)(100 / eye_units);
+    TEST_ASSERT_INT_WITHIN(1, (int)(sqrt(64.0 * 64 + 96.0 * 96) / eye_units), light_rounded_distance(depth, 60.0 / 100, 0));
+    /* A coarser grid: 4 * 32 = 128 world units snaps the same point to the origin plane (0, 0, 128). */
+    options_set("light-depth-rounding", "4");
+    TEST_ASSERT_INT_WITHIN(1, (int)(128 / eye_units), light_rounded_distance(depth, 60.0 / 100, 0));
+}
+static void test_depth_rounding_bands_lie_on_a_grid_fixed_in_the_world(void)
+{
+    set_turned_camera();
+    options_set("light-depth-rounding", "1");
+    /* Two world points inside one 32-unit cell (centre (64, 32, 96)) light identically from any angle, ... */
+    int first = rounded_distance_of_world_point(60, 24, 90);
+    TEST_ASSERT_INT_WITHIN(1, first, rounded_distance_of_world_point(72, 40, 104));
+    /* ... and a point in the next cell does not. */
+    TEST_ASSERT_NOT_EQUAL(first, rounded_distance_of_world_point(100, 24, 90));
+    /* A larger value merges the cells: at 8 * 32 = 256 units both points snap to the same corner. */
+    options_set("light-depth-rounding", "8");
+    TEST_ASSERT_INT_WITHIN(1, rounded_distance_of_world_point(60, 24, 90), rounded_distance_of_world_point(100, 24, 90));
+}
+static void test_depth_rounding_lights_every_mode_from_the_rounded_distance(void)
+{
+    const char *modes[] = {"smooth", "linear", "dos"};
+    set_turned_camera();
+    for (unsigned m = 0; m < 3; m++) {
+        options_set("light-mode", modes[m]);
+        options_set("light-depth-rounding", "1");
+        bool dos = m == 2;
+        /* Two pixels of the same world cell, one near the screen edge. */
+        const double a1 = 60 + 100, c1 = 90 + 200, a2 = 72 + 100, c2 = 104 + 200;
+        double ez1 = -a1 * 0.5 + c1 * 0.8660254 + 500, ex1 = a1 * 0.8660254 + c1 * 0.5 + 5, ey1 = 24;
+        double ez2 = -a2 * 0.5 + c2 * 0.8660254 + 500, ex2 = a2 * 0.8660254 + c2 * 0.5 + 5, ey2 = 40;
+        ushort p1 = shade_span_pixel(88, (int)(ez1 / eye_units), ex1 / ez1, -ey1 / ez1, 0, dos, false);
+        ushort p2 = shade_span_pixel(88, (int)(ez2 / eye_units), ex2 / ez2, -ey2 / ez2, 0, dos, false);
+        TEST_ASSERT_EQUAL_HEX16(p1, p2);
+        options_unset("light-depth-rounding");
+    }
+}
+static void test_depth_rounding_is_off_by_default(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, g_opts.light_depth_rounding);
+    set_turned_camera();
+    options_set("light-mode", "smooth");
+    /* Off, nothing is snapped: pixels of one world cell light differently. */
+    double a1 = 60 + 100, c1 = 90 + 200, a2 = 72 + 100, c2 = 104 + 200;
+    double ez1 = -a1 * 0.5 + c1 * 0.8660254 + 500, ex1 = a1 * 0.8660254 + c1 * 0.5 + 5;
+    double ez2 = -a2 * 0.5 + c2 * 0.8660254 + 500, ex2 = a2 * 0.8660254 + c2 * 0.5 + 5;
+    TEST_ASSERT_NOT_EQUAL(shade_span_pixel(88, (int)(ez1 / eye_units), ex1 / ez1, -24 / ez1, 0, false, false),
+                          shade_span_pixel(88, (int)(ez2 / eye_units), ex2 / ez2, -40 / ez2, 0, false, false));
 }
 
 static void test_light_list_holds_eight_lights_and_drops_the_rest(void)
@@ -506,14 +685,21 @@ int main(void)
     RUN_TEST(test_spent_light_does_not_change_shading);
     RUN_TEST(test_daylight_override_is_preserved);
     RUN_TEST(test_arm_mode_toggles_rgb_bias_and_updates_automap_light_grid);
-    RUN_TEST(test_arm_surfaces_use_original_rgb_lut_and_clamps);
+    RUN_TEST(test_arm_surfaces_scale_rgb_by_the_dos_shade);
+    RUN_TEST(test_arm_surfaces_are_smoother_than_dos_rows);
+    RUN_TEST(test_arm_falloffs_are_monotone_and_reach_black_near_the_dos_distance);
+    RUN_TEST(test_arm_falloff_never_brightens_with_distance_and_ends_in_black);
     RUN_TEST(test_ambient_bias_calibration_restores_default_and_env_override);
-    RUN_TEST(test_arm_light_types_step_bias_by_sixteen_and_keep_calibration);
+    RUN_TEST(test_light_types_pass_their_light_level_and_keep_calibration);
     RUN_TEST(test_fullbright_mask_is_the_indices_light_dat_never_changes);
     RUN_TEST(test_arm_fullbright_colours_skip_distance_falloff_unless_disabled);
     RUN_TEST(test_extra_lights_are_ignored_unless_enabled);
     RUN_TEST(test_extra_light_falls_off_with_distance_and_stops_at_its_radius);
     RUN_TEST(test_extra_lights_light_the_dos_shade_table_rows_too);
+    RUN_TEST(test_depth_rounding_snaps_the_world_position_to_the_grid);
+    RUN_TEST(test_depth_rounding_bands_lie_on_a_grid_fixed_in_the_world);
+    RUN_TEST(test_depth_rounding_lights_every_mode_from_the_rounded_distance);
+    RUN_TEST(test_depth_rounding_is_off_by_default);
     RUN_TEST(test_light_list_holds_eight_lights_and_drops_the_rest);
     RUN_TEST(test_light_sources_are_recognised_by_object_id);
     return UNITY_END();

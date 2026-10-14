@@ -30,6 +30,11 @@ extern char * DAT_00110fc0;
 
 
 void parse_e_model_file(char *path, byte *out_buffer, int flip_winding);
+
+/* As parse_e_model_file, but reading an in-memory .E script instead of a
+   file -- how the DOS asset set's models, which are bytecode inside UW.EXE
+   rather than .E files, reach this parser. See src/models_dos.c. */
+void parse_e_model_script(const char *script, byte *out_buffer, int flip_winding);
 void *tick_anim_record(short catalog);
 void apply_model_position_offset(char *model, int offset_x, int offset_y, int offset_z);
 void scale_model_part_offsets(void *model_block, int scale_x, int scale_y, int scale_z);
