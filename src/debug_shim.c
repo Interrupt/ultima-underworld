@@ -10,6 +10,7 @@
 #include "headers/text.h"
 #include "headers/automap.h"
 #include "headers/player.h"
+#include "headers/platform_music.h"
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -177,6 +178,62 @@ static int current_light_mode_index(void)
   return 0;
 }
 
+/* An int option edited from the panel: apply the panel's value when it changed it, otherwise follow
+   the option (the console and command line can change it too). */
+static void panel_option_int(const char *name, int step, int *opt, void (*after)(void))
+{
+  static struct { const char *name; int ui, applied; } st[4];
+  int i = 0;
+  while (i < 3 && st[i].name && strcmp(st[i].name, name) != 0) i++;
+  if (!st[i].name) { st[i].name = name; st[i].applied = -1; }
+  if (st[i].applied >= 0 && st[i].ui != st[i].applied) {
+    *opt = st[i].ui < 0 ? 0 : st[i].ui > 100 ? 100 : st[i].ui;
+    if (after) after();
+  }
+  st[i].ui = st[i].applied = *opt;
+  dbgui_field_int(name, &st[i].ui, step);
+}
+
+enum { PANEL_MAIN, PANEL_OPTIONS, PANEL_DEBUG };
+static int g_panel_page = PANEL_MAIN;
+
+static void panel_goto_options(void) { g_panel_page = PANEL_OPTIONS; }
+static void panel_goto_debug(void) { g_panel_page = PANEL_DEBUG; }
+static void panel_goto_main(void) { g_panel_page = PANEL_MAIN; }
+
+static void populate_options_page(void)
+{
+  dbgui_begin("Options");
+  dbgui_field_button("< back", panel_goto_main);
+  panel_option_int("music_volume", 10, &g_opts.music_volume, platform_music_apply_volume);
+  panel_option_int("sfx_volume", 10, &g_opts.sfx_volume, NULL);
+  {
+    /* --light-mode is a string, the panel field an index. */
+    static int ui_index, applied_index = -1;
+    if (applied_index >= 0 && ui_index != applied_index) options_set("light-mode", k_light_modes[ui_index]);
+    ui_index = applied_index = current_light_mode_index();
+    dbgui_field_int_names("light-mode", &ui_index, k_light_modes, 3);
+  }
+  dbgui_field_toggle("dither", &g_opts.dither);
+  dbgui_field_toggle("extra_lights", &g_opts.extralights);
+  dbgui_end();
+}
+
+static void populate_debug_page(void)
+{
+  dbgui_begin("Debug");
+  dbgui_field_button("< back", panel_goto_main);
+  dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
+  dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
+  dbgui_field_toggle("hide_walls", &g_uw_hide_walls);
+  {
+    int hide_models = !g_uw_3d_objects_enabled;
+    dbgui_field_toggle("hide_models", &hide_models);
+    g_uw_3d_objects_enabled = !hide_models;
+  }
+  dbgui_end();
+}
+
 void populate_debug_panel(void)
 {
   /* Closing the panel (backtick) should always land back on the base
@@ -188,6 +245,7 @@ void populate_debug_panel(void)
   if (!dbgui_visible()) {
     g_dbgui_inspect_obj = 0;
     g_dbgui_inspect_tex_pick = 0;
+    g_panel_page = PANEL_MAIN;
     return;
   }
   if (g_dbgui_inspect_obj != 0) {
@@ -198,26 +256,13 @@ void populate_debug_panel(void)
     populate_debug_texture_inspector(g_dbgui_inspect_tex_pick);
     return;
   }
-  dbgui_begin("Debug Panel");
-  dbgui_field_button("console", dbgui_console_open);
-  dbgui_field_toggle("hide_walls", &g_uw_hide_walls);
   if (g_uw_3d_objects_enabled < 0) g_uw_3d_objects_enabled = (!g_opts.disable_3d_objects);
-  /* Field names kept short (DBGUI_PANEL_W, debug_ui.c, is a fixed 140
-     logical px, sized for the panel's small top-left corner of free
-     screen real estate -- a longer name runs into neighboring HUD
-     chrome, confirmed by eye). */
-  dbgui_field_toggle("3d_objects", &g_uw_3d_objects_enabled);
-  dbgui_field_toggle("npc_tick", &g_npc_tick_enabled);
-  dbgui_field_toggle("pick_view", &g_opts.debug_pick_view);
-  dbgui_field_toggle("extra_lights", &g_opts.extralights);
-  {
-    /* --light-mode is a string, the panel field an index: apply the index when the panel changed it,
-       otherwise follow the option (it can also change from the console or the command line). */
-    static int ui_index, applied_index = -1;
-    if (applied_index >= 0 && ui_index != applied_index) options_set("light-mode", k_light_modes[ui_index]);
-    ui_index = applied_index = current_light_mode_index();
-    dbgui_field_int_names("light-mode", &ui_index, k_light_modes, 3);
-  }
+  if (g_panel_page == PANEL_OPTIONS) { populate_options_page(); return; }
+  if (g_panel_page == PANEL_DEBUG) { populate_debug_page(); return; }
+  dbgui_begin("UW Port Options");
+  dbgui_field_button("console", dbgui_console_open);
+  dbgui_field_button("options", panel_goto_options);
+  dbgui_field_button("debug", panel_goto_debug);
   dbgui_end();
 }
 
