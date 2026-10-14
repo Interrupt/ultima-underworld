@@ -1,8 +1,8 @@
 #ifndef HEADERS_SPELLS_H
 #define HEADERS_SPELLS_H
 
-/* Declarations for spells.c: the spell/special-action dispatcher, the scan-callback table the cone
-   and search spells draw from, those callbacks, and the cone/search/summon spell effects. */
+/* Declarations for spells.c: the spell-effect dispatcher, individual spell effects and their scan
+   callbacks. */
 #include "uw.h"
 
 extern int (*const DAT_00087604_backing[10])();
@@ -23,5 +23,17 @@ int apply_tile_morph_variant_7(int tile_x, short tile_y, void *object);
 void cast_cone_damage_spell(void *caster, uint spell_variant);
 void cast_targeted_search_effect(void *caster, uint spell_variant);
 void cast_summon_or_spawn_effect(void *caster, char variant);
+void report_detected_creatures_in_direction(ushort direction, byte count);
+void cast_detect_life_spell(short radius, int skill);
+void apply_targeted_spell_effect(ushort *caster, char effect_index);
+void complete_cast_spell_on_target();
+void *spawn_and_prime_spell_effect_object(int object_type, byte *source);
+void dispatch_player_command(ushort *actor, int unused, char command);
+void complete_pending_player_command_target(ushort *target);
+int spawn_random_variant_object_at_tile(int tile_x, int tile_y);
+bool spawn_object_near_actor(ushort *actor, short height_offset);
+void trigger_player_jump_if_grounded(char *object);
+void apply_healing_effect(ushort *object, char effect_code);
+int add_active_light_source(uint light_id, uint duration, char flag);
 
 #endif

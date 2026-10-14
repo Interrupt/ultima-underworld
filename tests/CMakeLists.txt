@@ -338,10 +338,10 @@ add_fixture_game_unit_test(spells
   src/hud.c:report_spell_cast_failure
   src/spells.c:execute_spell_effect
   src/object_actions.c:reduce_item_quality_on_use
-  src/combat.c:add_active_light_source src/tmap.c:tile_is_no_magic
-  src/object_actions.c:complete_cast_spell_on_target
-  src/object_actions.c:apply_targeted_spell_effect
-  src/object_actions.c:spawn_object_near_actor
+  src/spells.c:add_active_light_source src/tmap.c:tile_is_no_magic
+  src/spells.c:complete_cast_spell_on_target
+  src/spells.c:apply_targeted_spell_effect
+  src/spells.c:spawn_object_near_actor
   src/game.c:handle_game_view_click
   src/item_use.c:compute_drop_aim_from_cursor
   src/objects.c:spawn_object_near_player
@@ -1170,7 +1170,7 @@ add_fixture_game_unit_test(special_use
   src/object_actions.c:scan_area_ahead_of_object
   src/player.c:detect_unsafe_rest_object_callback
   src/player.c:check_rest_area_unsafe
-  src/player.c:apply_healing_item_effect
+  src/spells.c:apply_healing_effect
   src/player.c:restore_stat_capped
   src/tmap.c:tilemap_lookup)
 
