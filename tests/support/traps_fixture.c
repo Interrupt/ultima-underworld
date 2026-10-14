@@ -176,27 +176,3 @@ void traps_fixture_reset(void)
 { available_message = message; lookups = prints = 0; message_id = 0; terrain_calls = 0; }
 
 void traps_fixture_dispose(void) {}
-
-/* Level 1 tile (56,45): the eight-position dial switch (0x161) -> use trigger (0x1a2) -> "do trap" (0x183). */
-ushort *level_one_dial_switch(void)
-{
-    uw_test_load_map(level_one, sizeof level_one, 1);
-    ushort *tile = (ushort *)(level_one + (56 + 45 * 64) * 4);
-    unsigned slot = tile[1] >> 6;
-    for (unsigned count = 0; slot && count < 1024; count++) {
-        ushort *object = level_object(slot);
-        if ((*object & 0x1ff) == 0x161) return object;
-        slot = object[2] >> 6;
-    }
-    TEST_FAIL_MESSAGE("Expected dial switch 0x161 at (56,45)");
-    return NULL;
-}
-
-ushort *level_one_dial_trap(ushort *sw)
-{
-    ushort *trigger = level_object(sw[3] >> 6);
-    TEST_ASSERT_EQUAL_HEX16(0x1a2, *trigger & 0x1ff);
-    ushort *trap = level_object(trigger[3] >> 6);
-    TEST_ASSERT_EQUAL_HEX16(0x183, *trap & 0x1ff);
-    return trap;
-}

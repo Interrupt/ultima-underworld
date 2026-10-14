@@ -339,6 +339,7 @@ int uw_service_game_clock(uint64_t now_us)
 
 uint64_t uw_gx_time_us()
 {
+    if (uw_test_clock_active()) return uw_test_clock_us();
     return (uint64_t)((double)SDL_GetPerformanceCounter() * 1000000.0 /
                       (double)SDL_GetPerformanceFrequency());
 }
@@ -684,6 +685,12 @@ int GXOpenDisplay(void *hwnd, unsigned int flags) {
     uw_reset_frame_pacing();
     fprintf(stderr, "[gx] GXOpenDisplay: opening %dx%d SDL window (game's GAPI display init)\n",
             GX_W, g_display_height);
+    if (g_opts.headless) {
+        /* No display or sound device: SDL's dummy drivers still provide a window, a software
+         * renderer and an audio device, so everything downstream runs unchanged. */
+        SDL_setenv("SDL_VIDEODRIVER", "dummy", 1);
+        SDL_setenv("SDL_AUDIODRIVER", "dummy", 1);
+    }
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 0;
@@ -716,7 +723,7 @@ int GXOpenDisplay(void *hwnd, unsigned int flags) {
     }
     g_win = SDL_CreateWindow("Ultima Underworld", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, GX_W * 2, g_display_height * 2,
-                              SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+                              (g_opts.headless ? SDL_WINDOW_HIDDEN : SDL_WINDOW_SHOWN) | SDL_WINDOW_RESIZABLE);
     if (!g_win) {
         fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
         return 0;
@@ -743,7 +750,8 @@ int GXOpenDisplay(void *hwnd, unsigned int flags) {
     /* VSYNC matters beyond just avoiding tearing here: several original routines (e.g. fade_in's
        fade-in-from-black transition) pace themselves purely by how long each GXEndDraw-equivalent
        present call naturally takes, with no explicit delay of their own... */
-    g_ren = SDL_CreateRenderer(g_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    g_ren = g_opts.headless ? SDL_CreateRenderer(g_win, -1, SDL_RENDERER_SOFTWARE)
+                            : SDL_CreateRenderer(g_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!g_ren) g_ren = SDL_CreateRenderer(g_win, -1, SDL_RENDERER_PRESENTVSYNC);
     if (!g_ren) g_ren = SDL_CreateRenderer(g_win, -1, 0);
     {

@@ -5,6 +5,7 @@
 #include "headers/game.h"
 #include "headers/options.h"
 #include "headers/debug.h"
+#include "headers/unit_test_hooks.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -305,10 +306,21 @@ int app_main_loop(int instance, int prev_instance, int command_line, int show_co
       compute_dimension_volume();
       run_game_startup_sequence();
       build_trig_tables();
-      wait_and_show_intro_page();
-      main_menu_loop(1);
+      if (uw_test_game_active()) {
+        /* Unit-test harness: no intro, no title menu -- straight into a fresh game. */
+        if (!start_headless_new_game()) {
+          return 0;
+        }
+        begin_gameplay();
+        uw_test_hook_on_game_start();
+      }
+      else {
+        wait_and_show_intro_page();
+        main_menu_loop(1);
+      }
       DAT_00201c98 = 1;
       while (DAT_00201b6c != 0) {
+        uw_test_hook_pre_game_tick();
         if (DAT_000876c8 == 0) {
           /* Was gated on `(DAT_0024af60 == 0) || ...` -- DAT_0024af60 was always 1 throughout this
              loop (set once at session start, never cleared in practice; see its init comment
@@ -335,7 +347,9 @@ int app_main_loop(int instance, int prev_instance, int command_line, int show_co
           }
           main_loop_hud_flush();
         }
+        uw_test_hook_post_game_tick();
       }
+      uw_test_hook_on_game_exit();
       iVar2 = window_message_noop_handler(instance,local_38);
       return iVar2;
     }
@@ -2460,6 +2474,27 @@ void show_error_dialog_stub_thunk()
 // testable function.
 bool prepare_new_game()
 {
+    g_new_game_entry_pause_pending = false;
+    if (!character_generator_start()) return false;
+    return start_game_with_current_character();
+}
+
+// Unit-test harness version of prepare_new_game: the same new-game sequence, but the character is
+// the real initializer's default one (no chargen UI); pre_game_start gets to adjust it first.
+bool start_headless_new_game()
+{
+    g_new_game_entry_pause_pending = false;
+    init_new_character_record(1);
+    ce_strncpy(DAT_00086df8, "Test Avatar", 0x1d);
+    load_weapon_combat_maneuver_data();
+    uw_test_hook_pre_game_start();
+    return start_game_with_current_character();
+}
+
+// The part of starting a new game that follows character creation: saves the character, seeds
+// \SAVE0\lev.ark from \DATA\lev.ark, loads level 1 and places the player.
+bool start_game_with_current_character()
+{
     char save_directory[264];
     char destination_path[264];
     undefined1 source_copy_path[520];
@@ -2467,9 +2502,6 @@ bool prepare_new_game()
     char *converted_path;
     char *source;
     char *destination;
-
-    g_new_game_entry_pause_pending = false;
-    if (!character_generator_start()) return false;
 
     ce_memset(save_directory, 0, 0x104);
     source = (char *)&DAT_0023cca8;

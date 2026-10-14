@@ -1,5 +1,6 @@
 #include "headers/ordinal_stubs.h"
 #include "headers/options.h"
+#include "headers/unit_test_hooks.h"
 #include "headers/file_io.h"
 #include "headers/debug.h"
 #include <ctype.h>
@@ -357,6 +358,7 @@ long Sleep(unsigned int ms)
         fast = g_opts.fast_sleep;
     }
     if (fast) {
+        if (uw_test_clock_active()) uw_test_clock_advance_us((uint64_t)ms * 1000);
         SDL_PumpEvents();
         return 0;
     }
@@ -392,6 +394,7 @@ long LoadResource(long resource)
 /* GetTickCount-shaped: real elapsed milliseconds since startup. */
 long GetTickCount()
 {
+    if (uw_test_clock_active()) return (long)(uw_test_clock_us() / 1000);
     return (long)SDL_GetTicks();
 }
 

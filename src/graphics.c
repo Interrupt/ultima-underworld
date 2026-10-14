@@ -552,7 +552,8 @@ void fade_in(ushort *framebuffer, char *palette, int palette_flag)
       puVar6 = puVar6 + 1;
     } while (iVar7 != 0);
     flush_dirty_rect_to_display(1);
-    while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+    /* Not under --fast-sleep: that makes Sleep() a no-op, which would leave this a busy-wait. */
+    while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
       Sleep(40 - fade_step_elapsed);
     fade_step_start = (uint)GetTickCount();
     iVar9 = iVar9 + 1;
@@ -625,7 +626,8 @@ void fade_out(ushort *framebuffer, char *palette, int palette_flag)
       *puVar8 = uVar3 | (ushort)(((int)((uVar2 & 0x1f) << 0xc) >> 6) * iVar6 >> 0x12);
     } while (iVar9 != 0);
     flush_dirty_rect_to_display(1);
-    while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+    /* Not under --fast-sleep: that makes Sleep() a no-op, which would leave this a busy-wait. */
+    while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
       Sleep(40 - fade_step_elapsed);
     fade_step_start = (uint)GetTickCount();
     iVar11 = iVar11 + -1;
@@ -635,7 +637,7 @@ void fade_out(ushort *framebuffer, char *palette, int palette_flag)
     framebuffer = framebuffer + 1;
   }
   flush_dirty_rect_to_display(1);
-  while ((fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
+  while (!g_opts.fast_sleep && (fade_step_elapsed = (uint)GetTickCount() - fade_step_start) < 40)
     Sleep(40 - fade_step_elapsed);
   LocalFree(puVar4);
   uw_end_modal_present();

@@ -55,6 +55,8 @@ extern undefined1 DAT_00241f08_backing[1024];
 int app_main_loop(int instance, int prev_instance, int command_line, int show_command);
 void main_menu_loop(int is_first_entry);
 bool prepare_new_game();
+bool start_headless_new_game();
+bool start_game_with_current_character();
 void begin_gameplay();
 
 /* Forward declaration needed because main_menu_loop (now in game.c) takes this LAB_ callback's
