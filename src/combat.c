@@ -2253,62 +2253,6 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
 }
 
 
-// was FUN_000542f8 -- grants the player a new active light source: fails (returns 0) if the
-// active-light count (DAT_00086df8+0x5f bits 6-9) is already at its cap; otherwise stages a new
-// slot with type param_1 and radius param_2...
-int add_active_light_source(uint light_id, uint duration, char flag)
-{
-  undefined4 uVar1;
-  int iVar2;
-  uint uVar3;
-  undefined1 *puVar4;
-  uint uVar5;
-  byte local_14;
-  
-  if ((*(ushort *)(DAT_00086df8 + 0x5f) & 0x3c0) == 0xc0) {
-    uVar1 = 0;
-  }
-  else {
-    uVar5 = *(ushort *)(DAT_00086df8 + 0x5f) >> 6 & 0xf;
-    iVar2 = (uint)*(byte *)(DAT_00086df8 + uVar5 * 2 + 0x3f) * 0x100 + (duration & 0xff) * 0x10 +
-            (light_id & 0xff);
-    puVar4 = (undefined1 *)(DAT_00086df8 + (uVar5 + 0x1f) * 2);
-    *puVar4 = (char)iVar2;
-    puVar4[1] = (char)((uint)iVar2 >> 8);
-    if (flag == '\0') {
-      uVar5 = roll_dice_sum(2,3);
-      uVar5 = uVar5 & 0xff;
-    }
-    else if (flag == '\x01') {
-      uVar5 = 1;
-    }
-    else if (flag == '@') {
-      uVar5 = roll_dice_sum(2,8);
-      uVar5 = (uVar5 & 0xff) + 6;
-    }
-    else if (flag == -0x80) {
-      uVar5 = roll_dice_sum(3,0x14);
-      uVar5 = (uVar5 & 0xff) + 0x18;
-    }
-    else {
-      uVar5 = (uint)local_14;
-    }
-    uVar3 = *(ushort *)(DAT_00086df8 + 0x5f) >> 6 & 0xf;
-    iVar2 = (uint)*(byte *)(DAT_00086df8 + uVar3 * 2 + 0x3e) + (uVar5 & 0xff) * 0x100;
-    puVar4 = (undefined1 *)(DAT_00086df8 + (uVar3 + 0x1f) * 2);
-    *puVar4 = (char)iVar2;
-    puVar4[1] = (char)((uint)iVar2 >> 8);
-    uVar5 = (uint)*(ushort *)(DAT_00086df8 + 0x5f);
-    uVar5 = ((uVar5 & 0xffc0) + 0x40 ^ uVar5) & 0x3c0 ^ uVar5;
-    *(char *)(DAT_00086df8 + 0x5f) = (char)uVar5;
-    *(char *)(DAT_00086df8 + 0x60) = (char)(uVar5 >> 8);
-    refresh_player_equipment_effects();
-    uVar1 = 1;
-  }
-  return uVar1;
-}
-
-
 
 // was FUN_0005448c -- default collision outcome for object param_2 when nothing else handles it
 // (param_1, the object that struck it, is unused): takes a position snapshot, and if the snapshot's

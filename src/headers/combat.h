@@ -71,7 +71,6 @@ int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, s
 bool apply_object_durability_damage(ushort *object, ushort *attacker, short damage, int tile_x, short tile_y);
 int is_valid_equipment_slot_item(ushort object_word, short slot);
 int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short reaction_mode, int report_flag);
-int add_active_light_source(uint light_id, uint duration, char flag);
 int apply_object_collision_scatter(ushort *striker, ushort *object);
 void apply_trap_type_damage_effect(void *trap_object, ushort *target);
 int resolve_collision_candidate_interaction(short candidate_index, int mover_slot);
