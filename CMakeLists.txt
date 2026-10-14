@@ -46,6 +46,7 @@ set(UW_SOURCES
   src/collision.c
   src/input.c
   src/object_actions.c
+  src/spells.c
   src/weapon_swing.c
   src/level.c
   src/doors.c

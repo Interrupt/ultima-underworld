@@ -27,7 +27,7 @@ int message_scroll_print_wrapped(char *message)
 int play_sound_effect_with_pan(uint id, byte pan, uint mode) { sound = id; return 1; }
 void print_scroll_message_by_id(uint id) { failure = id; }
 int roll_skill_check(int skill, int difficulty) { return skill_result; }
-int dispatch_special_action(uint type, uint param, void *caster, void *target)
+int execute_spell_effect(uint type, uint param, void *caster, void *target)
 {
     TEST_ASSERT_EQUAL_PTR(g_player_object, caster);
     TEST_ASSERT_EQUAL_PTR(g_player_object, target);

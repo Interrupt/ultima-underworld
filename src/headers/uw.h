@@ -768,6 +768,7 @@ void emit_object_billboard();
 #include "collision.h"
 #include "input.h"
 #include "object_actions.h"
+#include "spells.h"
 #include "weapon_swing.h"
 #include "level.h"
 #include "doors.h"

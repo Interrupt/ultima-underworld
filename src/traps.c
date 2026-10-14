@@ -940,7 +940,7 @@ int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int u
 // (param_1/param_2) into DAT_0023c3dc/DAT_0023c3d8, then dispatches by the sign of param_5 (a
 // signed action id): negative runs dispatch_tile_special_action...
 /* ARM 0x39d24/0x39d48 keeps the actor address in r2, and r3 carries the target through to
-   dispatch_special_action. These are host addresses. */
+   execute_spell_effect. These are host addresses. */
 int dispatch_trap_special_or_tile_action(byte context_x, byte context_y, void *actor, void *target, ushort action_id, byte argument)
 {
   DAT_0023c3d8 = context_y;
@@ -949,7 +949,7 @@ int dispatch_trap_special_or_tile_action(byte context_x, byte context_y, void *a
     dispatch_tile_special_action(argument,actor,target);
   }
   else {
-    dispatch_special_action(action_id & 0xff,argument,actor,target);  /* 4th arg was dropped: ARM 0x39d50 passes r3 (incoming target) through */
+    execute_spell_effect(action_id & 0xff,argument,actor,target);  /* 4th arg was dropped: ARM 0x39d50 passes r3 (incoming target) through */
   }
   return 2;
 }

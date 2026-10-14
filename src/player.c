@@ -2878,7 +2878,7 @@ void restore_stat_capped(void *object_ptr, uint amount)
 
 
 
-// was FUN_00073fc4 -- dispatch_special_action's "healing item" handler (its own case 4): only
+// was FUN_00073fc4 -- execute_spell_effect's "healing item" handler (its own case 4): only
 // applies if the target object's quality bits match 0x40 (a food/potion-shaped flag), then restores
 // HP via restore_stat_capped -- param_2==0xf is a full-heal sentinel (-1)...
 void apply_healing_item_effect(ushort *object, char effect_code)
@@ -3440,7 +3440,7 @@ LAB_0003c780:
 }
 
 
-// was FUN_0003dba0 -- dispatch_special_action's case-1 handler for sub-codes 3/5 (uw.c,
+// was FUN_0003dba0 -- execute_spell_effect's case-1 handler for sub-codes 3/5 (uw.c,
 // src/object_actions.c:896).
 void trigger_player_jump_if_grounded(char *object)
 {
