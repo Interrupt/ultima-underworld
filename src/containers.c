@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define _DAT_00202978 (*(uint*)&DAT_00202978)
 /* Was a lone `undefined4` (4-byte) scalar holding a real heap pointer (an ce_malloc-allocated
    open-container tracking record, same class as g_current_container_record right above) -- every
    assignment to/from it... */
@@ -20,12 +19,6 @@ char *g_open_container_list;
    bytes) for headroom; down from 64 (256 bytes). */
 static undefined4 DAT_002028a0_backing[16];
 #define DAT_002028a0 DAT_002028a0_backing[0]
-/* Sizing-audit pass: accessed only as a 4-byte uint scalar via the
-   `_DAT_00202978` macro, never indexed. Down from 8192. */
-static undefined DAT_00202978_backing[8];
-#define DAT_00202978 DAT_00202978_backing[0]
-static ushort DAT_00202986;
-static undefined2 DAT_00202980;
 /* Sizing pass: its only use (empty_container_into_world's caller) is a read-only copy-until-NUL
    into a local scratch buffer -- a short message-prefix string, not indexed. */
  undefined1 DAT_00085c88_backing[128] = "The ";
@@ -180,7 +173,7 @@ void leave_nested_container_level()
       *(char **)(g_current_container_record + 0xc) = 0;
       g_current_container_link = *(undefined2 *)(g_current_container_record + 8);
       iVar1 = (char *)resolve_object_link(&g_current_container_link);
-      _DAT_00202978 = (_DAT_00202978 ^ ((uw_object_hdr_t *)iVar1)->link_word) & 0x3f ^ ((uw_object_hdr_t *)iVar1)->link_word;
+      GRID_FIRST_SLOT = (GRID_FIRST_SLOT ^ ((uw_object_hdr_t *)iVar1)->link_word) & 0x3f ^ ((uw_object_hdr_t *)iVar1)->link_word;
       /* User QA: "the container indicator does not update to show the current container icon" after
          popping back to a parent -- this is now the real widget 20 (see DAT_00085c4c's own
          comment)... */
@@ -216,8 +209,8 @@ void refresh_container_view()
     iVar2 = iVar2 + 4;
   }
   sVar1 = encode_object_slot_index(iVar2);
-  DAT_002029a0 = (uint)((uint)(_DAT_00202978 >> 6) != (int)sVar1);
-  DAT_0020299c = (uint)((DAT_00202986 & 0xffc0) != 0);
+  DAT_002029a0 = (uint)((uint)(GRID_FIRST_SLOT >> 6) != (int)sVar1);
+  DAT_0020299c = (uint)((SLOT_LINK(0x1b) & 0xffc0) != 0);
   redraw_inventory_widget(0x15);
   redraw_inventory_widget(0x16);
   cursor_show_idle_tick();
@@ -512,7 +505,7 @@ void open_backpack_container(short container_slot)
 void scroll_container_grid_up()
 {
   if ((g_open_container_list != 0) && (DAT_0020299c != 0)) {
-    _DAT_00202978 = DAT_00202980;
+    GRID_FIRST_SLOT = SLOT_LINK(0x18);
     repopulate_container_grid_slots();
     refresh_container_view();
   }
@@ -539,7 +532,7 @@ void scroll_container_grid_down()
     g_current_container_link = *(undefined2 *)(g_current_container_record + 8);
     iVar2 = (char *)resolve_object_link(&g_current_container_link);
     iVar3 = (char *)resolve_object_link((ushort *)(iVar2 + 6));
-    iVar4 = (char *)resolve_object_link(&DAT_00202978);
+    iVar4 = (char *)resolve_object_link(&GRID_FIRST_SLOT);
     iVar2 = iVar3;
     if (iVar3 != iVar4) {
       do {
@@ -558,7 +551,7 @@ void scroll_container_grid_down()
     }
 LAB_00043700:
     sVar1 = encode_object_slot_index(iVar3);
-    _DAT_00202978 = _DAT_00202978 & 0x3f | sVar1 << 6;
+    GRID_FIRST_SLOT = GRID_FIRST_SLOT & 0x3f | sVar1 << 6;
     repopulate_container_grid_slots();
     refresh_container_view();
   }

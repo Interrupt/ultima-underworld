@@ -38,6 +38,8 @@ void platform_music_shutdown(void);
  * lock; the DOS audio backend is shared between this file's callback and
  * platform_sfx.c's effect trigger, which runs on the game thread. Both are
  * no-ops when no device is open. */
+/* Call after --music-volume changes so a playing DOS sequence follows it. */
+void platform_music_apply_volume(void);
 void platform_music_lock(void);
 void platform_music_unlock(void);
 

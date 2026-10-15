@@ -15,6 +15,7 @@
 #include "headers/audio.h"
 #include "headers/debug.h"
 #include "headers/file_io.h"
+#include "headers/options.h"
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -496,12 +497,14 @@ static void sfx_audio_callback(void *userdata, Uint8 *stream, int len)
 {
   (void)userdata;
   memset(stream, 0, (size_t)len);
+  int vol = g_opts.sfx_volume < 0 ? 0 : g_opts.sfx_volume > 100 ? 100 : g_opts.sfx_volume;
+  vol = vol * SDL_MIX_MAXVOLUME / 100;
   for (int i = 0; i < SFX_MAX_VOICES; i++) {
     sfx_voice_t *v = &g_sfx_voices[i];
     if (!v->pcm || v->pos >= v->len) continue;
     unsigned int remain = v->len - v->pos;
     unsigned int n = remain < (unsigned int)len ? remain : (unsigned int)len;
-    SDL_MixAudioFormat(stream, v->pcm + v->pos, AUDIO_S16SYS, n, SDL_MIX_MAXVOLUME);
+    SDL_MixAudioFormat(stream, v->pcm + v->pos, AUDIO_S16SYS, n, vol);
     v->pos += n;
   }
 }

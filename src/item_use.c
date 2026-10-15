@@ -3469,11 +3469,11 @@ void handle_object_drop_target(short widget)
         goto LAB_00042a10;
       }
       if (iVar2 == 0x15) {
-        scroll_container_grid_up();
+        scroll_container_grid_down();  /* up arrow: back toward the start (see redraw_inventory_widget) */
         goto LAB_00042a10;
       }
       if (iVar2 == 0x16) {
-        scroll_container_grid_down();
+        scroll_container_grid_up();
         goto LAB_00042a10;
       }
       if (iVar2 == 0x17) {
