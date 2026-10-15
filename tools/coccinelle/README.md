@@ -1505,3 +1505,23 @@ remaining counts are 74 byte views, 451 packed accesses and seven raw audited
 accesses. The remaining signed views in `redraw_barter_slot_icon` include a
 negative mask and an explicit narrow cast; those forms remain separate work
 items, along with the broader packed-access inventory and unrecorded aliases.
+
+## Narrowed and special-link header reads
+
+`generate_special_header_read_rules.py` / `special-header-reads.cocci` cover the
+three remaining signed-word forms in barter icon drawing. The narrowed negative
+quantity mask becomes `is_quant == 0`; the link word's high-bit test becomes
+`link >= 512`; casting the signed link word to `ushort` before shifting becomes
+an `int` read of `link`. The last cast retains the integer promotion performed
+by the original unsigned-short extraction. These are deliberately separate from
+the general promoted-read rules, which exclude narrow casts and negative masks.
+
+`special_header_reads` checks all six pointer/value expressions over all 65,536
+words, with exact values, signed comparisons, expression types, exclusions,
+idempotence and a receiver called once. Nearby signed shifts, cross-field masks
+and other link bits must remain unchanged. The suite passes under AddressSanitizer
+and is registered with `UW_SPATCH_TESTS=ON`.
+All 71 default suites pass after this batch, and the optional CTest registration
+passes. No signed-word member accesses remain in `src/*.c`. The latest inventory
+still lists 74 byte views, 451 packed accesses and seven raw audited accesses;
+those and the unrecorded aliases remain work toward the broader goal.

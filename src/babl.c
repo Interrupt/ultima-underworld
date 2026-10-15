@@ -3950,11 +3950,11 @@ void redraw_barter_slot_icon(short side, short slot)
                  ,0x10,0x10);
   }
   if (sVar4 != 0) {
-    if (((short)(((uw_object_hdr_t *)psVar6)->type_flags_signed & -0x8000) == 0) || ((((uw_object_hdr_t *)psVar6)->link_word_signed & 0x8000U) != 0)) {
+    if ((((uw_object_hdr_t *)psVar6)->is_quant == 0) || (((uw_object_hdr_t *)psVar6)->link >= 512)) {
       uVar8 = 0;
     }
     else {
-      uVar8 = (ushort)((uw_object_hdr_t *)psVar6)->link_word_signed >> 6;
+      uVar8 = (int)((uw_object_hdr_t *)psVar6)->link;
     }
     g_blit_transparent_mode = 0;
     if (1 < uVar8) {

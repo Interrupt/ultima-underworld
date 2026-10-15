@@ -3,8 +3,7 @@
   "counts": {
     "byte_view": 74,
     "packed_word": 451,
-    "raw_audited_object_access": 7,
-    "signed_word_view": 3
+    "raw_audited_object_access": 7
   },
   "records": [
     {
@@ -1212,33 +1211,6 @@
       "member": "link_word",
       "pointer": null,
       "code": "((uw_object_hdr_t *)obj_rec)->link_word_high = (byte)(char)((uint)iVar3 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 3953,
-      "category": "signed_word_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "if (((short)(((uw_object_hdr_t *)psVar6)->type_flags_signed & -0x8000) == 0) || ((((uw_object_hdr_t *)psVar6)->link_word_signed & 0x8000U) != 0)) {"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 3953,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if (((short)(((uw_object_hdr_t *)psVar6)->type_flags_signed & -0x8000) == 0) || ((((uw_object_hdr_t *)psVar6)->link_word_signed & 0x8000U) != 0)) {"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 3957,
-      "category": "signed_word_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "uVar8 = (ushort)((uw_object_hdr_t *)psVar6)->link_word_signed >> 6;"
     },
     {
       "source": "src/babl.c",
