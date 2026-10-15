@@ -159,7 +159,7 @@ static void test_open_sack_skips_hidden_contents_when_refreshing(void)
     TEST_ASSERT_EQUAL_HEX16(3 << 6, slots[20]);
     TEST_ASSERT_EQUAL_HEX16(0, slots[21]);
     /* Refresh traverses the hidden head's sibling link (+4), not contents (+6). */
-    _DAT_00202978 = 3 << 6;
+    slots[20] = 3 << 6;
     refresh_container_view();
     TEST_ASSERT_EQUAL_UINT(0, DAT_002029a0);
 }
