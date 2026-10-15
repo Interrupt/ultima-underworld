@@ -446,12 +446,15 @@ void redraw_inventory_widget(int widget_id)
     }
     else {
       restore_captured_grtile_backdrop((&DAT_002028e8)[iVar1]);
+      /* The port's landscape layout shows these two buttons the other way round from how the
+         original's flags read: widget 21 is the up arrow (scrolled away from the start), widget 22
+         the down arrow (more items ahead). */
       if (iVar1 == 0x15) {
-        if (DAT_0020299c != 0) {
+        if (DAT_002029a0 != 0) {
           uVar2 = 0x101b;
         }
       }
-      else if (DAT_002029a0 != 0) {
+      else if (DAT_0020299c != 0) {
         uVar2 = 0x101c;
       }
       if (-1 < (short)uVar2) {
