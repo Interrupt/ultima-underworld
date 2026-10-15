@@ -329,8 +329,7 @@ int drop_object_near_target(void *actor_ptr, void *object_ptr, short mode, uint 
 // was FUN_0007a990
 void use_light_source(ushort *object, int turn_on)
 {
-  byte bVar1;
-  byte bVar2;
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   int iVar3;
   ushort uVar4;
   undefined4 uVar5;
@@ -341,17 +340,17 @@ void use_light_source(ushort *object, int turn_on)
   int iVar9;
   ushort uVar10;
   
-  if (((*object & 0x8000) == 0) || ((object[3] & 0x8000) != 0)) {
+  if ((header->is_quant == 0) || (header->link >= 512)) {
     uVar10 = 1;
   }
   else {
-    uVar10 = object[3] >> 6;
+    uVar10 = header->link;
   }
   if (turn_on == 0) {
     uVar5 = 0x7b;
   }
   else {
-    if ((object[2] & 0x3f) != 0) {
+    if (header->quality != 0) {
       iVar6 = find_or_assign_object_widget(object);
       iVar8 = 0;
       do {
@@ -359,7 +358,7 @@ void use_light_source(ushort *object, int turn_on)
         iVar8 = (iVar8 + 1) * 0x10000 >> 0x10;
       } while (iVar8 < 4);
       if ((short)iVar8 == 4) {
-        uVar4 = *object & 0x1ff;
+        uVar4 = header->object_id;
         if ((((uVar4 == 0x91) || (uVar4 == 0x92)) || (uVar4 == 0x90)) || (uVar4 == 0x93)) {
           iVar8 = 5;
           iVar6 = 0;
@@ -382,19 +381,15 @@ void use_light_source(ushort *object, int turn_on)
           redraw_container_icon_slot();
         }
       }
-      uVar10 = *object;
-      bVar1 = (byte)(uVar10 >> 8);
-      bVar2 = (byte)uVar10;
+      uVar10 = header->object_id;
       if ((uVar10 & 0xf) < 4) {
-        *(byte *)object = (bVar2 + 4 ^ bVar2) & 0xf ^ bVar2;
-        *(byte *)((char *)object + 1) = bVar1;
+        header->object_id = uVar10 + 4;
         /* HACK: pass the lit light's real brightness (see set_ambient_bias_with_light). */
         g_scratch_object_ptr = (uw_object_hdr_t *)object;
         set_ambient_bias_with_light(((uw_light_type_props_t *)get_scanned_object_class_effect_ptr())->brightness);
       }
       else {
-        *(byte *)object = (bVar2 - 4 ^ bVar2) & 0xf ^ bVar2;
-        *(byte *)((char *)object + 1) = bVar1;
+        header->object_id = uVar10 - 4;
         set_ambient_bias_without_light(0);
       }
       refresh_player_equipment_effects();

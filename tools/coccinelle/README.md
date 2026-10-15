@@ -1436,3 +1436,38 @@ matrix under AddressSanitizer. This suite is registered with `UW_SPATCH_TESTS=ON
 The post-merge audit covers 55 sources and 304 proven pointer roles, with
 74 byte views, 451 packed accesses, 12 raw audited object accesses and nine
 signed word views. These are remaining work items, not completion evidence.
+
+## Light source header fields
+
+`generate_light_use_rules.py` emits `light-use-fields.cocci` and its original/
+converted recipe. `apply_light_use_rules.py SOURCE` checks for one unchanged,
+audited original body, runs Coccinelle, and verifies the resulting C tokens
+before writing. Changed masks, escaping/volatile captures, inserted callbacks,
+ambiguous definitions and unrelated functions are rejected. The production
+function remains free to evolve: its test compares behavior, not exact text.
+
+`use_light_source` now reads `is_quant`, `link`, `quality` and `object_id` through
+a typed header alias without changing its public interface or moving it. The
+link's high-bit special-value test is expressed as `link >= 512`; the captured
+quantity still survives inventory callbacks. The four-step light-ID toggle
+updates only `object_id`, preserving all unrelated flags. Its low nibble is a
+light subtype encoding, not a separate documented object field: the add branch
+has nibble < 4 and cannot carry, and the subtract branch has nibble >= 4 and
+cannot borrow, so the original masked-byte writes equal an ID increment/
+decrement by four.
+
+`light_use_fields` checks generation, Coccinelle application, idempotence and
+negative guards. It compares 7,864,320 original/current cases across every type
+word, zero/full quality, six link quantities including both sides of the
+special-value boundary, lit-widget/ownership paths, null equipment, turn-on/
+turn-off and callback mutations. Guarded records, callback order/arguments and
+scratch-pointer identity must match; independent assertions verify ID toggles,
+quality and preserved flags. `--reference PATH` checks against the original
+`item_use.c`; `--asan` runs the same matrix under AddressSanitizer. This test is
+registered under `UW_SPATCH_TESTS=ON`. All 71 default game suites also pass.
+
+The refreshed audit covers 55 sources and 305 proven pointer roles with no AST
+errors. Raw audited accesses fall from 12 to seven; 74 byte views, 451 packed
+accesses and nine signed views remain. Those counts exclude unrecorded aliases
+and other structures and are not proof of completion. The remaining raw NPC
+AI-flag bit and trap status padding-bit accesses need separate semantic evidence.

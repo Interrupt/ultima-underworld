@@ -2578,6 +2578,13 @@
           "function": "use_light_source",
           "roles": [
             {
+              "name": "header",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
               "name": "object",
               "type": "ushort *",
               "parameter": true,
