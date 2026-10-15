@@ -861,7 +861,7 @@ short *begin_holding_object_on_cursor(short *object, uint object_type)
       object = (short *)spawn_new_object(object_type,0);
     }
     else {
-      object_type = (int)((uw_object_hdr_t *)object)->type_flags_signed & 0x1ff;
+      object_type = (int)((uw_object_hdr_t *)object)->object_id;
     }
     g_cursor_holding_state = 1;
     g_selected_object = (char *)object;

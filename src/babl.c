@@ -3933,7 +3933,7 @@ void redraw_barter_slot_icon(short side, short slot)
   }
   else {
     psVar6 = (short *)get_object_record_by_slot_index(sVar4);
-    uVar9 = (int)((uw_object_hdr_t *)psVar6)->type_flags_signed & 0x1ff;
+    uVar9 = (int)((uw_object_hdr_t *)psVar6)->object_id;
   }
   puVar10 = &DAT_000845d8;
   iVar1 = iVar3 * 4;

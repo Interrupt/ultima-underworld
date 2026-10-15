@@ -1374,6 +1374,10 @@ if(UW_SPATCH_TESTS)
     COMMAND "${Python3_EXECUTABLE}" -B
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_combat_stance_fields.py"
       "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME promoted_struct_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_promoted_struct_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
   add_test(NAME light_use_fields
     COMMAND "${Python3_EXECUTABLE}" -B
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_light_use_fields.py"

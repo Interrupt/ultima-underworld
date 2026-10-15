@@ -4,7 +4,7 @@
     "byte_view": 74,
     "packed_word": 451,
     "raw_audited_object_access": 7,
-    "signed_word_view": 9
+    "signed_word_view": 3
   },
   "records": [
     {
@@ -899,15 +899,6 @@
       "code": "((int)(((g_player_object->tile_word >> 1 & 0x1f8) +"
     },
     {
-      "source": "src/audio.c",
-      "function": "play_positional_sound_effect",
-      "line": 682,
-      "category": "signed_word_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((int) g_player_object->hdr.position_word_signed & 0x380U)) * 0x40,"
-    },
-    {
       "source": "src/babl.c",
       "function": "babl_builtin_do_inv_create",
       "line": 549,
@@ -1221,15 +1212,6 @@
       "member": "link_word",
       "pointer": null,
       "code": "((uw_object_hdr_t *)obj_rec)->link_word_high = (byte)(char)((uint)iVar3 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 3936,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "uVar9 = (int)((uw_object_hdr_t *)psVar6)->type_flags_signed & 0x1ff;"
     },
     {
       "source": "src/babl.c",
@@ -2313,15 +2295,6 @@
     },
     {
       "source": "src/item_use.c",
-      "function": "begin_holding_object_on_cursor",
-      "line": 864,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "object_type = (int)((uw_object_hdr_t *)object)->type_flags_signed & 0x1ff;"
-    },
-    {
-      "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
       "line": 1368,
       "category": "packed_word",
@@ -2724,24 +2697,6 @@
       "member": "link_word",
       "pointer": null,
       "code": "g_player_object->hdr.link_word_high = 0;"
-    },
-    {
-      "source": "src/movement.c",
-      "function": "reticle_object_pick",
-      "line": 378,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "DAT_00086999 = (undefined1)((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU);"
-    },
-    {
-      "source": "src/movement.c",
-      "function": "reticle_object_pick",
-      "line": 379,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "DAT_0008699a = (undefined1)(((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU) >> 8);"
     },
     {
       "source": "src/movement.c",
@@ -3372,15 +3327,6 @@
       "member": "chain_word",
       "pointer": null,
       "code": "puVar1 = resolve_object_link(&puVar1->chain_word);"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "settle_dropped_object",
-      "line": 1551,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "uVar8 = (int)((uw_object_hdr_t *)psVar7)->type_flags_signed & 0x1ff;"
     },
     {
       "source": "src/objects.c",

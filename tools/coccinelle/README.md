@@ -1471,3 +1471,37 @@ errors. Raw audited accesses fall from 12 to seven; 74 byte views, 451 packed
 accesses and nine signed views remain. Those counts exclude unrecorded aliases
 and other structures and are not proof of completion. The remaining raw NPC
 AI-flag bit and trap status padding-bit accesses need separate semantic evidence.
+
+## Explicitly promoted field reads
+
+`generate_promoted_field_read_rules.py` / `promoted-field-reads.cocci` extend the
+read catalog to expressions where Ghidra casts a signed or unsigned word to
+`int`/`uint` before applying a documented field mask. The rules support pointer
+and value receivers, masked shifts, positioned masks and unsigned mask literals.
+They retain an explicit `int` or `uint` cast on the named field: the source cast
+and mask suffix determine the expression's signedness, which can affect later
+comparisons with negative values. An explicit cast also preserves the expression
+type instead of exposing a narrow bitfield to `sizeof` or `_Generic`.
+
+These rules deliberately exclude unmasked sign-extending shifts, cross-field
+masks, narrower `short` casts and whole-word copies. Receivers are evaluated once.
+The source sweep replaces object-ID extraction in cursor selection, barter icon
+redraw, dropped-object handling, positional-audio heading extraction and the
+movement object's byte encoding. The
+remaining byte shifts in that last case encode an ID into two output bytes;
+they are not object property reads and remain unchanged.
+
+`promoted_struct_fields` verifies reproducible generation, transformation to the
+expected property, exclusions and idempotence. It compares original and converted
+values for every 16-bit input using the actual UW1 layouts, and separately checks
+expression types and comparisons against -1. A callback receiver checks single
+evaluation. Run with `--asan` for AddressSanitizer; CTest registration is under
+`UW_SPATCH_TESTS=ON`.
+
+The matrix covers 1,489 expressions x 65,536 inputs (97,583,104 comparisons)
+and passes under AddressSanitizer. All 71 default suites pass after the six
+source conversions. Signed-word views fall from nine to three; the other
+remaining counts are 74 byte views, 451 packed accesses and seven raw audited
+accesses. The remaining signed views in `redraw_barter_slot_icon` include a
+negative mask and an explicit narrow cast; those forms remain separate work
+items, along with the broader packed-access inventory and unrecorded aliases.

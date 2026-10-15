@@ -1548,7 +1548,7 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
            ((ushort)(byte)(&DAT_00202c38)[cVar4 * 6] != *(ushort *)(DAT_00202c6c + 4))) break;
         DAT_00086998 = cVar4;
         psVar7 = (short *)resolve_object_link(&DAT_00202c3a + cVar4 * 6);
-        uVar8 = (int)((uw_object_hdr_t *)psVar7)->type_flags_signed & 0x1ff;
+        uVar8 = (int)((uw_object_hdr_t *)psVar7)->object_id;
         DAT_00086999 = (undefined1)uVar8;
         DAT_0008699a = (undefined1)(uVar8 >> 8);
         if ((g_object_type_props[(short)uVar8].flags & 2) == 2) {
