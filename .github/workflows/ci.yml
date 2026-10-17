@@ -12,8 +12,8 @@ env:
   ZIG_VERSION: 0.16.0
 
 jobs:
-  # Unit tests that do not need the real game data (data/ is not in the repo; see
-  # tests/needs-data.txt for the ones that are skipped). The suite builds with CMake.
+  # Unit tests, which run against synthetic game data (data/ is not in the repo; see
+  # tests/unit-cases.txt). The suite builds with CMake.
   unit-tests:
     name: Unit tests (${{ matrix.name }})
     runs-on: ${{ matrix.os }}

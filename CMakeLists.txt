@@ -13,6 +13,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_compile_definitions(_GNU_SOURCE)
 endif()
 
+# Directory the unit tests read game data from. Defaults to the real data/ folder; point it at a
+# synthetic tree (tests/tools/make_synthetic_data.py) to run without the real game files.
+set(UW_TEST_DATA_DIR "${PROJECT_SOURCE_DIR}/data" CACHE PATH "Game data directory used by the unit tests")
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 
@@ -97,7 +101,7 @@ target_compile_options(uw_game_objs PRIVATE
   -Wno-pointer-sign
   -fno-common
 )
-target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_executable(uw_dbg src/program_main.c $<TARGET_OBJECTS:uw_game_objs>)
 

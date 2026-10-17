@@ -16,3 +16,4 @@ __pycache__/
 zig-out/
 zig-pkg/
 build-tests/
+build-integration/
