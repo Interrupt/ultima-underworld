@@ -107,6 +107,8 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
         .sanitize_c = .off,
     });
+    // glibc hides dladdr/Dl_info and friends unless _GNU_SOURCE is defined.
+    mod.addCMacro("_GNU_SOURCE", "1");
     mod.addIncludePath(b.path("third_party/hxcmod"));
     mod.addIncludePath(b.path("third_party/openabyss"));
 
