@@ -29,11 +29,11 @@ static undefined4 DAT_00101954;
    lone `short`/`undefined1`/`undefined2` scalars, but movement_collision_sweep and its siblings... */
  undefined1 DAT_00204880_backing[128];
 short DAT_00201c70;
-undefined2 DAT_00201b60;
+undefined2 g_game_mode;
 /* Was `undefined2` (unsigned) -- change_game_mode/FUN_0003bd48 (see their own "0x80, see
    DAT_00085668's comment" sites) cast this to `int` and compare against the 32-bit sentinel
-   `0xffffffff` to detect "dispatch disabled" (set via `DAT_00201b64 = 0xffff;`, uw.c ~27530/27774). */
-short DAT_00201b64;
+   `0xffffffff` to detect "dispatch disabled" (set via `g_mode_handler_row = 0xffff;`, uw.c ~27530/27774). */
+short g_mode_handler_row;
 short DAT_00201c94;
 undefined4 DAT_0024cfc8;
 undefined4 DAT_002028d8;
@@ -3330,9 +3330,9 @@ void handle_player_death_and_menu_transition(short reason)
   pcVar2 = (code *)0;
   /* Same 64-bit pointer-sentinel fix as change_game_mode's own identical
      guard -- see its comment. */
-  bVar3 = DAT_00201b64 != -1;
+  bVar3 = g_mode_handler_row != -1;
   if (bVar3) {
-    pcVar2 = *(code **)(&DAT_000856a4 + (int)DAT_00201b64 * 0x80);
+    pcVar2 = *(code **)(&DAT_000856a4 + (int)g_mode_handler_row * 0x80);
   }
   if (bVar3 && pcVar2 != (code *)0x0) {
     (*pcVar2)();
@@ -3340,9 +3340,9 @@ void handle_player_death_and_menu_transition(short reason)
   *(undefined1 *)(DAT_00085a6c + 8) = 0;
   *(undefined1 *)(DAT_00085a6c + 9) = 0;
   DAT_00085a6c[4] = 0; /* mirror to the real byte-8 mode field -- see set_game_mode */
-  sVar1 = DAT_00201b64;
-  DAT_00201b60 = 0;
-  DAT_00201b64 = 0xffff;
+  sVar1 = g_mode_handler_row;
+  g_game_mode = 0;
+  g_mode_handler_row = 0xffff;
   DAT_00201c98 = 0;
   if (reason == 1) {
     decrement_cursor_hide_depth();
@@ -3352,8 +3352,8 @@ void handle_player_death_and_menu_transition(short reason)
   fade_active_palette_to_black(auStack_31c,2);
   main_menu_loop(0);
   DAT_00201c98 = 1;
-  DAT_00201b60 = (undefined2)(1 << ((int)sVar1 & 0xffU));
-  DAT_00201b64 = sVar1;
+  g_game_mode = (undefined2)(1 << ((int)sVar1 & 0xffU));
+  g_mode_handler_row = sVar1;
   /* 0x80, see DAT_00085668's comment. */
   (**(code **)(&DAT_00085668 + sVar1 * 0x80))();
 }

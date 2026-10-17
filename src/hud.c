@@ -767,7 +767,7 @@ void cursor_mode_button_click(short button_y)
   uint uVar6;
   int iVar7;
   
-  if ((g_cursor_holding_state == 0) && ((short)DAT_00201b60 == 1)) {
+  if ((g_cursor_holding_state == 0) && ((short)g_game_mode == 1)) {
     iVar7 = (int)button_y;
     if (iVar7 == -1) {
       if (DAT_000868d8 == 0) {
@@ -849,7 +849,7 @@ void cursor_mode_button_click_restricted(int button_y)
   uint uVar4;
   int iVar5;
   
-  if ((g_cursor_holding_state == 0) && ((short)DAT_00201b60 == 1)) {
+  if ((g_cursor_holding_state == 0) && ((short)g_game_mode == 1)) {
     iVar5 = (int)button_y;
     if (iVar5 == -1) {
       if (DAT_000868d8 == 0) {
@@ -921,7 +921,7 @@ void main_loop_hud_flush()
     /* Bit 0's enter_dungeon_view handler must fade the outgoing screen
        before drawing the dungeon. Do not overwrite it with this added
        per-tick redraw before the original transition handler runs. */
-    if (_force && DAT_00201b64 == 0 && DAT_00201c90 == 0 &&
+    if (_force && g_mode_handler_row == 0 && DAT_00201c90 == 0 &&
         (DAT_00201c84 & 1) == 0) {
       _did_force_redraw = 1;
       if (dungeon_palette_cycle_tick()) {
@@ -1936,7 +1936,7 @@ int message_scroll_print_wrapped(char *text)
   #define auStack_54 auStack_54_backing
   #define local_23 (auStack_54_backing + 49)
 
-  iVar2 = (int)(short)DAT_00201b60;
+  iVar2 = (int)(short)g_game_mode;
   /* Debug: log every string handed to the message scroll. text is NULL at the call sites that
      only flush a pending inline graphic token (get_message_string). */
 
@@ -5868,13 +5868,13 @@ void draw_idle_mouse_cursor()
     if (DAT_000868dc != 7) {
       return;
     }
-    if ((((ushort)DAT_00201b60 & 4) != 0) && (g_cursor_mode == 3)) {
+    if ((((ushort)g_game_mode & 4) != 0) && (g_cursor_mode == 3)) {
       return;
     }
-    if ((((ushort)DAT_00201b60 & 2) != 0) && (DAT_0023c63c != 0)) {
+    if ((((ushort)g_game_mode & 2) != 0) && (DAT_0023c63c != 0)) {
       return;
     }
-    if ((((ushort)DAT_00201b60 & 0xc9) != 0)) {
+    if ((((ushort)g_game_mode & 0xc9) != 0)) {
       if (g_mouse_x < DAT_00204838) {
         return;
       }
@@ -5978,7 +5978,7 @@ void reset_cursor_confine_rect()
   DAT_00204830 = 0x13f;
   DAT_002047d8 = 199;
   DAT_00204834 = 199;
-  if (((ushort)DAT_00201b60 & 0xc9) != 0) {
+  if (((ushort)g_game_mode & 0xc9) != 0) {
     DAT_00204838 = DAT_0020471c + 0x35;
     DAT_002047dc = 0xdf - DAT_0020471c;
     DAT_0020483c = DAT_00204748 + 0x12;

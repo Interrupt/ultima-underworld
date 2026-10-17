@@ -8,7 +8,7 @@ undefined *DAT_00250704;
 char *DAT_000879b0;
 byte *g_draw_color_index = &draw_color;
 undefined1 *DAT_00084298 = &text_mode;
-ushort DAT_00201b60;
+ushort g_game_mode;
 int DAT_00250718;
 undefined4 DAT_00250708, DAT_0025071c, DAT_00250720, g_scroll_control_codes_enabled;
 undefined2 DAT_00250714;
@@ -41,7 +41,7 @@ void scroll_messages_fixture_reset(void)
     panel[1] = 127; /* Room for text without the modal MORE prompt. */
     panel[3] = 240;
     font[3] = 1;
-    DAT_00201b60 = 1;
+    g_game_mode = 1;
     DAT_00250718 = DAT_00250708 = DAT_0025071c = DAT_00250720 = 0;
     DAT_00250714 = DAT_00250710 = 0;
     g_scroll_control_codes_enabled = 1;

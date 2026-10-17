@@ -12,7 +12,7 @@ int decode_critter_sprite_page(int page, int tier, short direction, short palett
 uw_object_hdr_t *alloc_object_slot(int mobile);
 void *tilemap_lookup(short x, short y);
 uw_object_hdr_t *resolve_object_link(ushort *link);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 void record_placement(ushort *object);
 uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
 				       int mode);

@@ -5,7 +5,7 @@ static ushort player[16];
 char *DAT_00086df8, *DAT_0023be74;
 uw_mobile_object_t *g_player_object;
 short DAT_00201b68;
-undefined2 DAT_00201b60, g_cursor_holding_state, g_cursor_mode, DAT_000868d8;
+undefined2 g_game_mode, g_cursor_holding_state, g_cursor_mode, DAT_000868d8;
 static short click_position[2];
 short *DAT_00085a6c = click_position;
 undefined1 DAT_0023c118_arr[9], DAT_0023c130, g_active_hud_panel;
@@ -52,7 +52,7 @@ void weapon_ready_fixture_reset(void)
     DAT_0023c260 = DAT_0023c1ec = 0;
     DAT_0023c1d8 = DAT_0023c1dc = DAT_0023c1e0 = 0;
     g_cursor_mode = g_cursor_holding_state = DAT_000868d8 = 0;
-    DAT_00201b60 = 1;
+    g_game_mode = 1;
     music_track = 0;
     weapon_draws = weapon_sprite_loads = 0;
     g_selected_object = NULL;

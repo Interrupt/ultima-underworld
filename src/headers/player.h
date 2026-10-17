@@ -115,8 +115,11 @@ int debug_set_player_level(int level);
 int debug_set_skill(int index, int value);
 void debug_skills_changed(void);
 extern undefined4 DAT_002020d4;
-extern undefined2 DAT_00201b60;
-extern short DAT_00201b64;
+/* Logical game mode, set by set_game_mode: 1 gameplay, 2 automap, 4 conversation. */
+extern undefined2 g_game_mode;
+/* Row of the mode handler table that set_game_mode selected for g_game_mode: 0 dungeon view, 1 automap,
+   2 talk; -1 (0xffff) before the first mode is set, which disables dispatch. */
+extern short g_mode_handler_row;
 extern code *DAT_00201c9c;
 
 

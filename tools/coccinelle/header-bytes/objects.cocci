@@ -2974,7 +2974,7 @@ R F(...) {
 
 @receiver_2_w_0_0_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -2989,7 +2989,7 @@ R F(...) {
 
 @receiver_2_w_0_0_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3004,7 +3004,7 @@ R F(...) {
 
 @receiver_2_w_0_0_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3019,7 +3019,7 @@ R F(...) {
 
 @receiver_2_w_0_0_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3034,7 +3034,7 @@ R F(...) {
 
 @receiver_2_w_0_0_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3061,7 +3061,7 @@ R F(...) {
 
 @receiver_2_w_0_0_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3088,7 +3088,7 @@ R F(...) {
 
 @receiver_2_w_0_0_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3115,7 +3115,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_0_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3148,7 +3148,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_0_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3181,7 +3181,7 @@ R F(...) {
 
 @receiver_2_w_0_0_address_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3217,7 +3217,7 @@ R F(...) {
 
 @receiver_2_w_0_0_store_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -3254,7 +3254,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_0_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3293,7 +3293,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_1_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3317,7 +3317,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_1_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3341,7 +3341,7 @@ R F(...) {
 
 @receiver_2_w_0_0_address_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3368,7 +3368,7 @@ R F(...) {
 
 @receiver_2_w_0_0_store_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -3396,7 +3396,7 @@ R F(...) {
 
 @receiver_2_w_0_0_byte_1_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3423,7 +3423,7 @@ R F(...) {
 
 @receiver_2_w_2_17_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3438,7 +3438,7 @@ R F(...) {
 
 @receiver_2_w_2_17_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3453,7 +3453,7 @@ R F(...) {
 
 @receiver_2_w_2_17_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3468,7 +3468,7 @@ R F(...) {
 
 @receiver_2_w_2_17_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3483,7 +3483,7 @@ R F(...) {
 
 @receiver_2_w_2_17_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3510,7 +3510,7 @@ R F(...) {
 
 @receiver_2_w_2_17_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3537,7 +3537,7 @@ R F(...) {
 
 @receiver_2_w_2_17_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3564,7 +3564,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_2_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3594,7 +3594,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_2_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3624,7 +3624,7 @@ R F(...) {
 
 @receiver_2_w_2_17_address_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3654,7 +3654,7 @@ R F(...) {
 
 @receiver_2_w_2_17_store_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -3685,7 +3685,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_2_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3718,7 +3718,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_3_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3742,7 +3742,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_3_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3766,7 +3766,7 @@ R F(...) {
 
 @receiver_2_w_2_17_address_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3793,7 +3793,7 @@ R F(...) {
 
 @receiver_2_w_2_17_store_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -3821,7 +3821,7 @@ R F(...) {
 
 @receiver_2_w_2_17_byte_3_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3848,7 +3848,7 @@ R F(...) {
 
 @receiver_2_w_4_34_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3863,7 +3863,7 @@ R F(...) {
 
 @receiver_2_w_4_34_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3878,7 +3878,7 @@ R F(...) {
 
 @receiver_2_w_4_34_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3893,7 +3893,7 @@ R F(...) {
 
 @receiver_2_w_4_34_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -3908,7 +3908,7 @@ R F(...) {
 
 @receiver_2_w_4_34_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3935,7 +3935,7 @@ R F(...) {
 
 @receiver_2_w_4_34_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3962,7 +3962,7 @@ R F(...) {
 
 @receiver_2_w_4_34_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3989,7 +3989,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_4_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4019,7 +4019,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_4_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4049,7 +4049,7 @@ R F(...) {
 
 @receiver_2_w_4_34_address_4@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4079,7 +4079,7 @@ R F(...) {
 
 @receiver_2_w_4_34_store_4@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -4110,7 +4110,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_4_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4143,7 +4143,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_5_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4167,7 +4167,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_5_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4191,7 +4191,7 @@ R F(...) {
 
 @receiver_2_w_4_34_address_5@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4218,7 +4218,7 @@ R F(...) {
 
 @receiver_2_w_4_34_store_5@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -4246,7 +4246,7 @@ R F(...) {
 
 @receiver_2_w_4_34_byte_5_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4273,7 +4273,7 @@ R F(...) {
 
 @receiver_2_w_6_51_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -4288,7 +4288,7 @@ R F(...) {
 
 @receiver_2_w_6_51_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -4303,7 +4303,7 @@ R F(...) {
 
 @receiver_2_w_6_51_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -4318,7 +4318,7 @@ R F(...) {
 
 @receiver_2_w_6_51_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -4333,7 +4333,7 @@ R F(...) {
 
 @receiver_2_w_6_51_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4360,7 +4360,7 @@ R F(...) {
 
 @receiver_2_w_6_51_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4387,7 +4387,7 @@ R F(...) {
 
 @receiver_2_w_6_51_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4414,7 +4414,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_6_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4444,7 +4444,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_6_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4474,7 +4474,7 @@ R F(...) {
 
 @receiver_2_w_6_51_address_6@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4504,7 +4504,7 @@ R F(...) {
 
 @receiver_2_w_6_51_store_6@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -4535,7 +4535,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_6_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4568,7 +4568,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_7_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4592,7 +4592,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_7_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4616,7 +4616,7 @@ R F(...) {
 
 @receiver_2_w_6_51_address_7@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -4643,7 +4643,7 @@ R F(...) {
 
 @receiver_2_w_6_51_store_7@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -4671,7 +4671,7 @@ R F(...) {
 
 @receiver_2_w_6_51_byte_7_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10646,7 +10646,7 @@ R F(...) {
 
 @receiver_7_w_0_0_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -10661,7 +10661,7 @@ R F(...) {
 
 @receiver_7_w_0_0_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -10676,7 +10676,7 @@ R F(...) {
 
 @receiver_7_w_0_0_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -10691,7 +10691,7 @@ R F(...) {
 
 @receiver_7_w_0_0_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -10706,7 +10706,7 @@ R F(...) {
 
 @receiver_7_w_0_0_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10730,7 +10730,7 @@ R F(...) {
 
 @receiver_7_w_0_0_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10754,7 +10754,7 @@ R F(...) {
 
 @receiver_7_w_0_0_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10778,7 +10778,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_0_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10808,7 +10808,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_0_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10838,7 +10838,7 @@ R F(...) {
 
 @receiver_7_w_0_0_address_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10865,7 +10865,7 @@ R F(...) {
 
 @receiver_7_w_0_0_store_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -10893,7 +10893,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_0_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10923,7 +10923,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_1_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10944,7 +10944,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_1_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10965,7 +10965,7 @@ R F(...) {
 
 @receiver_7_w_0_0_address_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -10986,7 +10986,7 @@ R F(...) {
 
 @receiver_7_w_0_0_store_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -11008,7 +11008,7 @@ R F(...) {
 
 @receiver_7_w_0_0_byte_1_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11029,7 +11029,7 @@ R F(...) {
 
 @receiver_7_w_2_17_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11044,7 +11044,7 @@ R F(...) {
 
 @receiver_7_w_2_17_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11059,7 +11059,7 @@ R F(...) {
 
 @receiver_7_w_2_17_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11074,7 +11074,7 @@ R F(...) {
 
 @receiver_7_w_2_17_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11089,7 +11089,7 @@ R F(...) {
 
 @receiver_7_w_2_17_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11113,7 +11113,7 @@ R F(...) {
 
 @receiver_7_w_2_17_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11137,7 +11137,7 @@ R F(...) {
 
 @receiver_7_w_2_17_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11161,7 +11161,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_2_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11188,7 +11188,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_2_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11215,7 +11215,7 @@ R F(...) {
 
 @receiver_7_w_2_17_address_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11239,7 +11239,7 @@ R F(...) {
 
 @receiver_7_w_2_17_store_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -11264,7 +11264,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_2_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11291,7 +11291,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_3_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11312,7 +11312,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_3_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11333,7 +11333,7 @@ R F(...) {
 
 @receiver_7_w_2_17_address_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11354,7 +11354,7 @@ R F(...) {
 
 @receiver_7_w_2_17_store_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -11376,7 +11376,7 @@ R F(...) {
 
 @receiver_7_w_2_17_byte_3_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11397,7 +11397,7 @@ R F(...) {
 
 @receiver_7_w_4_34_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11412,7 +11412,7 @@ R F(...) {
 
 @receiver_7_w_4_34_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11427,7 +11427,7 @@ R F(...) {
 
 @receiver_7_w_4_34_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11442,7 +11442,7 @@ R F(...) {
 
 @receiver_7_w_4_34_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11457,7 +11457,7 @@ R F(...) {
 
 @receiver_7_w_4_34_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11481,7 +11481,7 @@ R F(...) {
 
 @receiver_7_w_4_34_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11505,7 +11505,7 @@ R F(...) {
 
 @receiver_7_w_4_34_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11529,7 +11529,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_4_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11556,7 +11556,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_4_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11583,7 +11583,7 @@ R F(...) {
 
 @receiver_7_w_4_34_address_4@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11607,7 +11607,7 @@ R F(...) {
 
 @receiver_7_w_4_34_store_4@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -11632,7 +11632,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_4_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11659,7 +11659,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_5_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11680,7 +11680,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_5_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11701,7 +11701,7 @@ R F(...) {
 
 @receiver_7_w_4_34_address_5@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11722,7 +11722,7 @@ R F(...) {
 
 @receiver_7_w_4_34_store_5@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -11744,7 +11744,7 @@ R F(...) {
 
 @receiver_7_w_4_34_byte_5_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11765,7 +11765,7 @@ R F(...) {
 
 @receiver_7_w_6_51_pair_char_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11780,7 +11780,7 @@ R F(...) {
 
 @receiver_7_w_6_51_pair_char_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11795,7 +11795,7 @@ R F(...) {
 
 @receiver_7_w_6_51_pair_byte_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11810,7 +11810,7 @@ R F(...) {
 
 @receiver_7_w_6_51_pair_byte_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 identifier V;
 @@
@@ -11825,7 +11825,7 @@ R F(...) {
 
 @receiver_7_w_6_51_word_ushort@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11849,7 +11849,7 @@ R F(...) {
 
 @receiver_7_w_6_51_word_undefined2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11873,7 +11873,7 @@ R F(...) {
 
 @receiver_7_w_6_51_word_short@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, undefined2, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11897,7 +11897,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_6_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11924,7 +11924,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_6_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11951,7 +11951,7 @@ R F(...) {
 
 @receiver_7_w_6_51_address_6@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -11975,7 +11975,7 @@ R F(...) {
 
 @receiver_7_w_6_51_store_6@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -12000,7 +12000,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_6_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -12027,7 +12027,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_7_byte@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -12048,7 +12048,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_7_undefined1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -12069,7 +12069,7 @@ R F(...) {
 
 @receiver_7_w_6_51_address_7@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -12090,7 +12090,7 @@ R F(...) {
 
 @receiver_7_w_6_51_store_7@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, ushort, uw_object_hdr_t;
 expression E;
 @@
@@ -12112,7 +12112,7 @@ R F(...) {
 
 @receiver_7_w_6_51_byte_7_char@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef byte, undefined1, ushort, uw_object_hdr_t;
 @@
 R F(...) {

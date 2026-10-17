@@ -27,8 +27,8 @@ static void snapshot_new_game(void)
     seen.tile_x = g_player_object->tile_x;
     seen.tile_y = g_player_object->tile_y;
     seen.player_tile_index = DAT_00202080;
-    seen.mode = DAT_00201b60;
-    seen.mode_dispatch = DAT_00201b64;
+    seen.mode = g_game_mode;
+    seen.mode_dispatch = g_mode_handler_row;
     seen.hp = g_player_object->npc_hp;
     seen.arena_marker = *(unsigned short *)(DAT_002029cc + 0x7c06);
     test_game_request_exit();

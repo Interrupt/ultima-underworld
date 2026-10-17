@@ -80,7 +80,7 @@ typedef struct {
 
 /* Dungeon-view (3D) player movement is polled from the physical keyboard state every pump
    (poll_dungeon_movement_keys), DOS-style, rather than driven off discrete key events. */
-extern short DAT_00201b64;   /* game mode; 0 == in-game 3D dungeon view */
+extern short g_mode_handler_row;   /* mode handler row; 0 == in-game 3D dungeon view */
 extern int g_text_input_active;       /* scroll_text_entry_prompt's (was FUN_0007ffa8) text-entry loop is running (save-name field, "Move how many", "Chant the mantra", etc); see its own comment in uw.c */
 extern unsigned short DAT_0023c448;   /* latched pending input code */
 extern int DAT_000876c8;              /* set by WM_KEYUP; main loop then clears DAT_0023c448 */
@@ -161,10 +161,10 @@ static int translate_vk(SDL_Keycode sym) {
    those keys. SHIFT+WASD is excluded so it still drives the game's stepped (tile-based, key-repeat)
    move handler, as in the DOS controls. */
 static int in_dungeon_freelook(void) {
-    if (DAT_00201b64 != 0) return 0;
+    if (g_mode_handler_row != 0) return 0;
     /* A text-entry field (save-name, "Move how many", "Chant the mantra", ...) is a scroll-area
        overlay drawn on top of the dungeon view without ever changing the top-level game mode, so
-       DAT_00201b64 alone can't tell them apart... */
+       g_mode_handler_row alone can't tell them apart... */
     if (g_text_input_active) return 0;
     /* SDL_GetModState() only reflects modifier keys that came through the real OS input backend --
        a demo-injected SDLK_LSHIFT (uw_inject_key_down, which SDL_PushEvent()s the event rather than
@@ -330,7 +330,7 @@ int uw_service_game_clock(uint64_t now_us)
     /* The original release waits already dispatch normal game handlers.
        Service their clock just like the outer loop, without special item
        or mouse-button checks. Modal views retain ownership of drawing. */
-    if (DAT_00201b64 != 0 || DAT_00201c90 != 0) return 0;
+    if (g_mode_handler_row != 0 || DAT_00201c90 != 0) return 0;
     if (!uw_claim_frame(&g_game_pacing, now_us)) return 0;
     g_uw_frame_clock_units = (unsigned int)(g_game_pacing.frame_number * 250 / 60);
     DAT_00201c84 |= 2;
@@ -459,7 +459,7 @@ void uw_pump_events(void) {
                 }
                 /* Only in the 3D view: in a text prompt, holding the key must keep typing. */
                 if (ev.type == SDL_KEYDOWN && ev.key.repeat && is_hotkey_sym(ev.key.keysym.sym) &&
-                    DAT_00201b64 == 0 && !g_text_input_active) {
+                    g_mode_handler_row == 0 && !g_text_input_active) {
                     g_skip_repeat_hotkey_char = 1;
                 }
                 /* SDL auto-repeats a held key as a stream of SDL_KEYDOWN events; the game's
@@ -477,7 +477,7 @@ void uw_pump_events(void) {
                 /* TAB (combat-mode toggle) has no SDL_TEXTINPUT; hand it to the game's key bindings as the
                    WM_CHAR 0x09 they are registered for, once per press, in the 3D view only. */
                 if (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_TAB &&
-                    DAT_00201b64 == 0 && !g_text_input_active) {
+                    g_mode_handler_row == 0 && !g_text_input_active) {
                     handle_keyboard_message(0, 0x102u, 9u);
                     return;
                 }
@@ -486,7 +486,7 @@ void uw_pump_events(void) {
                    GXGetDefaultKeys), which is right for its menus. In the 3D view (SHIFT held, so
                    the stepped movement handler runs) route each arrow to the VK that triggers the
                    movement it names: up forward, down backward, left/right turn. */
-                if (DAT_00201b64 == 0 && !g_text_input_active) {
+                if (g_mode_handler_row == 0 && !g_text_input_active) {
                     switch (vk) {
                         case VK_UP: vk = VK_LEFT; break;     /* forward  */
                         case VK_DOWN: vk = VK_RIGHT; break;  /* backward */

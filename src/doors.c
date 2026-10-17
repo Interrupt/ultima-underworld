@@ -1,6 +1,13 @@
 /* Door open/close/toggle handlers and the doors.GR frame-buffer allocator.
    close_door_object/open_door_object/toggle_door_object were originally
    FUN_0007c580/FUN_0007c708/FUN_0007c814... */
+/* Read this before trusting the names. A door's id low nibble is its state: < 8 closed ("a door"),
+   >= 8 open ("an open door"). On a door in its resting state the pair works the opposite way round
+   from its names: close_door_object proceeds only for a CLOSED door (nibble < 8) and starts it
+   swinging open, open_door_object proceeds only for an OPEN one and swings it shut, and
+   toggle_door_object picks accordingly. On a door already swinging (object id 0x1cf, whose quality
+   nibble is the target state) the names read the right way: open adds 8, close subtracts 8. Callers
+   (traps case 8, BABL gronk_door, Use) pass the original's argument order, so the names stay. */
 #include "headers/doors.h"
 #include "headers/options.h"
 #include <stdio.h>

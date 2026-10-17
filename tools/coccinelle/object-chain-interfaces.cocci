@@ -124,20 +124,20 @@ typedef ushort, uw_object_hdr_t;
 + R encode_object_slot_index(const uw_object_hdr_t *P)
  ;
 
-@object_ptr_in_arena_definition@
+@object_is_mobile_definition@
 type R;
 identifier P;
 typedef ushort, uw_object_hdr_t;
 @@
-- R object_ptr_in_arena(void *P)
-+ R object_ptr_in_arena(const uw_object_hdr_t *P)
+- R object_is_mobile(void *P)
++ R object_is_mobile(const uw_object_hdr_t *P)
  { ... }
 
-@object_ptr_in_arena_prototype@
+@object_is_mobile_prototype@
 type R;
 identifier P;
 typedef ushort, uw_object_hdr_t;
 @@
-- R object_ptr_in_arena(void *P)
-+ R object_ptr_in_arena(const uw_object_hdr_t *P)
+- R object_is_mobile(void *P)
++ R object_is_mobile(const uw_object_hdr_t *P)
  ;

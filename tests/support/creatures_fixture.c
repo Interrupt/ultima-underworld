@@ -75,7 +75,7 @@ uw_object_hdr_t *resolve_object_link(ushort *link_)
     return !slot ? NULL : slot < 256 ? DAT_002046b8 + slot * 27
         : DAT_002046c4 + (slot - 256) * 8;
 }
-int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
+int object_is_mobile(const uw_object_hdr_t *object) { (void)object; return 1; }
 void record_placement(ushort *object)
 {
     TEST_ASSERT_LESS_THAN_UINT(16, placed);

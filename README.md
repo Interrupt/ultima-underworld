@@ -2,10 +2,13 @@
 
 <img width="752" height="620" alt="Screenshot 2026-09-20 at 1 18 42 AM" src="https://github.com/user-attachments/assets/50cac1ef-6723-49c9-bf5a-30fef6fc100a" />
 
-`uw.c`/`uw.h` are a Ghidra decompile of `UU.exe`, the Windows CE (Pocket
+`src/` is a Ghidra decompile of `UU.exe`, the Windows CE (Pocket
 PC) port of Ultima Underworld 1 (originally shipped by ZIO Interactive for
 devices like the HP Jornada 540 — the folder name says "PPC" but that
-means Pocket PC, not PowerPC; the actual binary is MIPS). This tree adds
+means Pocket PC, not PowerPC; the binary is ARM, which is what the
+disassembly cited throughout the source comments shows). The decompile
+was once a single `uw.c`; every function and global has since been split
+into the module that owns it (see the directory guide). This tree adds
 everything needed to compile that raw decompile as a native macOS binary
 and run it against the real game data files, with the WinCE platform
 layer (coredll ordinals, GAPI/`GX*` graphics+input, file I/O) stubbed or
@@ -265,8 +268,10 @@ resource-loading path that hasn't fully stabilized into the game's main
 loop yet.
 
 Known-incomplete / best-effort areas:
-- **Sound**: not wired up at all (no coredll waveOut-equivalent
-  implemented yet).
+- **Sound**: the original in-process MOD player in `audio.c` cannot run (it
+  stored 32-bit pointers), so sound goes through the `platform_music.c`,
+  `platform_sfx.c`, `platform_voice.c` and `platform_dosmidi.c` backends
+  instead; see the audio notes above.
 - **A handful of UI icon/graphic files** may still 404 under the wrong
   filename — some path-building code references a lookup table whose
   actual string contents Ghidra couldn't recover (see "Unrecoverable
@@ -364,8 +369,9 @@ is very easy to misdiagnose as a hang.
 
 ## Directory guide
 
-- `uw.c` / `uw.h` — the decompile, mechanically and manually patched (see
-  above).
+- `src/*.c` / `src/headers/` — the decompile, mechanically and manually
+  patched (see above), one module per subsystem with a matching header.
+  `uw.h` keeps only the shared types and macros.
 - `ghidra_intrinsics.h` — `CONCATxy`/`SUBab`/`SBORROW4`/`SCARRY4`
   standard Ghidra decompiler intrinsics.
 - `ordinal_stubs.c/.h` — coredll ordinal-import stubs; regenerate with

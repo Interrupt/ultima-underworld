@@ -185,7 +185,7 @@ static void test_modal_views_do_not_advance_game_time_or_request_dungeon_redraw(
     TEST_ASSERT_EQUAL_UINT(start, g_uw_frame_clock_units);
     TEST_ASSERT_EQUAL_INT(0, DAT_00201c84);
     DAT_00201c90 = 0;
-    DAT_00201b64 = 1;
+    g_mode_handler_row = 1;
     uw_service_game_clock(1000000);
     TEST_ASSERT_EQUAL_UINT(start, g_uw_frame_clock_units);
     TEST_ASSERT_EQUAL_INT(0, DAT_00201c84);

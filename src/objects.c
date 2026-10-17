@@ -650,7 +650,7 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
         for (puVar11 = (ushort *)(pbVar10 + 2); (*puVar11 & 0xffc0) != 0; puVar11 = puVar11 + 2) {
           puVar11 = (ushort *)resolve_object_link(puVar11);
           if ((g_object_type_props[(*puVar11 & 0x1ff)].height != '\0') ||
-              (iVar12 = object_ptr_in_arena(puVar11), iVar12 != 0)) {
+              (iVar12 = object_is_mobile(puVar11), iVar12 != 0)) {
             discard_misplaced_object(pbVar10 + 2,puVar11,0);
           }
         }
@@ -811,7 +811,7 @@ LAB_00039638:
 
 
 // was FUN_0003ae00 -- object-tree-walk callback (via
-// walk_object_tree/clear_temp_flags_on_all_objects): for a non-arena object (object_ptr_in_arena)
+// walk_object_tree/clear_temp_flags_on_all_objects): for a non-arena object (object_is_mobile)
 // whose class isn't a door (0x140) or other special type (0x180)...
 int clear_object_temp_flag_callback(ushort *object)
 {
@@ -819,7 +819,7 @@ int clear_object_temp_flag_callback(ushort *object)
   int iVar2;
   uint uVar3;
 
-  iVar2 = object_ptr_in_arena(object);
+  iVar2 = object_is_mobile(object);
   if (iVar2 == 0) {
     uVar3 = ((uw_object_hdr_t *)object)->object_id & 0x1c0;
     if (((uVar3 != 0x140) && (uVar3 != 0x180)) &&
@@ -1230,7 +1230,7 @@ uw_object_hdr_t *get_object_record_by_slot_index(short slot_index)
   }
   else if (iVar1 < 0) {
     /* No caller has ever legitimately passed a negative slot -- a real UW1 level has exactly 1024
-       object slots (0-0x3ff), 256 static + 768 mobile -- but nothing bounded the input... */
+       object slots (0-0x3ff), 256 mobile (27-byte) + 768 static (8-byte) -- but nothing bounded the input... */
     DEBUG(ERR, "[get_object_record_by_slot_index] negative slot %d, returning NULL\n", (int)slot_index);
     iVar1 = 0;
   }
@@ -1241,7 +1241,7 @@ uw_object_hdr_t *get_object_record_by_slot_index(short slot_index)
     iVar1 = (intptr_t)DAT_002046c4 + (iVar1 + -0x100) * 8;
   }
   else {
-    /* >= 1024: past the real 768-slot mobile-object table
+    /* >= 1024: past the real 768-slot static-object table
        (DAT_002046c4..+0x1800) -- same corrupted/out-of-range slot class
        as the negative case above. */
     DEBUG(ERR, "[get_object_record_by_slot_index] slot %d exceeds 0x3ff, returning NULL\n", (int)slot_index);
@@ -1286,7 +1286,9 @@ LAB_00053720:
 
 
 // was FUN_00053728
-int object_ptr_in_arena(const uw_object_hdr_t *object_ptr)
+/* True for a non-null object in the mobile table (27-byte slots, below the static table). Was named
+   object_ptr_in_arena, which read as "is in the object arena" -- both tables are in the arena. */
+int object_is_mobile(const uw_object_hdr_t *object_ptr)
 {
   char *object = (char *)object_ptr;
   undefined4 uVar1;
@@ -1805,7 +1807,7 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 
 // was FUN_00055610 -- the "spawn and replace" mechanism: allocate a fresh low-region object slot
 // (alloc_object_slot(1), same allocator spawn_object_near_player uses -- the only region
-// emit_tile_objects's object_ptr_in_arena gate treats as renderable)...
+// emit_tile_objects's object_is_mobile gate treats as renderable)...
 uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
 {
   char *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
@@ -1875,7 +1877,7 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
   *(byte *)((char *)object + 3) =
        (byte)((uVar1 & 0x3ff) >> 8) | (byte)(((uVar6 & 7 | (uVar4 & 0x1fff) << 3) << 10) >> 8);
   object_list_append_tail(pTile + 2,object);
-  iVar5 = object_ptr_in_arena(object);
+  iVar5 = object_is_mobile(object);
   if (iVar5 == 0) {
     settle_dropped_object(object,(int)uVar4 >> 3,(int)uVar6 >> 3,1);
   }

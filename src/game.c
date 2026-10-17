@@ -2086,8 +2086,8 @@ void init_main_loop_state()
   register_key_binding(0x278,0,0xbd,request_game_exit);
   DAT_00201b6c = 1;
   DAT_00201c84 = 0x7fff;
-  DAT_00201b60 = 0;
-  DAT_00201b64 = 0xffff;
+  g_game_mode = 0;
+  g_mode_handler_row = 0xffff;
   *(undefined1 *)(DAT_00085a6c + 8) = 0;
   *(undefined1 *)(DAT_00085a6c + 9) = 0;
   DAT_00085a6c[4] = 0; /* mirror to the real byte-8 mode field -- see set_game_mode */
@@ -2571,18 +2571,18 @@ void set_game_mode(int mode)
      its `short *` typing) -- that is what the 0x3bc40 disasm writes (`strb [buf,#8]` / `[buf,#9]`)
      and what the keybinding dispatcher dispatch_key_binding reads (`ldrb [state,#8]`). */
   DAT_00085a6c[4] = (short)mode;
-  DAT_00201b60 = (short)mode;
-  if ((short)DAT_00201b60 != 1) {
-    if ((short)DAT_00201b60 == 2) {
-      DAT_00201b64 = 1;
+  g_game_mode = (short)mode;
+  if ((short)g_game_mode != 1) {
+    if ((short)g_game_mode == 2) {
+      g_mode_handler_row = 1;
       goto LAB_0003bcb0;
     }
-    if ((short)DAT_00201b60 == 4) {
-      DAT_00201b64 = 2;
+    if ((short)g_game_mode == 4) {
+      g_mode_handler_row = 2;
       goto LAB_0003bcb0;
     }
   }
-  DAT_00201b64 = 0;
+  g_mode_handler_row = 0;
 LAB_0003bcb0:
   reset_cursor_confine_rect();
 }
@@ -2597,13 +2597,13 @@ void change_game_mode(int mode)
   
   pcVar1 = (code *)0;
   /* Was `pcVar1 != (code *)0xffffffff` -- a 32-bit-pointer-sentinel idiom that's broken on this
-     64-bit host even after fixing DAT_00201b64's own signedness above: `pcVar1` sign-extends from a
+     64-bit host even after fixing g_mode_handler_row's own signedness above: `pcVar1` sign-extends from a
      negative `int` to a full 64-bit all-ones pointer... */
-  bVar2 = DAT_00201b64 != -1;
+  bVar2 = g_mode_handler_row != -1;
   if (bVar2) {
     /* 0x80 = 16 entries/mode * 8 bytes/entry (real pointer size) -- was
        0x40 (*4-byte entries), see DAT_00085668's comment. */
-    pcVar1 = *(code **)(&DAT_000856a4 + (int)DAT_00201b64 * 0x80);
+    pcVar1 = *(code **)(&DAT_000856a4 + (int)g_mode_handler_row * 0x80);
   }
   if (bVar2 && pcVar1 != (code *)0x0) {
     (*pcVar1)();
@@ -2612,12 +2612,12 @@ void change_game_mode(int mode)
     mode = (int)DAT_00201c94;
   }
   else {
-    DAT_00201c94 = (short)DAT_00201b60;
+    DAT_00201c94 = (short)g_game_mode;
   }
   set_game_mode(mode);
   /* 0x80, see DAT_00085668's comment. */
-  if ((DAT_00201b64 != -1) && (*(code **)(&DAT_00085668 + DAT_00201b64 * 0x80) != (code *)0x0)) {
-    (**(code **)(&DAT_00085668 + DAT_00201b64 * 0x80))();
+  if ((g_mode_handler_row != -1) && (*(code **)(&DAT_00085668 + g_mode_handler_row * 0x80) != (code *)0x0)) {
+    (**(code **)(&DAT_00085668 + g_mode_handler_row * 0x80))();
   }
   if ((short)mode != 1) {
     set_pending_update_flags(0x7ffe);

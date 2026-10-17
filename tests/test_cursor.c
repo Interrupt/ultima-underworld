@@ -5,7 +5,7 @@
 short g_mouse_x, g_mouse_y, DAT_00204788, DAT_00204840, DAT_0023c63c;
 short DAT_0020471c, DAT_00204748, DAT_00204784, DAT_002047a4;
 short DAT_00204838, DAT_0020483c, DAT_002047dc, DAT_002047d8;
-undefined2 DAT_000868dc, g_cursor_mode, g_cursor_holding_state, DAT_00201b60;
+undefined2 DAT_000868dc, g_cursor_mode, g_cursor_holding_state, g_game_mode;
 undefined2 DAT_000a85c4, DAT_000a85c8, DAT_000842a4, DAT_000842a8;
 undefined4 DAT_000bbef4, DAT_00204844;
 int DAT_00204848, g_blit_transparent_mode, g_force_flush;
@@ -82,7 +82,7 @@ void setUp(void)
     DAT_00204844=DAT_00204848=0;
     g_selected_object=NULL; g_cursor_mode=g_cursor_holding_state=0;
     g_blit_transparent_mode=g_force_flush=0;
-    DAT_000868dc=7; DAT_00201b60=0;
+    DAT_000868dc=7; g_game_mode=0;
     set_viewport_clip_rect(20,30,40,50);
     dirty_rect_set(31,32,21,22);
     draws=saves=flushes=sprite_id=presents=0;
@@ -94,7 +94,7 @@ void tearDown(void) {}
 static void test_overlay_ignores_stylus_gates_and_restores_render_state(void)
 {
     DAT_000868dc=0; /* Menus also need a hover cursor. */
-    DAT_00201b60=0xcf; g_cursor_mode=3;
+    g_game_mode=0xcf; g_cursor_mode=3;
     DAT_00204840=-2;
     uw_composite_desktop_cursor(display_pixels);
     TEST_ASSERT_EQUAL_INT(1,draws);

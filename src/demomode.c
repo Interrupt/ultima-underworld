@@ -598,8 +598,8 @@ static void demo_exec_line(char *p, Uint32 now) {
     }
 
     if (strcasecmp(p, "OPENMAP") == 0) {
-        /* set_game_mode(2) is the real mode switch: DAT_00201b60 = 2 maps to game-mode index
-           DAT_00201b64 = 1 (the automap), whose entry handler in DAT_00085668's mode-1 row is
+        /* set_game_mode(2) is the real mode switch: g_game_mode = 2 maps to game-mode index
+           g_mode_handler_row = 1 (the automap), whose entry handler in DAT_00085668's mode-1 row is
            enter_automap_screen. */
         demo_printf("[cmd] switching to automap mode (change_game_mode(2))\n");
         change_game_mode(2);

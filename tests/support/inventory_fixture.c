@@ -250,7 +250,7 @@ void inventory_fixture_dispose(void)
 /* Drawing is a boundary service; the real open/refresh/weight functions run. */
 undefined4 DAT_002028a0_backing[16], DAT_002028e8_backing[32];
 undefined4 DAT_00202938, DAT_0020299c, DAT_002029a0;
-undefined2 DAT_00201b60;
+undefined2 g_game_mode;
 undefined1 g_active_hud_panel;
 unsigned char g_inventory_hotspot_table[0x17 * 0xe + 2];
 unsigned char g_backpack_slot_to_widget_backing[0x1c];
@@ -298,7 +298,7 @@ static void reset_container_services(void)
     memset(g_inventory_hotspot_table, 0, sizeof g_inventory_hotspot_table);
     memset(g_backpack_slot_to_widget_backing, 0, sizeof g_backpack_slot_to_widget_backing);
     DAT_00202938 = DAT_0020299c = DAT_002029a0 = 0;
-    DAT_00201b60 = g_active_hud_panel = 0;
+    g_game_mode = g_active_hud_panel = 0;
     g_open_container_list = NULL;
     g_backpack_widget_to_slot_backing[20] = 19;
     container_grid_redraws = container_arrow_redraws = 0;

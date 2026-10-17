@@ -15,8 +15,8 @@ typedef bool, byte, ushort, uint, uw_object_hdr_t, uw_mobile_object_t;
 -        (uVar6 = ((byte) g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&
 +   if (((object_hdr->doordir == 0) && (uVar6 = ((byte)g_object_type_props[(object_hdr->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&
        (iVar5 = (int)damage >> uVar6, 0 < (short)iVar5)) {
--     iVar4 = object_ptr_in_arena(object);
-+     iVar4 = object_ptr_in_arena(object_hdr);
+-     iVar4 = object_is_mobile(object);
++     iVar4 = object_is_mobile(object_hdr);
      if (iVar4 == 0) {
 -       if ((0x13f < (((uw_object_hdr_t *)object)->object_id)) && ((((uw_object_hdr_t *)object)->object_id) < 0x148)) {
 -         uVar2 = ((uw_object_hdr_t *)object)->link_word;

@@ -14,7 +14,7 @@ static void observe(unsigned kind)
     for (unsigned i = 0; i < sizeof record; ++i) events = events * 31 + record[i];
     for (unsigned i = 0; i < sizeof actor; ++i) events = events * 31 + actor[i];
 }
-int object_ptr_in_arena(const uw_object_hdr_t *object)
+int object_is_mobile(const uw_object_hdr_t *object)
 {
     assert(object == header()); ++arena_calls; observe(1);
     if (mutation) {

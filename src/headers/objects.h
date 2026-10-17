@@ -100,7 +100,7 @@ int encode_object_slot_index(const uw_object_hdr_t *object);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot_index);
 uw_object_hdr_t *find_object_by_encoded_slot_in_chain(ushort *link_field,
 						      int recurse, int slot);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 void active_mobile_list_add(byte slot);
 void active_mobile_list_remove(char slot);
 uw_object_hdr_t *find_object_in_chain(ushort **link_cursor, int recurse,

@@ -30,7 +30,7 @@ short g_movement_mode, DAT_0023bf4c;
 ushort DAT_0023c448;
 int DAT_000876c8;
 int held_key_code;
-short DAT_00201b64;
+short g_mode_handler_row;
 short DAT_00201c84;
 undefined2 DAT_00201c90;
 int g_force_flush;
@@ -155,6 +155,6 @@ void inventory_drag_fixture_reset(void)
     g_uw_frame_clock_units = DAT_0023bf54 = DAT_002020d4 = DAT_0023bf58 = 0;
     DAT_000879ac = 1;
     held_key_code = DAT_000876c8 = 0;
-    DAT_00201b64 = DAT_00201c90 = DAT_00201c84 = g_force_flush = 0;
+    g_mode_handler_row = DAT_00201c90 = DAT_00201c84 = g_force_flush = 0;
 }
 void inventory_drag_fixture_dispose(void) {}

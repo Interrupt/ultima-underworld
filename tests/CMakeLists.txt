@@ -1190,7 +1190,7 @@ add_fixture_game_unit_test(sleep
   src/traps.c:check_object_area_for_spawn_block
   src/traps.c:detect_spawn_blocking_object_callback
   src/objects.c:find_object_in_world src/objects.c:find_object_in_chain
-  src/objects.c:object_ptr_in_arena
+  src/objects.c:object_is_mobile
   src/objects.c:despawn_objects_outside_radius
   src/objects.c:should_destroy_linked_object src/ai.c:roll_object_destroy_chance
   src/objects.c:walk_object_tree src/objects.c:object_exceeds_size_threshold

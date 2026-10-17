@@ -16,7 +16,7 @@ char s_font4x5p_sys_0008431c[]="font4x5p.sys", s_font5x6p_sys_0008430c[]="font5x
 static byte draw_color;
 byte *g_draw_color_index=&draw_color, *DAT_00084298=&draw_color;
 short DAT_00201b68=1;
-undefined2 DAT_00201b60;
+undefined2 g_game_mode;
 short g_mouse_x, g_mouse_y, DAT_00204788, DAT_00204840, DAT_0023c63c;
 short DAT_0020471c, DAT_00204748, DAT_00204784, DAT_002047a4;
 short DAT_00204838, DAT_0020483c, DAT_002047dc, DAT_002047d8;
@@ -130,7 +130,7 @@ void automap_storage_fixture_reset(void)
     DAT_00204784=DAT_002047a4=4;
     DAT_00204838=DAT_0020483c=0; DAT_002047dc=319; DAT_002047d8=199;
     DAT_000a85c4=DAT_000a85c8=0; DAT_000842a4=319; DAT_000842a8=199;
-    DAT_00204848=0; g_cursor_mode=0; g_selected_object=NULL; DAT_00201b60=0;
+    DAT_00204848=0; g_cursor_mode=0; g_selected_object=NULL; g_game_mode=0;
 }
 void automap_storage_fixture_dispose(void)
 {

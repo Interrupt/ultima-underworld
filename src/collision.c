@@ -628,7 +628,9 @@ void swap_collision_candidates(uint index)
 
 
 // was FUN_00051dd0 -- insertion-sorts collision_add_candidate_object's candidate list (up to the
-// count at DAT_00202c6c+0x14) by X position then Y position, each pass swapping out-of-order pairs
+// count at DAT_00202c6c+0x14) by top Z, then by base Z (bytes 0 and 1 of each 6-byte record, as
+// collision_add_candidate_object writes them -- not X and Y as this comment once said), each pass
+// swapping out-of-order pairs
 // via swap_collision_candidates...
 void sort_collision_candidates()
 {
@@ -668,8 +670,8 @@ void sort_collision_candidates()
       for (iVar4 = uVar2 - 2; iVar4 = iVar4 * 0x1000000 >> 0x18, iVar6 <= iVar4; iVar4 = iVar4 + -1)
       {
         if ((byte)(&DAT_00202c3f)[iVar4 * 6] < (byte)(&DAT_00202c39)[iVar4 * 6]) {
-          /* Same dropped-argument fix as the X-axis sort pass above --
-             this is the Y-axis pass, swap index is iVar4. */
+          /* Same dropped-argument fix as the top-Z pass above --
+             this is the base-Z pass, swap index is iVar4. */
           swap_collision_candidates(iVar4);
           iVar5 = DAT_00202c6c;
         }

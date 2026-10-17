@@ -98,7 +98,7 @@ void collision_height_envelope(int mode, int collision)
 }
 void resolve_wall_slide_corner(void) { DAT_002049da=9; }
 int check_object_drop_height(ushort *object, ushort *reference) { (void)object; (void)reference; return 1; }
-int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
+int object_is_mobile(const uw_object_hdr_t *object) { (void)object; return 1; }
 int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 0; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; return 0; }
 int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; return 0; }
@@ -182,7 +182,7 @@ void throw_fixture_reset(void)
     active_mobile_list[0]=2; /* the thrown item's slot (launch() places it at arena slot 2) */
     DAT_002046c0=active_mobile_list; DAT_002046c8=active_mobile_list+1;
     g_npc_tick_enabled=1; DAT_002020d0=0; DAT_002020d4=0; DAT_000879ac=1;
-    DAT_00201b64=DAT_00201c84=0; DAT_00201c90=0;
+    g_mode_handler_row=DAT_00201c84=0; DAT_00201c90=0;
     DAT_0023bf54=0; DAT_0023bf58=0;
     DAT_00101928=DAT_00101948=0;
     uw_reset_frame_pacing();

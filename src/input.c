@@ -1183,7 +1183,7 @@ int handle_mouse_message(int window, uint message, uint wparam, int lparam)
        measurable effect" -- that test apparently didn't hit the actual failure window. */
     erase_cursor_icon();
     DAT_00204844 = 0;
-    if ((g_selected_object == 0) && ((DAT_00201b60 & 2) == 0)) {
+    if ((g_selected_object == 0) && ((g_game_mode & 2) == 0)) {
       DAT_00204844 = 0;
     }
     *DAT_000876bc = 0;
@@ -1331,7 +1331,7 @@ uint poll_input_event(int peek_only)
   uint uVar2;
   undefined1 auStack_24 [28];
   
-  if ((short)DAT_00201b60 == 4) {
+  if ((short)g_game_mode == 4) {
     DAT_0023c448 = 0;
   }
   if (peek_only == 0) {
@@ -1685,7 +1685,7 @@ void dispatch_sticky_mode_handlers()
   if (DAT_00201c84 != 0) {
     uVar4 = 1;
     uVar3 = 0;
-    sVar1 = DAT_00201b64;
+    sVar1 = g_mode_handler_row;
     do {
       if ((DAT_00201c84 & uVar4) != 0) {
         DAT_00201c84 = DAT_00201c84 & ~uVar4;
@@ -1693,7 +1693,7 @@ void dispatch_sticky_mode_handlers()
            -- that's the 16-entries-per-mode count, not a byte stride. */
         if (*(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8) != (code *)0x0) {
           (**(code **)(&DAT_00085668 + (uVar3 + sVar1 * 0x10) * 8))();
-          sVar1 = DAT_00201b64;
+          sVar1 = g_mode_handler_row;
         }
       }
       uVar4 = uVar4 << 1;

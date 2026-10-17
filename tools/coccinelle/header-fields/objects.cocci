@@ -776,7 +776,7 @@ R F(...) {
 
 @field_2_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -805,7 +805,7 @@ R F(...) {
 
 @field_2_flags_res disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -864,7 +864,7 @@ R F(...) {
 
 @field_2_enchanted disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -923,7 +923,7 @@ R F(...) {
 
 @field_2_doordir disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -982,7 +982,7 @@ R F(...) {
 
 @field_2_invisible disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1041,7 +1041,7 @@ R F(...) {
 
 @field_2_is_quant disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1106,7 +1106,7 @@ R F(...) {
 
 @field_2_zpos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1135,7 +1135,7 @@ R F(...) {
 
 @field_2_heading disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1164,7 +1164,7 @@ R F(...) {
 
 @field_2_ypos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1205,7 +1205,7 @@ R F(...) {
 
 @field_2_xpos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1252,7 +1252,7 @@ R F(...) {
 
 @field_2_quality disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1281,7 +1281,7 @@ R F(...) {
 
 @field_2_next disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1310,7 +1310,7 @@ R F(...) {
 
 @field_2_owner disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -1339,7 +1339,7 @@ R F(...) {
 
 @field_2_link disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -2920,7 +2920,7 @@ R F(...) {
 
 @field_7_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -2940,7 +2940,7 @@ R F(...) {
 
 @field_7_flags_res disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -2975,7 +2975,7 @@ R F(...) {
 
 @field_7_enchanted disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3010,7 +3010,7 @@ R F(...) {
 
 @field_7_doordir disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3045,7 +3045,7 @@ R F(...) {
 
 @field_7_invisible disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3080,7 +3080,7 @@ R F(...) {
 
 @field_7_is_quant disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3118,7 +3118,7 @@ R F(...) {
 
 @field_7_zpos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3138,7 +3138,7 @@ R F(...) {
 
 @field_7_heading disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3161,7 +3161,7 @@ R F(...) {
 
 @field_7_ypos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3190,7 +3190,7 @@ R F(...) {
 
 @field_7_xpos disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3222,7 +3222,7 @@ R F(...) {
 
 @field_7_quality disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3242,7 +3242,7 @@ R F(...) {
 
 @field_7_next disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3265,7 +3265,7 @@ R F(...) {
 
 @field_7_owner disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {
@@ -3285,7 +3285,7 @@ R F(...) {
 
 @field_7_link disable drop_cast, is_zero, isnt_zero@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, byte, uw_object_hdr_t;
 @@
 R F(...) {

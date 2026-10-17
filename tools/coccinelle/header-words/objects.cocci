@@ -142,7 +142,7 @@ R F(...) {
 
 @word_2_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -165,7 +165,7 @@ R F(...) {
 
 @word_2_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -185,7 +185,7 @@ R F(...) {
 
 @word_2_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -205,7 +205,7 @@ R F(...) {
 
 @word_2_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|free_object_slot\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -509,7 +509,7 @@ R F(...) {
 
 @word_7_0@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -529,7 +529,7 @@ R F(...) {
 
 @word_7_1@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -546,7 +546,7 @@ R F(...) {
 
 @word_7_2@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -563,7 +563,7 @@ R F(...) {
 
 @word_7_3@
 type R;
-identifier F =~ "^\(encode_object_slot_index\|object_ptr_in_arena\)$";
+identifier F =~ "^\(encode_object_slot_index\|object_is_mobile\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {

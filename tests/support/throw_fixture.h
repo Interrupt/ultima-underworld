@@ -19,7 +19,7 @@ void collision_build_height_field(uint step_limit);
 void collision_height_envelope(int mode, int collision);
 void resolve_wall_slide_corner(void);
 int check_object_drop_height(ushort *object, ushort *reference);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias);
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias);
 int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type);

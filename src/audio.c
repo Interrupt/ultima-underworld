@@ -1381,7 +1381,7 @@ void update_ingame_music_track()
       if (iVar1 != 0) {
         uVar2 = (uint)DAT_0023c3a8;
         if ((((*(int *)(&DAT_000873e0 + uVar2 * 4) == 0) || ((1 < uVar2 && (uVar2 < 5)))) &&
-            ((short)DAT_00201b60 == 1)) || (uVar2 = (uint)DAT_0023c384, uVar2 == 0)) {
+            ((short)g_game_mode == 1)) || (uVar2 = (uint)DAT_0023c384, uVar2 == 0)) {
           uVar3 = ce_rand();
           uw_ord2005_rem_151 = ((int)(uVar3)) % (3);
           uVar2 = (uw_ord2005_rem_151 & 0xff) + 2;

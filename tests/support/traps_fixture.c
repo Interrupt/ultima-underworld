@@ -22,7 +22,7 @@ int encode_object_slot_index(const uw_object_hdr_t *object);
 void free_object_slot(uw_object_hdr_t *object);
 void object_list_insert_head(ushort *link_field, uw_object_hdr_t *object);
 void object_list_unlink(ushort *link_field, uw_object_hdr_t *object);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 void open_door_object(void *door);
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object, short radius, int skip_roll);
 void print_message_with_proximity_qualifier(char *message, short x1, short y1, short z1, short x2, short y2, short z2, short limit);
@@ -111,7 +111,7 @@ void object_list_insert_head(ushort *link_field, uw_object_hdr_t *object) { (voi
 
 void object_list_unlink(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Unexpected object_list_unlink in text trap"); }
 
-int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected object_ptr_in_arena in text trap"); return 0; }
+int object_is_mobile(const uw_object_hdr_t *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected object_is_mobile in text trap"); return 0; }
 
 void open_door_object(void *door) { (void)door; TEST_FAIL_MESSAGE("Unexpected open_door_object in text trap"); }
 

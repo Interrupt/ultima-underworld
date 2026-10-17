@@ -24,7 +24,7 @@ void collision_height_envelope(int mode, int collision);
 void collision_build_height_field(uint step_limit);
 void sort_collision_candidates(void);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 uw_object_hdr_t *spawn_new_object(uint type, int mobile);
 uint scheduler_add_entry(uint slot, int delay, byte frame, byte x, byte y);
 void * tilemap_lookup(short x, short y);
@@ -369,7 +369,7 @@ uw_object_hdr_t *get_object_record_by_slot_index(short slot)
     return mobile_objects + slot * 27;
 }
 
-int object_ptr_in_arena(const uw_object_hdr_t *object)
+int object_is_mobile(const uw_object_hdr_t *object)
 { TEST_ASSERT_NOT_NULL(object); return object != wall_effect; }
 
 uw_object_hdr_t *spawn_new_object(uint type, int mobile)

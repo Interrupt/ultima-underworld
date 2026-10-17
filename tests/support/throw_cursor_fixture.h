@@ -15,7 +15,7 @@ void collision_height_envelope(int unused, int mode);
 void collision_build_height_field(uint step_limit);
 void sort_collision_candidates(void);
 int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 ushort *discard_misplaced_object(void *list, ushort *object, int destroy);
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias);
 uw_object_hdr_t *reallocate_object_to_arena(ushort *object);

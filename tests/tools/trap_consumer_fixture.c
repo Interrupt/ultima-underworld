@@ -29,7 +29,7 @@ uw_object_hdr_t *resolve_object_link(ushort *word)
 }
 int check_object_area_for_spawn_block(ushort *p)
 { assert((void *)p==object(0)); observe(3,mode); return mode==4; }
-int object_ptr_in_arena(const uw_object_hdr_t *p)
+int object_is_mobile(const uw_object_hdr_t *p)
 { assert(p==object(0)); observe(4,mode); return mode==1 || mode==7; }
 uw_object_hdr_t *alloc_object_slot(int region)
 {

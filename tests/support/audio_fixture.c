@@ -35,7 +35,7 @@ undefined1 DAT_00241f08_backing[1024];
    base sources). */
 char *DAT_00086df8;
 undefined4 DAT_00101944;
-undefined2 DAT_00201b60;
+undefined2 g_game_mode;
 
 /* play_weapon_impact_sound's own private (file-static in combat.c)
    globals -- combat.c itself isn't linked into this suite. DAT_00100610
@@ -87,7 +87,7 @@ void audio_fixture_reset(void)
     DAT_0023c3b8 = 0;
     DAT_0023c3bc = 0;
     memset(DAT_0023c3d4_backing, 0, sizeof DAT_0023c3d4_backing);
-    DAT_00201b60 = 1; /* top-level game mode: 1 == normal dungeon gameplay */
+    g_game_mode = 1; /* top-level game mode: 1 == normal dungeon gameplay */
     memset(combat_flag_byte, 0, sizeof combat_flag_byte);
     DAT_00086df8 = (char *)combat_flag_byte; /* byte[0x5f] bit 2 == "in combat" */
     DAT_00101944 = 0;

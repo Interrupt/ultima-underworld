@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdio.h>
 
-extern short DAT_00201b64;                                            /* game mode; 0 == in-game 3D dungeon view */
+extern short g_mode_handler_row;                                            /* mode handler row; 0 == in-game 3D dungeon view */
 extern short DAT_0023beb4;                                            /* view pitch, 1/256 deg; negative looks up */
 extern int g_text_input_active;                                       /* a text-entry prompt is reading keys */
 extern short DAT_0023be5c, DAT_0023bd80, DAT_0023be80, DAT_0023be88;  /* 3D viewport x, width, bottom y, height */
@@ -57,7 +57,7 @@ void uw_mouselook_refresh(void) {
     SDL_Window *win = uw_gx_window();
     SDL_Renderer *ren = uw_gx_renderer();
     int cx, cy;
-    int want = g_mouselook_enabled && win && DAT_00201b64 == 0 && !g_text_input_active &&
+    int want = g_mouselook_enabled && win && g_mode_handler_row == 0 && !g_text_input_active &&
                !dbgui_visible() && (SDL_GetWindowFlags(win) & SDL_WINDOW_INPUT_FOCUS) &&
                uw_mouselook_center(&cx, &cy);
     if (want == g_mouselook_applied) return;

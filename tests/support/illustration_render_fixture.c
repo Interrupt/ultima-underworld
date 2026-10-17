@@ -184,7 +184,7 @@ short g_mouse_x, g_mouse_y;
 ushort DAT_0023c448;
 int DAT_000876c8;
 
-undefined2 DAT_00201b60;
+undefined2 g_game_mode;
 
 int DAT_0020484c;
 
@@ -331,7 +331,7 @@ short DAT_00084f10;
 
 int DAT_00088954, DAT_0008895c, DAT_00088950, DAT_00088958;
 
-short DAT_00201b64;
+short g_mode_handler_row;
 
 undefined2 DAT_00201c90;
 
@@ -429,7 +429,7 @@ void illustration_render_fixture_reset(void)
     g_force_flush = 0;
     g_selected_object = &selected_window;
     DAT_0023c63c = 1;
-    DAT_00201b64 = DAT_00201c90 = 0;
+    g_mode_handler_row = DAT_00201c90 = 0;
     uw_test_read_data("DATA/PALS.DAT", DAT_00088d98_backing, 768, 0, SEEK_SET);
     byte rgb[768];
     expand_pals_bytes(rgb, DAT_00088d98_backing, 0);

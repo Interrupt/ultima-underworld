@@ -56,7 +56,7 @@ void interact_default()
   iVar2 = target_line_of_sight((int)DAT_000858c4,g_interact_target);
   if (DAT_002020ec == 0) {
     if (DAT_002020e0 != 0) {
-      iVar1 = object_ptr_in_arena(g_interact_target);
+      iVar1 = object_is_mobile(g_interact_target);
       if ((iVar1 != 0) && ((*g_interact_target & 0x1c0) == 0x40)) {
         interact_talk_npc();
         return;
@@ -238,7 +238,7 @@ void quick_use_object_at_cursor(int unused)
   }
   /* A critter (object ids 0x40-0x7f, same test interact_default's talk branch uses): talk to it.
      Mouselook releases itself when the conversation screen takes over the view. */
-  if (object_ptr_in_arena(g_interact_target) != 0 && (*g_interact_target & 0x1c0) == 0x40) {
+  if (object_is_mobile(g_interact_target) != 0 && (*g_interact_target & 0x1c0) == 0x40) {
     interact_talk_npc();
     return;
   }
@@ -916,7 +916,7 @@ ushort *pick_object_under_cursor(int mode)
 
     DAT_002020a8 = DAT_002020b0 + 2;
     if (((g_object_type_props[(((uw_object_hdr_t *)puVar3)->object_id)].owner_flags & 0x20) != 0) &&
-        (iVar2 = object_ptr_in_arena(puVar3), iVar2 == 0)) {
+        (iVar2 = object_is_mobile(puVar3), iVar2 == 0)) {
       DAT_002020ec = 1;
       return puVar3;
     }

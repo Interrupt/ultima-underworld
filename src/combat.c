@@ -806,7 +806,7 @@ int find_nearest_hit_target(short *screen_pos)
       puVar6 = (ushort *)get_object_record_by_slot_index(uVar4 >> 6);
       if ((((((uw_object_hdr_t *)puVar6)->object_id & 0x1c0) != 0x180) && (uVar4 >> 6 != DAT_00100610)) &&
           (((DAT_00100610 != 1 ||
-             ((iVar5 = object_ptr_in_arena(puVar6), iVar5 == 0 ||
+             ((iVar5 = object_is_mobile(puVar6), iVar5 == 0 ||
                ((*(byte *)((char *)puVar6 + 0x19) & 0x40) == 0)))) ||
             ((iVar10 == iVar9 + -1 && (iVar11 == 100000)))))) {
         uVar7 = (int)*(short *)(&DAT_00202c3c + iVar10 * 6) + (((int)*screen_pos << 0x10) >> 0x13) &
@@ -1371,7 +1371,7 @@ int process_melee_attack_swing()
          0x27110..0x27114 forwards the resolved target pointer; same dropped-argument idiom fixed
          repeatedly elsewhere in this project. */
       puTarget = get_object_record_by_slot_index((int)DAT_00100620);
-      iVar3 = object_ptr_in_arena(puTarget);
+      iVar3 = object_is_mobile(puTarget);
       iVar1 = 0;
       if (iVar3 != 0) {
         puTarget = get_object_record_by_slot_index((int)DAT_00100620);
@@ -1523,7 +1523,7 @@ void apply_direct_object_hit(short hit_flag, void *attacker_ptr, ushort *target,
     play_sound_effect_with_pan(3,0,0);
   }
   else {
-    iVar3 = object_ptr_in_arena(target);
+    iVar3 = object_is_mobile(target);
     if (iVar3 != 0) {
       play_sound_effect_at_object(4,target,0);
     }
@@ -2101,7 +2101,7 @@ bool apply_object_durability_damage(ushort *object, ushort *attacker, short dama
   
   if (((object_hdr->doordir == 0) && (uVar6 = ((byte)g_object_type_props[(object_hdr->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&
       (iVar5 = (int)damage >> uVar6, 0 < (short)iVar5)) {
-    iVar4 = object_ptr_in_arena(object_hdr);
+    iVar4 = object_is_mobile(object_hdr);
     if (iVar4 == 0) {
       if ((0x13f < (object_hdr->object_id)) && ((object_hdr->object_id) < 0x148)) {
         uVar2 = object_hdr->link_word;

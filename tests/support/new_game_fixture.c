@@ -51,9 +51,9 @@ short DAT_00202080;
 
 short *DAT_00085a6c = mode_state;
 
-undefined2 DAT_00201b60, DAT_000868d8;
+undefined2 g_game_mode, DAT_000868d8;
 
-short DAT_00201b64;
+short g_mode_handler_row;
 
 undefined1 DAT_0023cca8_backing[1024];
 
@@ -266,8 +266,8 @@ void new_game_fixture_reset(void)
     DAT_002046c8 = NULL;
     DAT_002029d0 = 99;
     DAT_00202080 = 42;
-    DAT_00201b60 = 0;
-    DAT_00201b64 = -1;
+    g_game_mode = 0;
+    g_mode_handler_row = -1;
     DAT_000868d8 = 99;
     accept_character = archive_ok = true;
     scheduler_result = 1;

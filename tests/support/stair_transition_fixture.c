@@ -66,7 +66,7 @@ int check_object_placement_clearance(short type, short slot, short x, short y, s
     return x == open_x * 8 + 3 && y == open_y * 8 + 3;
 }
 uw_object_hdr_t *resolve_object_link(ushort *link) { return NULL; }
-int object_ptr_in_arena(const uw_object_hdr_t *object) { return 0; }
+int object_is_mobile(const uw_object_hdr_t *object) { return 0; }
 ushort *discard_misplaced_object(void *head, ushort *object, int flag) { return NULL; }
 void tick_weapon_swing_state(short flag) {}
 void set_hud_status_value(byte slot, ushort value) { if (slot == 0) hud_hp = value; }

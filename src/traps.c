@@ -139,11 +139,11 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     if (((((uw_object_hdr_t *)puVar12)->object_id & 0x1c0) == 0x40) && (iVar16 = check_object_area_for_spawn_block(puVar12), iVar16 != 0)) {
       return 2;
     }
-    /* alloc_object_slot's argument is object_ptr_in_arena's return value (ARM 0x7d708-0x7d70c:
-       bl object_ptr_in_arena; bl alloc_object_slot with r0 untouched) -- Ghidra dropped it. */
-    puVar8 = (ushort *)alloc_object_slot(object_ptr_in_arena(puVar12));
+    /* alloc_object_slot's argument is object_is_mobile's return value (ARM 0x7d708-0x7d70c:
+       bl object_is_mobile; bl alloc_object_slot with r0 untouched) -- Ghidra dropped it. */
+    puVar8 = (ushort *)alloc_object_slot(object_is_mobile(puVar12));
     if (puVar8 != (ushort *)0x0) {
-      iVar16 = object_ptr_in_arena(puVar12);
+      iVar16 = object_is_mobile(puVar12);
       if (iVar16 == 0) {
         ((uw_object_hdr_t *)puVar8)->type_flags = ((uw_object_hdr_t *)puVar12)->type_flags;
         ((uw_object_hdr_t *)puVar8)->position_word = ((uw_object_hdr_t *)puVar12)->position_word;
@@ -705,10 +705,10 @@ void process_nearby_background_traps(int target_present)
   while (pObj != 0) {
     if ((((uw_object_hdr_t *)pObj)->type_flags_high & 0x1e) == 0) {
       pbVar5 = resolve_object_link((char *)pObj + 6);
-      /* HACK: was a bare `object_ptr_in_arena();` -- dropped argument, the same class of bug fixed
-         repeatedly elsewhere in this file. object_ptr_in_arena takes exactly one argument at every
+      /* HACK: was a bare `object_is_mobile();` -- dropped argument, the same class of bug fixed
+         repeatedly elsewhere in this file. object_is_mobile takes exactly one argument at every
          other call site in this codebase... */
-      iVar4 = object_ptr_in_arena(pbVar5);
+      iVar4 = object_is_mobile(pbVar5);
       if (iVar4 != 0) {
         uVar1 = *(undefined2 *)(pbVar5 + 0xd);
         *(char *)(pbVar5 + 0xd) = (char)uVar1;
@@ -829,7 +829,7 @@ LAB_0003987c:
                 uVar10 = puVar8[1] & 0xff80;
                 *(byte *)(puVar8 + 1) = (byte)uVar10 | (byte)((uVar13 & 0xf) << 3);
                 *(char *)((char *)puVar8 + 3) = (char)(uVar10 >> 8);
-                iVar9 = object_ptr_in_arena(puVar8);
+                iVar9 = object_is_mobile(puVar8);
                 if ((iVar9 == 0) || ((*puVar8 & 0x1c0) == 0x40)) {
                   if (puVar8 == g_player_object) {
                     DAT_00204884 = (undefined2)(iVar12 << 6);
@@ -850,7 +850,7 @@ LAB_0003987c:
                 uVar10 = puVar8[1] & 0xff80;
                 *(byte *)(puVar8 + 1) = (byte)uVar10 | (byte)((uVar13 & 0xf) << 3);
                 *(char *)((char *)puVar8 + 3) = (char)(uVar10 >> 8);
-                uVar14 = object_ptr_in_arena(puVar8);
+                uVar14 = object_is_mobile(puVar8);
                 uVar10 = (uint)((ulonglong)uVar14 >> 0x20);
                 if (((int)uVar14 == 0) || ((*puVar8 & 0x1c0) == 0x40)) {
                   if (puVar8 == g_player_object) {

@@ -73,7 +73,7 @@ byte DAT_0023bf58;
 int DAT_000879ac, g_npc_tick_enabled;
 undefined4 DAT_002020d4;
 undefined4 DAT_002020d0;
-short DAT_00201b64, DAT_00201c84;
+short g_mode_handler_row, DAT_00201c84;
 undefined2 DAT_00201c90;
 byte * DAT_002046c0;
 byte * DAT_002046c8;

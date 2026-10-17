@@ -112,7 +112,7 @@ void close_backpack_container()
       iVar1 = (iVar1 + 1) * 0x10000 >> 0x10;
     } while (iVar1 < 0x14);
     decrement_cursor_hide_depth();
-    if ((((short)DAT_00201b60 == 1) || ((short)DAT_00201b60 == 4)) && (g_active_hud_panel == '\0')) {
+    if ((((short)g_game_mode == 1) || ((short)g_game_mode == 4)) && (g_active_hud_panel == '\0')) {
       restore_captured_grtile_backdrop(DAT_002028ec);
       redraw_container_icon_slot();
     }
@@ -339,7 +339,7 @@ void open_backpack_container(short container_slot)
     else {
       if (g_open_container_list == (char *)0x0) {
         decrement_cursor_hide_depth();
-        if ((((short)DAT_00201b60 == 1) || ((short)DAT_00201b60 == 4)) && (g_active_hud_panel == '\0')) {
+        if ((((short)g_game_mode == 1) || ((short)g_game_mode == 4)) && (g_active_hud_panel == '\0')) {
           draw_sprite_by_id(0x2097,0xec,0x51,0x29,0x54);
         }
         /* Was also followed by a hand-added `set_draw_color(0);
@@ -843,7 +843,7 @@ int empty_container_into_world(void *container_ptr, short clear_flag)
     iVar4 = resolve_object_link(container + 3);
     *(byte *)(container + 3) = (byte)container[3] & 0x3f;
     *(undefined1 *)((char *)container + 7) = 0;
-    iVar5 = object_ptr_in_arena(container);
+    iVar5 = object_is_mobile(container);
     if (iVar5 == 0) {
       uVar7 = (uint)DAT_002020a0;
       uVar8 = (uint)DAT_002020a4;

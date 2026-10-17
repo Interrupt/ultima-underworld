@@ -16,7 +16,7 @@ typedef ushort, uw_object_hdr_t;
 for fn, typ in [('free_linked_object_recursive', 'ushort *'),
                 ('free_object_slot', 'uw_object_hdr_t *'),
                 ('encode_object_slot_index', 'const uw_object_hdr_t *'),
-                ('object_ptr_in_arena', 'const uw_object_hdr_t *')]:
+                ('object_is_mobile', 'const uw_object_hdr_t *')]:
     for kind, tail in [('definition', '{ ... }'), ('prototype', ';')]:
         rules.append(f'''@{fn}_{kind}@
 type R;

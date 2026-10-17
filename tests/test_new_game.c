@@ -11,7 +11,7 @@ static void test_cancelled_character_does_not_load_or_start_game(void)
     TEST_ASSERT_EQUAL_INT(0, saves);
     TEST_ASSERT_EQUAL_INT(0, opens);
     TEST_ASSERT_EQUAL_INT(0, spawn_calls);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00201b60);
+    TEST_ASSERT_EQUAL_INT(0, g_game_mode);
 }
 
 static void test_failed_world_copy_does_not_load_or_spawn(void)
@@ -21,7 +21,7 @@ static void test_failed_world_copy_does_not_load_or_spawn(void)
     TEST_ASSERT_EQUAL_INT(0, seeds);
     TEST_ASSERT_EQUAL_INT(0, opens);
     TEST_ASSERT_EQUAL_INT(0, spawn_calls);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00201b60);
+    TEST_ASSERT_EQUAL_INT(0, g_game_mode);
 }
 
 static void test_missing_level_archive_does_not_start_game(void)
@@ -31,7 +31,7 @@ static void test_missing_level_archive_does_not_start_game(void)
     TEST_ASSERT_EQUAL_INT(1, opens);
     TEST_ASSERT_EQUAL_INT(0, closes);
     TEST_ASSERT_EQUAL_INT(0, spawn_calls);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00201b60);
+    TEST_ASSERT_EQUAL_INT(0, g_game_mode);
 }
 
 static void test_failed_level_load_closes_archive_without_spawning(void)
@@ -43,7 +43,7 @@ static void test_failed_level_load_closes_archive_without_spawning(void)
     TEST_ASSERT_EQUAL_INT(1, closes);
     TEST_ASSERT_EQUAL_INT(0, textures);
     TEST_ASSERT_EQUAL_INT(0, spawn_calls);
-    TEST_ASSERT_EQUAL_INT(0, DAT_00201b60);
+    TEST_ASSERT_EQUAL_INT(0, g_game_mode);
 }
 
 int main(void)

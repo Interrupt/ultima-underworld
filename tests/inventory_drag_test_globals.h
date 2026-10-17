@@ -24,7 +24,7 @@ extern byte DAT_0023bf58;
 extern int DAT_000879ac;
 extern short g_movement_mode, DAT_0023bf4c;
 extern ushort DAT_0023c448;
-extern short DAT_00201b64;
+extern short g_mode_handler_row;
 extern short DAT_00201c84;
 extern undefined2 DAT_00201c90;
 extern int g_force_flush;

@@ -840,7 +840,7 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
   ((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;
   ((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);
   iVar5 = place_object_in_world(tile_x * 8 + 3,tile_y * 8 + 3,0x6e,iVar4,0,0);
-  if ((iVar5 != 0) && (iVar5 = object_ptr_in_arena(iVar4), iVar5 != 0)) {
+  if ((iVar5 != 0) && (iVar5 = object_is_mobile(iVar4), iVar5 != 0)) {
     bVar1 = ce_rand();
     ((uw_mobile_object_t *)iVar4)->speed = ((bVar1 & 3) + 2) & 0x7f;
     uVar2 = ce_rand();

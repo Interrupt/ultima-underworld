@@ -56,7 +56,7 @@ void collision_height_envelope(int unused, int mode)
 void collision_build_height_field(uint step_limit) {}
 void sort_collision_candidates(void) { TEST_FAIL_MESSAGE("Empty world has no object contacts"); }
 int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 1; }
-int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
+int object_is_mobile(const uw_object_hdr_t *object) { (void)object; return 1; }
 ushort *discard_misplaced_object(void *list, ushort *object, int destroy)
 { return NULL; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; return 1; }

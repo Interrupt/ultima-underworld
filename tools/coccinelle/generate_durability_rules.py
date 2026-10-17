@@ -15,7 +15,7 @@ ORIGINAL = """bool apply_object_durability_damage(ushort *object, ushort *attack
   if (((((uw_object_hdr_t *)object)->doordir == 0) &&
        (uVar6 = ((byte) g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&
       (iVar5 = (int)damage >> uVar6, 0 < (short)iVar5)) {
-    iVar4 = object_ptr_in_arena(object);
+    iVar4 = object_is_mobile(object);
     if (iVar4 == 0) {
       if ((0x13f < (((uw_object_hdr_t *)object)->object_id)) && ((((uw_object_hdr_t *)object)->object_id) < 0x148)) {
         uVar2 = ((uw_object_hdr_t *)object)->link_word;
@@ -73,7 +73,7 @@ def converted():
         assert result.count(before) == 1
         result = result.replace(before, after)
     result = result.replace('((uw_object_hdr_t *)object)->', 'object_hdr->').replace(
-        'object_ptr_in_arena(object)', 'object_ptr_in_arena(object_hdr)')
+        'object_is_mobile(object)', 'object_is_mobile(object_hdr)')
     return result.replace('if (((object_hdr->doordir == 0) &&\n       (uVar6 = ((byte) g_object_type_props[(object_hdr->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&',
         'if (((object_hdr->doordir == 0) && (uVar6 = ((byte)g_object_type_props[(object_hdr->object_id)].quality_flags & 0xc) >> 2, (short)uVar6 != 3)) &&')
 

@@ -1451,7 +1451,7 @@ void emit_tile_features(ushort *tile)
                          (short)((uint)((int)DAT_0023b4e4 << 0x13) >> 0x10)) * 0x20 + 0x10;
           DAT_0023b920 = ((short)(char)(&DAT_0023bb9a)[iVar7] +
                          (short)((uint)((int)DAT_0023b4e8 << 0x13) >> 0x10)) * 0x20 + 0x10;
-          if (((((uw_object_hdr_t *)puVar5)->object_id & 0x1c0) == 0x40) || (iVar16 = object_ptr_in_arena(puVar5), iVar16 == 0)) {
+          if (((((uw_object_hdr_t *)puVar5)->object_id & 0x1c0) == 0x40) || (iVar16 = object_is_mobile(puVar5), iVar16 == 0)) {
             DAT_0023b91c = (((uw_object_hdr_t *)puVar5)->zpos) << 3;
           }
           else {
@@ -1701,7 +1701,7 @@ void emit_tile_objects(ushort *tile)
       DAT_0023b830 = 1;
     }
   }
-  iVar17 = object_ptr_in_arena(tile);
+  iVar17 = object_is_mobile(tile);
   if ((iVar17 != 0) && ((*tile & 0x1c0) != 0x40)) {
     bVar13 = *(byte *)((char *)tile + 0xb);
     bVar1 = *(byte *)((char *)tile + 0xd);

@@ -4,7 +4,7 @@
 unsigned char g_synth_scancode_held[SDL_NUM_SCANCODES];
 Uint8 keyboard[SDL_NUM_SCANCODES];
 unsigned int g_uw_frame_clock_units;
-short DAT_00201b64, DAT_00201c84, DAT_0023beb4, DAT_0024af6c;
+short g_mode_handler_row, DAT_00201c84, DAT_0023beb4, DAT_0024af6c;
 undefined2 DAT_00201c90;
 ushort DAT_0023c448;
 int DAT_000876c8;
@@ -34,7 +34,7 @@ void look_pacing_fixture_reset(void)
     uw_reset_frame_pacing();
     freelook = 1;
     mouselook = 0;
-    DAT_00201b64 = DAT_00201c90 = DAT_00201c84 = DAT_0023beb4 = 0;
+    g_mode_handler_row = DAT_00201c90 = DAT_00201c84 = DAT_0023beb4 = 0;
     DAT_0023c448 = DAT_000876c8 = 0;
     poll_dungeon_movement_keys(0); /* Release any movement from the previous test. */
 }

@@ -18,7 +18,7 @@ void *tilemap_lookup(short x, short y);
 int encode_object_slot_index(const uw_object_hdr_t *object);
 int check_object_placement_clearance(short type, short slot, short x, short y, short z, int flag, byte radius);
 uw_object_hdr_t *resolve_object_link(ushort *link);
-int object_ptr_in_arena(const uw_object_hdr_t *object);
+int object_is_mobile(const uw_object_hdr_t *object);
 ushort *discard_misplaced_object(void *head, ushort *object, int flag);
 void tick_weapon_swing_state(short flag);
 void set_hud_status_value(byte slot, ushort value);
