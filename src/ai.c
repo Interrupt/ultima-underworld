@@ -2768,7 +2768,7 @@ int detect_npc_wander_proximity(void *out_near_ptr, void *out_far_ptr)
   int iVar5;
   undefined4 uVar6;
   char extraout_r1;
-  ushort *puVar7;
+  uw_mobile_object_t *puVar7;
   /* Preserved separately from iVar1/iVar2 below, which get overwritten
      with the squared distance before compute_movement_heading's own
      call further down needs them -- see that dropped-argument fix. */
@@ -2783,7 +2783,7 @@ int detect_npc_wander_proximity(void *out_near_ptr, void *out_far_ptr)
   deltaY = iVar2;
   iVar2 = (iVar1 * iVar1 + iVar2 * iVar2) * 0x10000 >> 0x10;
   iVar1 = (int)((DAT_00101404->awareness_ranges & 0xf) *
-                ((byte) g_monster_type_props[((byte)*DAT_00101400 & 0x3f)].detection_ranges & 0xf)) >> 4;
+                ((byte) g_monster_type_props[(((uw_object_hdr_t *)DAT_00101400)->object_id & 0x3f)].detection_ranges & 0xf)) >> 4;
   iVar1 = iVar1 * iVar1 * 0x10000;
   if (iVar2 < iVar1 >> 0x12) {
 LAB_000323ac:
@@ -2791,7 +2791,7 @@ LAB_000323ac:
   }
   else {
     iVar5 = (int)((uint)(DAT_00101404->awareness_ranges >> 4) *
-                  (uint)((byte) g_monster_type_props[((byte)*DAT_00101400 & 0x3f)].detection_ranges >> 4)) >> 4;
+                  (uint)((byte) g_monster_type_props[(((uw_object_hdr_t *)DAT_00101400)->object_id & 0x3f)].detection_ranges >> 4)) >> 4;
     puVar7 = DAT_0010190c;
     if (iVar2 <= iVar5 * iVar5 * 0x10000 >> 0x10) {
       /* Was a dropped register-forwarding argument -- was `compute_movement_heading();` with no
@@ -2800,13 +2800,13 @@ LAB_000323ac:
       cVar4 = compute_movement_heading(deltaX,deltaY);
       puVar7 = DAT_0010190c;
       uVar3 = DAT_0010190c->hdr.position_word;
-      uw_ord2005_rem_86 = ((int)(((int)cVar4 - ((int)(char)(uVar3 >> 7) & 7U)) + 8)) % (8);
+      uw_ord2005_rem_86 = ((int)(((int)cVar4 - (uint)puVar7->hdr.heading) + 8)) % (8);
       if ((((uw_ord2005_rem_86 == '\0') || (uw_ord2005_rem_86 == '\x01')) || (uw_ord2005_rem_86 == '\a')) &&
          (iVar5 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
-                               (ushort)(byte) g_object_type_props[(((uw_object_hdr_t *)puVar7)->object_id)].height +
-                               (uVar3 & 0x7f),DAT_00101908,DAT_00101418,
-                               (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
-                               (((byte)DAT_00101400[2]) & 0x7f)), puVar7 = DAT_0010190c, iVar5 != 0))
+                               (ushort)(byte) g_object_type_props[(puVar7->hdr.object_id)].height +
+                               (puVar7->hdr.zpos),DAT_00101908,DAT_00101418,
+                               (ushort)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00101400)->object_id)].height +
+                               (((uw_object_hdr_t *)DAT_00101400)->zpos)), puVar7 = DAT_0010190c, iVar5 != 0))
       {
         DAT_0010190c->npc_ai_flags = DAT_0010190c->npc_ai_flags | 1;
         goto LAB_000323ac;
@@ -2817,7 +2817,7 @@ LAB_000323ac:
     }
     else {
       uVar6 = 1;
-      ((uw_mobile_object_t *)puVar7)->npc_ai_flags = ((uw_mobile_object_t *)puVar7)->npc_ai_flags & 0xfe;
+      puVar7->npc_ai_flags = puVar7->npc_ai_flags & 0xfe;
     }
   }
   return uVar6;
@@ -2838,7 +2838,7 @@ int compute_vertical_aim_offset(short has_target, int target)
   
   refresh_npc_target_delta();
   bVar1 = DAT_0010190c->hdr.position_word_low;
-  bVar2 = *(byte *)(DAT_00101400 + 2);
+  bVar2 = ((uw_object_hdr_t *)DAT_00101400)->position_word_low;
   uVar3 = integer_sqrt(DAT_00101728);
   iVar6 = (int)(((bVar2 & 0x7f) - (bVar1 & 0x7f)) * 0x10000) >> 0x10;
   if (uVar3 == 0) {
@@ -3215,20 +3215,23 @@ int refresh_npc_target_delta()
   int iVar2;
   int iVar3;
   uint uVar4;
+  /* The eight-bit goal slot resolves only mobile records; use shared fields. */
+  uw_mobile_object_t *target_object;
   int iVar5;
   
   DAT_00101400 = get_object_record_by_slot_index(DAT_0010190c->npc_gtarg);
-  if ((DAT_00101400 == 0) || (*(char *)(DAT_00101400 + 8) == '\0')) {
+  target_object = (uw_mobile_object_t *)DAT_00101400;
+  if ((DAT_00101400 == 0) || (target_object->hit_points == 0)) {
     uVar1 = 0;
   }
   else {
-    DAT_00101408 = *(byte *)(DAT_00101400 + 0x17) >> 2;
-    uVar4 = *(ushort *)(DAT_00101400 + 0x16) >> 4 & 0x3f;
+    DAT_00101408 = target_object->tile_x;
+    uVar4 = target_object->tile_y;
     DAT_00101410 = (undefined1)uVar4;
-    DAT_00101420 = *(byte *)(DAT_00101400 + 2) >> 3 & 0xf;
-    iVar3 = (uint)DAT_00101408 * 8 + (uint)(*(byte *)(DAT_00101400 + 3) >> 5);
+    DAT_00101420 = target_object->hdr.zpos >> 3;
+    iVar3 = (uint)DAT_00101408 * 8 + (uint)(target_object->hdr.xpos);
     DAT_00101908 = (undefined2)iVar3;
-    iVar2 = (*(byte *)(DAT_00101400 + 3) >> 2 & 7) + uVar4 * 8;
+    iVar2 = (target_object->hdr.ypos) + uVar4 * 8;
     DAT_00101418 = (undefined2)iVar2;
     DAT_00101444 = (short)((uint)(iVar3 * 0x10000) >> 0x10) - DAT_00101910;
     DAT_00101448 = (short)((uint)(iVar2 * 0x10000) >> 0x10) - DAT_0010141c;

@@ -1679,14 +1679,14 @@ int try_npc_special_ability_ranged()
          (iVar3 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                                            (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                                            (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                                           (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
-                                           (((byte)DAT_00101400[2]) & 0x7f)), iVar3 != 0)))) &&
+                                           (ushort)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00101400)->object_id)].height +
+                                           (((uw_object_hdr_t *)DAT_00101400)->zpos)), iVar3 != 0)))) &&
       (iVar3 = check_npc_target_alignment(1), iVar3 != 0)) {
     uVar4 = ce_rand();
     bVar1 = DAT_00101404->spell_flags;
     uw_ord2005_rem_60 = ((int)(uVar4)) % (0x80);
     if (uw_ord2005_rem_60 < (short)(ushort)(bVar1 >> 1)) {
-      DAT_0010190c->motion_flags = DAT_0010190c->motion_flags & 0x80;
+      DAT_0010190c->speed = 0;
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xcd | 0xd;
       uVar4 = ce_rand();
       uw_ord2005_rem_61 = ((int)(uVar4)) % (0x10);
@@ -1725,14 +1725,14 @@ int try_npc_special_ability_alt()
       (iVar2 = check_fine_line_of_sight(DAT_00101910,DAT_0010141c,
                             (uint)(byte) g_object_type_props[(DAT_0010190c->hdr.object_id)].height +
                             (DAT_0010190c->hdr.zpos),DAT_00101908,DAT_00101418,
-                            (ushort)(byte) g_object_type_props[(*(ushort *)DAT_00101400 & 0x1ff)].height +
-                            (((byte)DAT_00101400[2]) & 0x7f)), iVar2 != 0)) &&
+                            (ushort)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00101400)->object_id)].height +
+                            (((uw_object_hdr_t *)DAT_00101400)->zpos)), iVar2 != 0)) &&
      (iVar2 = check_npc_target_alignment(1), iVar2 != 0)) {
     uVar3 = ce_rand();
     bVar1 = DAT_00101404->dexterity;
     uw_ord2005_rem_62 = ((int)(uVar3)) % (0xc0);
     if (uw_ord2005_rem_62 <= (int)(uint)bVar1) {
-      DAT_0010190c->motion_flags = DAT_0010190c->motion_flags & 0x80;
+      DAT_0010190c->speed = 0;
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xc5 | 5;
       DAT_0010190c->npc_animation_frame = 0x0;
       uVar4 = DAT_0010190c->goal_word;

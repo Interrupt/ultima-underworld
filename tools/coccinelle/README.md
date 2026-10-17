@@ -1901,3 +1901,57 @@ and 18 raw audited accesses: 508 total, versus 501 before the scope correction.
 This increase records previously uncounted code. Remaining accesses and
 unrecorded aliases still require independent auditing and conversion or a
 documented exception.
+
+## Tracked-target coordinates, sight lines and aim snapshots
+
+`generate_target_coordinate_rules.py` generates five exact-source recipes for
+`refresh_npc_target_delta`, `detect_npc_wander_proximity`,
+`compute_vertical_aim_offset` and the ranged/alternate special-ability attempts.
+The target refresh uses a native mobile pointer for the shared `hit_points`,
+`tile_x` and `tile_y` properties, plus common-header Z and fine X/Y fields.
+The eight-bit `npc_gtarg` passed directly to `get_object_record_by_slot_index`
+proves this extent: its non-null values are below 256, where the resolver uses
+27-byte mobile records. Shared fields describe NPCs and projectiles; no NPC
+goal/status/target interpretation is inferred for the resolved object.
+Null/zero-health exits still leave cached target deltas unchanged. Existing
+coordinate-unit conversion, signed deltas, squared distances and truncation
+remain in place, together with the original temporaries and global writes.
+
+The sight-line consumers use common-header `object_id` and `zpos`. The wander
+routine's saved current-NPC pointer is native and supplies heading, Z and ID;
+its full position snapshot remains. The six-bit monster-class table selector
+still masks the named ID, because this is table routing rather than a separate
+header field. Both successful ability attempts clear named `speed`, preserving
+gravity. Unknown animation and AI flag bits remain whole-byte operations.
+Reads still occur after the same tile/heading callbacks and before the same
+sight/alignment/random callbacks; no target pointer is captured across them.
+
+Aim computation retains both full position-low-byte snapshots, now including a
+named target byte view. Their masks extract height from saved values after
+`integer_sqrt`; substituting fresh global-object reads would lose that capture.
+The snapshots include the low heading bit, and are deliberately not narrowed
+or moved across the call. Existing division argument order, short conversion,
+zero-distance behavior and pitch clamping are unchanged.
+
+`target_coordinate_fields` runs by default. It verifies exact generation,
+conversion/idempotence, changed-source and scope guards, and the eight-bit
+slot/resolver provenance. A single fixture compiles the actual original and
+converted bodies, running 10,485,760 comparisons across all 16-bit seeds,
+five functions, sixteen modes and callback mutation. It checks missing/dead
+and aliased targets, every ID/position/tile word, high ID bits, header flags,
+distance gates, spell/dexterity thresholds, signed random/heading returns,
+zero and truncated square roots, signed division and clamp boundaries.
+Callbacks rebind NPC/target/property pointers and change fields between reads.
+Independent assertions verify world/tile coordinates, signed deltas, squared
+distances, unchanged cached deltas on invalid targets, exact sight-line
+heights and saved height differences passed to division. Full guarded records,
+property rows, outputs, globals and callback arguments/events/counts are
+compared. Every mocked service is reached with and without mutation.
+Use `--reference-dir /private/tmp` while the saved baseline files are available,
+and `--asan` for AddressSanitizer.
+
+Ten raw audited accesses disappear. One full target-byte snapshot becomes an
+explicit named byte view, so the inventory now lists 37 byte views, 454 packed
+accesses and eight raw audited accesses: 499 total, nine fewer. Common-header
+ID and class reads that were outside the old raw-offset pattern are also
+converted. Other accesses and unrecorded aliases still require work.

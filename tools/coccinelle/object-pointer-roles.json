@@ -1841,9 +1841,9 @@
           "roles": [
             {
               "name": "puVar7",
-              "type": "ushort *",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
             }
           ],
@@ -1870,6 +1870,19 @@
               "type": "char *",
               "parameter": false,
               "evidence": "UW1 object struct member access",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "refresh_npc_target_delta",
+          "roles": [
+            {
+              "name": "target_object",
+              "type": "uw_mobile_object_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],
