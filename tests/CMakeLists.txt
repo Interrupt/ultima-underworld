@@ -1,9 +1,13 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_compile_options(-Wno-pointer-sign)
-# The fixtures stand in for game globals by declaring them without initializers in several files
-# (tentative definitions). gcc 10+ defaults to -fno-common, which makes GNU ld report those as
-# multiple definitions; -fcommon merges them as the fixtures were written to expect.
-add_compile_options(-fcommon)
+# Several fixtures define the same stand-in globals (tentative definitions), and GNU ld, unlike
+# macOS's linker, pulls in every archive member in its link group and so reports them as multiple
+# definitions. Let the first definition win, as it does on macOS. Do NOT use -fcommon instead: it
+# turns those globals into common symbols whose layout the linker chooses, but the game code reads
+# neighbouring globals as arrays ((&DAT_00086980)[axis]) and so needs them in declaration order.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_link_options(-Wl,--allow-multiple-definition)
+endif()
 # unity is a PUBLIC dependency of several diamond-shaped static test libraries; the duplicate is harmless.
 if(APPLE)
   add_link_options(-Wl,-no_warn_duplicate_libraries)
