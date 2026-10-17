@@ -27,6 +27,14 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j
 ```
 
+### Unit tests
+
+`./run-unit-tests.sh` builds and runs the unit tests that do not need the real game data
+(`data/` is not in the repo); `./run-unit-tests.sh --with-data` runs all of them. Tests that need
+the data are listed in `tests/needs-data.txt`. GitHub Actions (`.github/workflows/ci.yml`) runs
+the data-free tests on Linux and macOS (arm) and builds the game with `build.zig` for Linux,
+Windows and macOS (arm), uploading each executable as an artifact.
+
 ### Zig build (cross-platform)
 
 `build.zig` is an alternative to CMake that needs only Zig 0.16 or 0.17 (no clang, cmake or system SDL2

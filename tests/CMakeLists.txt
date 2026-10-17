@@ -1,7 +1,9 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_compile_options(-Wno-pointer-sign)
 # unity is a PUBLIC dependency of several diamond-shaped static test libraries; the duplicate is harmless.
-add_link_options(-Wl,-no_warn_duplicate_libraries)
+if(APPLE)
+  add_link_options(-Wl,-no_warn_duplicate_libraries)
+endif()
 add_custom_target(unit_tests)
 add_library(unity STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c")
 target_include_directories(unity PUBLIC "${PROJECT_SOURCE_DIR}/third_party/unity/src")

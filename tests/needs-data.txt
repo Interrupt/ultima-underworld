@@ -1,0 +1,44 @@
+# Unit tests (CTest names) that read the real game data in data/ and so fail without it.
+# run-unit-tests.sh skips these unless given --with-data. Regenerate by running ctest with
+# data/ moved aside and copying the contents of build/Testing/Temporary/LastTestsFailed.log
+# (names only, one per line).
+automap
+babl_conversation
+chargen
+combat
+creatures
+critter_palette
+cursor
+cursor_enabled
+cursor_stylus
+door_models
+game_hooks
+illustration_render
+illustrations
+introduction
+inventory
+lighting
+movement
+movement_game
+new_game
+new_game_game
+npc_ai
+npc_ai_game
+npc_combat
+player_move_direction
+restored_tables
+scheduler
+sleep
+special_use
+spells
+support
+teleport_game
+throw
+throw_cursor
+throw_tick_rate
+transitions
+traps
+traps_game
+visibility_walk
+visibility_walk_game
+voice
