@@ -1599,3 +1599,39 @@ assertions check stale/no-op entries, frame wrap, zero-divisor frames, captured
 link restoration, sliding height and advance-effect boundaries. Use
 `--reference PATH` with the original `scheduler.c` and `--asan` for
 AddressSanitizer. Remaining functions and unrecorded aliases still require work.
+
+## Level-arena link reset
+
+`generate_arena_reset_rules.py` / `arena-reset-fields.json` convert
+`reset_level_object_arena` with the exact-source applier. The tile cursor is a
+`uw_tile_t *`, advances one four-byte record at a time, and clears `obj_head`.
+A shared compile-time size assertion fixes that stride to the documented tile
+layout. Player `next` and `link` are cleared through their named properties,
+preserving `quality` and `owner`. The function stays in `level.c`; all loop
+counts, 16-bit free-list stores, arena-region offsets, pointer assignments and
+the inventory-reset callback remain in their original order. Region offsets
+are allocation-layout boundaries rather than properties of individual records,
+so they remain explicit. The free-list cursor still stores slot IDs as words;
+this preserves the cold-load inventory fix.
+
+`arena_reset_fields` runs by default and checks reproducible generation,
+exact conversion/idempotence and rejection of changed masks, callbacks,
+volatile/escaping cursors, intervening stores, duplicate definitions, quoted
+bodies and excluded functions. Its 49,152 original/current cases compare the
+entire guarded arena, a shadow arena, external player storage, all pointer
+identities and the inventory callback's full arena snapshot. Player placements
+include external records, mobile slots, tiles, free-list storage, backpack
+storage and a missing player. The callback can mutate the player, rebind the
+player/arena/free-list globals and overwrite the scheduler count. Independent
+assertions check every tile texture and every initialized slot ID where the
+player does not overlap them, cleared player links and preserved low fields,
+region pointers, post-callback cursors, counter reset and buffer guards.
+Coverage assertions prove every preserved six-bit field, cleared ten-bit link
+value, wall texture and tile-head value is exercised; the tile fixtures also
+span all 65,536 first-word patterns. Use `--reference PATH` with the original
+`level.c` and `--asan` for AddressSanitizer.
+
+The object audit now lists 60 byte views (four fewer), 452 packed accesses and
+seven raw audited accesses, with no signed-word views. The separate raw tile
+writes removed here were outside that object-only count. Remaining functions,
+packed operations and unrecorded aliases still require work.

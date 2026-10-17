@@ -1,7 +1,7 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 64,
+    "byte_view": 60,
     "packed_word": 452,
     "raw_audited_object_access": 7
   },
@@ -2606,42 +2606,6 @@
       "member": "link_word",
       "pointer": null,
       "code": "sum_container_weight(&puVar11->link_word,local_54);"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 190,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.chain_word_low = g_player_object->hdr.quality;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 191,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.chain_word_high = 0;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 192,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.link_word_low = g_player_object->hdr.owner;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 193,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.link_word_high = 0;"
     },
     {
       "source": "src/movement.c",
