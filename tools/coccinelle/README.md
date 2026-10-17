@@ -1525,3 +1525,40 @@ All 71 default suites pass after this batch, and the optional CTest registration
 passes. No signed-word member accesses remain in `src/*.c`. The latest inventory
 still lists 74 byte views, 451 packed accesses and seven raw audited accesses;
 those and the unrecorded aliases remain work toward the broader goal.
+
+## Creature equipment, miscellaneous and special-item drops
+
+`generate_creature_drop_rules.py` generates the three `creature-*-drop.json`
+recipes for `apply_exact_source_rules.py`. Each requires its entire original
+function, preserves all scalar captures and keeps the function in `ai.c`.
+Equipment and miscellaneous drops write the six-bit `quality` field directly;
+the equipment ammo branch writes the ten-bit `link` quantity while preserving
+`owner`. Input creatures and spawned objects use common-header pointers, and
+insertion receives the named `link_word` address. The three handlers read the
+known monster-table `weapon_loot`, `item_loot` and `food_loot` fields without
+caching the global row pointer across callbacks. API signatures, allocations,
+chance/quality/quantity calculations, RNG and division order, and list updates
+remain unchanged. Masks on loot descriptors classify their packed drop format;
+ID masks select ranged subclasses rather than extract header properties. Full
+chain-word and byte captures are retained. The AI role catalogs are regenerated
+from the current pointer audit, including the newly typed creature aliases and
+their incoming pointer contracts.
+
+`creature_drop_fields` runs by default, without requiring spatch. It verifies
+reproducible recipes, exact conversion, idempotence and rejection of modified
+callbacks, masks, volatile/escaping captures, quoted bodies, duplicate
+functions and excluded scopes. Its 3,145,728 original/current executions sweep
+all 16-bit seeds through header words, both loot slots and drop descriptors.
+Eight modes exercise rejected/accepted chances, alternate quality branches,
+zero/signed level and random values, ranged quantities and source/output aliasing.
+Callbacks mutate object headers, monster rows and the level value, and rebind
+the current monster-record pointer between reads. Guarded records, row bytes,
+globals, callback arguments/events/counts and resulting chains are compared.
+Independent assertions check next/owner preservation, fixed quality boundaries and negative-RNG quantities,
+no-drop gates and allocation/insertion counts. Use `--reference PATH` with the
+original `ai.c` and `--asan` for AddressSanitizer.
+
+The inventory now lists 68 byte views (six fewer), 454 packed accesses (three
+additional named link addresses), seven raw audited accesses and no signed-word
+views. Other functions and unrecorded aliases still require conversion/auditing;
+this batch does not establish completion of the overall cleanup.

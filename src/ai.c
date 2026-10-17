@@ -1542,20 +1542,20 @@ void spawn_creature_treasure_drop(void *creature_ptr)
 /* was `int` -- same pointer-truncation bug as spawn_creature_treasure_drop */
 void spawn_creature_special_item_drop(void *creature_ptr)
 {
-  char *creature = (char *)creature_ptr;
+  uw_object_hdr_t *creature = (uw_object_hdr_t *)creature_ptr;
   int uw_ord2005_rem_160 = 0;
   byte bVar1;
   undefined4 uVar2;
   int extraout_r1;
-  char *pObj;  /* was reuse of `uVar2` (undefined4) -- truncated
+  uw_object_hdr_t *pObj;  /* was reuse of `uVar2` (undefined4) -- truncated
                   spawn_new_object's real pointer */
 
-  bVar1 = *(byte *)(g_despawn_creature_record + 0x27);
+  bVar1 = ((uw_monster_type_props_t *)g_despawn_creature_record)->food_loot;
   uVar2 = ce_rand();
   uw_ord2005_rem_160 = ((int)(uVar2)) % (0x10);
   if (uw_ord2005_rem_160 < (int)(bVar1 & 0xf)) {
-    pObj = (char *)spawn_new_object((bVar1 >> 4) + 0xb0,0);
-    object_list_insert_head(creature + 6,pObj);
+    pObj = spawn_new_object((bVar1 >> 4) + 0xb0,0);
+    object_list_insert_head(&creature->link_word,pObj);
   }
 }
 
@@ -1566,12 +1566,12 @@ void spawn_creature_special_item_drop(void *creature_ptr)
 /* was `int` -- same pointer-truncation bug as spawn_creature_treasure_drop */
 void spawn_creature_equipment_drop(void *creature_ptr)
 {
-  char *creature = (char *)creature_ptr;
+  uw_object_hdr_t *creature = (uw_object_hdr_t *)creature_ptr;
   int uw_ord2005_rem_161 = 0; int uw_ord2005_rem_162 = 0; int uw_ord2005_rem_163 = 0;
   undefined2 uVar1;
   byte bVar2;
   short sVar3;
-  byte *pbVar4;
+  uw_object_hdr_t *pbVar4;
   undefined4 uVar5;
   char extraout_r1;
   byte bVar6;
@@ -1583,9 +1583,9 @@ void spawn_creature_equipment_drop(void *creature_ptr)
   
   uVar8 = 0;
   do {
-    bVar6 = *(byte *)(uVar8 + g_despawn_creature_record + 0x20);
+    bVar6 = ((uw_monster_type_props_t *)g_despawn_creature_record)->weapon_loot[uVar8];
     if ((bVar6 & 1) != 0) {
-      pbVar4 = (byte *)spawn_new_object((bVar6 >> 1 & 0xf) + (bVar6 >> 5 & 3) * '\x10',0);
+      pbVar4 = spawn_new_object((bVar6 >> 1 & 0xf) + (bVar6 >> 5 & 3) * '\x10',0);
       uVar5 = ce_rand();
       uw_ord2005_rem_161 = ((int)(uVar5)) % (2);
       if (uw_ord2005_rem_161 == 0) {
@@ -1599,20 +1599,18 @@ void spawn_creature_equipment_drop(void *creature_ptr)
         uw_ord2005_rem_162 = ((int)(uVar5)) % (0x40);
         bVar6 = uw_ord2005_rem_162;
       }
-      uVar1 = ((uw_object_hdr_t *)pbVar4)->chain_word;
+      uVar1 = pbVar4->chain_word;
       bVar2 = (byte)uVar1;
-      ((uw_object_hdr_t *)pbVar4)->chain_word_low = (bVar2 ^ bVar6) & 0x3f ^ bVar2;
-      ((uw_object_hdr_t *)pbVar4)->chain_word_high = (byte)((ushort)uVar1 >> 8);
-      if ((((uw_object_hdr_t *)pbVar4)->object_id & 0x30) == 0x10) {
-        if (g_ranged_type_props[(((uw_object_hdr_t *)pbVar4)->object_id & 0xf)].ammo_damage_selector == 0xc0) {  /* byte value 0xc0 (was compared against -0x40, never true for an unsigned byte) */
+      pbVar4->quality = bVar6 & 0x3f;
+      if ((pbVar4->object_id & 0x30) == 0x10) {
+        if (g_ranged_type_props[(pbVar4->object_id & 0xf)].ammo_damage_selector == 0xc0) {  /* byte value 0xc0 (was compared against -0x40, never true for an unsigned byte) */
           uVar5 = ce_rand();
           uw_ord2005_rem_163 = ((int)(uVar5)) % (8);
           uVar7 = (uw_ord2005_rem_163 & 0xffff) + 4;
-          ((uw_object_hdr_t *)pbVar4)->link_word_low = ((uw_object_hdr_t *)pbVar4)->owner ^ (char)uVar7 * '@';
-          ((uw_object_hdr_t *)pbVar4)->link_word_high = (byte)(uVar7 >> 2);
+          pbVar4->link = uVar7 & 0x3ff;
         }
       }
-      object_list_insert_head(creature + 6,pbVar4);
+      object_list_insert_head(&creature->link_word,pbVar4);
     }
     uVar8 = uVar8 + 1 & 0xff;
   } while (uVar8 < 2);
@@ -1628,14 +1626,14 @@ void spawn_creature_equipment_drop(void *creature_ptr)
 /* was `int` -- same pointer-truncation bug as spawn_creature_treasure_drop */
 void spawn_creature_misc_item_drop(void *creature_ptr)
 {
-  char *creature = (char *)creature_ptr;
+  uw_object_hdr_t *creature = (uw_object_hdr_t *)creature_ptr;
   int uw_ord2005_rem_164 = 0; int uw_ord2005_rem_165 = 0; int uw_ord2005_rem_166 = 0;
   ushort uVar1;
   undefined2 uVar2;
   byte bVar3;
   short sVar4;
   undefined4 uVar5;
-  char *iVar6;  /* was `int` -- truncated spawn_new_object's real pointer */
+  uw_object_hdr_t *iVar6;  /* was `int` -- truncated spawn_new_object's real pointer */
   char extraout_r1;
   byte bVar7;
   byte extraout_r1_00;
@@ -1646,10 +1644,10 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
   uVar8 = 0;
   do {
     uVar5 = ce_rand();
-    uVar1 = *(ushort *)(g_despawn_creature_record + uVar8 * 2 + 0x22);
+    uVar1 = ((uw_monster_type_props_t *)g_despawn_creature_record)->item_loot[uVar8];
     uw_ord2005_rem_164 = ((int)(uVar5)) % (0x10);
     if (uw_ord2005_rem_164 < (int)(uVar1 & 0xf)) {
-      iVar6 = (char *)spawn_new_object(uVar1 >> 4,0);
+      iVar6 = spawn_new_object(uVar1 >> 4,0);
       uVar5 = ce_rand();
       uw_ord2005_rem_165 = ((int)(uVar5)) % (2);
       if (uw_ord2005_rem_165 == 0) {
@@ -1663,11 +1661,10 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
         uw_ord2005_rem_166 = ((int)(uVar5)) % (0x40);
         bVar7 = uw_ord2005_rem_166;
       }
-      uVar2 = ((uw_object_hdr_t *)iVar6)->chain_word;
+      uVar2 = iVar6->chain_word;
       bVar3 = (byte)uVar2;
-      ((uw_object_hdr_t *)iVar6)->chain_word_low = (bVar3 ^ bVar7) & 0x3f ^ bVar3;
-      ((uw_object_hdr_t *)iVar6)->chain_word_high = (byte)(char)((ushort)uVar2 >> 8);
-      object_list_insert_head(creature + 6,iVar6);
+      iVar6->quality = bVar7 & 0x3f;
+      object_list_insert_head(&creature->link_word,iVar6);
     }
     uVar8 = uVar8 + 1 & 0xff;
   } while (uVar8 < 2);
