@@ -463,7 +463,8 @@ void npc_walk_toward_tile(uint goal, char goal_target, byte attitude)
   undefined1 uVar4;
   short sVar5;
   int iVar6;
-  char *npc_bytes;
+  uw_mobile_object_t *npc_bytes;
+  uw_object_hdr_t *target_header;
   undefined4 uVar7;
   int extraout_r1;
   int extraout_r1_00;
@@ -495,7 +496,7 @@ void npc_walk_toward_tile(uint goal, char goal_target, byte attitude)
     }
     if ((DAT_0010190c->npc_goal) != 1) {
       if (DAT_00101734 != 0) {
-        DAT_0010190c->motion_flags = DAT_0010190c->motion_flags & 0x80;
+        DAT_0010190c->speed = 0;
         DAT_0010190c->animation_flags = DAT_0010190c->animation_flags | 0x40;
         DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xe0 | 0x20;
         return;
@@ -509,9 +510,9 @@ LAB_0002e6fc:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xf9 | 1;
     if ((DAT_0010190c->animation_flags & 0x80) != 0) {
       uVar3 = DAT_0010190c->tile_word;
-      iVar6 = (uVar3 & 0xf) * 0x1c;
-      if ((uVar3 >> 10 == (ushort)(byte)(&DAT_00101568)[(int)iVar6]) &&
-         ((uVar3 & 0x3f0) >> 4 == (uint)(byte)(&DAT_00101569)[(int)iVar6])) {
+      iVar6 = DAT_0010190c->npc_path_slot * 0x1c;
+      if ((DAT_0010190c->npc_xhome == (ushort)(byte)(&DAT_00101568)[(int)iVar6]) &&
+         (DAT_0010190c->npc_yhome == (uint)(byte)(&DAT_00101569)[(int)iVar6])) {
         /* Was a dropped argument -- called with no args (`FUN_0002dd4c();` before this rename). */
         advance_cached_path_step(&DAT_00101568 + (int)iVar6);
       }
@@ -522,7 +523,8 @@ LAB_0002e6fc:
      (bVar9 = DAT_0010190c->heading_flags, (bVar9 & 0x40) == 0)) {
     if (DAT_001013fc != 0) {
       if (DAT_00101560 == 0) {
-        uVar3 = *DAT_00101904;
+        target_header = (uw_object_hdr_t *)DAT_00101904;
+        uVar3 = (ushort)(char)(byte)target_header->object_id;
         if (((uVar3 & 0x1c0) == 0x40) && ((uVar3 & 0x1ff) != 0x7f)) {
           if (((DAT_0010190c->npc_goal) == 5) &&
               ((*(byte *)((char *)DAT_00101904 + 0xb) & 0xf) == 5)) {
@@ -534,7 +536,7 @@ LAB_0002e6fc:
         if ((((uVar3 & 0x1f0) == 0x140) && (7 < (uVar3 & 0xf))) &&
            ((DAT_00101404->movement_flags & 0x80) != 0)) {
           local_38 = 1;
-          DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 7 | 0x70;
+          DAT_0010190c->pitch = 14;
           DAT_00101924 = 0;
           DAT_00101914 = 1;
           goto LAB_0002ea00;
@@ -582,19 +584,17 @@ LAB_0002ed50:
       else {
         bVar9 = DAT_00101404->magic_power;
       }
-      bVar9 = (DAT_0010190c->motion_flags ^ bVar9) & 0x7f ^ DAT_0010190c->motion_flags;
+      bVar9 = (DAT_0010190c->gravity_flag << 7) | (bVar9 & 0x7f);
     }
     else {
-      bVar9 = DAT_0010190c->motion_flags & 0x80;
+      bVar9 = DAT_0010190c->gravity_flag << 7;
     }
-    DAT_0010190c->motion_flags = bVar9;
-    npc_bytes = (char *)DAT_0010190c;
+    DAT_0010190c->speed = bVar9 & 0x7f;
+    npc_bytes = DAT_0010190c;
     uVar3 = DAT_0010190c->goal_word;
     uw_ord2005_rem_18 = ((int)((uVar3 >> 0xc) + 1)) % (4);
     uVar8 = uVar3 & 0xfff;
-    ((uw_mobile_object_t *)npc_bytes)->goal_word_low = (byte)(char)uVar8;
-    DAT_0010190c->goal_word_high =
-      (byte)(uVar8 >> 8) | (byte)(((uw_ord2005_rem_18 & 0xf) << 0xc) >> 8);
+    npc_bytes->npc_animation_frame = uw_ord2005_rem_18 & 0xf;
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
     return;
   }
@@ -640,8 +640,7 @@ LAB_0002ed50:
         DAT_0010190c->heading_flags = DAT_0010190c->heading_flags & 0xbf;
         DAT_0010190c->animation_flags = DAT_0010190c->animation_flags | 0x80;
         uVar8 = DAT_0010190c->tile_word & 0xfff0;
-        DAT_0010190c->tile_word_low = local_40[0] & 0xf | (byte)uVar8;
-        DAT_0010190c->tile_word_high = (byte)(char)(uVar8 >> 8);
+        DAT_0010190c->npc_path_slot = local_40[0] & 0xf;
         walk_using_cached_path(&DAT_00101568 + (DAT_0010190c->npc_path_slot) * 0x1c);
         goto LAB_0002ed50;
       }

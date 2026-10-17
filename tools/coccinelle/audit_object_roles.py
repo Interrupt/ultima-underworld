@@ -22,7 +22,9 @@ ACCESSORS = {'alloc_object_slot', 'resolve_object_link', 'get_object_record_by_s
 # refresh_npc_target_delta is the sole writer of DAT_00101400 in src: it
 # assigns get_object_record_by_slot_index(npc_gtarg). This proves a common
 # header, without proving an NPC/projectile extension for the target.
-OBJECT_GLOBALS = {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr', 'DAT_00101400'}
+# DAT_00101904 is assigned only by nearby-candidate accessors whose non-null
+# results come from resolve_object_link; this proves the common header only.
+OBJECT_GLOBALS = {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr', 'DAT_00101400', 'DAT_00101904'}
 WRAPPERS = {'ImplicitCastExpr', 'CStyleCastExpr', 'ParenExpr', 'ConstantExpr'}
 
 

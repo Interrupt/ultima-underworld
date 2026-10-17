@@ -1565,10 +1565,17 @@
           "function": "npc_walk_toward_tile",
           "roles": [
             {
-              "name": "npc_bytes",
-              "type": "char *",
+              "name": "target_header",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "npc_bytes",
+              "type": "uw_mobile_object_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
             }
           ],

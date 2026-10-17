@@ -1857,3 +1857,47 @@ and seven raw audited accesses, with no signed-word views. Two direct packed
 player-coordinate reads and two full-type ID extractions disappear; two named
 next-word addresses become explicit. Other operations and unrecorded aliases
 still require work before the overall cleanup can be considered complete.
+
+## NPC walking target and path-cache fields
+
+`generate_walk_target_rules.py` generates `walk-target-fields.json` for the
+exact-source applier. `npc_walk_toward_tile` uses a native saved NPC pointer,
+`npc_animation_frame`, `npc_path_slot`, cached home coordinates, `speed`,
+`gravity_flag` and `pitch`. Full word snapshots and scalar temporaries remain
+in place, including the full gravity/speed value in `bVar9`. Function location,
+API signatures and callback order are preserved. Path-cache offsets and the
+28-byte stride describe a separate record format; unknown animation, heading
+and attack-state bits still use their existing whole-byte members.
+
+Nearby-candidate accessor results prove a common object header. The target ID
+read therefore uses `object_id`, retaining byte truncation and signed `char`
+extension into the original unsigned short. This deliberately preserves the
+existing loss of the ninth ID bit. The target's byte +11 goal check remains a
+raw exception: the narrowed class test can accept a non-NPC ID, so it cannot
+justify an NPC extension pointer. Under this signed-byte view, the subsequent
+flying-target class test is unreachable because bits 7 and 8 must agree.
+Its pitch assignment still becomes `pitch = 14`; all 256 original byte values
+are checked separately against the actual original and converted statements.
+The ID-width behavior is preserved rather than repaired by this cleanup.
+
+`walk_target_fields` runs by default. It checks exact recipe generation,
+conversion/idempotence, accessor provenance, retained raw-access inventory,
+and refusal of changed masks, volatile or escaping captures, inserted
+callbacks, excluded functions and duplicate definitions. Its 4,194,304
+original/current cases cover all word seeds, 32 modes and callback mutation.
+All fourteen mocked services are reached with and without mutation. Callbacks
+rebind NPC and candidate pointers, mutate fields and cache records, and change
+the escaped local slot buffer during search and saving. Assertions distinguish
+the slot used to clear the cache bitmap and save the path from the later live
+slot used to update the NPC and resume walking. Full guarded records, tables,
+cache bytes, globals, callback arguments, events and counts are compared.
+Use `--reference PATH` with the original `ai.c` and `--asan` for AddressSanitizer.
+
+The role and usage audits now share the proven object-global set. Including
+the previously omitted `DAT_00101400` and nearby-candidate `DAT_00101904`
+exposes eleven existing raw accesses (ten and one respectively). With four
+byte views removed, the inventory is now 36 byte views, 454 packed accesses
+and 18 raw audited accesses: 508 total, versus 501 before the scope correction.
+This increase records previously uncounted code. Remaining accesses and
+unrecorded aliases still require independent auditing and conversion or a
+documented exception.

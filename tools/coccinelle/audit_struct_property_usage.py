@@ -13,6 +13,7 @@ import re
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 from struct_field_catalog import WORDS
+from audit_object_roles import OBJECT_GLOBALS
 
 FUNCTION = re.compile(r'^\w[^\n;{}]*?\b(\w+)\([^;{}]*?\)\s*\{', re.M)
 NONCODE = re.compile(r'/\*[\s\S]*?\*/|//[^\n]*|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'')
@@ -58,7 +59,7 @@ def inventory():
         for function in by_source.get(relative, {}).get('functions', []):
             audited[function['function']] = {role['name'] for role in function['roles']
                                             if '**' not in role['type']}
-        names = {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr'}
+        names = set(OBJECT_GLOBALS)
         names |= set().union(*audited.values()) if audited else set()
         for name in sorted(names):
             # Includes byte/word casts and indexing; context validation below
@@ -70,7 +71,7 @@ def inventory():
                                  r'\s*\+\s*[^)\n]+\)')
             for match in pattern.finditer(code):
                 function = context(match.start())
-                if name in {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr'} or name in audited.get(function, set()):
+                if name in OBJECT_GLOBALS or name in audited.get(function, set()):
                     add(match, 'raw_audited_object_access', pointer=name)
     return sorted(result, key=lambda item: (item['source'], item['line'], item['category'], item['member'] or '', item['pointer'] or ''))
 
