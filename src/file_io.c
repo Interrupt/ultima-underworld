@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include "headers/platform_compat.h"
 #include <strings.h>
 #include <sys/stat.h>
 #include <errno.h>

@@ -1,9 +1,8 @@
 #include "headers/options.h"
 #include "headers/main.h"
 #include <signal.h>
-#include <execinfo.h>
+#include "headers/platform_compat.h"
 #include <stdlib.h>
-#include <unistd.h>
 
 static code **g_atexit_handlers;      /* was DAT_0025090c: base of the handler array */
 static code **g_atexit_handlers_end;  /* was DAT_00250908: next free slot */

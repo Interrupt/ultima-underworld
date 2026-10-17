@@ -654,10 +654,10 @@ long ce_strncpy(char *dest, const char *src, unsigned int n)
     if (dest == 0) return 0;
     if (src == 0) {
         memset(dest, 0, n);
-        return (long)dest;
+        return (long)(intptr_t)dest;
     }
     strncpy(dest, src, n);
-    return (long)dest;
+    return (long)(intptr_t)dest;
 }
 
 char *ce_strstr(const char *haystack, const char *needle)

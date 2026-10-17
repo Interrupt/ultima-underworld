@@ -1,0 +1,14 @@
+.{
+    .name = .uw1_decomp,
+    .version = "0.0.0",
+    .fingerprint = 0xd32b475cf8d2027a,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .sdl2 = .{
+            .url = "git+https://github.com/allyourcodebase/SDL3?ref=SDL2#eeba46bd2f847355b0bcf41b38380beffb395779",
+            .hash = "SDL-2.32.10-JToi37O3EgEYuel13OaBpZXIS406c6ykvPFrqm-u1X8W",
+            .lazy = true,
+        },
+    },
+    .paths = .{ "build.zig", "build.zig.zon", "src", "third_party" },
+}

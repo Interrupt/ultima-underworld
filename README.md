@@ -27,6 +27,24 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j
 ```
 
+### Zig build (cross-platform)
+
+`build.zig` is an alternative to CMake that needs only Zig 0.16 or 0.17 (no clang, cmake or system SDL2
+for cross builds). It builds the game as `zig-out/bin/uw_dbg`; the unit-test suite and the ASan
+twin remain CMake-only (Zig does not ship the ASan runtime).
+
+```sh
+zig build                                    # native, links the system SDL2 (pkg-config)
+zig build -Dsystem-sdl=false                 # native, SDL2 built from source (allyourcodebase/SDL3, branch SDL2)
+zig build -Dtarget=x86_64-windows-gnu        # Windows; also x86-windows-gnu, aarch64-windows-gnu
+zig build -Doptimize=ReleaseFast run -- --data-dir data
+```
+
+`run-regressions.sh` (with `BIN=zig-out/bin/uw_dbg`) passes 8/8 on the native macOS build; the
+Windows `.exe` files compile and link but are untested. Linux and cross-arch macOS
+builds need the host's X11/Pulse libraries or Apple SDK frameworks, so build those natively on
+the target OS (`zig build` there) rather than cross-compiling from another OS.
+
 The `-Wno-*` flags in `CMakeLists.txt` are required, not optional: this is raw decompiled C
 where 32-bit-original-binary idioms (K&R-style unspecified-argument
 functions, implicit int/pointer conversions) are used throughout on
