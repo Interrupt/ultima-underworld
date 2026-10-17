@@ -1645,9 +1645,23 @@
           "roles": [
             {
               "name": "pObj",
-              "type": "char *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "creature",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "creature_ptr",
+              "type": "void *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
               "current_mobile_alias": false
             }
           ],
@@ -1738,10 +1752,17 @@
           "function": "spawn_creature_death_loot",
           "roles": [
             {
+              "name": "npc",
+              "type": "uw_mobile_object_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
               "name": "creature",
               "type": "ushort *",
               "parameter": true,
-              "evidence": "UW1 object struct member access",
+              "evidence": "incoming UW1 object pointer cast",
               "current_mobile_alias": false
             }
           ],

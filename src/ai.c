@@ -195,9 +195,6 @@ static undefined DAT_000868c0_backing[256] = {
    address (crash in demo_critter_orbit_cardinal.txt, EXC_BAD_ACCESS at uw.c:70173). */
 // was DAT_0024cfc4
 static char *g_despawn_creature_record;
-/* Treasure values are fields of the loaded COMOBJ table (type 0xa0,
-   offset 5), not an independent, never-loaded array. */
-#define DAT_002034b5 ((byte *)g_object_type_props)[0x825] /* item 0xa0 value, loaded COMOBJ table */
 int mobile_object_tick()
 {
   byte bVar1;
@@ -1462,7 +1459,7 @@ void drop_creature_inventory_on_death(void *creature_ptr)
    64-bit build), corrupting the address handed to object_list_insert_head(param_1 + 6, ...) below */
 void spawn_creature_treasure_drop(void *creature_ptr)
 {
-  char *creature = (char *)creature_ptr;
+  uw_object_hdr_t *creature = (uw_object_hdr_t *)creature_ptr;
   int uw_ord2005_rem_159 = 0;
   int iVar1;
   uint uVar2;
@@ -1475,10 +1472,10 @@ void spawn_creature_treasure_drop(void *creature_ptr)
   int extraout_r1_00;
   int extraout_r1_01;
   int iVar8;
-  char *pObj;  /* was reuse of `iVar8` (int) -- truncated
+  uw_object_hdr_t *pObj;  /* was reuse of `iVar8` (int) -- truncated
                   spawn_new_object's real pointer */
 
-  bVar3 = *(byte *)(g_despawn_creature_record + 0x26);
+  bVar3 = ((uw_monster_type_props_t *)g_despawn_creature_record)->coin_loot;
   uVar7 = ce_rand();
   uw_ord2005_rem_159 = ((int)(uVar7)) % (0x10);
   if (uw_ord2005_rem_159 < (int)(uint)(bVar3 >> 4)) {
@@ -1490,7 +1487,7 @@ void spawn_creature_treasure_drop(void *creature_ptr)
     if (iVar8 * 0x1000000 >> 0x18 < 0) {
       cVar4 = '\0';
     }
-    cVar5 = (&DAT_002034b5)[cVar4 * 0xd];
+    cVar5 = (char)(byte)g_object_type_props[0xa0 + (int)cVar4].monetary_value;
     if (cVar5 == '\0') {
       cVar5 = '\x01';
     }
@@ -1524,10 +1521,9 @@ void spawn_creature_treasure_drop(void *creature_ptr)
     }
     uVar2 = (uint)cVar5;
     if (0 < (int)uVar2) {
-      pObj = (char *)spawn_new_object((short)cVar4 + 0xa0,0);
-      ((uw_object_hdr_t *)pObj)->link_word_low = ((uw_object_hdr_t *)pObj)->owner | (byte)((uVar2 & 0x3ff) << 6);
-      ((uw_object_hdr_t *)pObj)->link_word_high = (byte)(char)((uVar2 << 0x16) >> 0x18);
-      object_list_insert_head(creature + 6,pObj);
+      pObj = spawn_new_object((short)cVar4 + 0xa0,0);
+      pObj->link = uVar2 & 0x3ff;
+      object_list_insert_head(&creature->link_word,pObj);
     }
   }
 }
@@ -1679,14 +1675,14 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
 // per-class record in the same table as g_monster_max_stats_table...
 void spawn_creature_death_loot(ushort *creature)
 {
-  if (!((uw_mobile_object_t *)creature)->npc_loot_spawned) {
-    g_despawn_creature_record = &DAT_001007d0 +
-                   (((int)(short)*creature & 0xfU) + (short)((*creature & 0x30) >> 4) * 0x10) * 0x30;
+  uw_mobile_object_t *npc = (uw_mobile_object_t *)creature;
+  if (!npc->npc_loot_spawned) {
+    g_despawn_creature_record = (char *)&g_monster_type_props[npc->hdr.object_id & 0x3f];
     spawn_creature_treasure_drop(creature);
     spawn_creature_special_item_drop(creature);
     spawn_creature_equipment_drop(creature);
     spawn_creature_misc_item_drop(creature);
-    ((uw_mobile_object_t *)creature)->npc_loot_spawned = 1;
+    npc->npc_loot_spawned = 1;
   }
 }
 

@@ -1670,3 +1670,48 @@ The audit now contains 56 byte views (four fewer), 452 packed accesses and seven
 raw audited accesses, with no signed-word views. The full-type snapshot is an
 intentional retained capture. Other accesses and unrecorded aliases still
 require conversion or documented justification before the overall goal is done.
+
+## Creature treasure and loot dispatch
+
+`generate_treasure_rules.py` generates `treasure-fields.json` and
+`loot-dispatch-fields.json` for the exact-source applier. Treasure reads the
+named monster `coin_loot` field, writes the spawned header's `link` quantity
+and inserts through the creature's named `link_word` address. Both object
+pointers use the common-header type. The raw COMOBJ value alias and 13-byte
+index arithmetic become `g_object_type_props[0xa0 + (int)cVar4].monetary_value`,
+with explicit `(char)(byte)` narrowing. The old code reads only the low byte
+and then treats it as `char`; reading the full price would change the rolls.
+The index retains `cVar4`'s signedness, including negative signed-char subtype
+values. The obsolete product-side `DAT_002034b5` macro is removed.
+
+The dispatcher uses a typed NPC alias for the existing `npc_loot_spawned`
+property and selects `g_monster_type_props[object_id & 0x3f]`. That mask is a
+monster-class selector. The selected row, handler order, final flag write,
+function locations and API signatures remain intact. All live scalar captures,
+chance/price/level arithmetic, RNG/division/dice ordering and wrapped/signed
+conversions remain unchanged; the loot record pointer is not cached across
+callbacks. The storage address passed to list insertion is an intentional full
+packed-word address rather than another property extraction.
+
+`treasure_fields` runs by default and verifies reproducible recipes, exact
+conversion/idempotence and rejection of changed masks, constants, table stride,
+callbacks, volatile/escaping captures, excluded scopes, quoted bodies and
+duplicate functions. Its 3,145,728 original/current cases exercise both treasure
+and dispatch with every 16-bit seed, twelve roll/price modes and callback
+mutations. The reference dispatcher calls the reference treasure function.
+Callbacks alter headers, loot rows, monetary values and the level, rebind the
+loot-row pointer and alias the spawned output with the creature. Full guarded
+records, both entire property tables, globals and callback arguments/events/
+counts are compared. Assertions check owner/next preservation, quantities 1
+and 127, zero/negative quantity gates, signed low-byte prices (including a
+negative divisor), initially selected monster rows, already-dropped gating,
+three downstream calls and the final loot flag. The legacy value address is
+checked against the actual struct size and monetary-value offset.
+
+The same matrix passes normally at `-O2`, under AddressSanitizer and with
+`--o0`, preserving each build configuration's existing arithmetic behavior.
+Use `--reference PATH` with the original `ai.c`, `--asan` or `--o0` to repeat
+these checks. The audit lists 54 byte views (two fewer), 453 packed accesses
+(one additional intentional link address), seven raw audited accesses and no
+signed-word views. Unconverted operations and unrecorded aliases remain work
+for the broader cleanup.
