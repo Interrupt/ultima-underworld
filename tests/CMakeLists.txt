@@ -1,5 +1,9 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_compile_options(-Wno-pointer-sign)
+# The fixtures stand in for game globals by declaring them without initializers in several files
+# (tentative definitions). gcc 10+ defaults to -fno-common, which makes GNU ld report those as
+# multiple definitions; -fcommon merges them as the fixtures were written to expect.
+add_compile_options(-fcommon)
 # unity is a PUBLIC dependency of several diamond-shaped static test libraries; the duplicate is harmless.
 if(APPLE)
   add_link_options(-Wl,-no_warn_duplicate_libraries)
