@@ -557,9 +557,9 @@
           "roles": [
             {
               "name": "iVar6_rec",
-              "type": "char *",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
             }
           ],
@@ -590,9 +590,9 @@
           "roles": [
             {
               "name": "iVar2_rec",
-              "type": "char *",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
             }
           ],
@@ -811,9 +811,9 @@
           "roles": [
             {
               "name": "iVar4",
-              "type": "char *",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": true
             }
           ],

@@ -183,7 +183,7 @@ void npc_combat_engage_close_tick()
   ushort uVar4;
   uint uVar5;
   int iVar6;
-  char *iVar6_rec;
+  uw_mobile_object_t *iVar6_rec;
   bool bVar7;
   undefined1 local_28;
   
@@ -238,13 +238,12 @@ void npc_combat_engage_close_tick()
     }
     DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xc0;
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
-    iVar6_rec = (char *)DAT_0010190c;
+    iVar6_rec = DAT_0010190c;
     uVar4 = DAT_0010190c->goal_word;
     uw_ord2005_rem_46 = ((int)((uVar4 >> 0xc) + 1)) % (4);
     uVar5 = uVar4 & 0xfff;
-    ((uw_mobile_object_t *)iVar6_rec)->goal_word_low = (byte)(char)uVar5;
-    DAT_0010190c->goal_word_high = (byte)(uVar5 >> 8) | (byte)(((uw_ord2005_rem_46 & 0xf) << 0xc) >> 8);
-    DAT_0010190c->motion_flags = DAT_0010190c->motion_flags & 0x80;
+    iVar6_rec->npc_animation_frame = uw_ord2005_rem_46 & 0xf;
+    DAT_0010190c->speed = 0;
     return;
   }
 LAB_000302bc:
@@ -417,7 +416,7 @@ void npc_combat_engage_wide_tick()
   ushort uVar1;
   ushort distance_squared;
   int iVar2;
-  char *iVar2_rec;
+  uw_mobile_object_t *iVar2_rec;
   uint uVar3;
   uint extraout_r1;
   
@@ -430,19 +429,17 @@ void npc_combat_engage_wide_tick()
     }
     else if (DAT_00101900 < 5) {
       uVar3 = compute_movement_heading((int)(char)DAT_00101444,(int)(char)DAT_00101448);
-      DAT_0010190c->motion_flags = DAT_0010190c->motion_flags & 0x80;
+      DAT_0010190c->speed = 0;
       DAT_0010190c->full_heading = (byte)((uVar3 & 0xff) << 5);
       DAT_0010190c->hdr.heading = uVar3 & 0x7;
       DAT_0010190c->npc_heading = 0;
       DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xc0;
-      iVar2_rec = (char *)DAT_0010190c;
+      iVar2_rec = DAT_0010190c;
       uVar1 = DAT_0010190c->goal_word;
       uw_ord2005_rem_63 = ((int)((uVar1 >> 0xc) + 1)) % (4);
       uVar3 = uVar1 & 0xfff;
-      ((uw_mobile_object_t *)iVar2_rec)->goal_word_low = (byte)(char)uVar3;
-      DAT_0010190c->goal_word_high = (byte)(uVar3 >> 8) | (byte)(((uw_ord2005_rem_63 & 0xf) << 0xc) >> 8)
-        ;
+      iVar2_rec->npc_animation_frame = uw_ord2005_rem_63 & 0xf;
     }
     else {
       iVar2 = try_npc_special_ability_no_los();
@@ -1811,7 +1808,7 @@ int check_npc_target_alignment(int mode)
   int iVar1;
   int iVar2;
   ushort uVar3;
-  char *iVar4;
+  uw_mobile_object_t *iVar4;
   char cVar5;
   undefined4 uVar6;
   char extraout_r1;
@@ -1822,7 +1819,7 @@ int check_npc_target_alignment(int mode)
   iVar1 = (int)(((uint)DAT_00101908 - (uint)DAT_00101910) * 0x1000000) >> 0x18;
   iVar2 = (int)(((uint)DAT_00101418 - (uint)DAT_0010141c) * 0x1000000) >> 0x18;
   cVar5 = compute_movement_heading(iVar1,iVar2);
-  iVar4 = (char *)DAT_0010190c;
+  iVar4 = DAT_0010190c;
   uVar3 = DAT_0010190c->hdr.position_word;
   uw_ord2005_rem_87 = ((int)(((int)cVar5 - ((int)(char)(uVar3 >> 7) & 7U)) + 8)) % (8);
   if (mode == 0) {
@@ -1840,8 +1837,7 @@ int check_npc_target_alignment(int mode)
         uVar7 = uw_ord2005_rem_89;
       }
       uVar7 = uVar3 & 0xfc7f | (uVar7 & 7) << 7;
-      ((uw_object_hdr_t *)iVar4)->position_word_low = (byte)(char)uVar7;
-      DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar7 >> 8);
+      iVar4->hdr.heading = (uVar7 >> 7) & 7;
       uVar6 = 0;
     }
   }

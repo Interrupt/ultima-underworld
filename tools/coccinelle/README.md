@@ -1715,3 +1715,46 @@ these checks. The audit lists 54 byte views (two fewer), 453 packed accesses
 (one additional intentional link address), seven raw audited accesses and no
 signed-word views. Unconverted operations and unrecorded aliases remain work
 for the broader cleanup.
+
+## Combat engage frames and target heading
+
+`generate_engage_rules.py` generates `combat-engage-close-fields.json`,
+`combat-engage-wide-fields.json` and `target-alignment-fields.json` for the
+exact-source applier. The two engage handlers use native NPC aliases and write
+`npc_animation_frame`; their motion resets write `speed = 0` while preserving
+`gravity_flag`. Target alignment writes the saved NPC header's `heading`.
+Aliases are captured at their original points after any callbacks, so a
+callback may still rebind the global NPC before the subsequent capture.
+Function locations, signatures, labels, all scalar captures and callback
+ordering remain unchanged. This includes the close handler's existing
+fall-through after the stance call and all spell fallback ordering.
+
+Full status/goal/position snapshots remain explicit. Arithmetic on captured
+words computes retained scratch values; heading/frame remainder calculations
+keep their original signed conversions. Animation-state masks, low attack-state
+bits and individual AI flags lack fully modeled properties and remain in their
+existing named byte members. Masks on loot/spell descriptors classify those
+separate table formats. This batch removes six byte views, leaving 48 byte
+views, 453 packed accesses and seven raw audited accesses, with no signed-word
+views. The full-word captures are intentional retained operations.
+
+`combat_engage_fields` runs by default. It checks reproducible generation,
+exact conversion/idempotence and rejection of changed masks, volatile/escaping
+captures, inserted calls/stores, excluded scopes, quoted bodies and duplicate
+functions. Its 9,437,184 original/current cases sweep all 16-bit seeds through
+header words with 24 modes and callback mutations for all three functions.
+Coverage includes distance/altitude boundaries, matching target tiles,
+wrapped squared distances, flying targets, spell/alternate/ranged abilities,
+frame-suppression states, wandering/fleeing and race/level/player flags.
+Heading inputs include negative/large returns and signed byte deltas; fine
+alignment returns include negative values, 32768 and 65536.
+
+Callbacks mutate header words, monster rows, target coordinates and player
+flags and rebind NPC, monster-property and player-stat pointers. Guarded records,
+complete rows/stat buffers, globals, callback arguments/events/counts and return
+values are compared. Independent assertions check disabled handlers, frame
+wrap, speed reset with preserved gravity, suppressed frames, flee selection,
+unchanged position bits outside heading, aligned returns and single-step turns.
+Use `--reference PATH` with the original `combat.c` and `--asan` for
+AddressSanitizer. Other remaining operations and unrecorded aliases continue to
+require conversion or documented justification.
