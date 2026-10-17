@@ -17,6 +17,12 @@ endif()
 # synthetic tree (tests/tools/make_synthetic_data.py) to run without the real game files.
 set(UW_TEST_DATA_DIR "${PROJECT_SOURCE_DIR}/data" CACHE PATH "Game data directory used by the unit tests")
 
+# The game uses libm (lround etc.); glibc needs it on the link line, macOS folds it into libc.
+# link_libraries applies to every executable defined below, including those under tests/.
+if(UNIX)
+  link_libraries(m)
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 

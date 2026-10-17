@@ -114,6 +114,8 @@ pub fn build(b: *std.Build) void {
 
     mod.addCSourceFiles(.{ .files = &uw_sources, .flags = &c_flags });
 
+    if (target.result.os.tag != .windows) mod.linkSystemLibrary("m", .{});
+
     if (system_sdl) {
         mod.linkSystemLibrary("SDL2", .{});
     } else if (b.lazyDependency("sdl2", .{ .target = target, .optimize = sdl_optimize })) |dep| {
