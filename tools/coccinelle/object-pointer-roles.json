@@ -106,17 +106,17 @@
           "function": "babl_builtin_place_object",
           "roles": [
             {
-              "name": "puVar4",
-              "type": "undefined1 *",
+              "name": "link_cursor",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             },
             {
-              "name": "link_cursor",
-              "type": "void *",
+              "name": "puVar4",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "object accessor / proven object alias",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],
@@ -390,16 +390,16 @@
           "roles": [
             {
               "name": "puVar2",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             },
             {
               "name": "puVar3",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],

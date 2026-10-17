@@ -1805,3 +1805,55 @@ capture become explicit while one full-type extraction disappears, explaining
 the net three additional packed items. The old mixed cursor was excluded from
 the object-role inventory; separating it now proves the candidate object role.
 Other remaining operations and unrecorded aliases still require work.
+
+## BABL placement and player-barter finalization
+
+`generate_babl_transfer_rules.py` generates `babl-placement-fields.json` and
+`barter-finalize-fields.json` for the exact-source applier. Placement uses native
+object/tile pointers, named `chain_word` cursor addresses, `floor_height` for
+both Z initialization and the clearance height, and player `tile_x`/`tile_y`
+for world positioning. Multiplication by eight remains the tile-to-world/Z-unit
+conversion. The complete position snapshot, other scalar captures, signed
+argument narrowing, unlink/clearance/append/settle order and return/placement-flag
+behavior remain unchanged. The tile-list helper still receives the packed word
+at byte +2: that storage contains wall texture and object head, and the
+`obj_head` bitfield has no address that can be passed to the existing word API.
+
+Finalization uses native header pointers for offered/inventory objects, named
+next-word addresses, `is_quant`/`link`/`object_id` merge gates and a named `link`
+quantity write. The currency ID, special-link boundary 512 and strict total
+limit below 999 remain unchanged. Four-slot traversal, initial resolver calls
+for non-currency items, live NPC-head rereads, free/insert ordering, backdrop
+restoration and offer/inclusion clearing remain in place. API signatures and
+both function locations are unchanged. Generic link-word snapshots and their
+high-ten-bit routing tests remain explicit because the cursor traverses both
+header link/chain storage; these are packed-list operations on retained values.
+UI tables remain separate scalar-array formats.
+
+`babl_transfer_fields` runs by default and checks reproducible recipes,
+exact conversion/idempotence and rejection of changed masks/constants,
+volatile/escaping captures, callbacks/cursor writes, excluded functions,
+quoted bodies and duplicate definitions. Two original/current fixtures each
+run 2,097,152 cases (4,194,304 total), sweeping all 16-bit seeds, sixteen modes
+and callback mutations. Placement covers present/absent/empty inventory chains,
+coordinate bounds and short truncation, player/NPC aliasing, all tile-height
+patterns, blocked/nonzero clearance results, live player coordinates and
+placement-flag reset. It independently checks Z and every unchanged position
+bit, packed cursor addresses and geometry/collision arguments.
+
+Finalization covers four positive/zero/negative offers, zero/high-bit inclusion
+flags, preference-return truncation, empty inventories, non-currency items,
+quantity flags and special links, totals 998/999, the ninth ID bit and aliased
+source/destination records. Callbacks swap pending offer IDs, mutate object
+fields and UI buffers and rebind the NPC between resolution and insertion.
+Assertions check owner/next preservation, strict totals, acceptance/free/insert
+gates, backdrop arguments and clearing before crosshair redraw. Full guarded
+records, property tables, argument/UI buffers, globals and callback arguments/
+events/counts are compared. Use `--reference PATH` with the original `babl.c`
+and `--asan` for AddressSanitizer.
+
+The audit now lists 40 byte views (four fewer), 454 packed accesses (two fewer)
+and seven raw audited accesses, with no signed-word views. Two direct packed
+player-coordinate reads and two full-type ID extractions disappear; two named
+next-word addresses become explicit. Other operations and unrecorded aliases
+still require work before the overall cleanup can be considered complete.

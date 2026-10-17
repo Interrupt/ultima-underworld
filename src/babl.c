@@ -702,19 +702,19 @@ int babl_builtin_place_object(char *args)
   int iVar1;
   ushort uVar2;
   undefined4 uVar3;
-  undefined1 *puVar4;
+  uw_object_hdr_t *puVar4;
   undefined4 uVar5;
   undefined4 uVar6;
   ushort *puVar7;
   int iVar8;
-  void *link_cursor;
-  byte *pbVar9;
+  uw_object_hdr_t *link_cursor;
+  uw_tile_t *pbVar9;
   
   uVar3 = babl_read_var_word((int)*(short *)(args + -6));
-  puVar4 = (undefined1 *)get_object_record_by_slot_index(uVar3);
+  puVar4 = get_object_record_by_slot_index(uVar3);
   uVar5 = babl_read_var_word((int)*(short *)(args + -4));
   uVar6 = babl_read_var_word((int)*(short *)(args + -2));
-  puVar7 = (ushort *)((char *)&DAT_00100674->hdr.link_word);
+  puVar7 = &DAT_00100674->hdr.link_word;
   uVar2 = *puVar7;
   if ((uVar2 & 0xffc0) != 0) {
     do {
@@ -723,18 +723,18 @@ int babl_builtin_place_object(char *args)
          verified against real ARM disassembly (Ghidra, UU.exe) that every one of them DOES set up a
          real r0 argument in the compiled binary; Ghidra's decompiler just failed to show it... */
       link_cursor = resolve_object_link(puVar7);
-      puVar7 = (ushort *)((char *)link_cursor + 4);
+      puVar7 = &link_cursor->chain_word;
       uVar2 = *puVar7;
     } while ((uVar2 & 0xffc0) != 0);
   }
   if ((*puVar7 & 0xffc0) != 0) {
-    object_list_unlink((char *)&DAT_00100674->hdr.link_word,puVar4);
+    object_list_unlink(&DAT_00100674->hdr.link_word,puVar4);
   }
   iVar8 = (int)(short)uVar5;
   if (iVar8 < 0) {
     DAT_00202c84 = 1;
-    place_object_in_world(g_player_object->tile_word >> 7 & 0x1f8,
-                          g_player_object->tile_word >> 1 & 0x1f8,
+    place_object_in_world(g_player_object->tile_x << 3,
+                          g_player_object->tile_y << 3,
                           g_player_object->hdr.zpos,
                           puVar4,6,1);
     DAT_00202c84 = 0;
@@ -744,17 +744,16 @@ LAB_0001818c:
   else {
     if ((((0 < iVar8) && (iVar8 < 0x40)) && (iVar1 = (int)(short)uVar6, 0 < iVar1)) &&
        (iVar1 < 0x40)) {
-      pbVar9 = (byte *)tilemap_lookup(uVar5,uVar6);
-      uVar2 = ((uw_object_hdr_t *)puVar4)->position_word;
-      ((uw_object_hdr_t *)puVar4)->position_word_low = (byte)(uVar2 & 0xff80) | *pbVar9 >> 1 & 0x78;
-      ((uw_object_hdr_t *)puVar4)->position_word_high = (char)((uVar2 & 0xff80) >> 8);
-      iVar8 = check_object_placement_clearance(((uw_object_hdr_t *)puVar4)->object_id,
+      pbVar9 = (uw_tile_t *)tilemap_lookup(uVar5,uVar6);
+      uVar2 = puVar4->position_word;
+      puVar4->zpos = pbVar9->floor_height << 3;
+      iVar8 = check_object_placement_clearance(puVar4->object_id,
                                                uVar3,(iVar8 << 0x13) >> 0x10,
                                                (iVar1 << 0x13) >> 0x10,
-                                               (ushort)(*pbVar9 >> 4) << 3,1,
-                                               (g_object_type_props[(((uw_object_hdr_t *)puVar4)->object_id)].collision_radius) + 4);
+                                               (ushort)pbVar9->floor_height << 3,1,
+                                               (g_object_type_props[(puVar4->object_id)].collision_radius) + 4);
       if (iVar8 != 0) {
-        object_list_append_tail(pbVar9 + 2,puVar4);
+        object_list_append_tail((ushort *)((byte *)pbVar9 + 2),puVar4);
         settle_dropped_object(puVar4,uVar5,uVar6,1);
         goto LAB_0001818c;
       }
@@ -4174,8 +4173,8 @@ void finalize_player_barter_items()
 
 {
   short sVar1;
-  ushort *puVar2;
-  ushort *puVar3;
+  uw_object_hdr_t *puVar2;
+  uw_object_hdr_t *puVar3;
   int iVar4;
   short *psVar5;
   short local_2c;
@@ -4191,25 +4190,24 @@ void finalize_player_barter_items()
          state (same dropped-argument bug class documented throughout this project) -- *psVar5 (the
          slot's item-value, already used the very next line) is the value that belongs here... */
       if (((&DAT_000bbf98)[local_28] != 0) && (sVar1 = check_npc_item_preference(*psVar5), sVar1 != -1)) {
-        puVar2 = (ushort *)get_object_record_by_slot_index((int)*psVar5);
-        puVar3 = (ushort *)resolve_object_link((char *)&DAT_00100674->hdr.link_word);
-        if ((((uw_object_hdr_t *)puVar2)->object_id) == 0xa1) {
-          for (; puVar3 != (ushort *)0x0; puVar3 = (ushort *)resolve_object_link(puVar3 + 2)) {
-            if ((((((uw_object_hdr_t *)puVar2)->is_quant != 0) && (((uw_object_hdr_t *)puVar3)->is_quant != 0)) &&
-                 ((((uw_object_hdr_t *)puVar2)->link & 0x200) == 0)) &&
-                ((((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0 && (((((uw_object_hdr_t *)puVar3)->type_flags ^ ((uw_object_hdr_t *)puVar2)->type_flags) & 0x1ff) == 0)) &&
-                  ((ushort)((((uw_object_hdr_t *)puVar3)->link) + (((uw_object_hdr_t *)puVar2)->link)) < 999)))) {
-              iVar4 = (((uw_object_hdr_t *)puVar3)->link << 6) + (((uw_object_hdr_t *)puVar2)->link << 6);
-              ((uw_object_hdr_t *)puVar3)->link_word_low = (byte)iVar4 ^ ((uw_object_hdr_t *)puVar3)->owner;
-              ((uw_object_hdr_t *)puVar3)->link_word_high = (byte)(char)((uint)iVar4 >> 8);
+        puVar2 = get_object_record_by_slot_index((int)*psVar5);
+        puVar3 = resolve_object_link(&DAT_00100674->hdr.link_word);
+        if ((puVar2->object_id) == 0xa1) {
+          for (; puVar3 != NULL; puVar3 = resolve_object_link(&puVar3->chain_word)) {
+            if (puVar2->is_quant != 0 && puVar3->is_quant != 0 &&
+                puVar2->link < 512 && puVar3->link < 512 &&
+                puVar3->object_id == puVar2->object_id &&
+                (ushort)(puVar3->link + puVar2->link) < 999) {
+              iVar4 = (puVar3->link << 6) + (puVar2->link << 6);
+              puVar3->link = (iVar4 >> 6) & 0x3ff;
               free_object_slot(puVar2);
-              puVar2 = (ushort *)0x0;
+              puVar2 = NULL;
               break;
             }
           }
         }
-        if (puVar2 != (ushort *)0x0) {
-          object_list_insert_head((char *)&DAT_00100674->hdr.link_word,puVar2);
+        if (puVar2 != NULL) {
+          object_list_insert_head(&DAT_00100674->hdr.link_word,puVar2);
         }
         restore_captured_grtile_backdrop((&DAT_000bc028)[local_28]);
         (&DAT_000bbf98)[local_28] = 0;

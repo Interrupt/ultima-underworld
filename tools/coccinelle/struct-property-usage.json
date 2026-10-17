@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 44,
-    "packed_word": 456,
+    "byte_view": 40,
+    "packed_word": 454,
     "raw_audited_object_access": 7
   },
   "records": [
@@ -931,7 +931,16 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "puVar7 = (ushort *)((char *)&DAT_00100674->hdr.link_word);"
+      "code": "puVar7 = &DAT_00100674->hdr.link_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_place_object",
+      "line": 726,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "puVar7 = &link_cursor->chain_word;"
     },
     {
       "source": "src/babl.c",
@@ -940,25 +949,7 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "object_list_unlink((char *)&DAT_00100674->hdr.link_word,puVar4);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 736,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "place_object_in_world(g_player_object->tile_word >> 7 & 0x1f8,"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 737,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "g_player_object->tile_word >> 1 & 0x1f8,"
+      "code": "object_list_unlink(&DAT_00100674->hdr.link_word,puVar4);"
     },
     {
       "source": "src/babl.c",
@@ -967,30 +958,12 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)puVar4)->position_word;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 749,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_low = (byte)(uVar2 & 0xff80) | *pbVar9 >> 1 & 0x78;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 750,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_high = (char)((uVar2 & 0xff80) >> 8);"
+      "code": "uVar2 = puVar4->position_word;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_take_from_npc_inv",
-      "line": 779,
+      "line": 778,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -999,7 +972,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_add_to_npc_inv",
-      "line": 799,
+      "line": 798,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1008,7 +981,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 959,
+      "line": 958,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1017,7 +990,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 963,
+      "line": 962,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1026,7 +999,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 969,
+      "line": 968,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1035,7 +1008,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 979,
+      "line": 978,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1044,7 +1017,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 984,
+      "line": 983,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1053,7 +1026,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 988,
+      "line": 987,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1062,7 +1035,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1028,
+      "line": 1027,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1071,7 +1044,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1033,
+      "line": 1032,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1080,7 +1053,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1040,
+      "line": 1039,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1089,7 +1062,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1046,
+      "line": 1045,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1098,7 +1071,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1048,
+      "line": 1047,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1107,7 +1080,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_do_demand",
-      "line": 2048,
+      "line": 2047,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1116,7 +1089,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_set_inv_quality",
-      "line": 2852,
+      "line": 2851,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1125,7 +1098,7 @@
     {
       "source": "src/babl.c",
       "function": "sync_conv_vars_from_npc",
-      "line": 2930,
+      "line": 2929,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1134,7 +1107,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_setup_to_barter",
-      "line": 3467,
+      "line": 3466,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1143,7 +1116,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_setup_to_barter",
-      "line": 3478,
+      "line": 3477,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1152,7 +1125,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_setup_to_barter",
-      "line": 3492,
+      "line": 3491,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1161,7 +1134,7 @@
     {
       "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3787,
+      "line": 3786,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -1170,7 +1143,7 @@
     {
       "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3788,
+      "line": 3787,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -1179,7 +1152,7 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4057,
+      "line": 4056,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1188,7 +1161,7 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4062,
+      "line": 4061,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1197,7 +1170,7 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4064,
+      "line": 4063,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1206,7 +1179,7 @@
     {
       "source": "src/babl.c",
       "function": "finalize_npc_barter_items",
-      "line": 4156,
+      "line": 4155,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1215,61 +1188,34 @@
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4195,
+      "line": 4194,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "puVar3 = (ushort *)resolve_object_link((char *)&DAT_00100674->hdr.link_word);"
+      "code": "puVar3 = resolve_object_link(&DAT_00100674->hdr.link_word);"
     },
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4200,
+      "line": 4196,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0 && (((((uw_object_hdr_t *)puVar3)->type_flags ^ ((uw_object_hdr_t *)puVar2)->type_flags) & 0x1ff) == 0)) &&"
+      "code": "for (; puVar3 != NULL; puVar3 = resolve_object_link(&puVar3->chain_word)) {"
     },
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4200,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0 && (((((uw_object_hdr_t *)puVar3)->type_flags ^ ((uw_object_hdr_t *)puVar2)->type_flags) & 0x1ff) == 0)) &&"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "finalize_player_barter_items",
-      "line": 4203,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->link_word_low = (byte)iVar4 ^ ((uw_object_hdr_t *)puVar3)->owner;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "finalize_player_barter_items",
-      "line": 4204,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->link_word_high = (byte)(char)((uint)iVar4 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "finalize_player_barter_items",
-      "line": 4212,
+      "line": 4210,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "object_list_insert_head((char *)&DAT_00100674->hdr.link_word,puVar2);"
+      "code": "object_list_insert_head(&DAT_00100674->hdr.link_word,puVar2);"
     },
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4382,
+      "line": 4380,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1278,7 +1224,7 @@
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4390,
+      "line": 4388,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1287,7 +1233,7 @@
     {
       "source": "src/babl.c",
       "function": "add_item_to_npc_inventory",
-      "line": 4473,
+      "line": 4471,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1296,7 +1242,7 @@
     {
       "source": "src/babl.c",
       "function": "add_item_to_npc_inventory",
-      "line": 4489,
+      "line": 4487,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1305,7 +1251,7 @@
     {
       "source": "src/babl.c",
       "function": "remove_item_from_npc_inventory_by_id",
-      "line": 4531,
+      "line": 4529,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
