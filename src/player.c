@@ -2658,7 +2658,7 @@ void handle_game_victory_sequence()
   undefined2 uVar2;
   short sVar3;
   char *pcVar4;
-  undefined2 *puVar5;
+  uw_object_hdr_t *puVar5;
   char *iVar6;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
   char *pcVar7;
   char *local_11c;  /* was `int` -- same truncation, derived from iVar6 */
@@ -2666,13 +2666,11 @@ void handle_game_victory_sequence()
   
   if (DAT_0023c27c == '\0') {
     if (*(char *)(DAT_00086df8 + 0x6d) == '\0') {
-      puVar5 = (undefined2 *)spawn_new_object(0x15a,0);
-      if (puVar5 != (undefined2 *)0x0) {
-        uVar2 = ((uw_object_hdr_t *)puVar5)->type_flags;
-        ((uw_object_hdr_t *)puVar5)->type_flags_low = (byte)(char)uVar2;
-        ((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar2 >> 8) | 0x80;
-        ((uw_object_hdr_t *)puVar5)->link_word_low = ((uw_object_hdr_t *)puVar5)->owner;
-        ((uw_object_hdr_t *)puVar5)->link_word_high = 0xb0;
+      puVar5 = spawn_new_object(0x15a,0);
+      if (puVar5 != NULL) {
+        uVar2 = puVar5->type_flags;
+        puVar5->is_quant = 1;
+        puVar5->link = 0x2c0;
         iVar6 = tilemap_lookup(0x20,0x20);
         local_11c = iVar6 + 2;
         object_list_append_tail(local_11c,puVar5);
@@ -2680,7 +2678,7 @@ void handle_game_victory_sequence()
       print_scroll_message_by_id(0x117);
       spin_view_full_rotation(0xffffffff);
       weapon_overlay_flash_hold(5);
-      if (puVar5 != (undefined2 *)0x0) {
+      if (puVar5 != NULL) {
         object_list_unlink(local_11c,puVar5);
         free_object_slot(puVar5);
       }

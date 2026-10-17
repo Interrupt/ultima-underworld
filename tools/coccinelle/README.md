@@ -1635,3 +1635,38 @@ The object audit now lists 60 byte views (four fewer), 452 packed accesses and
 seven raw audited accesses, with no signed-word views. The separate raw tile
 writes removed here were outside that object-only count. Remaining functions,
 packed operations and unrecorded aliases still require work.
+
+## Victory-sequence quantity fields
+
+`generate_victory_rules.py` / `victory-fields.json` convert
+`handle_game_victory_sequence` with the exact-source applier. The spawned object
+uses a native common-header pointer and writes `is_quant = 1` and `link = 0x2c0`
+(the former high byte `0xb0` encodes quantity 704). `owner` and all unrelated
+header fields remain intact. The original full-type capture stays in place,
+as do allocation-failure handling, the saved object/list pointers across
+callbacks, messages, teleport, UI branches, string-buffer operations and the
+input loop. API signatures and the function's location in `player.c` are
+unchanged. The tile-list helpers still receive the packed wall/head word at
+tile offset +2: they require a word-storage address, while `uw_tile_t::obj_head`
+is a bitfield whose address cannot be taken. Player-stat and UI buffer accesses
+remain separate audit work rather than common-header conversions.
+
+`victory_fields` runs by default. It checks reproducible generation, exact
+conversion/idempotence and rejection of changed callbacks, volatile/escaping
+captures, masks/constants, inserted code, excluded functions, quoted bodies and
+duplicate definitions. Its 1,048,576 original/current cases cover all 16-bit
+header words, allocation failure, an already-latched sequence, spawned/player
+object aliasing, both UI branches and multiple path-prefix lengths. Callbacks
+mutate header words and tile chains and rebind the current player, player-stat
+and UI pointers. Guarded records, both stat/UI buffers, both tiles, callback
+arguments/events/counts, rendered path strings and final globals are compared.
+Independent assertions verify the complete type word except the quantity flag,
+quantity 704, preserved owner/position/chain, allocation/free and teleport gates,
+UI mode fields and the signed input-event loop (including 32768/65535/65536).
+Use `--reference PATH` with the original `player.c` and `--asan` for
+AddressSanitizer.
+
+The audit now contains 56 byte views (four fewer), 452 packed accesses and seven
+raw audited accesses, with no signed-word views. The full-type snapshot is an
+intentional retained capture. Other accesses and unrecorded aliases still
+require conversion or documented justification before the overall goal is done.
