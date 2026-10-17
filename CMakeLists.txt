@@ -23,6 +23,21 @@ if(UNIX)
   link_libraries(m)
 endif()
 
+# GNU ld resolves static archives strictly left to right, and the unit-test archives reference each
+# other in both directions (macOS's linker rescans on its own), so group the libraries on Linux.
+# UW_LINK_GROUP_TEST exercises the same rule on other platforms, with the group flags dropped.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR UW_LINK_GROUP_TEST)
+  if(UW_LINK_GROUP_TEST)
+    set(uw_group_begin "")
+    set(uw_group_end "")
+  else()
+    set(uw_group_begin "-Wl,--start-group")
+    set(uw_group_end "-Wl,--end-group")
+  endif()
+  set(CMAKE_C_LINK_EXECUTABLE
+    "<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${uw_group_begin} <LINK_LIBRARIES> ${uw_group_end}")
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 
