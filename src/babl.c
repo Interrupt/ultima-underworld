@@ -533,40 +533,40 @@ int babl_builtin_take_id_from_npc(char *args)
 int babl_builtin_do_inv_create(char *args)
 {
   ushort uVar1;
-  intptr_t *piVar2;
-  ushort *puVar3;
-  ushort *puVar4;
+  uw_mobile_object_t **piVar2;
+  uw_object_hdr_t *puVar3;
+  uw_object_hdr_t *puVar4;
+  ushort *link_cursor;
   undefined4 uVar5;
   int iVar6;
 
   uVar5 = babl_read_var_word((int)*(short *)(args + -2));
-  puVar3 = (ushort *)spawn_new_object(uVar5,0);
-  piVar2 = (intptr_t *)&DAT_00100674;
-  if (puVar3 == (ushort *)0x0) {
+  puVar3 = spawn_new_object(uVar5,0);
+  piVar2 = &DAT_00100674;
+  if (puVar3 == NULL) {
     uVar5 = 0;
   }
   else {
-    uVar1 = ((uw_object_hdr_t *)puVar3)->chain_word;
-    ((uw_object_hdr_t *)puVar3)->chain_word_low = (byte)uVar1 | 0x3f;
-    ((uw_object_hdr_t *)puVar3)->chain_word_high = (byte)(char)(uVar1 >> 8);
-    puVar4 = (ushort *)(*piVar2 + 6);
-    while (puVar4 = (ushort *)resolve_object_link(puVar4), puVar4 != (ushort *)0x0) {
-      if ((((((uw_object_hdr_t *)puVar3)->is_quant != 0) && ((*puVar4 & 0x8000) != 0)) && ((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0))
-          && ((((puVar4[3] & 0x8000) == 0 && (((*puVar4 ^ ((uw_object_hdr_t *)puVar3)->type_flags) & 0x1ff) == 0)) &&
-               ((ushort)((puVar4[3] >> 6) + (((uw_object_hdr_t *)puVar3)->link)) < 999)))) {
-        iVar6 = (puVar4[3] & 0xffc0) + (((uw_object_hdr_t *)puVar3)->link << 6);
-        *(byte *)(puVar4 + 3) = (byte)iVar6 ^ (byte)puVar4[3] & 0x3f;
-        *(char *)((char *)puVar4 + 7) = (char)((uint)iVar6 >> 8);
+    uVar1 = puVar3->chain_word;
+    puVar3->quality = 0x3f;
+    link_cursor = &(*piVar2)->hdr.link_word;
+    while (puVar4 = resolve_object_link(link_cursor), puVar4 != NULL) {
+      if (puVar3->is_quant != 0 && puVar4->is_quant != 0 &&
+          puVar3->link < 512 && puVar4->link < 512 &&
+          puVar4->object_id == puVar3->object_id &&
+          (ushort)(puVar4->link + puVar3->link) < 999) {
+        iVar6 = (puVar4->link << 6) + (puVar3->link << 6);
+        puVar4->link = (iVar6 >> 6) & 0x3ff;
         free_object_slot(puVar3);
-        puVar3 = (ushort *)0x0;
+        puVar3 = NULL;
         break;
       }
-      puVar4 = puVar4 + 2;
+      link_cursor = &puVar4->chain_word;
     }
-    if (puVar3 != (ushort *)0x0) {
-      object_list_insert_head((byte *)(*piVar2 + 6),(byte *)puVar3);
+    if (puVar3 != NULL) {
+      object_list_insert_head(&(*piVar2)->hdr.link_word,puVar3);
     }
-    uVar5 = encode_object_slot_index((char *)puVar3);
+    uVar5 = encode_object_slot_index(puVar3);
   }
   return uVar5;
 }
@@ -4045,28 +4045,28 @@ int merge_or_swap_barter_slot_item(ushort *held_object, int side, int slot, void
   ushort uVar2;
   ushort uVar3;
   short sVar4;
-  ushort *puVar5;
+  uw_object_hdr_t *puVar5;
+  uw_object_hdr_t *held_header = (uw_object_hdr_t *)held_object;
   int iVar6;
   short *psVar7;
   undefined4 uVar8;
   
   psVar7 = (short *)(slot_array + (short)slot * 2);
   uVar8 = 0;
-  puVar5 = (ushort *)get_object_record_by_slot_index((int)*psVar7);
-  uVar1 = ((uw_object_hdr_t *)puVar5)->type_flags;
-  if ((uVar1 & 0x1c0) == 0x80 && (uVar1 & 0x30) == 0) {
+  puVar5 = get_object_record_by_slot_index((int)*psVar7);
+  uVar1 = puVar5->type_flags;
+  if ((puVar5->object_id & 0x1f0) == 0x80) {
     return 0;
   }
-  if (((*held_object & 0x8000) != 0) && ((uVar1 & 0x8000) != 0)) {
-    uVar2 = held_object[3];
-    if ((uVar2 & 0x8000) == 0) {
-      uVar3 = ((uw_object_hdr_t *)puVar5)->link_word;
-      if ((((uVar3 & 0x8000) == 0) && (((*held_object ^ uVar1) & 0x1ff) == 0)) &&
-         ((ushort)((uVar3 >> 6) + (uVar2 >> 6)) < 999)) {
-        iVar6 = (uVar3 & 0xffc0) + (uVar2 & 0xffc0);
-        ((uw_object_hdr_t *)puVar5)->link_word_low = (byte)iVar6 ^ (byte)uVar3 & 0x3f;
-        ((uw_object_hdr_t *)puVar5)->link_word_high = (byte)(char)((uint)iVar6 >> 8);
-        free_object_slot(held_object);
+  if ((held_header->is_quant != 0) && (puVar5->is_quant != 0)) {
+    uVar2 = held_header->link_word;
+    if (held_header->link < 512) {
+      uVar3 = puVar5->link_word;
+      if (((puVar5->link < 512) && (held_header->object_id == puVar5->object_id)) &&
+         ((ushort)(puVar5->link + held_header->link) < 999)) {
+        iVar6 = (puVar5->link << 6) + (held_header->link << 6);
+        puVar5->link = (iVar6 >> 6) & 0x3ff;
+        free_object_slot(held_header);
         uVar8 = 1;
         goto LAB_0001c404;
       }

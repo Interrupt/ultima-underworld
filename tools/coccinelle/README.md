@@ -1758,3 +1758,50 @@ unchanged position bits outside heading, aligned returns and single-step turns.
 Use `--reference PATH` with the original `combat.c` and `--asan` for
 AddressSanitizer. Other remaining operations and unrecorded aliases continue to
 require conversion or documented justification.
+
+## BABL inventory and barter stack merges
+
+`generate_babl_stack_rules.py` generates `babl-inventory-stack-fields.json` and
+`barter-stack-fields.json` for the exact-source applier. Inventory creation
+writes `quality = 63`; both merge paths read `is_quant`, nine-bit `object_id`
+and ten-bit `link` values. The special-link gate is `link < 512` and the
+combined quantity must remain strictly below 999. Quantity writes update
+`link`, preserving `owner`. Container rejection in barter classifies the named
+ID range 0x80..0x8f. These numeric limits and classifiers retain the original
+behavior rather than introduce new field meanings.
+
+Inventory iteration now separates a native object pointer from its packed-word
+link cursor: the cursor retains the original live head/next address passed to
+each resolver call. The speaker cell uses `uw_mobile_object_t **`, preserving
+its address and the live global-pointer reread before insertion instead of
+round-tripping the pointer through an integer. Held objects and barter targets
+use common-header pointers. API signatures, function locations, scalar captures,
+allocation/free behavior, fallback pickup, slot updates and redraw/checkpoint
+ordering remain unchanged. Existing full chain/type/link snapshots remain
+explicit. List cursors/insertion require addresses of full packed link words;
+these are intentional storage addresses rather than property extractions.
+
+`babl_stack_fields` runs by default. It verifies reproducible generation,
+exact conversion/idempotence and rejection of changed thresholds, callbacks,
+volatile/escaping captures, cursor/slot writes, excluded scopes, quoted bodies
+and duplicate definitions. Its 4,194,304 original/current cases cover both
+functions, all 16-bit seeds, sixteen modes and callback mutations. Cases include
+allocation failure, source/target quantity flags, special-link boundaries,
+container rejection, the ninth ID bit, totals 998/999/1000, second-candidate
+matches, source/target/actor aliasing and signed/truncated side/slot/return values.
+Callbacks change object fields and slot/argument buffers, rebind the speaker
+after traversal starts and change the selected object before/after encoding.
+Guarded records, tables, globals, resolver cursor addresses and callback
+arguments/events/counts are compared. Assertions check full-quality initialization
+with preserved next links, owner/next preservation on merge, strict quantity
+boundaries, allocation/free and pickup gates, live insertion-head identity and
+captured slot writes. The matrix passes normally, under AddressSanitizer and
+with `--o0`; use `--reference PATH` with the original `babl.c` to repeat it.
+
+Four named byte views and additional raw inventory quantity stores are removed.
+The audit now lists 44 byte views, 456 packed accesses and seven raw audited
+accesses, with no signed-word views. Three word-address sites and one held-link
+capture become explicit while one full-type extraction disappears, explaining
+the net three additional packed items. The old mixed cursor was excluded from
+the object-role inventory; separating it now proves the candidate object role.
+Other remaining operations and unrecorded aliases still require work.

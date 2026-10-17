@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 48,
-    "packed_word": 453,
+    "byte_view": 44,
+    "packed_word": 456,
     "raw_audited_object_access": 7
   },
   "records": [
@@ -864,38 +864,38 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_do_inv_create",
-      "line": 549,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar3)->chain_word;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
       "line": 550,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->chain_word_low = (byte)uVar1 | 0x3f;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
-      "line": 551,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->chain_word_high = (byte)(char)(uVar1 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
-      "line": 555,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "chain_word",
       "pointer": null,
-      "code": "&& ((((puVar4[3] & 0x8000) == 0 && (((*puVar4 ^ ((uw_object_hdr_t *)puVar3)->type_flags) & 0x1ff) == 0)) &&"
+      "code": "uVar1 = puVar3->chain_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 552,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "link_cursor = &(*piVar2)->hdr.link_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 564,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "link_cursor = &puVar4->chain_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 567,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_insert_head(&(*piVar2)->hdr.link_word,puVar3);"
     },
     {
       "source": "src/babl.c",
@@ -1179,38 +1179,29 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4056,
+      "line": 4057,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar5)->type_flags;"
+      "code": "uVar1 = puVar5->type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4063,
+      "line": 4062,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)puVar5)->link_word;"
+      "code": "uVar2 = held_header->link_word;"
     },
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4067,
-      "category": "byte_view",
+      "line": 4064,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_low = (byte)iVar6 ^ (byte)uVar3 & 0x3f;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "merge_or_swap_barter_slot_item",
-      "line": 4068,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_high = (byte)(char)((uint)iVar6 >> 8);"
+      "code": "uVar3 = puVar5->link_word;"
     },
     {
       "source": "src/babl.c",
