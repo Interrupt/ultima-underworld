@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 68,
-    "packed_word": 454,
+    "byte_view": 64,
+    "packed_word": 452,
     "raw_audited_object_access": 7
   },
   "records": [
@@ -3874,52 +3874,25 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;"
+      "code": "uVar8 = puVar4->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 309,
+      "line": 315,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->link_word = (ushort)uVar8;"
+      "code": "uVar8 = puVar4->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 314,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 330,
+      "line": 331,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->position_word;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 332,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_low = ((char)elapsed * '\\x06' + bVar2 ^ bVar2) & 0x7f ^ bVar2;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 333,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_high = (byte)(char)(uVar8 >> 8);"
+      "code": "uVar8 = puVar4->position_word;"
     },
     {
       "source": "src/scheduler.c",
@@ -3928,34 +3901,7 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar5 = (uint)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 337,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 337,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 338,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(char)(uVar5 >> 8);"
+      "code": "uVar5 = (uint)puVar4->type_flags;"
     },
     {
       "source": "src/scheduler.c",

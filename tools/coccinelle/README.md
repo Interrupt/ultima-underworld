@@ -1562,3 +1562,40 @@ The inventory now lists 68 byte views (six fewer), 454 packed accesses (three
 additional named link addresses), seven raw audited accesses and no signed-word
 views. Other functions and unrecorded aliases still require conversion/auditing;
 this batch does not establish completion of the overall cleanup.
+
+## Scheduler animation steps
+
+`generate_scheduler_step_rules.py` / `scheduler-step-fields.json` convert
+`scheduler_step_entry` with the exact-source applier. The resolved common-header
+pointer stays local across callbacks. Sequential animation compares the named
+`owner` frame; both frame branches write `owner` and restore `link` from the
+captured full link word. Restoring that captured link is necessary because the
+random-frame branch calls division between the snapshot and the store: a
+callback mutation must not replace the original high bits. Sliding-door height
+writes use `zpos`; rotation writes use `flags_res` and `enchanted`. Unrelated
+header fields and all scalar captures, callback ordering, labels, elapsed-tick
+narrowing and direction reversal remain intact.
+
+The full `link_word`, `position_word` and `type_flags` snapshots remain explicit.
+The masked arithmetic on their scratch values computes the live words used by
+later branches; the ID masks classify animation subtypes, owner masks classify
+door styles, and the animation table's flag loop is a separate bitmap format.
+Those calculations are not replaced with guessed semantic names. The four
+remaining byte views in this function are removed. Across the inventory there
+are now 64 byte views, 452 packed accesses (two fewer), seven raw audited
+accesses and no signed-word views.
+
+`scheduler_step_fields` runs by default. It verifies exact generation/conversion,
+idempotence and rejection of changed callbacks, volatile/escaping captures,
+masks, intervening stores, excluded functions, quoted bodies and duplicate
+definitions. Its 1,572,864 original/current cases cover all 16-bit seeds across
+header words and animation descriptors, all flag bits (including combinations),
+stale entries, non-animation IDs, sequential/random frames, zero frame counts,
+signed start frames/random values, positive/negative/truncated elapsed values,
+and door height/direction boundaries. Callbacks mutate headers, table records
+and queue bytes and rebind the queue pointer. Guarded records, table/queue bytes,
+callback arguments/events/counts and pointer identity are compared. Independent
+assertions check stale/no-op entries, frame wrap, zero-divisor frames, captured
+link restoration, sliding height and advance-effect boundaries. Use
+`--reference PATH` with the original `scheduler.c` and `--asan` for
+AddressSanitizer. Remaining functions and unrecorded aliases still require work.
