@@ -96,7 +96,10 @@ static undefined1 DAT_002046e4;
 
 // was FUN_0002f818 -- goal 3's main handler: distance-tiered response to a detected target (close:
 // randomize stance; medium: walk toward the tracked target's own tile via npc_walk_toward_tile,
-// i.e. chase; far: random-walk reposition + relink tilemap bucket)
+// i.e. chase; far (> 8 tiles): teleport -- the NPC is unlinked and relinked at the tracked target's
+// tile (plus (own tile - target tile) * 4 / fine distance, which integer division truncates to 0).
+// Confirmed against the ARM disassembly at 0x2f944-0x2fb67 (integer_sqrt, two divmods, tilemap_lookup
+// x2, object_list_unlink, object_list_insert_head): original behaviour, not a port artifact.
 void npc_combat_approach_tick()
 {
   int uw_ord2005_rem_40 = 0;
