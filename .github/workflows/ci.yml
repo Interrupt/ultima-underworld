@@ -1,8 +1,11 @@
 name: CI
 
 on:
+  # Branch pushes only: version tags are handled by release.yml, which reuses this workflow.
   push:
+    branches: ["**"]
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}
