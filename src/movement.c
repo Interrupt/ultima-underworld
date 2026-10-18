@@ -375,8 +375,8 @@ LAB_00058db4:
       DAT_00086998 = -1;
     }
     else {
-      DAT_00086999 = (undefined1)((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU);
-      DAT_0008699a = (undefined1)(((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU) >> 8);
+      DAT_00086999 = (undefined1)((uint)((uw_object_hdr_t *)psVar3)->object_id);
+      DAT_0008699a = (undefined1)(((uint)((uw_object_hdr_t *)psVar3)->object_id) >> 8);
     }
   }
 }
@@ -1320,10 +1320,25 @@ static void decode_held_movement_keys(void)
   else if ((held & HELD_MOVE_RIGHT) && !(held & HELD_MOVE_LEFT)) {
     turning = 1;
   }
+  int backward = (held & HELD_MOVE_BACK) && !forward;
+  int strafe = ((held & HELD_MOVE_STRAFE_RIGHT) != 0) - ((held & HELD_MOVE_STRAFE_LEFT) != 0);
   /* S walks: pin the accelerator below the step clamp so it is a genuine slow walk. */
   walk_slow = (held & HELD_MOVE_WALK) && (turning != 0 || !(held & HELD_MOVE_RUN));
   accel = walk_slow ? (int)g_opts.walk_accel : (int)DAT_0024af6c;
 
+  if (g_opts.strafe_while_walking && strafe != 0 && (forward || backward)) {
+    /* Strafing while walking: move on the diagonal (resolve_move_vector modes 0x10-0x13), at the walk
+       speed. Turning keys still turn the facing meanwhile. */
+    if (forward) {
+      DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
+    }
+    if (turning != 0) {
+      DAT_0023bf4c = ordint_divmod(100,(int)((long long)uw_turn_rate_accel() *
+                                             (turning < 0 ? -0x5a0000 : 0x5a0000) >> 0x10)).quot;
+    }
+    g_movement_mode = 0x10 + (backward ? 2 : 0) + (strafe > 0);
+    return;
+  }
   if (turning != 0) {
     if (forward) {
       DAT_0023bf48 = ordint_divmod(100,(int)((long long)accel * 0x500000 >> 0x10)).quot;
@@ -1676,7 +1691,7 @@ void apply_movement_tick(int elapsed)
   sVar4 = g_movement_mode;
   bVar1 = DAT_0023bf18;
   if ((DAT_002048a8 & 0x10) == 0) {
-    if (((int)DAT_00202078 >> 2 < (int)g_jump_ascent_timer) && (g_movement_mode == 1)) {
+    if (((int)DAT_00202078 >> 2 < (int)g_jump_ascent_timer) && (g_movement_mode == 1 || g_movement_mode >= 0x10)) {
       cVar2 = ordint_divmod((int)DAT_00202078 >> 1,(int)g_jump_ascent_timer << 2).quot;
       cVar3 = (char)(cVar2 + -1);
       DAT_0023bea8 = 1;

@@ -72,6 +72,7 @@ undefined4 DAT_000858a0;
   0x00,0x03, 0x40,0x03, 0x00,0x00, 0x00,0x00, 0x00,0x04, 0x00,0x00,
 };
 short DAT_00202088;
+int g_move_facing_offset; /* travel heading minus facing (16-bit), for the diagonal walk+strafe modes */
 /* DAT_0008589c/85898/85894 are link-time-initialized read-only data, same situation as DAT_00086e68
    right above's fix (nothing in this decompile writes any of the three, and an exhaustive
    whole-binary Ghidra reference search confirms the real UU.exe agrees -- their only references)... */
@@ -353,7 +354,7 @@ void commit_player_move()
   uVar5 = DAT_00201c70;
   if (_DAT_002048a1 != (short)DAT_00201c78) {
     DAT_00201c78 = _DAT_002048a1;
-    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000;
+    uVar3 = (int)_DAT_002048a1 + DAT_00202088 * -0x4000 - g_move_facing_offset;
     if ((((DAT_00204897 & 0x80) != 0) &&
         (uVar6 = (int)(short)DAT_00201c70 - ((int)(uVar3 * 0x10000) >> 0x10),
         uVar4 = (int)uVar6 >> 0x1f, uVar5 = (ushort)uVar3, 0x3ff < (int)((uVar6 ^ uVar4) - uVar4)))
@@ -2657,7 +2658,7 @@ void handle_game_victory_sequence()
   undefined2 uVar2;
   short sVar3;
   char *pcVar4;
-  undefined2 *puVar5;
+  uw_object_hdr_t *puVar5;
   char *iVar6;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
   char *pcVar7;
   char *local_11c;  /* was `int` -- same truncation, derived from iVar6 */
@@ -2665,13 +2666,11 @@ void handle_game_victory_sequence()
   
   if (DAT_0023c27c == '\0') {
     if (*(char *)(DAT_00086df8 + 0x6d) == '\0') {
-      puVar5 = (undefined2 *)spawn_new_object(0x15a,0);
-      if (puVar5 != (undefined2 *)0x0) {
-        uVar2 = ((uw_object_hdr_t *)puVar5)->type_flags;
-        ((uw_object_hdr_t *)puVar5)->type_flags_low = (byte)(char)uVar2;
-        ((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar2 >> 8) | 0x80;
-        ((uw_object_hdr_t *)puVar5)->link_word_low = ((uw_object_hdr_t *)puVar5)->owner;
-        ((uw_object_hdr_t *)puVar5)->link_word_high = 0xb0;
+      puVar5 = spawn_new_object(0x15a,0);
+      if (puVar5 != NULL) {
+        uVar2 = puVar5->type_flags;
+        puVar5->is_quant = 1;
+        puVar5->link = 0x2c0;
         iVar6 = tilemap_lookup(0x20,0x20);
         local_11c = iVar6 + 2;
         object_list_append_tail(local_11c,puVar5);
@@ -2679,7 +2678,7 @@ void handle_game_victory_sequence()
       print_scroll_message_by_id(0x117);
       spin_view_full_rotation(0xffffffff);
       weapon_overlay_flash_hold(5);
-      if (puVar5 != (undefined2 *)0x0) {
+      if (puVar5 != NULL) {
         object_list_unlink(local_11c,puVar5);
         free_object_slot(puVar5);
       }
@@ -2753,7 +2752,7 @@ void handle_starvation_penalty()
   int iVar7;
   uint uVar8;
   short extraout_r1;
-  char *pNewObj;
+  uw_object_hdr_t *pNewObj;
 
   if (*(char *)(DAT_00086df8 + 0x6d) == '\0') {
     g_player_object->npc_hp = 4;
@@ -2780,25 +2779,21 @@ LAB_00072374:
   /* Was `iVar6 = spawn_new_object(...)` (plain int) -- spawn_new_object now really returns a fresh
      object pointer (see its fix) instead of always 0, so storing it in a 32-bit int truncates it on
      this 64-bit host. */
-  pNewObj = (char *)spawn_new_object(uw_ord2005_rem_148 + 0xc2,0);
+  pNewObj = spawn_new_object(uw_ord2005_rem_148 + 0xc2,0);
   iVar7 = place_object_in_world((int)DAT_00204880 >> 5,(int)DAT_00204882 >> 5,(int)DAT_00204884 >> 3,
                        pNewObj,0,1);
   if (iVar7 != 0) {
-    uVar4 = ((uw_object_hdr_t *)pNewObj)->position_word;
+    uVar4 = pNewObj->position_word;
     bVar1 = (byte)uVar4;
-    ((uw_object_hdr_t *)pNewObj)->position_word_low = (g_player_object->hdr.position_word_low ^ bVar1) & 0x7f ^ bVar1;
-    ((uw_object_hdr_t *)pNewObj)->position_word_high = (byte)(char)((ushort)uVar4 >> 8);
-    ((uw_object_hdr_t *)pNewObj)->owner = 0x3f;
-    ((uw_object_hdr_t *)pNewObj)->link_word_high = ((uw_object_hdr_t *)pNewObj)->link_word_high;
-    uVar8 = (((uw_object_hdr_t *)pNewObj)->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^
+    pNewObj->zpos = g_player_object->hdr.zpos;
+    pNewObj->owner = 0x3f;
+    uVar8 = (pNewObj->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^
             (uint) g_player_object->hdr.position_word;
     uVar2 = (undefined1)uVar8;
-    ((uw_object_hdr_t *)pNewObj)->position_word_low = uVar2;
     bVar3 = (byte)(uVar8 >> 8);
-    ((uw_object_hdr_t *)pNewObj)->position_word_high = bVar3;
-    bVar1 = g_player_object->hdr.position_word_high;
-    ((uw_object_hdr_t *)pNewObj)->position_word_low = uVar2;
-    ((uw_object_hdr_t *)pNewObj)->position_word_high = (bVar1 ^ bVar3) & 0x1c ^ bVar3;
+    pNewObj->xpos = bVar3 >> 5;
+    bVar1 = (byte)(g_player_object->hdr.position_word >> 8);
+    pNewObj->ypos = (bVar1 >> 2) & 7;
     settle_dropped_object(pNewObj,(int)DAT_00204880 >> 8,(int)DAT_00204882 >> 8,1);
   }
   if (((*(byte *)(DAT_00086df8 + 0x5e) & 0xf0) != 0) && (DAT_00201b68 != 9)) {
@@ -3669,7 +3664,7 @@ int decay_equipped_light_sources(short elapsed, byte tick_phase)
   ushort uVar3;
   byte bVar4;
   short sVar5;
-  ushort *puVar6;
+  uw_object_hdr_t *puVar6;
   int extraout_r1;
   uint uVar7;
   ushort uVar8;
@@ -3679,9 +3674,9 @@ int decay_equipped_light_sources(short elapsed, byte tick_phase)
   uVar10 = 0;
   iVar9 = 0;
   do {
-    puVar6 = (ushort *)get_equipped_item_at_slot((int)(char)(&g_light_source_slots)[iVar9]);
-    if (puVar6 != (ushort *)0x0) {
-      uVar2 = ((uw_object_hdr_t *)puVar6)->type_flags;
+    puVar6 = get_equipped_item_at_slot((int)(char)(&g_light_source_slots)[iVar9]);
+    if (puVar6 != (uw_object_hdr_t *)0x0) {
+      uVar2 = puVar6->type_flags;
       if (((((uVar2 & 0x1f0) == 0x90) && (uVar7 = (uint)(short)(uVar2 & 0xf), 3 < uVar7)) &&
           (uVar7 < 8)) && (cVar1 = g_light_type_props[uVar7].decay_interval, cVar1 != '\0')) {
         /* ARM 0x540d4 uses the tick phase (tick_phase) for the remainder.
@@ -3695,18 +3690,16 @@ int decay_equipped_light_sources(short elapsed, byte tick_phase)
           uVar8 = (ushort)(extraout_r1 == 0) + sVar5;
         }
         if ((short)uVar8 != 0) {
-          uVar3 = ((uw_object_hdr_t *)puVar6)->chain_word;
+          uVar3 = puVar6->chain_word;
           if ((int)(short)uVar8 < (int)(uVar3 & 0x3f)) {
             bVar4 = (byte)uVar3;
-            ((uw_object_hdr_t *)puVar6)->chain_word_low = (bVar4 - (char)uVar8 ^ bVar4) & 0x3f ^ bVar4;
-            ((uw_object_hdr_t *)puVar6)->chain_word_high = (byte)(uVar3 >> 8);
+            puVar6->quality = (bVar4 - (char)uVar8) & 0x3f;
           }
           else {
             uVar7 = uVar3 & 0xffc0;
-            ((uw_object_hdr_t *)puVar6)->chain_word = (ushort)uVar7;
+            puVar6->quality = 0;
             bVar4 = (byte)uVar2;
-            ((uw_object_hdr_t *)puVar6)->type_flags_low = (bVar4 - 4 ^ bVar4) & 0xf ^ bVar4;
-            ((uw_object_hdr_t *)puVar6)->type_flags_high = (byte)(uVar2 >> 8);
+            puVar6->type_flags = (ushort)(uVar2 - 4);
             redraw_backpack_slot_widget((int)(char)(&g_light_source_slots)[iVar9]);
             uVar10 = 1;
             set_ambient_bias_without_light(0);

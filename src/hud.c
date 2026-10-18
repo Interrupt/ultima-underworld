@@ -14,7 +14,7 @@
 #include "headers/resources.h"
 #include "headers/ai.h"
 #include "headers/object_actions.h"
-#include <dlfcn.h>
+#include "headers/platform_compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 

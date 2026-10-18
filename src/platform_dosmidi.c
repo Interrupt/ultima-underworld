@@ -246,7 +246,7 @@ int platform_dosmidi_init(int out_rate)
    * 50% just 577. 80 leaves the music about twice an effect, which is
    * roughly where continuous music against transient effects wants to be.
    * --dos-music-volume overrides it without a rebuild. */
-  g.music_volume = g_opts.dos_music_volume;
+  g.music_volume = g_opts.dos_music_volume * g_opts.music_volume / 100;
   if (g.music_volume < 0) g.music_volume = 0;
   if (g.music_volume > 100) g.music_volume = 100;
   for (int i = 0; i < (int)(sizeof(g.sfx) / sizeof(g.sfx[0])); i++) {

@@ -58,7 +58,7 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("functions", nargs="+",
-                        help="source.c:function_name or source.c:@initialized_object or source.c:%macro")
+                        help="source.c:function_name or source.c:@initialized_object or source.c:%%macro")
     args = parser.parse_args()
     chunks = ['/* Generated from original game sources; do not edit. */\n'
               '#include "src/headers/uw.h"\n#include "src/headers/debug.h"\n#include "src/headers/debug_ui.h"\n#include "src/headers/file_io.h"\n#include <dlfcn.h>\n#include <ctype.h>\n']

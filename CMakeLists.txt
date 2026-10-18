@@ -8,6 +8,36 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 
+# glibc hides dladdr/Dl_info (used by the debug helpers) unless _GNU_SOURCE is defined.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_compile_definitions(_GNU_SOURCE)
+endif()
+
+# Directory the unit tests read game data from. Defaults to the real data/ folder; point it at a
+# synthetic tree (tests/tools/make_synthetic_data.py) to run without the real game files.
+set(UW_TEST_DATA_DIR "${PROJECT_SOURCE_DIR}/data" CACHE PATH "Game data directory used by the unit tests")
+
+# The game uses libm (lround etc.); glibc needs it on the link line, macOS folds it into libc.
+# link_libraries applies to every executable defined below, including those under tests/.
+if(UNIX)
+  link_libraries(m)
+endif()
+
+# GNU ld resolves static archives strictly left to right, and the unit-test archives reference each
+# other in both directions (macOS's linker rescans on its own), so group the libraries on Linux.
+# UW_LINK_GROUP_TEST exercises the same rule on other platforms, with the group flags dropped.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR UW_LINK_GROUP_TEST)
+  if(UW_LINK_GROUP_TEST)
+    set(uw_group_begin "")
+    set(uw_group_end "")
+  else()
+    set(uw_group_begin "-Wl,--start-group")
+    set(uw_group_end "-Wl,--end-group")
+  endif()
+  set(CMAKE_C_LINK_EXECUTABLE
+    "<CMAKE_C_COMPILER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> ${uw_group_begin} <LINK_LIBRARIES> ${uw_group_end}")
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 
@@ -93,7 +123,7 @@ target_compile_options(uw_game_objs PRIVATE
   -Wno-pointer-sign
   -fno-common
 )
-target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_executable(uw_dbg src/program_main.c $<TARGET_OBJECTS:uw_game_objs>)
 

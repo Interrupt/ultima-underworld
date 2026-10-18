@@ -2,7 +2,7 @@
 #include "headers/debug.h"
 #include "headers/options.h"
 
-#include <dlfcn.h>
+#include "headers/platform_compat.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

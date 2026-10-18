@@ -249,8 +249,6 @@ void inventory_fixture_dispose(void)
 
 /* Drawing is a boundary service; the real open/refresh/weight functions run. */
 undefined4 DAT_002028a0_backing[16], DAT_002028e8_backing[32];
-undefined DAT_00202978_backing[8];
-ushort DAT_00202986;
 undefined4 DAT_00202938, DAT_0020299c, DAT_002029a0;
 undefined2 DAT_00201b60;
 undefined1 g_active_hud_panel;
@@ -296,11 +294,10 @@ static void reset_container_services(void)
 {
     memset(DAT_002028a0_backing, 0, sizeof DAT_002028a0_backing);
     memset(DAT_002028e8_backing, 0, sizeof DAT_002028e8_backing);
-    memset(DAT_00202978_backing, 0, sizeof DAT_00202978_backing);
     memset(((byte *)g_object_type_props), 0, sizeof g_object_type_props);
     memset(g_inventory_hotspot_table, 0, sizeof g_inventory_hotspot_table);
     memset(g_backpack_slot_to_widget_backing, 0, sizeof g_backpack_slot_to_widget_backing);
-    DAT_00202986 = DAT_00202938 = DAT_0020299c = DAT_002029a0 = 0;
+    DAT_00202938 = DAT_0020299c = DAT_002029a0 = 0;
     DAT_00201b60 = g_active_hud_panel = 0;
     g_open_container_list = NULL;
     g_backpack_widget_to_slot_backing[20] = 19;

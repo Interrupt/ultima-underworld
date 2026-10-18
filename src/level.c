@@ -164,14 +164,13 @@ int load_level_object_table(byte *archive_handle, int level_number)
 void reset_level_object_arena()
 {
   ushort *free_list_cursor;
-  char *tile_record = DAT_002029cc;
+  uw_tile_t *tile_record = (uw_tile_t *)DAT_002029cc;
   int index = 0;
 
   do {
-    *(byte *)(tile_record + 2) = *(byte *)(tile_record + 2) & 0x3f;
-    *(undefined1 *)(tile_record + 3) = 0;
+    tile_record->obj_head = 0;
     index = (index + 1) * 0x10000 >> 0x10;
-    tile_record = tile_record + 4;
+    tile_record = tile_record + 1;
   } while (index < 0x1000);
   DAT_002046b8 = DAT_002029cc + 0x4000;
   DAT_002046c4 = DAT_002029cc + 0x5b00;
@@ -197,10 +196,8 @@ void reset_level_object_arena()
     free_list_cursor = free_list_cursor + 1;
   } while (index < 0x400);
   if (g_player_object != 0) {
-    g_player_object->hdr.chain_word_low = g_player_object->hdr.quality;
-    g_player_object->hdr.chain_word_high = 0;
-    g_player_object->hdr.link_word_low = g_player_object->hdr.owner;
-    g_player_object->hdr.link_word_high = 0;
+    g_player_object->hdr.next = 0;
+    g_player_object->hdr.link = 0;
     reset_equipment_and_container_state();
   }
   g_scheduler_count = 0;

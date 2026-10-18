@@ -91,6 +91,11 @@ static void uwmod_audio_callback(void *userdata, Uint8 *stream, int len)
       return;
     }
     hxcmod_fillbuffer(&g_uwmod_ctx, (msample *)stream, (mssize)(len / 4), NULL);
+    if (g_opts.music_volume < 100) {
+      int vol = g_opts.music_volume < 0 ? 0 : g_opts.music_volume;
+      short *s = (short *)stream;
+      for (int i = 0; i < len / 2; i++) s[i] = (short)(s[i] * vol / 100);
+    }
   }
 
 }
@@ -268,6 +273,15 @@ void platform_music_stop(void)
   g_uwmod_playing = 0;
   if (g_dos_mode) platform_dosmidi_stop();
   SDL_UnlockAudioDevice(g_uwmod_audiodev);
+}
+
+/* Re-applies --music-volume to a playing DOS sequence (the converted MOD path reads it per buffer). */
+void platform_music_apply_volume(void)
+{
+  if (!g_dos_mode) return;
+  platform_music_lock();
+  platform_dosmidi_set_music_volume(g_opts.dos_music_volume * g_opts.music_volume / 100);
+  platform_music_unlock();
 }
 
 void platform_music_lock(void)

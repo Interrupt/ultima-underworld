@@ -1,0 +1,44 @@
+name: Release
+
+# Push a version tag (git tag v1.0.0 && git push origin v1.0.0) to build every platform and
+# publish a GitHub Release with one zip per platform: the executable plus the README.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  # Run the full CI (unit tests and all three builds) first; its build artifacts are packaged below.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    name: Publish release
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: uw_dbg-*
+          path: artifacts
+      - name: Package
+        run: |
+          mkdir dist
+          for dir in artifacts/uw_dbg-*; do
+            platform="${dir#artifacts/uw_dbg-}"
+            name="uw1-pocketpc-decomp-${GITHUB_REF_NAME}-${platform}"
+            mkdir -p "stage/$name"
+            # Executable only (no debug symbols), plus the README.
+            find "$dir" -maxdepth 1 -type f ! -name '*.pdb' -exec cp {} "stage/$name/" \;
+            cp README.md "stage/$name/"
+            chmod +x "stage/$name"/uw_dbg* 2>/dev/null || true
+            (cd stage && zip -r "../dist/$name.zip" "$name")
+          done
+          ls -l dist
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --title "$GITHUB_REF_NAME" --generate-notes

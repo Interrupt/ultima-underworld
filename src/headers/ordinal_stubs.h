@@ -1,6 +1,56 @@
 #ifndef ORDINAL_STUBS_H
 #define ORDINAL_STUBS_H
 
+/* The CE ordinal stubs below reuse the names of MSVC CRT functions that mingw declares with
+ * different signatures. Pull the CRT headers in first, then rename ours so both coexist. */
+#ifdef _WIN32
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+#include <ctype.h>
+/* The stubs also share names with Win32 API exports that SDL links against; keep ours distinct. */
+#define CloseHandle uwce_CloseHandle
+#define CreateFileW uwce_CreateFileW
+#define CreateWindowExW uwce_CreateWindowExW
+#define DefWindowProcW uwce_DefWindowProcW
+#define DeleteObject uwce_DeleteObject
+#define DialogBoxIndirectParamW uwce_DialogBoxIndirectParamW
+#define DispatchMessageW uwce_DispatchMessageW
+#define EndDialog uwce_EndDialog
+#define EnterCriticalSection uwce_EnterCriticalSection
+#define GetLastError uwce_GetLastError
+#define GetSystemMetrics uwce_GetSystemMetrics
+#define GetTickCount uwce_GetTickCount
+#define LocalFree uwce_LocalFree
+#define PeekMessageW uwce_PeekMessageW
+#define PostMessageW uwce_PostMessageW
+#define ReadFile uwce_ReadFile
+#define RegCloseKey uwce_RegCloseKey
+#define RegisterClassW uwce_RegisterClassW
+#define RegOpenKeyExW uwce_RegOpenKeyExW
+#define RegQueryValueExW uwce_RegQueryValueExW
+#define SetFilePointer uwce_SetFilePointer
+#define SetForegroundWindow uwce_SetForegroundWindow
+#define ShowWindow uwce_ShowWindow
+#define Sleep uwce_Sleep
+#define SystemParametersInfoW uwce_SystemParametersInfoW
+#define TranslateMessage uwce_TranslateMessage
+#define waveOutClose uwce_waveOutClose
+#define waveOutOpen uwce_waveOutOpen
+#define waveOutPrepareHeader uwce_waveOutPrepareHeader
+#define waveOutReset uwce_waveOutReset
+#define waveOutUnprepareHeader uwce_waveOutUnprepareHeader
+#define waveOutWrite uwce_waveOutWrite
+#define WideCharToMultiByte uwce_WideCharToMultiByte
+#define WriteFile uwce_WriteFile
+#define _wcsicmp uw_wcsicmp
+#define _isctype uw_isctype
+#define _itoa uw_itoa
+#define _ltoa uw_ltoa
+#define _strlwr uw_strlwr
+#define _strupr uw_strupr
+#endif
+
 /* ordint_divmod's return: both halves of one ARM soft-division, named
  * instead of relying on a second, nonexistent "return value" read back
  * from a leftover register (see ordint_divmod's own comment). */

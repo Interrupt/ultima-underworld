@@ -1,91 +1,5 @@
 @word_0_0@
 type R;
-identifier F =~ "^\(process_visible_tile_cell\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)_dpp + 0)
-+ ((uw_object_hdr_t *)_dpp)->type_flags
-|
-- ((ushort *)_dpp)[0]
-+ ((uw_object_hdr_t *)_dpp)->type_flags
-|
-- *(ushort *)_dpp
-+ ((uw_object_hdr_t *)_dpp)->type_flags
-|
-- _dpp[0]
-+ ((uw_object_hdr_t *)_dpp)->type_flags
-|
-- *_dpp
-+ ((uw_object_hdr_t *)_dpp)->type_flags
-)
-...>
-}
-
-@word_0_1@
-type R;
-identifier F =~ "^\(process_visible_tile_cell\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)_dpp + 2)
-+ ((uw_object_hdr_t *)_dpp)->position_word
-|
-- ((ushort *)_dpp)[1]
-+ ((uw_object_hdr_t *)_dpp)->position_word
-|
-- _dpp[1]
-+ ((uw_object_hdr_t *)_dpp)->position_word
-)
-...>
-}
-
-@word_0_2@
-type R;
-identifier F =~ "^\(process_visible_tile_cell\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)_dpp + 4)
-+ ((uw_object_hdr_t *)_dpp)->chain_word
-|
-- ((ushort *)_dpp)[2]
-+ ((uw_object_hdr_t *)_dpp)->chain_word
-|
-- _dpp[2]
-+ ((uw_object_hdr_t *)_dpp)->chain_word
-)
-...>
-}
-
-@word_0_3@
-type R;
-identifier F =~ "^\(process_visible_tile_cell\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)_dpp + 6)
-+ ((uw_object_hdr_t *)_dpp)->link_word
-|
-- ((ushort *)_dpp)[3]
-+ ((uw_object_hdr_t *)_dpp)->link_word
-|
-- _dpp[3]
-+ ((uw_object_hdr_t *)_dpp)->link_word
-)
-...>
-}
-
-@word_1_0@
-type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
 @@
@@ -110,7 +24,7 @@ R F(...) {
 ...>
 }
 
-@word_1_1@
+@word_0_1@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -130,7 +44,7 @@ R F(...) {
 ...>
 }
 
-@word_1_2@
+@word_0_2@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -150,7 +64,7 @@ R F(...) {
 ...>
 }
 
-@word_1_3@
+@word_0_3@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -170,7 +84,7 @@ R F(...) {
 ...>
 }
 
-@word_2_0@
+@word_1_0@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -193,7 +107,7 @@ R F(...) {
 ...>
 }
 
-@word_2_1@
+@word_1_1@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -213,7 +127,7 @@ R F(...) {
 ...>
 }
 
-@word_2_2@
+@word_1_2@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -233,7 +147,7 @@ R F(...) {
 ...>
 }
 
-@word_2_3@
+@word_1_3@
 type R;
 identifier F =~ "^\(emit_tile_features\)$";
 typedef ushort, uw_object_hdr_t;
@@ -253,7 +167,7 @@ R F(...) {
 ...>
 }
 
-@word_3_0@
+@word_2_0@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -279,7 +193,7 @@ R F(...) {
 ...>
 }
 
-@word_3_1@
+@word_2_1@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -299,7 +213,7 @@ R F(...) {
 ...>
 }
 
-@word_3_2@
+@word_2_2@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -319,7 +233,7 @@ R F(...) {
 ...>
 }
 
-@word_3_3@
+@word_2_3@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -339,7 +253,7 @@ R F(...) {
 ...>
 }
 
-@word_4_0@
+@word_3_0@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -365,7 +279,7 @@ R F(...) {
 ...>
 }
 
-@word_4_1@
+@word_3_1@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -385,7 +299,7 @@ R F(...) {
 ...>
 }
 
-@word_4_2@
+@word_3_2@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;
@@ -405,7 +319,7 @@ R F(...) {
 ...>
 }
 
-@word_4_3@
+@word_3_3@
 type R;
 identifier F =~ "^\(emit_tile_objects\)$";
 typedef ushort, uw_object_hdr_t;

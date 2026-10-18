@@ -252,3 +252,89 @@ R F(...) {
 )
 ...>
 }
+
+@word_3_0@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- object[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@word_3_1@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+|
+- object[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@word_3_2@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- object[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@word_3_3@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+|
+- object[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}

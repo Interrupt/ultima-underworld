@@ -52,6 +52,12 @@ extern short DAT_0023be80;
 extern short DAT_0023be88;
 extern char * g_backpack_slot_table;
 #define g_equipped_items g_backpack_slot_table[0]
+/* The grid's 8 visible slots are g_equipped_items[0x14..0x1b] (0x202978..0x202986 in the original).
+   The scroll code reached them by those absolute addresses, which Ghidra turned into three unrelated
+   variables (never written, so the scroll arrows did nothing): first slot = scroll start, slot 0x18
+   = where "scroll forward" starts, slot 0x1b = last visible. */
+#define SLOT_LINK(i) (*(ushort *)(&g_equipped_items + (i) * 2))
+#define GRID_FIRST_SLOT SLOT_LINK(0x14)
 extern char * g_current_container_record;
 extern undefined2 g_cursor_holding_state;
 extern ushort * g_interact_target;

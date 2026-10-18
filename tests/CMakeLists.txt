@@ -1,10 +1,23 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_compile_options(-Wno-pointer-sign)
+# Several fixtures define the same stand-in globals (tentative definitions), and GNU ld, unlike
+# macOS's linker, pulls in every archive member in its link group and so reports them as multiple
+# definitions. Let the first definition win, as it does on macOS. Do NOT use -fcommon instead: it
+# turns those globals into common symbols whose layout the linker chooses, but the game code reads
+# neighbouring globals as arrays ((&DAT_00086980)[axis]) and so needs them in declaration order.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_link_options(-Wl,--allow-multiple-definition)
+endif()
 # unity is a PUBLIC dependency of several diamond-shaped static test libraries; the duplicate is harmless.
-add_link_options(-Wl,-no_warn_duplicate_libraries)
+if(APPLE)
+  add_link_options(-Wl,-no_warn_duplicate_libraries)
+endif()
 add_custom_target(unit_tests)
-add_library(unity STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c")
-target_include_directories(unity PUBLIC "${PROJECT_SOURCE_DIR}/third_party/unity/src")
+add_library(unity STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/support/unity_case_filter.c")
+target_include_directories(unity PUBLIC "${PROJECT_SOURCE_DIR}/third_party/unity/src" "${CMAKE_CURRENT_SOURCE_DIR}")
+# Test sources (not unity.c itself) pick up the RUN_TEST override in unity_config.h.
+target_compile_definitions(unity PUBLIC UNITY_INCLUDE_CONFIG_H INTERFACE UW_UNITY_FILTER)
 # The runtime options struct (g_opts) is used by most of the game code the suites extract.
 add_library(uw_options STATIC "${PROJECT_SOURCE_DIR}/src/options.c")
 target_include_directories(uw_options PUBLIC "${PROJECT_SOURCE_DIR}")
@@ -40,13 +53,20 @@ function(add_game_test_library name)
   uw_configure_test_target(${name})
 endfunction()
 
+# add_test that also remembers the command, so the unit/integration split at the end of this file
+# can clone it into `<name>.unit`.
+function(uw_register_test name)
+  add_test(NAME ${name} COMMAND ${ARGN})
+  set_property(GLOBAL PROPERTY UW_TEST_COMMAND_${name} "${ARGN}")
+endfunction()
+
 function(add_fixture_game_unit_test name)
   add_game_test_library(uw_test_${name} ${ARGN})
   target_sources(uw_test_${name} PRIVATE support/${name}_fixture.c)
   target_include_directories(uw_test_${name} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
   target_link_libraries(uw_test_${name} PUBLIC uw_test_support)
   target_compile_definitions(uw_test_${name} PRIVATE
-    UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+    UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
   target_compile_options(uw_test_${name} PUBLIC
     -include "${CMAKE_CURRENT_SOURCE_DIR}/${name}_test_globals.h")
   add_supported_game_unit_test(${name} uw_test_${name})
@@ -58,7 +78,7 @@ function(add_supported_game_unit_test name)
   uw_configure_test_target(test_${name})
   target_link_libraries(test_${name} PRIVATE ${ARGN})
   add_dependencies(unit_tests test_${name})
-  add_test(NAME ${name} COMMAND test_${name})
+  uw_register_test(${name} test_${name})
 endfunction()
 
 add_game_test_library(uw_test_babl_objects
@@ -88,7 +108,7 @@ target_sources(uw_test_support PRIVATE support/game_fixture.c
   support/archive_storage.c support/file_services.c support/random.c support/division.c
   "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c")
 target_include_directories(uw_test_support PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_support PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_support PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_compile_options(uw_test_support PRIVATE
   -include "${CMAKE_CURRENT_SOURCE_DIR}/support/game_fixture.h")
 
@@ -123,7 +143,7 @@ add_fixture_game_unit_test(chargen
 # test_chargen reads the real shipped data/DATA/CHRGEN.DAT to check the
 # record-layout normalization, so the executable needs the path too (the
 # fixture library's own copy of the define is PRIVATE).
-target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_fixture_game_unit_test(new_game
   src/game.c:prepare_new_game src/game.c:start_game_with_current_character src/game.c:begin_gameplay
   src/level.c:load_level_object_table src/level.c:load_level
@@ -216,7 +236,7 @@ target_sources(uw_test_npc_combat PRIVATE support/combat_fixture.c)
 target_include_directories(uw_test_npc_combat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
 target_link_libraries(uw_test_npc_combat PUBLIC uw_test_support)
 target_compile_definitions(uw_test_npc_combat PRIVATE
-  UW_TEST_NPC_COMBAT UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+  UW_TEST_NPC_COMBAT UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_compile_options(uw_test_npc_combat PUBLIC
   -include "${CMAKE_CURRENT_SOURCE_DIR}/combat_test_globals.h")
 add_supported_game_unit_test(npc_combat uw_test_npc_combat)
@@ -668,9 +688,9 @@ add_game_test_library(uw_test_cursor
 target_compile_options(uw_test_cursor PUBLIC
   -include "${CMAKE_CURRENT_SOURCE_DIR}/cursor_test_globals.h")
 add_supported_game_unit_test(cursor uw_test_cursor)
-target_compile_definitions(test_cursor PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
-add_test(NAME cursor_stylus COMMAND test_cursor --stylus)
-add_test(NAME cursor_enabled COMMAND test_cursor --enabled)
+target_compile_definitions(test_cursor PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
+uw_register_test(cursor_stylus test_cursor --stylus)
+uw_register_test(cursor_enabled test_cursor --enabled)
 add_game_test_library(uw_test_introduction
   src/babl.c:babl_render_op_say
   src/babl.c:babl_render_op_wrap_message
@@ -686,9 +706,9 @@ add_game_test_library(uw_test_introduction
   src/text.c:load_font_metrics)
 target_sources(uw_test_introduction PRIVATE support/introduction_fixture.c)
 target_include_directories(uw_test_introduction PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_introduction PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_introduction PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(introduction uw_test_introduction)
-target_compile_definitions(test_introduction PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_introduction PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_introduction PRIVATE "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_stair_transition
@@ -701,9 +721,9 @@ add_game_test_library(uw_test_stair_transition
   src/objects.c:find_object_in_world)
 target_sources(uw_test_stair_transition PRIVATE support/stair_transition_fixture.c)
 target_include_directories(uw_test_stair_transition PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_stair_transition PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_stair_transition PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(stair_transition uw_test_stair_transition)
-target_compile_definitions(test_stair_transition PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_stair_transition PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_npc_ai
   src/ai.c:@DAT_000853d8_backing
@@ -728,9 +748,9 @@ add_game_test_library(uw_test_npc_ai
   src/combat.c:load_monster_combat_stats)
 target_sources(uw_test_npc_ai PRIVATE support/npc_ai_fixture.c)
 target_include_directories(uw_test_npc_ai PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_npc_ai PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(npc_ai uw_test_npc_ai)
-target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_npc_ai PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_throw
   src/ai.c:@DAT_000868c0_backing
@@ -787,15 +807,15 @@ add_game_test_library(uw_test_throw
   src/movement.c:sweep_apply_collision)
 target_sources(uw_test_throw PRIVATE support/throw_fixture.c)
 target_include_directories(uw_test_throw PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_throw PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(throw uw_test_throw)
-target_compile_definitions(test_throw PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_throw PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_throw PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 add_supported_game_unit_test(player_move_direction uw_test_throw)
-target_compile_definitions(test_player_move_direction PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_player_move_direction PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_player_move_direction PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 add_supported_game_unit_test(throw_tick_rate uw_test_throw)
-target_compile_definitions(test_throw_tick_rate PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_throw_tick_rate PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_throw_tick_rate PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_throw_cursor
@@ -809,9 +829,9 @@ add_game_test_library(uw_test_throw_cursor
   src/objects.c:object_list_insert_head)
 target_sources(uw_test_throw_cursor PRIVATE support/throw_cursor_fixture.c)
 target_include_directories(uw_test_throw_cursor PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_throw_cursor PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_throw_cursor PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(throw_cursor uw_test_throw_cursor)
-target_compile_definitions(test_throw_cursor PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_throw_cursor PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_throw_cursor PRIVATE "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_lighting
@@ -843,9 +863,9 @@ add_game_test_library(uw_test_lighting
   src/ordinal_stubs.c:ordfloat_uint_to_float)
 target_sources(uw_test_lighting PRIVATE support/lighting_fixture.c)
 target_include_directories(uw_test_lighting PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_lighting PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_lighting PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(lighting uw_test_lighting)
-target_compile_definitions(test_lighting PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_lighting PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_lighting PRIVATE "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_critter_palette
@@ -858,9 +878,9 @@ add_game_test_library(uw_test_critter_palette
   src/bitmap.c:blit_sprite_row_remapped)
 target_sources(uw_test_critter_palette PRIVATE support/critter_palette_fixture.c)
 target_include_directories(uw_test_critter_palette PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_critter_palette PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_critter_palette PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(critter_palette uw_test_critter_palette)
-target_compile_definitions(test_critter_palette PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_critter_palette PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_creatures
   src/object_actions.c:resolve_critter_sprite_tier
@@ -880,9 +900,9 @@ add_game_test_library(uw_test_creatures
   src/ai.c:settle_mobile_to_immobile)
 target_sources(uw_test_creatures PRIVATE support/creatures_fixture.c)
 target_include_directories(uw_test_creatures PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_creatures PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_creatures PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(creatures uw_test_creatures)
-target_compile_definitions(test_creatures PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_creatures PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_gx_pacing
   src/gx_stub.c:@uw_present_state
@@ -905,9 +925,9 @@ add_game_test_library(uw_test_gx_pacing
   src/gx_stub.c:uw_service_game_clock)
 target_sources(uw_test_gx_pacing PRIVATE support/gx_pacing_fixture.c)
 target_include_directories(uw_test_gx_pacing PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_gx_pacing PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_gx_pacing PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(gx_pacing uw_test_gx_pacing)
-target_compile_definitions(test_gx_pacing PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_gx_pacing PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_look_pacing
   src/gx_stub.c:poll_dungeon_movement_keys
@@ -923,9 +943,9 @@ add_game_test_library(uw_test_look_pacing
   src/gx_stub.c:uw_service_game_clock)
 target_sources(uw_test_look_pacing PRIVATE support/look_pacing_fixture.c)
 target_include_directories(uw_test_look_pacing PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_look_pacing PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_look_pacing PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(look_pacing uw_test_look_pacing)
-target_compile_definitions(test_look_pacing PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_look_pacing PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 add_game_test_library(uw_test_inventory_drag
   src/item_use.c:attach_picked_up_object_to_cursor
@@ -945,9 +965,9 @@ add_game_test_library(uw_test_inventory_drag
   src/gx_stub.c:uw_service_game_clock)
 target_sources(uw_test_inventory_drag PRIVATE support/inventory_drag_fixture.c)
 target_include_directories(uw_test_inventory_drag PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_inventory_drag PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_inventory_drag PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(inventory_drag uw_test_inventory_drag)
-target_compile_definitions(test_inventory_drag PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_inventory_drag PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 
 foreach(suite introduction stair_transition npc_ai throw throw_cursor lighting critter_palette creatures gx_pacing look_pacing inventory_drag)
   target_include_directories(uw_test_${suite} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -978,7 +998,7 @@ target_include_directories(uw_test_voice PUBLIC
   ${SDL2_INCLUDE_DIRS} "${PROJECT_SOURCE_DIR}/third_party/openabyss")
 target_link_directories(uw_test_voice PUBLIC ${SDL2_LIBRARY_DIRS})
 target_link_libraries(uw_test_voice PUBLIC ${SDL2_LIBRARIES})
-target_compile_definitions(uw_test_voice PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_voice PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(voice uw_test_voice)
 
 # models_dos.c decodes the DOS asset set's 3D models out of UW.EXE. The suite
@@ -1076,9 +1096,9 @@ add_game_test_library(uw_test_transitions
   src/input.c:get_alternate_keyboard_scan_code)
 target_sources(uw_test_transitions PRIVATE support/transitions_fixture.c)
 target_include_directories(uw_test_transitions PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_transitions PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_transitions PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(transitions uw_test_transitions)
-target_compile_definitions(test_transitions PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_transitions PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 target_sources(test_transitions PRIVATE "${PROJECT_SOURCE_DIR}/src/file_io.c" "${PROJECT_SOURCE_DIR}/src/debug.c")
 
 add_game_test_library(uw_test_spell_runes
@@ -1089,9 +1109,9 @@ add_game_test_library(uw_test_spell_runes
   src/hud.c:print_not_a_spell_message)
 target_sources(uw_test_spell_runes PRIVATE support/spell_runes_fixture.c)
 target_include_directories(uw_test_spell_runes PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/support")
-target_compile_definitions(uw_test_spell_runes PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(uw_test_spell_runes PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_supported_game_unit_test(spell_runes uw_test_spell_runes)
-target_compile_definitions(test_spell_runes PRIVATE UW_TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/data")
+target_compile_definitions(test_spell_runes PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 foreach(suite transitions spell_runes)
   target_include_directories(uw_test_${suite} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
   target_compile_options(uw_test_${suite} PUBLIC -include "${CMAKE_CURRENT_SOURCE_DIR}/${suite}_test_globals.h")
@@ -1212,6 +1232,36 @@ endforeach()
 
 # Independent packing checks before object-pointer/field migrations.
 add_supported_game_unit_test(object_layout)
+add_test(NAME creature_drop_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_creature_drop_fields.py")
+add_test(NAME scheduler_step_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_scheduler_step_fields.py")
+add_test(NAME arena_reset_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_arena_reset_fields.py")
+add_test(NAME victory_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_victory_fields.py")
+add_test(NAME treasure_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_treasure_fields.py")
+add_test(NAME combat_engage_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_combat_engage_fields.py")
+add_test(NAME babl_stack_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_babl_stack_fields.py")
+add_test(NAME babl_transfer_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_babl_transfer_fields.py")
+add_test(NAME walk_target_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_walk_target_fields.py")
+add_test(NAME target_coordinate_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_target_coordinate_fields.py")
 # Coccinelle semantic-patch checks: they re-parse the whole of src/ with spatch
 # and take minutes where the rest of the suite takes seconds (530s against 6s
 # when measured on this tree). They are a tool for large type-conversion
@@ -1333,6 +1383,59 @@ if(UW_SPATCH_TESTS)
     COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_durability_fields.py"
       "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME light_decay_fields
+    COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_light_decay_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME starvation_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_starvation_fields.py")
+  add_test(NAME ranged_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_ranged_fields.py")
+  add_test(NAME monster_loot_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_monster_loot_fields.py")
+  add_test(NAME babl_stuff_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_babl_stuff_fields.py")
+  add_test(NAME approach_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_approach_fields.py")
+  add_test(NAME settle_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_settle_fields.py")
+  add_test(NAME combat_position_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_combat_position_fields.py")
+  add_test(NAME disengage_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_disengage_fields.py")
+  add_test(NAME drop_height_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_drop_height_fields.py")
+  add_test(NAME slot_fit_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_slot_fit_fields.py")
+  add_test(NAME scheduler_finish_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_scheduler_finish_fields.py")
+  add_test(NAME combat_stance_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_combat_stance_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME special_header_reads
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_special_header_reads.py"
+      "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME promoted_struct_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_promoted_struct_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
+  add_test(NAME light_use_fields
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_light_use_fields.py"
+      "${UW_SPATCH_EXECUTABLE}")
   find_program(UW_CLANG_EXECUTABLE clang)
   if(UW_CLANG_EXECUTABLE)
     add_test(NAME current_object_aliases
@@ -1393,3 +1496,35 @@ add_test_game_executable(traps_game)
 add_test_game_executable(visibility_walk_game)
 add_test_game_executable(npc_ai_game)
 add_test_game_executable(movement_game)
+
+# Split every test into unit (needs no real game data) and integration (needs data/), using the
+# manifest tools/classify_cases.py generates against the synthetic data tree:
+#   "<name> *"          the whole test is data-free: label it `unit`
+#   "<name> a,b,c"      only those cases are data-free: add `<name>.unit` running just them
+#                       (UW_TEST_CASES, see support/unity_case_filter.c); `<name>` stays the full
+#                       run and is labelled `integration`
+#   (absent)            `integration`
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/unit-cases.txt" UW_UNIT_CASE_LINES REGEX "^[^#]")
+get_property(uw_all_tests DIRECTORY PROPERTY TESTS)
+foreach(test_name IN LISTS uw_all_tests)
+  set(unit_cases "")
+  foreach(line IN LISTS UW_UNIT_CASE_LINES)
+    if(line MATCHES "^${test_name} (.*)$")
+      set(unit_cases "${CMAKE_MATCH_1}")
+    endif()
+  endforeach()
+  if(unit_cases STREQUAL "*")
+    set_tests_properties(${test_name} PROPERTIES LABELS unit)
+  elseif(unit_cases)
+    get_property(test_command GLOBAL PROPERTY UW_TEST_COMMAND_${test_name})
+    if(NOT test_command)
+      message(FATAL_ERROR "${test_name} is partly data-free but was not added with uw_register_test")
+    endif()
+    add_test(NAME ${test_name}.unit COMMAND ${test_command})
+    set_tests_properties(${test_name}.unit PROPERTIES
+      LABELS unit ENVIRONMENT "UW_TEST_CASES=${unit_cases}")
+    set_tests_properties(${test_name} PROPERTIES LABELS integration)
+  else()
+    set_tests_properties(${test_name} PROPERTIES LABELS integration)
+  endif()
+endforeach()

@@ -493,6 +493,8 @@ int check_object_drop_height(ushort *object, ushort *reference)
   int iVar5;
   uint uVar6;
   uint uVar7;
+  uw_projectile_object_t *projectile = (uw_projectile_object_t *)object;
+  uw_object_hdr_t *reference_header = (uw_object_hdr_t *)reference;
   /* Was three separate C locals (`ushort local_38[6]; ushort local_2c; ushort local_2a;`), but
      collision_height_envelope/collision_build_ height_field write through DAT_00202c6c-relative
      offset arithmetic expecting ONE contiguous struct... */
@@ -502,8 +504,8 @@ int check_object_drop_height(ushort *object, ushort *reference)
 #define local_2a (*(ushort *)(local_backing + 0xe))
 
   DAT_00202c6c = local_backing;
-  uVar2 = ((uw_object_hdr_t *)object)->type_flags;
-  uVar3 = encode_object_slot_index(object);
+  uVar2 = projectile->hdr.type_flags;
+  uVar3 = encode_object_slot_index(&projectile->hdr);
   /* ARM 0x4b2d0/0x4b310: slot at byte 10, radius at byte 8.
      DAT_00202c6c is a byte pointer; Ghidra's word indices need scaling. */
   *(byte *)(DAT_00202c6c + 10) = (byte)uVar3;
@@ -511,26 +513,26 @@ int check_object_drop_height(ushort *object, ushort *reference)
   iVar5 = (short)(uVar2 & 0x1ff) * 0xd;
   *(byte *)(DAT_00202c6c + 8) = g_object_type_props[iVar5 / 0xd].collision_radius;
   *(undefined *)((char *)DAT_00202c6c + 9) = g_object_type_props[iVar5 / 0xd].height;
-  iVar5 = ((((uw_mobile_object_t *)object)->tile_x << 3)) + (uint)(((uw_object_hdr_t *)object)->xpos);
+  iVar5 = ((projectile->tile_x << 3)) + (uint)(projectile->hdr.xpos);
   *(byte *)DAT_00202c6c = (byte)iVar5;
   *(byte *)((char *)DAT_00202c6c + 1) = (byte)((uint)iVar5 >> 8);
   /* Was `DAT_00202c6c + 1` for Y's low byte -- disassembly-confirmed (0x4b288 @ 0x4b3b8: `strb
      r3,[r1,#0x2]`) the real write target is offset+2, not +1. */
-  iVar5 = (((uw_object_hdr_t *)object)->ypos) + ((((uw_mobile_object_t *)object)->tile_y << 3));
+  iVar5 = (projectile->hdr.ypos) + ((projectile->tile_y << 3));
   *(byte *)((char *)DAT_00202c6c + 2) = (byte)iVar5;
   *(byte *)((char *)DAT_00202c6c + 3) = (byte)((uint)iVar5 >> 8);
   /* Both pointer args below were `DAT_00202c6c`/`DAT_00202c6c + 1` -- the Y output must be `+2` to
      match the real Y storage (offset+2/+3, see the fix just above); `+1` is X's own high byte.
      Disassembly- confirmed (0x4b288 @ 0x4b458's `bl 0x69f2c` args). */
-  project_position_by_heading((((uw_mobile_object_t *)object)->fine_heading) + ((((uw_object_hdr_t *)object)->heading << 7) >> 2),
-                              (g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].collision_radius) +
-                              (g_object_type_props[(((uw_object_hdr_t *)reference)->object_id)].collision_radius) + '\x04',
+  project_position_by_heading((projectile->fine_heading) + ((projectile->hdr.heading << 7) >> 2),
+                              (g_object_type_props[(projectile->hdr.object_id)].collision_radius) +
+                              (g_object_type_props[(reference_header->object_id)].collision_radius) + '\x04',
                               DAT_00202c6c,
                               DAT_00202c6c + 2);
   /* Was `DAT_00202c6c + 2` -- disassembly-confirmed (0x4b288 @ 0x4b474: `strb r3,[r0,#0x4]`) the
      real target is offset+4/+5 (the same "Z" field this function's own later collision calls read
      via `*(short *)(DAT_00202c6c + 4)`), not offset+2... */
-  *(byte *)((char *)DAT_00202c6c + 4) = ((uw_object_hdr_t *)object)->zpos;
+  *(byte *)((char *)DAT_00202c6c + 4) = projectile->hdr.zpos;
   *(byte *)((char *)DAT_00202c6c + 5) = 0;
   collision_height_envelope(0,1);
   collision_build_height_field(0);
@@ -539,26 +541,22 @@ int check_object_drop_height(ushort *object, ushort *reference)
       sort_collision_candidates();
       if (*(byte *)((char *)DAT_00202c6c + 0x15) != 0) goto LAB_0004b4d4;
     }
-    uVar2 = ((uw_mobile_object_t *)object)->tile_position;
+    uVar2 = projectile->tile_position;
     uVar6 = uVar2 & 0x3ff;
     /* ARM 0x4b4e4..0x4b5d0 reads full X/Y words at bytes 0/2;
        byte reads discarded X's high bits and used X's high byte as Y. */
     uVar7 = ((int)(short)(*(ushort *)DAT_00202c6c & 0x1f8) >> 3) << 10;
-    ((uw_mobile_object_t *)object)->tile_position_low = (byte)(char)uVar6;
-    ((uw_mobile_object_t *)object)->tile_position_high = (byte)(uVar6 >> 8) | (byte)(uVar7 >> 8);
+    projectile->tile_x = (uVar7 >> 10) & 0x3f;
     uVar7 = uVar2 & 0xf | uVar7 | ((int)(short)(*(ushort *)(DAT_00202c6c + 2) & 0x1f8) >> 3) << 4;
-    ((uw_mobile_object_t *)object)->tile_position = (ushort)uVar7;
-    uVar7 = (uint)((uw_object_hdr_t *)object)->position_word;
+    projectile->tile_y = (uVar7 >> 4) & 0x3f;
+    uVar7 = (uint)projectile->hdr.position_word;
     uVar6 = uVar7 & 0x1fff;
     bVar1 = (byte)((((byte)*DAT_00202c6c & 7) << 0xd) >> 8);
-    ((uw_object_hdr_t *)object)->position_word_low = (byte)(char)uVar6;
-    ((uw_object_hdr_t *)object)->position_word_high = (byte)(uVar6 >> 8) | bVar1;
+    projectile->hdr.xpos = bVar1 >> 5;
     uVar2 = *(ushort *)(DAT_00202c6c + 2);
     uVar7 = uVar7 & 0x3ff;
-    ((uw_object_hdr_t *)object)->position_word_low = (byte)(char)uVar7;
     uVar4 = 1;
-    ((uw_object_hdr_t *)object)->position_word_high =
-        (byte)(uVar7 >> 8) | bVar1 | (byte)((((byte)uVar2 & 7) << 10) >> 8);
+    projectile->hdr.ypos = uVar2 & 7;
   }
   else {
 LAB_0004b4d4:

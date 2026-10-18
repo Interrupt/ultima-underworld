@@ -9,6 +9,7 @@
 #include "headers/options.h"
 #include "headers/uw.h"
 #include "headers/debug_ui.h"
+#include "headers/player.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -97,6 +98,10 @@ void uw_mouselook_apply_motion(int xrel, int yrel, int synthetic) {
     }
     double deg = g_opts.mouselook_speed;
     DAT_00201c70 = (short)(DAT_00201c70 + (int)lround(dx * deg * (65536.0 / 360.0)));
+    if (g_player_object) {  /* the heading fields the arrow-key turn keeps in step: door leaves, compass */
+        g_player_object->hdr.heading = ((ushort)DAT_00201c70 >> 13) & 7;
+        g_player_object->fine_heading = ((ushort)DAT_00201c70 >> 8) & 0x1f;
+    }
     int p = (int)DAT_0023beb4 + (int)lround(dy * deg * 256.0);
     const int limit = uw_look_pitch_limit();
     if (p < -limit) p = -limit;

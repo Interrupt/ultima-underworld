@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
+#include "headers/platform_compat.h"
 #include <time.h>
 
 #define GX_W 320

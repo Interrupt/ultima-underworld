@@ -37,6 +37,7 @@ int uw_wall_turn_step(void) { return 0x400; }  /* original wall-turn step (--wal
 undefined4 DAT_00204878;
 char *DAT_002046b8 = (char *)movement_fixture.object_arena + 0x4000;
 short DAT_00201c70, DAT_00202080, DAT_00202088;
+int g_move_facing_offset;
 undefined2 DAT_00201c78;
 undefined4 DAT_000858a0;
 char *DAT_002029cc;

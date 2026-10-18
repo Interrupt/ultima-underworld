@@ -47,6 +47,18 @@ int npc_unrelated(char *buffer)
     reused = buffer;
     return *(char *)(reused + 8) + ((uw_mobile_object_t *)reused)->npc_hp;
 }
+int typed_parameters(ushort *object, ushort *reference)
+{
+    uw_projectile_object_t *projectile = (uw_projectile_object_t *)object;
+    uw_object_hdr_t *header = (uw_object_hdr_t *)reference;
+    return projectile->hdr.object_id + header->object_id;
+}
+int reused_parameter(ushort *object, char *buffer)
+{
+    uw_projectile_object_t *projectile = (uw_projectile_object_t *)object;
+    object = (ushort *)buffer;
+    return projectile->hdr.object_id;
+}
 int main(void) {
     uint64_t hash = 0;
     for (unsigned input = 0; input < 65536; ++input) {
@@ -73,6 +85,12 @@ int main(void) {
     mixed = {r['name']: r for r in functions['npc_mixed']['roles']}
     assert not mixed['mixed']['current_mobile_alias']
     assert 'reused' in functions['npc_unrelated']['requires_review']
+    incoming = {r['name']: r for r in functions['typed_parameters']['roles']}
+    assert set(incoming) == {'object', 'reference', 'projectile', 'header'}
+    assert not any(r['current_mobile_alias'] for r in incoming.values())
+    assert functions['typed_parameters']['requires_review'] == []
+    assert functions['reused_parameter']['roles'] == []
+    assert set(functions['reused_parameter']['requires_review']) == {'object', 'projectile'}
     patch = Path(tmp) / 'aliases.cocci'
     patch.write_text(generate(roles))
     def execute():
