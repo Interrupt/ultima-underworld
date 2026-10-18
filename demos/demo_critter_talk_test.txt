@@ -1,10 +1,10 @@
 # Reproduces a crash using Talk mode on Bragit (critter type_idx=26 /
 # object type 0x5a, tile (17,7) on the chargen-spawn level -- same
-# critter as demo_critter_orbit_cardinal.txt).
+# critter as demos/demo_critter_orbit_cardinal.txt).
 #
 # Pixel coordinates below were read directly off a real screenshot
 # taken from this exact camera spot (SETPLAYERPOS 18.500 7.500 768
-# 270 0, the same "E" waypoint demo_critter_orbit_cardinal.txt found
+# 270 0, the same "E" waypoint demos/demo_critter_orbit_cardinal.txt found
 # gives the cleanest view of this critter) -- NOT guessed:
 #   - Talk mode icon (topmost of the 5 mode-select icons, per
 #     PTR_FUN_000858c8_table's comment in uw.c: mode 5 = Talk):
@@ -27,7 +27,7 @@
 #
 # Run with:
 #   UW_ENABLE_3D_GEOMETRY=1 UW_FAST_SLEEP=1 UW_DATA_DIR="$(pwd)/data" \
-#     UW_DEMO_FILE=demo_critter_talk_test.txt ./build/uw_dbg
+#     UW_DEMO_FILE=demos/demo_critter_talk_test.txt ./build/uw_dbg
 
 ENTER
 ENTER

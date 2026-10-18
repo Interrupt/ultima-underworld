@@ -214,7 +214,7 @@ The user's two observations were the format-8 RLE decode:
 
 Now: bag (type 0x80) decodes 134/256 opaque px, real palette, transparent
 background; walls/door show through. milestones/objects-render-fmt8-palette.bmp.
-demo_objects.txt frames a room with several objects.
+demos/demo_objects.txt frames a room with several objects.
 
 REMAINING:
 - No explicit U/V on the billboard quad. render_visible_tile_list takes
@@ -960,7 +960,7 @@ around it) visible from tile (23,5) looking at the door placed at
 (22,5) -- repro: TELEPORT 23 5, REVEAL, REVEAL (a second REVEAL is
 needed after any TELEPORT/SETPLAYERPOS -- the first redraw after a
 teleport lands on the pre-teleport tile pointer, a known demomode gap
-documented in demo_dungeon_room.txt's own header comment). Bridge
+documented in demos/demo_dungeon_room.txt's own header comment). Bridge
 mesh/texture verified via the debug trace above rather than a clean
 screenshot -- every camera position tried near the bridge's placement
 (36-38,24-25) put the player either inside solid rock (0 visible tiles)
@@ -1294,7 +1294,7 @@ loop actually reaches the same code path the QA-reported regressions
 came from, not a disconnected UI.
 
 One real false alarm this pass: the first post-port regression run
-showed 5/6 (demo_inventory_container_torch_use_test.txt timed out at
+showed 5/6 (demos/demo_inventory_container_torch_use_test.txt timed out at
 60s), which looked like a genuine hang. Re-ran the same script alone --
 clean. Root cause: leftover manual test uw_dbg processes from this same
 session's own interactive debugging hadn't been fully killed before
@@ -1575,7 +1575,7 @@ face responsible for covering an otherwise-uncovered patch.
 
 Separately, while testing this: run-regressions.sh started showing 5/6
 CRASH (settle_mobile_to_immobile recursing on itself -- a real stack
-overflow, not a hang) on demo_inventory_container_item_click_test.txt
+overflow, not a hang) on demos/demo_inventory_container_item_click_test.txt
 and 4 others, reproducible in total isolation (pkill'd every other
 uw_dbg first) and even with data/SAVE0 deleted outright (rules out
 stale/corrupted save state). Bisected with a throwaway worktree
@@ -1871,7 +1871,7 @@ discovery about how door "animation" actually works in this engine
 Bug report: using a door doesn't animate the door leaf. Door switches to
 the "opening" state (quality does change, "You see a moving door" is a
 correct message) but the rendered door never visibly rotates. Repro:
-bug-open-door.txt (a recorded demo, pre-existing in the repo root).
+demos/bug-open-door.txt (a recorded demo, pre-existing in the repo root).
 
 Investigation used UW_DEBUG_DOOR (reused an existing env var, no new one
 added) to trace emit_anim_object_frames and emit_catalog_object live
@@ -1966,7 +1966,7 @@ FUN_00080a98 to finalize it once its delay expires. This exactly
 matches the six-to-eight-step design described. The mechanism was
 simply never running, for five stacked reasons, found and fixed one at
 a time via UW_DEBUG_DOOR/UW_DEBUG_DOOR2 live tracing against
-bug-open-door.txt:
+demos/bug-open-door.txt:
 
 1. DAT_000879ac (gates all three ordinary-gameplay call sites of
    FUN_0008128c) was declared but never assigned anywhere in this
@@ -2123,7 +2123,7 @@ atomic step, as milestone 16 found -- that part was right. It's simply
 not what drives the visible swing angle.)
 
 Reverted the swing-magnitude line to its real original form. Confirmed
-live (UW_DEBUG_DOOR, bug-open-door.txt): the field now genuinely steps
+live (UW_DEBUG_DOOR, demos/bug-open-door.txt): the field now genuinely steps
 0 -> 1 -> 2 -> 3 -> 4 -> 5 across separate ticks (not jumping straight
 to a fixed value), and a full split-screenshot replay shows the door
 leaf swung open on its hinge at a moderate, correct-looking angle by
@@ -2236,12 +2236,12 @@ run-regressions.sh: 6/6 clean.
 ═══════════════════════════════════════════════════════════════════════════
 MILESTONE 2026-09-28 (19): fixed the object tuner's per-catalog field
 visibility bug, and root-caused + fixed a real crash using a pull chain
-(bug-pull-chain-crash.txt) -- three stacked pointer-truncation bugs
+(demos/bug-pull-chain-crash.txt) -- three stacked pointer-truncation bugs
 ═══════════════════════════════════════════════════════════════════════════
 Two QA reports: "only able to tune leaf_hinge_offset on doors of type
 14, not 1" (a usability bug in milestone 18's own new tunable), and "using
 a pull chain to open a door causes a crash" (a real, reproducible
-EXC_BAD_ACCESS, repro saved as bug-pull-chain-crash.txt).
+EXC_BAD_ACCESS, repro saved as demos/bug-pull-chain-crash.txt).
 
 TUNER VISIBILITY: the object-tuner panel's field list resets on every
 single emit_catalog_object call within a frame (not once per door), so
@@ -2291,7 +2291,7 @@ previous one was fixed and execution got one step further:
    (FUN_0007c580/FUN_0007c814 calls) the original fixer's comment
    hadn't traced out to.
 
-Confirmed live: bug-pull-chain-crash.txt no longer crashes (reaches
+Confirmed live: demos/bug-pull-chain-crash.txt no longer crashes (reaches
 "end of input, exiting" cleanly) after all three fixes landed together
 -- fixing any one or two in isolation only moved the crash one call
 frame deeper, never resolved it.

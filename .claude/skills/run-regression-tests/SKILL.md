@@ -20,18 +20,18 @@ default suite is roughly a minute, not the watchdog's 90s ceiling.
 - **Full 19-script suite** — anything riskier: un-staticing a global,
   widening a scalar into a backing array, touching a widely-called
   function, or any actual bug fix. Get the script list from
-  `/tmp/scripts19.txt` if present, or `demo_automap_note_test.txt
-  demo_click_female.txt demo_critter_orbit_cardinal.txt
-  demo_critter_talk_test.txt demo_critter.txt demo_dungeon_room.txt
-  demo_inventory_container_item_click_test.txt
-  demo_inventory_container_torch_use_test.txt
-  demo_inventory_dropback_test.txt
-  demo_inventory_invalid_drop_test.txt
-  demo_inventory_open_bag_test.txt demo_nested_container_test.txt
-  demo_object_test.txt demo_objects.txt demo_talk_death_deep.txt
-  demo_talk_explore.txt demo_talk_full_conversation.txt
-  demo_talk_qa.txt demo_talk_select.txt` otherwise.
-- `demo_automap.txt` is deliberately excluded from both by default (5+
+  `/tmp/scripts19.txt` if present, or `demos/demo_automap_note_test.txt
+  demos/demo_click_female.txt demos/demo_critter_orbit_cardinal.txt
+  demos/demo_critter_talk_test.txt demos/demo_critter.txt demos/demo_dungeon_room.txt
+  demos/demo_inventory_container_item_click_test.txt
+  demos/demo_inventory_container_torch_use_test.txt
+  demos/demo_inventory_dropback_test.txt
+  demos/demo_inventory_invalid_drop_test.txt
+  demos/demo_inventory_open_bag_test.txt demos/demo_nested_container_test.txt
+  demos/demo_object_test.txt demos/demo_objects.txt demos/demo_talk_death_deep.txt
+  demos/demo_talk_explore.txt demos/demo_talk_full_conversation.txt
+  demos/demo_talk_qa.txt demos/demo_talk_select.txt` otherwise.
+- `demos/demo_automap.txt` is deliberately excluded from both by default (5+
   minutes, see the script's own comment) — only add it explicitly if
   specifically asked to.
 

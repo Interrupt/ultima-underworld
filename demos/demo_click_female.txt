@@ -6,7 +6,7 @@
 # Run with UW_DIAG_MOUSE=1 so FUN_00024840's click-confirm diagnostic
 # (uw.c, "[chargen] click confirmed selection index=") prints the
 # actually-confirmed index to stderr for verification, e.g.:
-#   UW_DIAG_MOUSE=1 UW_DEMO_FILE=demo_click_female.txt UW_DEMO_DELAY_MS=200 \
+#   UW_DIAG_MOUSE=1 UW_DEMO_FILE=demos/demo_click_female.txt UW_DEMO_DELAY_MS=200 \
 #     UW_DATA_DIR="$(pwd)/data" ./build/uw_dbg
 # Expect a line reading "[chargen] click confirmed selection index=1".
 #
