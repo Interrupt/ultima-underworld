@@ -1244,7 +1244,7 @@ void apply_melee_damage(byte hit_type)
 // of the real FUN_00026eb4 that this `undefined4 uVar4;` is genuinely how
 // the original compiled game typed it too (same unrecovered-32-bit-
 // pointer-width class as every other fix on this branch). Live repro
-// (the user's own attack-crash.txt, replayed under lldb): confirmed the
+// (the user's own demos/attack-crash.txt, replayed under lldb): confirmed the
 // first fix alone didn't resolve the crash because of this exact
 // truncation still happening one call frame earlier. Widened to a real
 // pointer type.

@@ -46,7 +46,7 @@
 #
 # Run with:
 #   UW_ENABLE_3D_GEOMETRY=1 UW_FAST_SLEEP=1 UW_DATA_DIR="$(pwd)/data" \
-#     UW_DEMO_FILE=demo_mantra_test.txt ./build/uw_dbg
+#     UW_DEMO_FILE=demos/demo_mantra_test.txt ./build/uw_dbg
 
 ENTER
 ENTER

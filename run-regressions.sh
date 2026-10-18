@@ -1,5 +1,5 @@
 #!/bin/sh
-# Run the demo_*.txt regression suite against build/uw_asan (an
+# Run the demos/demo_*.txt regression suite against build/uw_asan (an
 # ASan-instrumented build -- see CMakeLists.txt's uw_asan target) and
 # report which scripts crash. Mirrors the ad-hoc loop used throughout
 # this session's playtesting/bug-fixing work.
@@ -16,7 +16,7 @@
 #
 # Usage:
 #   ./run-regressions.sh                  # run the default script list
-#   ./run-regressions.sh foo.txt bar.txt  # run only these scripts instead
+#   ./run-regressions.sh foo.txt bar.txt  # run only these scripts instead (names in demos/, or paths)
 #
 # Tweakable via env vars:
 #   BUILD=0                 skip running build.sh first (default: 1, builds)
@@ -53,7 +53,7 @@
 # comment in gx_stub.c), so nothing about one run's input stomps on
 # another's.
 #
-# Note: demo_automap.txt is deliberately excluded from the default list
+# Note: demos/demo_automap.txt is deliberately excluded from the default list
 # -- it's a 4000+ line tile-by-tile traversal that takes 5+ minutes,
 # too slow for a routine regression check. Pass it explicitly as an
 # argument if you want to run it anyway.
@@ -131,10 +131,16 @@ setup_isolated_data_dir() {
 # pass below.
 run_scripts=""
 for s in $SCRIPTS; do
-  if [ ! -f "$s" ]; then
+  # Bare names live in demos/; an explicit path (demos/foo.txt, ./foo.txt) is used as given.
+  if [ -f "demos/$s" ]; then
+    script_path="$(pwd)/demos/$s"
+  elif [ -f "$s" ]; then
+    script_path="$(pwd)/$s"
+  else
     echo "SKIP (not found): $s"
     continue
   fi
+  s="$(basename "$s")"
   run_scripts="$run_scripts $s"
   log="$OUT_DIR/$s.log"
   result="$OUT_DIR/$s.result"
@@ -147,7 +153,7 @@ for s in $SCRIPTS; do
     # process's PID, not a wrapper shell's), race it against a watchdog
     # timer instead of a fixed sleep, then wait for whichever finishes
     # first. No `timeout` command needed, so this works on stock OSX.
-    env ${SDL_VIDEODRIVER:+SDL_VIDEODRIVER="$SDL_VIDEODRIVER"} ${SDL_AUDIODRIVER:+SDL_AUDIODRIVER="$SDL_AUDIODRIVER"} $EXTRA_ENV ASAN_OPTIONS="$ASAN_OPTIONS" "./$BIN" --demo-delay-ms=100 --data-dir="$script_data_dir" --demo-file="$(pwd)/$s" --fast-sleep $EXTRA_ARGS >"$log" 2>&1 &
+    env ${SDL_VIDEODRIVER:+SDL_VIDEODRIVER="$SDL_VIDEODRIVER"} ${SDL_AUDIODRIVER:+SDL_AUDIODRIVER="$SDL_AUDIODRIVER"} $EXTRA_ENV ASAN_OPTIONS="$ASAN_OPTIONS" "./$BIN" --demo-delay-ms=100 --data-dir="$script_data_dir" --demo-file="$script_path" --fast-sleep $EXTRA_ARGS >"$log" 2>&1 &
     pid=$!
 
     (

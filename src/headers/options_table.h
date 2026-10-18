@@ -11,7 +11,7 @@ X(STR, data_dir, NULL, "Directory holding the game data files (the DATA/, CUTS/,
 X(INT, decal_push, UW_OPT_UNSET, "Decal push-out magnitude (calibration).")
 X(INT, decal_push_sign, 1, "Decal push-out sign (calibration).")
 X(INT, demo_delay_ms, UW_OPT_UNSET, "Milliseconds between demo script lines (0 = one per pump).")
-X(STR, demo_file, NULL, "Play back this demo script (see the demo_*.txt files).")
+X(STR, demo_file, NULL, "Play back this demo script (see the demos/ directory).")
 X(BOOL, demo_keep_running, 0, "Keep the game running after the demo script ends.")
 X(BOOL, diag_sprlist, 0, "Diagnostics: sprlist.")
 X(BOOL, diag_text, 0, "Diagnostics: text.")
