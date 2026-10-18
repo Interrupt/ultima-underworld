@@ -718,6 +718,10 @@ void init_gameplay_session()
      object under the cursor, Q looks at it. */
   register_key_binding(0x46,0,0x1b,uw_toggle_mouselook);
   register_key_binding(0x66,0,0x1b,uw_toggle_mouselook);
+  register_key_binding(0x49,0,0x1b,uw_fullscreen_toggle_panel);
+  register_key_binding(0x69,0,0x1b,uw_fullscreen_toggle_panel);
+  register_key_binding(0x47,0,0x1b,uw_toggle_fullscreen_view);
+  register_key_binding(0x67,0,0x1b,uw_toggle_fullscreen_view);
   register_key_binding(0x45,0,0x1b,quick_use_object_at_cursor);
   register_key_binding(0x65,0,0x1b,quick_use_object_at_cursor);
   register_key_binding(0x51,0,0x1b,quick_look_at_cursor);

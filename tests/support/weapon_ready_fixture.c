@@ -17,6 +17,9 @@ char *g_selected_object;
 undefined4 DAT_00204844;
 unsigned char g_backpack_widget_to_slot_backing[0x17];
 int weapon_sprite_loads;
+int g_view_fullscreen;
+int uw_fullscreen_scene_height(void) { return 168; }
+void bitmap_blit_scaled_to_framebuffer(int x, int y, const char *pixels, int height, int width, double scale) { (void)x; (void)y; (void)pixels; (void)height; (void)width; (void)scale; }
 static int initial_pending_action = -1;
 static char initial_requested, initial_loaded;
 static short initial_frame;

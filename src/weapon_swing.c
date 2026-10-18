@@ -188,14 +188,31 @@ void weapon_swing_draw_tick()
        decode_gr_entry_bitmap needs the raw entry buffer just resolved above; without it... */
     uVar2 = (g_weapon_swing_current_frame == 0) ? 0 : decode_gr_entry_bitmap(g_weapon_swing_current_frame);
     if (uVar2 != 0) {
-      bitmap_blit_to_framebuffer((uint)(byte)(&g_weapon_swing_frame_x_offset)[sVar1] + (int)DAT_0023c1ec + 0x34,
-                   0x83 - (uint)(byte)(&g_weapon_swing_frame_y_offset)[sVar1],uVar2,*(undefined1 *)(g_weapon_swing_current_frame + 2),
-                   *(undefined1 *)(g_weapon_swing_current_frame + 1),0,0,1);
+      int weapon_x = (uint)(byte)(&g_weapon_swing_frame_x_offset)[sVar1] + (int)DAT_0023c1ec + 0x34;
+      int weapon_y = 0x83 - (uint)(byte)(&g_weapon_swing_frame_y_offset)[sVar1];
+      if (g_view_fullscreen) {
+        /* HACK: not original behaviour -- the fullscreen view enlarges the weapon by the same factor as the
+           3D scene (see UW_FULLSCREEN_PROJ_* in 3d.h), keeping its place across the view and its distance
+           from the bottom of the view (which is above the message scroll). */
+        const double scale = UW_FULLSCREEN_PROJ_SCALE / UW_VIEW_PROJ_SCALE;
+        bitmap_blit_scaled_to_framebuffer((int)(UW_FULLSCREEN_PROJ_CX + (weapon_x - UW_VIEW_PROJ_CX) * scale) + UW_FULLSCREEN_WEAPON_NUDGE_X,
+                     (int)(uw_fullscreen_scene_height() + (weapon_y - 0x83) * scale) + UW_FULLSCREEN_WEAPON_NUDGE_Y,uVar2,
+                     *(undefined1 *)(g_weapon_swing_current_frame + 2),
+                     *(undefined1 *)(g_weapon_swing_current_frame + 1),scale);
+      }
+      else {
+        bitmap_blit_to_framebuffer(weapon_x,weapon_y,uVar2,*(undefined1 *)(g_weapon_swing_current_frame + 2),
+                     *(undefined1 *)(g_weapon_swing_current_frame + 1),0,0,1);
+      }
     }
   }
-  draw_hud_icon_sprite(0x107f,0x3e,3);
-  draw_hud_icon_sprite(0x1080,0,0xd);
-  draw_hud_icon_sprite(0x1081,0xab,0xd);
+  /* HACK: not original behaviour -- the compass top and the two dragon spikes (always drawn wrongly in
+     this port) are left out of the fullscreen view. */
+  if (!g_view_fullscreen) {
+    draw_hud_icon_sprite(0x107f,0x3e,3);
+    draw_hud_icon_sprite(0x1080,0,0xd);
+    draw_hud_icon_sprite(0x1081,0xab,0xd);
+  }
   g_blit_transparent_mode = 0;
 }
 

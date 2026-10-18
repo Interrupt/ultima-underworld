@@ -522,6 +522,20 @@ void dbgui_end()
   if (g_selected < 0) g_selected = 0;
 }
 
+/* The screen rect the panel or console is drawn into right now, for the fullscreen view to keep it on screen. */
+int dbgui_overlay_rect(int *x0, int *y0, int *x1, int *y1)
+{
+  if (!g_visible) return 0;
+  if (g_console_open) {
+    *x0 = 0; *y0 = 0; *x1 = CON_W; *y1 = CON_H;
+    return 1;
+  }
+  if (g_field_count == 0) return 0;
+  *x0 = DBGUI_PANEL_X; *y0 = DBGUI_PANEL_Y;
+  *x1 = *x0 + DBGUI_PANEL_W; *y1 = *y0 + DBGUI_ROW_H * (g_field_count + 1) + 4;
+  return 1;
+}
+
 void dbgui_draw()
 {
   /* Called once per frame from app_main_loop, AFTER main_loop_hud_flush() -- i.e. after the 3D view

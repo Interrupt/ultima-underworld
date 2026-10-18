@@ -63,6 +63,7 @@ X(BOOL, player_no_bounce, 1, "Clear the player's downward velocity on landing (-
 X(INT, record_delay_ms, UW_OPT_UNSET, "DELAY line written into a recorded demo file.")
 X(STR, record_demofile, NULL, "Record input to this demo script file.")
 X(BOOL, touchscreen, 0, "Use the full-height touchscreen window layout.")
+X(BOOL, fullscreen_floating_log, 1, "In the fullscreen view (G), draw the message scroll as floating text with no background, and let the 3D view extend underneath it (--fullscreen-floating-log=0 keeps the parchment scroll below the view).")
 X(BOOL, near_tile_visibility, 1, "Widen the visibility fan as the camera looks further up or down, so the tiles beside the player stay visible at steep angles (--near-tile-visibility=0 restores the original fan only).")
 X(FLOAT, look_pitch_limit, 45.0f, "How far (degrees, 1-89) the view can look up and down, for both mouselook and the 1/3 keys.")
 X(FLOAT, mouselook_speed, 0.12f, "Mouselook speed in degrees of turn per mouse count (F toggles mouselook).")

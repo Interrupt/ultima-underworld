@@ -591,8 +591,7 @@ void uw_pump_events(void) {
                            into the object inspector; anywhere else (the
                            panel itself, or any other HUD chrome) is a
                            normal panel click as before. */
-                        if (landscape_x >= DAT_0023be5c && landscape_x < DAT_0023be5c + DAT_0023bd80 &&
-                            landscape_y >= (short)(DAT_0023be80 - DAT_0023be88) && landscape_y < DAT_0023be80) {
+                        if (uw_point_in_game_view(landscape_x, landscape_y)) {
                             g_mouse_x = landscape_x;
                             g_mouse_y = landscape_y;
                             dbgui_object_inspector_pick();
@@ -1242,6 +1241,9 @@ int GXEndDraw(void) {
             g_display_buf[y * GX_W + x] = g_framebuffer[(HW_H - 1 - x) * HW_W + y];
         }
     }
+    /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) presents its scene with
+       the HUD overlays on top, unless a modal screen is up. */
+    if (!g_present_state.modal_depth) uw_fullscreen_compose(g_display_buf);
     uw_composite_desktop_cursor(g_display_buf);
     SDL_UpdateTexture(g_tex, NULL, g_display_buf, GX_W * sizeof(unsigned short));
     SDL_RenderClear(g_ren);

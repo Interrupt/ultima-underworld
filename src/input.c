@@ -536,6 +536,14 @@ void poll_input_bindings(void *input_state_ptr)
       if (-1 < iVar3) {
         do {
           pcVar2 = (char *)DAT_00202890 + iVar3 * 0x12;
+          /* HACK: not original behaviour -- in the fullscreen view the 3D view's click region covers the
+             whole screen; leave the overlay panels to their own regions. */
+          if (g_view_fullscreen && (uint)iVar3 < 128 && g_click_region_handler[iVar3] == handle_game_view_click &&
+              uw_fullscreen_in_overlay(local_28,local_26)) {
+            iVar4 = (iVar3 + -1) * 0x10000 >> 0x10;
+            iVar3 = iVar4;
+            continue;
+          }
           if ((((*(short *)(pcVar2 + 6) <= local_28) && (local_26 <= *(short *)(pcVar2 + 8))) &&
               (local_28 <= *(short *)(pcVar2 + 2))) &&
              (((*(short *)(pcVar2 + 4) <= local_26 &&

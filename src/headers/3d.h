@@ -53,6 +53,29 @@ void transform_points_by_matrix(uw_geom_arena_t *arena, void *points);
 void near_clip_visible_tiles(void *tile_list, int clip_mode);
 void load_dungeon_texture_arenas();
 void configure_dungeon_viewport(int x, int y, int width, int height);
+extern int g_view_fullscreen;
+/* Screen-space projection of the dungeon view: x = cx + scale*eye_x/eye_z, y = cy - 0.9*scale*eye_y/eye_z.
+   The original is (140, 80, 100) for its framed view; the fullscreen view is centred on the whole
+   screen with the scale raised to keep the horizontal field of view. Lighting needs the same values
+   to turn a pixel back into its eye-space ray. */
+#define UW_VIEW_PROJ_CX 140.0
+#define UW_VIEW_PROJ_CY 80.0
+#define UW_VIEW_PROJ_SCALE 100.0
+#define UW_FULLSCREEN_PROJ_CX 160.0
+#define UW_FULLSCREEN_PROJ_SCALE 188.0
+/* The fullscreen view stops above a one pixel black border and the message scroll along the bottom of the
+   screen (fullscreen_view.c). */
+#define UW_FULLSCREEN_VIEW_HEIGHT 168   /* where the message scroll starts (the HUD overlays and weapon sit above it) */
+/* Height of the fullscreen 3D scene: VIEW_HEIGHT, or the whole screen with --fullscreen-floating-log. */
+int uw_fullscreen_scene_height(void);
+/* The projection centre's y: the middle of the scene. */
+double uw_fullscreen_proj_cy(void);
+/* Pixels the held weapon is moved in the fullscreen view (x: right is positive; y: down is positive). */
+#define UW_FULLSCREEN_WEAPON_NUDGE_X 5
+#define UW_FULLSCREEN_WEAPON_NUDGE_Y -1
+extern short g_view_x0;
+extern short g_view_y0;
+void set_dungeon_view_clip_rect(void);
 void init_dungeon_rendering();
 void render_dungeon_view_frame();
 void configure_texture_detail_functions();

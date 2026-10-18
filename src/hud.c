@@ -5264,6 +5264,53 @@ void uw_composite_desktop_cursor(void *present_buffer)
 
 
 
+/* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) shows the weapon charge gem, on black,
+   in the top left corner of the screen, and the three selected runes straight over the scene to its right
+   (`top` is the first row of both). Drawn with the real sprite decoder onto the presentation copy, like the
+   cursor. */
+void uw_draw_fullscreen_hud_sprites(void *present_buffer, int top_y)
+{
+  enum { RUNE_SIZE = 16, GEM_X = 2, RUNE_GAP = 5, RUNE_NUDGE_Y = -1 };
+  unsigned short *display = (unsigned short *)present_buffer;
+  void *game_buffer = g_uw_framebuffer;
+  int transparent = g_blit_transparent_mode;
+  undefined2 left = DAT_000a85c4, top = DAT_000a85c8;
+  undefined2 right = DAT_000842a4, clip_bottom = DAT_000842a8;
+  int dirty_top = DAT_00088954, dirty_bottom = DAT_0008895c;
+  int dirty_left = DAT_00088950, dirty_right = DAT_00088958;
+  int rune_x = GEM_X;
+
+  if (!display || !DAT_00086df8) return;
+  g_uw_framebuffer = present_buffer;
+  g_blit_transparent_mode = 1;
+  set_viewport_clip_rect(0,0,319,199);
+  /* the charge gem: the frame update_hud_status_icon_frame would show for the current charge state */
+  if ((int)(byte)DAT_0023c11b < 0xe) {
+    int frame_id = ((byte)DAT_0023c11b == 9 ? (int)DAT_00087258 : (int)(byte)DAT_0023c11b) + 0x2098;
+    unsigned short frame = (unsigned short)resolve_sprite_id_to_frame(frame_id);
+    char *sprite = (char *)g_grtile_registry[frame];
+    if (sprite) {
+      int gem_w = (byte)sprite[1], gem_h = (byte)sprite[2];
+      for (int y = top_y; y < top_y + gem_h; y++)   /* on a black backdrop */
+        for (int x = GEM_X; x < GEM_X + gem_w && x < 320; x++) display[y * 320 + x] = 0;
+      draw_sprite_by_id(frame_id, GEM_X, top_y, gem_h, gem_w);
+      rune_x = GEM_X + gem_w + RUNE_GAP;
+    }
+  }
+  /* the three selected runes, straight over the scene, to the right of the gem */
+  for (int i = 0; i < 3; i++) {
+    byte rune = *(byte *)(DAT_00086df8 + 0x47 + i);
+    if (rune < 0x18)
+      draw_sprite_by_id(rune + 0xe8, rune_x + i * RUNE_SIZE, top_y + RUNE_NUDGE_Y, RUNE_SIZE, RUNE_SIZE);
+  }
+  g_uw_framebuffer = game_buffer;
+  g_blit_transparent_mode = transparent;
+  set_viewport_clip_rect(left,top,right,clip_bottom);
+  dirty_rect_set(dirty_top,dirty_bottom,dirty_left,dirty_right);
+}
+
+
+
 // was FUN_000570b4
 int cursor_show_idle_tick()
 
@@ -5778,6 +5825,13 @@ void update_hotspot_cursor_icon()
     }
     return;
   }
+  /* HACK: not original behaviour -- over an overlaid panel in the fullscreen view the 3D view's edge
+     hotspots (turn/walk arrows) do not apply. */
+  if (DAT_00204858 < '\x01' && g_view_fullscreen && uw_fullscreen_in_overlay(g_mouse_x,g_mouse_y)) {
+    DAT_00086970 = -1;
+    if (DAT_00204788 != 0x106c) set_cursor_sprite_id(0x106c);
+    return;
+  }
   if ((DAT_00204858 < '\x01') &&
      ((((DAT_00086970 == -1 || (g_mouse_x < DAT_00086970)) || (DAT_002047a8 < g_mouse_x)) ||
       ((DAT_0020478c < g_mouse_y || (g_mouse_y < DAT_002047ac)))))) {
@@ -5944,6 +5998,13 @@ uint poll_mouse_button_flags()
 void toggle_hud_panel_page(int page)
 {
   if (g_active_hud_panel == '\x04') return;
+  /* HACK: not original behaviour -- in the fullscreen view the keys bring up a hidden panel on that
+     page rather than toggling it. */
+  if (g_view_fullscreen && !uw_fullscreen_panel_visible()) {
+    uw_fullscreen_show_panel();
+    set_hud_status_value(6, page);
+    return;
+  }
   set_hud_status_value(6, g_active_hud_panel == (char)page ? 0 : page);
 }
 

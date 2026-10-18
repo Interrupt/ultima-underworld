@@ -692,12 +692,17 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
   }
   /* HACK: restore radial eye-to-surface lighting in both modes instead of
      shading whole planes by camera depth. render_visible_tile_list projects
-     x = 140 + 100*eye_x/eye_z, y = 80 - 90*eye_y/eye_z. Inverting that ray
+     x = 140 + 100*eye_x/eye_z, y = 80 - 90*eye_y/eye_z (the fullscreen view: see below). Inverting that ray
      gives distance = depth * sqrt(1 + ray_x^2 + ray_y^2). Camera rotations
      preserve this distance. Include the left clip offset and advance x even
      for transparent pixels; texture perspective interpolation stays intact. */
   int light_x = iVar6 + iVar9;
-  double light_y = (*(int *)(left_edge + 8) - 80) / 90.0;
+  /* HACK: not original behaviour -- the fullscreen view projects about a different centre and scale
+     (see UW_FULLSCREEN_PROJ_* in 3d.h), so the ray must be inverted with the same values. */
+  const double proj_cx = g_view_fullscreen ? UW_FULLSCREEN_PROJ_CX : UW_VIEW_PROJ_CX;
+  const double proj_cy = g_view_fullscreen ? uw_fullscreen_proj_cy() : UW_VIEW_PROJ_CY;
+  const double proj_scale = g_view_fullscreen ? UW_FULLSCREEN_PROJ_SCALE : UW_VIEW_PROJ_SCALE;
+  double light_y = (*(int *)(left_edge + 8) - proj_cy) / (proj_scale * 0.9);
   if (0 < iVar11) {
     iVar6 = *(int *)(left_edge + 8) * row + iVar6;
     puVar13 = (undefined1 *)(iVar6 + iVar12);
@@ -736,7 +741,7 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
         bVar1 = *(byte *)(iVar12 + texture_pixels);
       }
       if (bVar1 != 0) {
-        double ray_x = (light_x - 140) / 100.0;
+        double ray_x = (light_x - proj_cx) / proj_scale;
         /* DOS's alternating +0.25/+0.75 thresholds, anchored to the screen.
            ARM applies them at RGB565 quantization rather than palette lookup. */
         int dither_offset = dither_enabled ?
@@ -1413,11 +1418,41 @@ void load_dungeon_texture_arenas()
 
 
 
+/* HACK: not original behaviour -- fullscreen 3D view (toggled with G, see fullscreen_view.c). The
+   original hard-codes the view's top-left at (0x34,0x13) throughout; these hold it so the view can
+   cover the whole 320x200 screen instead. */
+int g_view_fullscreen = 0;
+short g_view_x0 = 0x34;
+short g_view_y0 = 0x13;
+
+int uw_fullscreen_scene_height(void)
+{
+  return g_opts.fullscreen_floating_log ? 200 : UW_FULLSCREEN_VIEW_HEIGHT;
+}
+
+double uw_fullscreen_proj_cy(void)
+{
+  return uw_fullscreen_scene_height() / 2.0;
+}
+
+/* Clip rect of the dungeon view (the original's set_viewport_clip_rect(0x34,0x13,w+0x33,h+0x12)). */
+void set_dungeon_view_clip_rect(void)
+{
+  set_viewport_clip_rect(g_view_x0,g_view_y0,g_view_x0 + DAT_0023b020 + -1,g_view_y0 + DAT_0023aed4 + -1);
+}
+
 // was FUN_0005b758 -- configures the dungeon-view viewport region
 // (x=param_1,y=param_2,width=param_3,height=param_4): sets up the view-Y bound, tracked hotspot
 // rect, and interact zones for it...
 void configure_dungeon_viewport(int x, int y, int width, int height)
 {
+  /* HACK: not original behaviour -- the fullscreen view keeps its own rect whenever the game
+     re-enters the dungeon view. */
+  if (g_view_fullscreen) {
+    x = 0; y = 1; width = 320; height = uw_fullscreen_scene_height();
+  }
+  g_view_x0 = (short)x;
+  g_view_y0 = (short)(y - 1);
   g_dungeon_view_active = 0;
   DAT_0023b020 = (undefined2)width;
   DAT_0023aed4 = (undefined2)height;
@@ -1495,7 +1530,7 @@ void render_dungeon_view_frame()
   *DAT_00110fc0 = 0;
   DAT_00110fc0 = DAT_00110fc0 + 1;
   set_viewport_clip_rect(0,0,DAT_0023b020 + -1,DAT_0023aed4 + -1);
-  set_viewport_clip_rect(0x34,0x13,DAT_0023b020 + 0x33,DAT_0023aed4 + 0x12);
+  set_dungeon_view_clip_rect();
   if (DAT_0023b830 != 0 && DAT_0023cca0 != 0) {
     /* HACK: not original behaviour -- the ARM code only zeroes the id buffer once at startup
        (game.c) and its viewport fill in render_dungeon_view clears colour only. A pick pass only writes the id buffer where something is drawn, so anything the pass leaves
@@ -1503,7 +1538,7 @@ void render_dungeon_view_frame()
        clicks there picking whatever used to be drawn). Clear the viewport to "nothing" first. */
     int row;
     for (row = 0; row < DAT_0023aed4; row++)
-      memset(DAT_0023cca0 + (0x13 + row) * 0x140 + 0x34, 0, (size_t)DAT_0023b020);
+      memset(DAT_0023cca0 + (g_view_y0 + row) * 0x140 + g_view_x0, 0, (size_t)DAT_0023b020);
   }
   render_dungeon_view();
   set_viewport_clip_rect(0,0,0x13f,199);
