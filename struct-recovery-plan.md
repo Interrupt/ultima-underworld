@@ -201,7 +201,7 @@ tile record; do the same steps for each new type.
      wall-texture sites.
 7. **Test after every batch, not just at the end**: `./build.sh` clean,
    then `./run-regressions.sh` (all 6 fast scripts every batch;
-   `demo_automap.txt` explicitly before calling a tile-record type
+   `demos/demo_automap.txt` explicitly before calling a tile-record type
    "done", since it's the one script that walks the whole map). For
    anything render-visible, spot check with the existing debug-dump
    env vars (`UW_DEBUG_DUMP_TMAP`, `UW_DEBUG_MODEL`, `UW_DEBUG_DOOR`,

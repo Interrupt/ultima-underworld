@@ -192,7 +192,7 @@ static undefined DAT_000868c0_backing[256] = {
 #define DAT_000868c0 DAT_000868c0_backing[0]
 /* was `int` -- truncated pointer to a 64-bit address on assignment in spawn_creature_death_loot
    (&DAT_001007d0 + index*0x30), causing spawn_creature_treasure_drop to dereference a garbage
-   address (crash in demo_critter_orbit_cardinal.txt, EXC_BAD_ACCESS at uw.c:70173). */
+   address (crash in demos/demo_critter_orbit_cardinal.txt, EXC_BAD_ACCESS at uw.c:70173). */
 // was DAT_0024cfc4
 static char *g_despawn_creature_record;
 int mobile_object_tick()

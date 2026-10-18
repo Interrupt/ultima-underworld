@@ -1840,7 +1840,7 @@ void babl_register_builtin(char *name, void *handler)
 void babl_set_variable(char *name, short *value_array, short count)
 {
   undefined1 uVar1;
-  intptr_t iVar2; // was `int` -- re-truncated DAT_000bbf70 (now intptr_t) right back down, same as init_babl_variable_defaults's own fix; this is the crash in bug-critter-talk.txt's own successful-conversation-load path (via sync_conv_vars_from_npc's npc_whoami lookup)
+  intptr_t iVar2; // was `int` -- re-truncated DAT_000bbf70 (now intptr_t) right back down, same as init_babl_variable_defaults's own fix; this is the crash in demos/bug-critter-talk.txt's own successful-conversation-load path (via sync_conv_vars_from_npc's npc_whoami lookup)
   uint uVar3;
   int iVar4;
   uint uVar5;
@@ -5010,7 +5010,7 @@ void babl_op_string_eq()
   intptr_t iVar5;
 
   /* Was 2 dropped register-forwarding args -- same class as babl_builtin_compare's own comment
-     (uw.c ~10977), now confirmed reachable live (bug-critter-talk.txt) since this whole babl-VM
+     (uw.c ~10977), now confirmed reachable live (demos/bug-critter-talk.txt) since this whole babl-VM
      cluster started actually running this session. */
   iVar2 = (intptr_t)get_message_string((int)*(short *)(DAT_000bbf0c + DAT_000bbf78 * 2));
   iVar3 = (intptr_t)babl_expand_string_refs((char *)iVar2);
@@ -5045,7 +5045,7 @@ void babl_op_say()
   intptr_t iVar4; // was `int` -- re-truncated DAT_000bbf70 (now intptr_t) right back down, same as init_babl_variable_defaults's own fix
 
   /* Was a dropped register-forwarding arg -- same class as babl_builtin_compare's own comment (uw.c
-     ~10977); this is the crash in bug-critter-talk.txt one step past the DAT_000bbf70-width fix
+     ~10977); this is the crash in demos/bug-critter-talk.txt one step past the DAT_000bbf70-width fix
      below... */
   iVar1 = (intptr_t)get_message_string((int)*(short *)(DAT_000bbf0c + DAT_000bbf78 * 2));
   iVar2 = (intptr_t)babl_expand_string_refs((char *)iVar1);

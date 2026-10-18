@@ -1,7 +1,7 @@
 # Known issues
 
 ## Open
-- [ ] `demo_automap.txt` (explicitly excluded from the default regression
+- [ ] `demos/demo_automap.txt` (explicitly excluded from the default regression
       list already, see run-regressions.sh's own comment) crashes deep in
       NPC tick logic: `settle_mobile_to_immobile` -> stack overflow-looking
       recursion (same symbol appears twice in the ASan backtrace, though
@@ -201,7 +201,7 @@
       27760) silently ran a disabled/-1 mode's table dispatch as if it
       were a real one, indexing `DAT_00085668_real_table` (384 bytes)
       with a wild offset -- an ASan global-buffer-overflow, live-crashing
-      `demo_automap_note_test.txt` the first time this session's babl.c
+      `demos/demo_automap_note_test.txt` the first time this session's babl.c
       extraction shifted link order enough to land the wild read in a
       poisoned redzone (same "pre-existing bug newly exposed by
       reordering" class as the entry above). Two stacked bugs, both real:

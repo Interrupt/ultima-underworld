@@ -46,7 +46,7 @@
 
 # Title screen -> character generation -> click through sex/handedness/
 # class/skill/portrait/difficulty pages with defaults (matches
-# demo_dungeon_room.txt's own chargen walk-through).
+# demos/demo_dungeon_room.txt's own chargen walk-through).
 ENTER
 ENTER
 ENTER

@@ -7,7 +7,7 @@
 # entry, click save slot I, then type a name -- which is exactly where
 # FUN_0006c264's truncated buffer pointer + FUN_0007ffa8's dropped 5th
 # argument used to segfault (fixed in uw.c). Replay with
-# UW_DEMO_FILE=bug-save-game-crash.txt.
+# UW_DEMO_FILE=demos/bug-save-game-crash.txt.
 DELAY 0
 SDLMOVE 312 155
 WAIT 136
