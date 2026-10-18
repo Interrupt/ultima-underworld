@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # Pushes to main only: other branches are built by pull_request (a branch with an open PR would
+  # otherwise run twice). Version tags are handled by release.yml, which reuses this workflow.
   push:
+    branches: [main]
   pull_request:
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}

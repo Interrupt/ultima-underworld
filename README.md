@@ -66,6 +66,14 @@ Windows `.exe` files compile and link but are untested. Linux and cross-arch mac
 builds need the host's X11/Pulse libraries or Apple SDK frameworks, so build those natively on
 the target OS (`zig build` there) rather than cross-compiling from another OS.
 
+### Releases
+
+Pushing a version tag (`git tag v1.0.0 && git push origin v1.0.0`) runs `.github/workflows/release.yml`.
+It runs the full CI first, then publishes a GitHub Release with one zip per platform
+(`uw1-pocketpc-decomp-<tag>-<platform>.zip` for Linux, Windows and macOS arm64), each holding
+`uw_dbg` (or `uw_dbg.exe`) and this README. The game data is not included; point the executable at
+your own copy with `--data-dir`.
+
 The `-Wno-*` flags in `CMakeLists.txt` are required, not optional: this is raw decompiled C
 where 32-bit-original-binary idioms (K&R-style unspecified-argument
 functions, implicit int/pointer conversions) are used throughout on
