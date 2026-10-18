@@ -415,12 +415,13 @@ void conv_fixture_begin(void)
     TEST_ASSERT_EQUAL_INT(0, symlink(UW_TEST_DATA_DIR "/DATA", path));
     snprintf(path, sizeof path, "%s/SAVE0", workspace);
     TEST_ASSERT_EQUAL_INT(0, mkdir(path, 0755));
-    options_set("data-dir", workspace);
+    TEST_ASSERT_EQUAL_INT(0, options_set("data-dir", workspace));
     open_strings();
 }
 
 void conv_fixture_end(void)
 {
+    TEST_ASSERT_EQUAL_INT(0, options_unset("data-dir"));
     uw_file_close(DAT_0024bf98);
     free(DAT_0024cfa8);
     char command[200];

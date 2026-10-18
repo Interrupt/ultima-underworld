@@ -375,8 +375,8 @@ LAB_00058db4:
       DAT_00086998 = -1;
     }
     else {
-      DAT_00086999 = (undefined1)((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU);
-      DAT_0008699a = (undefined1)(((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU) >> 8);
+      DAT_00086999 = (undefined1)((uint)((uw_object_hdr_t *)psVar3)->object_id);
+      DAT_0008699a = (undefined1)(((uint)((uw_object_hdr_t *)psVar3)->object_id) >> 8);
     }
   }
 }

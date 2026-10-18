@@ -91,7 +91,7 @@ void scheduler_finish_entry(int entry_slot)
   ushort uVar1;
   ushort uVar2;
   byte bVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   uint uVar5;
   undefined4 uVar6;
   int iVar7;
@@ -101,14 +101,14 @@ void scheduler_finish_entry(int entry_slot)
   bool bVar11;
   
   iVar9 = (short)entry_slot * 6;
-  puVar4 = (ushort *)resolve_object_link(&DAT_00250778 + iVar9);
+  puVar4 = resolve_object_link(&DAT_00250778 + iVar9);
   /* HACK: resolve_object_link legitimately returns NULL (every other resolve_object_link call site
      in this file guards for it -- e.g. scheduler_add_entry's own identical fix a little above this
      function). */
-  if (puVar4 == (ushort *)0x0) {
+  if (puVar4 == NULL) {
     return;
   }
-  uVar5 = ((uw_object_hdr_t *)puVar4)->object_id & 0xf;
+  uVar5 = puVar4->object_id & 0xf;
   uVar1 = g_animation_type_props[uVar5].flags;
   bVar11 = (uVar1 & 0x80) == 0;
   if (!bVar11) {
@@ -121,10 +121,10 @@ void scheduler_finish_entry(int entry_slot)
     scheduler_step_entry(entry_slot, 1);
   }
   if (uVar5 == 0xf) {
-    uVar10 = (byte)((byte)((uw_object_hdr_t *)puVar4)->link_word >> 4) & 3;
-    uVar5 = ((uw_object_hdr_t *)puVar4)->owner & 0xf;
-    uVar8 = ((uw_object_hdr_t *)puVar4)->zpos;
-    if (((uw_object_hdr_t *)puVar4)->enchanted == 0) {
+    uVar10 = (puVar4->owner >> 4) & 3;
+    uVar5 = puVar4->owner & 0xf;
+    uVar8 = puVar4->zpos;
+    if (puVar4->enchanted == 0) {
       uVar5 = uVar5 | 8;
     }
     else {
@@ -138,32 +138,29 @@ void scheduler_finish_entry(int entry_slot)
       }
       uVar6 = encode_object_slot_index(puVar4);
       iVar7 = check_object_placement_clearance(uVar5 + (uVar10 + 0x14) * 0x10,uVar6,
-                           (uint)(((uw_object_hdr_t *)puVar4)->xpos) + (short)DAT_0010144c * 8,
-                           (((uw_object_hdr_t *)puVar4)->ypos) + (short)DAT_00101454 * 8,
+                           (uint)(puVar4->xpos) + (short)DAT_0010144c * 8,
+                           (puVar4->ypos) + (short)DAT_00101454 * 8,
                            uVar8,1,8);
       if (iVar7 == 0) {
-        uVar1 = ((uw_object_hdr_t *)puVar4)->link_word;
+        uVar1 = puVar4->link_word;
         bVar3 = (byte)uVar1;
-        ((uw_object_hdr_t *)puVar4)->link_word_low = (bVar3 ^ (byte)uVar5) & 0x3f ^ bVar3;
-        ((uw_object_hdr_t *)puVar4)->link_word_high = (byte)(uVar1 >> 8);
-        adjust_door_close_animation_delay(puVar4);
+        puVar4->owner = uVar5 & 0x3f;
+        adjust_door_close_animation_delay((ushort *)puVar4);
         return;
       }
       play_positional_sound_effect(0xc,
-                                   (uint)(((uw_object_hdr_t *)puVar4)->xpos) + (short)DAT_0010144c * 8,
-                                   (((uw_object_hdr_t *)puVar4)->ypos) + (short)DAT_00101454 * 8,
+                                   (uint)(puVar4->xpos) + (short)DAT_0010144c * 8,
+                                   (puVar4->ypos) + (short)DAT_00101454 * 8,
                                    0);
     }
-    uVar2 = ((uw_object_hdr_t *)puVar4)->position_word;
+    uVar2 = puVar4->position_word;
     bVar3 = (byte)uVar2;
-    ((uw_object_hdr_t *)puVar4)->position_word_low = (bVar3 ^ (byte)uVar8) & 0x7f ^ bVar3;
-    ((uw_object_hdr_t *)puVar4)->position_word_high = (byte)(uVar2 >> 8);
-    uVar10 = ((uw_object_hdr_t *)puVar4)->type_flags & 0xff4f | (uVar10 | 0x14) << 4;
+    puVar4->zpos = uVar8 & 0x7f;
+    uVar10 = puVar4->type_flags & 0xff4f | (uVar10 | 0x14) << 4;
     uVar5 = (uVar10 ^ uVar5) & 0xf ^ uVar10;
-    ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)uVar5;
-    ((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(uVar10 >> 8);
-    uVar10 = ((uw_object_hdr_t *)puVar4)->link << 6;
-    ((uw_object_hdr_t *)puVar4)->link_word = (ushort)uVar10;
+    puVar4->object_id = uVar5 & 0x1ff;
+    uVar10 = puVar4->link << 6;
+    puVar4->owner = 0;
     uVar8 = (ushort)uVar5;
     if ((uVar5 & 0x1000) == 0) {
       uVar8 = ((uVar8 & 0xe00) - 0xe01 ^ uVar8) & 0x1e00 ^ uVar8;
@@ -171,7 +168,8 @@ void scheduler_finish_entry(int entry_slot)
     else {
       uVar8 = uVar8 & 0xefff;
     }
-    ((uw_object_hdr_t *)puVar4)->type_flags = (ushort)uVar8;
+    puVar4->flags_res = (uVar8 >> 9) & 7;
+    puVar4->enchanted = (uVar8 >> 12) & 1;
   }
   if ((uVar1 & 0x20) != 0) {
     scheduler_despawn_entry(entry_slot);
@@ -280,27 +278,27 @@ void scheduler_step_entry(int entry_slot, int elapsed)
   int iVar1;
   byte bVar2;
   ushort uVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   uint uVar5;
   undefined4 uVar6;
   short extraout_r1;
   ushort uVar7;
   ushort uVar8;
   
-  puVar4 = (ushort *)resolve_object_link(&DAT_00250778 + (short)entry_slot * 6);
+  puVar4 = resolve_object_link(&DAT_00250778 + (short)entry_slot * 6);
   /* HACK: same unguarded-NULL class as scheduler_finish_entry's identical fix --
      see its own comment. A stale queue entry resolves to NULL here too. */
-  if (puVar4 == (ushort *)0x0) {
+  if (puVar4 == NULL) {
     return;
   }
-  if ((((uw_object_hdr_t *)puVar4)->object_id & 0x1f0) == 0x1c0) {
-    iVar1 = (((uw_object_hdr_t *)puVar4)->object_id & 0xf) * 4;
+  if ((puVar4->object_id & 0x1f0) == 0x1c0) {
+    iVar1 = (puVar4->object_id & 0xf) * 4;
     uVar3 = 1;
     for (uVar7 = (ushort)g_animation_type_props[(iVar1) / 4].flags; uVar7 != 0; uVar7 = uVar7 & uVar8) {
       uVar8 = uVar3 & uVar7;
       if (uVar8 == 1) {
-        uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;
-        if ((int)(uVar8 & 0x3f) <
+        uVar8 = puVar4->link_word;
+        if ((int)puVar4->owner <
             (int)((int)(char) g_animation_type_props[(iVar1) / 4].start_frame + (uint)(byte) g_animation_type_props[(iVar1) / 4].frame_count + -1)) {
           uVar8 = (uVar8 + 1 ^ uVar8) & 0x3f ^ uVar8;
         }
@@ -308,12 +306,13 @@ void scheduler_step_entry(int entry_slot, int elapsed)
           uVar8 = ((short)(char) g_animation_type_props[(iVar1) / 4].start_frame ^ uVar8) & 0x3f ^ uVar8;
         }
 LAB_00081254:
-        ((uw_object_hdr_t *)puVar4)->link_word = (ushort)uVar8;
+        puVar4->owner = uVar8 & 0x3f;
+        puVar4->link = (uVar8 >> 6) & 0x3ff;
       }
       else {
         if (uVar8 == 2) {
           uVar6 = ce_rand();
-          uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;
+          uVar8 = puVar4->link_word;
           /* Dropped-remainder bug, same class as scheduler_finish_entry's own fix above in this
              file -- gets it by name off ordint_divmod's own divmod_result now (which guards the
              zero-divisor case itself, so no separate guard needed here). */
@@ -323,21 +322,20 @@ LAB_00081254:
           goto LAB_00081254;
         }
         if (uVar8 == 4) {
-          int _swing_dirbit_in = ((uw_object_hdr_t *)puVar4)->enchanted != 0;
-          int _swing_openbits_in = ((uw_object_hdr_t *)puVar4)->flags_res;
-          if (((uw_object_hdr_t *)puVar4)->enchanted != 0) {
+          int _swing_dirbit_in = puVar4->enchanted != 0;
+          int _swing_openbits_in = puVar4->flags_res;
+          if (puVar4->enchanted != 0) {
             elapsed = (short)elapsed * -0x10000 >> 0x10;
           }
-          if ((((uw_object_hdr_t *)puVar4)->owner & 0x7) == 6) {
-            uVar8 = ((uw_object_hdr_t *)puVar4)->position_word;
+          if ((puVar4->owner & 0x7) == 6) {
+            uVar8 = puVar4->position_word;
             bVar2 = (byte)uVar8;
-            ((uw_object_hdr_t *)puVar4)->position_word_low = ((char)elapsed * '\x06' + bVar2 ^ bVar2) & 0x7f ^ bVar2;
-            ((uw_object_hdr_t *)puVar4)->position_word_high = (byte)(char)(uVar8 >> 8);
+            puVar4->zpos = ((char)elapsed * '\x06' + bVar2) & 0x7f;
           }
-          uVar5 = (uint)((uw_object_hdr_t *)puVar4)->type_flags;
+          uVar5 = (uint)puVar4->type_flags;
           uVar5 = ((uVar5 & 0xe00) + (uVar5 & 0xf000) + elapsed * 0x200 ^ uVar5) & 0x1e00 ^ uVar5;
-          ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar4)->type_flags;
-          ((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(char)(uVar5 >> 8);
+          puVar4->flags_res = (uVar5 >> 9) & 7;
+          puVar4->enchanted = (uVar5 >> 12) & 1;
           if ((uVar5 & 0x1000) != 0) {
             scheduler_advance_effect(entry_slot,elapsed);
           }

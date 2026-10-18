@@ -19,7 +19,12 @@ ACCESSORS = {'alloc_object_slot', 'resolve_object_link', 'get_object_record_by_s
              'reallocate_object_to_arena', 'settle_dropped_object',
              'get_equipped_item_at_slot', 'find_equipped_item_by_category',
              'discard_misplaced_object'}
-OBJECT_GLOBALS = {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr'}
+# refresh_npc_target_delta is the sole writer of DAT_00101400 in src: it
+# assigns get_object_record_by_slot_index(npc_gtarg). This proves a common
+# header, without proving an NPC/projectile extension for the target.
+# DAT_00101904 is assigned only by nearby-candidate accessors whose non-null
+# results come from resolve_object_link; this proves the common header only.
+OBJECT_GLOBALS = {'g_player_object', 'DAT_0010190c', 'g_scratch_object_ptr', 'DAT_00101400', 'DAT_00101904'}
 WRAPPERS = {'ImplicitCastExpr', 'CStyleCastExpr', 'ParenExpr', 'ConstantExpr'}
 
 
@@ -111,6 +116,22 @@ def inspect(entry):
             if '*' in typ and '**' not in typ and any(t in typ for t in (
                     'uw_object_hdr_t', 'uw_mobile_object_t', 'uw_projectile_object_t')):
                 seeds[ident] = 'typed UW1 object pointer declaration'
+        # A typed alias initializer carries the same incoming-pointer evidence
+        # as a cast directly followed by a struct member access. Seed only
+        # parameters here; locals with unproven buffer origins still need review.
+        # Later assignment checks also reject a parameter reused for a buffer.
+        for n in nodes:
+            if n.get('kind') != 'CStyleCastExpr' or not n.get('inner'):
+                continue
+            typ = n.get('type', {}).get('qualType', '')
+            if '*' in typ and '**' not in typ and any(t in typ for t in (
+                    'uw_object_hdr_t', 'uw_mobile_object_t', 'uw_projectile_object_t')):
+                ref = decl(n['inner'][-1])
+                if (ref and ref['id'] in declarations
+                        and declarations[ref['id']]['kind'] == 'ParmVarDecl'
+                        and pointer(declarations[ref['id']])
+                        and '**' not in declarations[ref['id']]['type']['qualType']):
+                    seeds.setdefault(ref['id'], 'incoming UW1 object pointer cast')
         for n in nodes:
             if n.get('kind') == 'VarDecl' and n.get('init') and pointer(n):
                 assignments.setdefault(n['id'], []).append(n['inner'][-1])

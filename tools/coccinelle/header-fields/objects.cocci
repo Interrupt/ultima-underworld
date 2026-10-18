@@ -12266,550 +12266,6 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)pWalk + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)pWalk)->object_id
-|
-- ((ushort *)pWalk)[0] & 0x1ff
-+ ((uw_object_hdr_t *)pWalk)->object_id
-|
-- *(ushort *)pWalk & 0x1ff
-+ ((uw_object_hdr_t *)pWalk)->object_id
-|
-- pWalk[0] & 0x1ff
-+ ((uw_object_hdr_t *)pWalk)->object_id
-|
-- *pWalk & 0x1ff
-+ ((uw_object_hdr_t *)pWalk)->object_id
-)
-...>
-}
-
-@field_26_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*(ushort *)((char *)pWalk + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (((ushort *)pWalk)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (((ushort *)pWalk)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*(ushort *)pWalk >> 9) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*(ushort *)pWalk & 0xe00) >> 9
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (pWalk[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (pWalk[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*pWalk >> 9) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*pWalk & 0xe00) >> 9
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*(byte *)((char *)pWalk + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-|
-- (*(byte *)((char *)pWalk + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)pWalk)->flags_res
-)
-...>
-}
-
-@field_26_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*(ushort *)((char *)pWalk + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (((ushort *)pWalk)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (((ushort *)pWalk)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*(ushort *)pWalk >> 12) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*(ushort *)pWalk & 0x1000) >> 12
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (pWalk[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (pWalk[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*pWalk >> 12) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*pWalk & 0x1000) >> 12
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*(byte *)((char *)pWalk + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-|
-- (*(byte *)((char *)pWalk + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)pWalk)->enchanted
-)
-...>
-}
-
-@field_26_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*(ushort *)((char *)pWalk + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (((ushort *)pWalk)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (((ushort *)pWalk)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*(ushort *)pWalk >> 13) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*(ushort *)pWalk & 0x2000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (pWalk[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (pWalk[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*pWalk >> 13) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*pWalk & 0x2000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*(byte *)((char *)pWalk + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->doordir
-|
-- (*(byte *)((char *)pWalk + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)pWalk)->doordir
-)
-...>
-}
-
-@field_26_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*(ushort *)((char *)pWalk + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (((ushort *)pWalk)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (((ushort *)pWalk)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*(ushort *)pWalk >> 14) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*(ushort *)pWalk & 0x4000) >> 14
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (pWalk[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (pWalk[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*pWalk >> 14) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*pWalk & 0x4000) >> 14
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*(byte *)((char *)pWalk + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->invisible
-|
-- (*(byte *)((char *)pWalk + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)pWalk)->invisible
-)
-...>
-}
-
-@field_26_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*(ushort *)((char *)pWalk + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- *(ushort *)((char *)pWalk + 0x0) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (((ushort *)pWalk)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (((ushort *)pWalk)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- ((ushort *)pWalk)[0] >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*(ushort *)pWalk >> 15) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*(ushort *)pWalk & 0x8000) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- *(ushort *)pWalk >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (pWalk[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (pWalk[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- pWalk[0] >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*pWalk >> 15) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*pWalk & 0x8000) >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- *pWalk >> 15
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*(byte *)((char *)pWalk + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- (*(byte *)((char *)pWalk + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-|
-- *(byte *)((char *)pWalk + 0x1) >> 7
-+ ((uw_object_hdr_t *)pWalk)->is_quant
-)
-...>
-}
-
-@field_26_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)pWalk)->zpos
-|
-- ((ushort *)pWalk)[1] & 0x7f
-+ ((uw_object_hdr_t *)pWalk)->zpos
-|
-- pWalk[1] & 0x7f
-+ ((uw_object_hdr_t *)pWalk)->zpos
-|
-- *(byte *)((char *)pWalk + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)pWalk)->zpos
-|
-- (byte)pWalk[1] & 0x7f
-+ ((uw_object_hdr_t *)pWalk)->zpos
-)
-...>
-}
-
-@field_26_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->heading
-|
-- (*(ushort *)((char *)pWalk + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)pWalk)->heading
-|
-- (((ushort *)pWalk)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->heading
-|
-- (((ushort *)pWalk)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)pWalk)->heading
-|
-- (pWalk[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->heading
-|
-- (pWalk[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)pWalk)->heading
-)
-...>
-}
-
-@field_26_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (*(ushort *)((char *)pWalk + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (((ushort *)pWalk)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (((ushort *)pWalk)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (pWalk[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (pWalk[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (*(byte *)((char *)pWalk + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->ypos
-|
-- (*(byte *)((char *)pWalk + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)pWalk)->ypos
-)
-...>
-}
-
-@field_26_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (*(ushort *)((char *)pWalk + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- *(ushort *)((char *)pWalk + 0x2) >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (((ushort *)pWalk)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (((ushort *)pWalk)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- ((ushort *)pWalk)[1] >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (pWalk[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (pWalk[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- pWalk[1] >> 13
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (*(byte *)((char *)pWalk + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- (*(byte *)((char *)pWalk + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)pWalk)->xpos
-|
-- *(byte *)((char *)pWalk + 0x3) >> 5
-+ ((uw_object_hdr_t *)pWalk)->xpos
-)
-...>
-}
-
-@field_26_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->quality
-|
-- ((ushort *)pWalk)[2] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->quality
-|
-- pWalk[2] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->quality
-|
-- *(byte *)((char *)pWalk + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->quality
-|
-- (byte)pWalk[2] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->quality
-)
-...>
-}
-
-@field_26_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- (*(ushort *)((char *)pWalk + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- *(ushort *)((char *)pWalk + 0x4) >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- (((ushort *)pWalk)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- (((ushort *)pWalk)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- ((ushort *)pWalk)[2] >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- (pWalk[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- (pWalk[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-|
-- pWalk[2] >> 6
-+ ((uw_object_hdr_t *)pWalk)->next
-)
-...>
-}
-
-@field_26_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->owner
-|
-- ((ushort *)pWalk)[3] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->owner
-|
-- pWalk[3] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->owner
-|
-- *(byte *)((char *)pWalk + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->owner
-|
-- (byte)pWalk[3] & 0x3f
-+ ((uw_object_hdr_t *)pWalk)->owner
-)
-...>
-}
-
-@field_26_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)pWalk + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- (*(ushort *)((char *)pWalk + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- *(ushort *)((char *)pWalk + 0x6) >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- (((ushort *)pWalk)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- (((ushort *)pWalk)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- ((ushort *)pWalk)[3] >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- (pWalk[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- (pWalk[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-|
-- pWalk[3] >> 6
-+ ((uw_object_hdr_t *)pWalk)->link
-)
-...>
-}
-
-@field_27_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
 - *(ushort *)((char *)puVar2 + 0x0) & 0x1ff
 + ((uw_object_hdr_t *)puVar2)->object_id
 |
@@ -12828,7 +12284,7 @@ R F(...) {
 ...>
 }
 
-@field_27_flags_res disable drop_cast, is_zero, isnt_zero@
+@field_26_flags_res disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -12875,7 +12331,7 @@ R F(...) {
 ...>
 }
 
-@field_27_enchanted disable drop_cast, is_zero, isnt_zero@
+@field_26_enchanted disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -12922,7 +12378,7 @@ R F(...) {
 ...>
 }
 
-@field_27_doordir disable drop_cast, is_zero, isnt_zero@
+@field_26_doordir disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -12969,7 +12425,7 @@ R F(...) {
 ...>
 }
 
-@field_27_invisible disable drop_cast, is_zero, isnt_zero@
+@field_26_invisible disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13016,7 +12472,7 @@ R F(...) {
 ...>
 }
 
-@field_27_is_quant disable drop_cast, is_zero, isnt_zero@
+@field_26_is_quant disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13081,7 +12537,7 @@ R F(...) {
 ...>
 }
 
-@field_27_zpos disable drop_cast, is_zero, isnt_zero@
+@field_26_zpos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13107,7 +12563,7 @@ R F(...) {
 ...>
 }
 
-@field_27_heading disable drop_cast, is_zero, isnt_zero@
+@field_26_heading disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13136,7 +12592,7 @@ R F(...) {
 ...>
 }
 
-@field_27_ypos disable drop_cast, is_zero, isnt_zero@
+@field_26_ypos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13171,7 +12627,7 @@ R F(...) {
 ...>
 }
 
-@field_27_xpos disable drop_cast, is_zero, isnt_zero@
+@field_26_xpos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13218,7 +12674,7 @@ R F(...) {
 ...>
 }
 
-@field_27_quality disable drop_cast, is_zero, isnt_zero@
+@field_26_quality disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13244,7 +12700,7 @@ R F(...) {
 ...>
 }
 
-@field_27_next disable drop_cast, is_zero, isnt_zero@
+@field_26_next disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13282,7 +12738,7 @@ R F(...) {
 ...>
 }
 
-@field_27_owner disable drop_cast, is_zero, isnt_zero@
+@field_26_owner disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -13308,7 +12764,7 @@ R F(...) {
 ...>
 }
 
-@field_27_link disable drop_cast, is_zero, isnt_zero@
+@field_26_link disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, byte, uw_object_hdr_t;

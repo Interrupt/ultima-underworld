@@ -679,7 +679,7 @@ LAB_00072f24:
         sVar2 = ordint_divmod(uVar3,uVar9 * 0x80).quot;
       }
       heading_to_sine_cosine(((0x40 - (g_player_object->npc_heading)) * 4 -
-                              ((int) g_player_object->hdr.position_word_signed & 0x380U)) * 0x40,
+                              (((uint)g_player_object->hdr.heading << 7))) * 0x40,
                              &local_28,&local_26);
       iVar5 = (int)local_28;
       iVar6 = (int)local_26;

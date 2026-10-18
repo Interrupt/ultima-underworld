@@ -2011,92 +2011,6 @@ typedef ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)pWalk + 0)
-+ ((uw_object_hdr_t *)pWalk)->type_flags
-|
-- ((ushort *)pWalk)[0]
-+ ((uw_object_hdr_t *)pWalk)->type_flags
-|
-- *(ushort *)pWalk
-+ ((uw_object_hdr_t *)pWalk)->type_flags
-|
-- pWalk[0]
-+ ((uw_object_hdr_t *)pWalk)->type_flags
-|
-- *pWalk
-+ ((uw_object_hdr_t *)pWalk)->type_flags
-)
-...>
-}
-
-@word_26_1@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 2)
-+ ((uw_object_hdr_t *)pWalk)->position_word
-|
-- ((ushort *)pWalk)[1]
-+ ((uw_object_hdr_t *)pWalk)->position_word
-|
-- pWalk[1]
-+ ((uw_object_hdr_t *)pWalk)->position_word
-)
-...>
-}
-
-@word_26_2@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 4)
-+ ((uw_object_hdr_t *)pWalk)->chain_word
-|
-- ((ushort *)pWalk)[2]
-+ ((uw_object_hdr_t *)pWalk)->chain_word
-|
-- pWalk[2]
-+ ((uw_object_hdr_t *)pWalk)->chain_word
-)
-...>
-}
-
-@word_26_3@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pWalk + 6)
-+ ((uw_object_hdr_t *)pWalk)->link_word
-|
-- ((ushort *)pWalk)[3]
-+ ((uw_object_hdr_t *)pWalk)->link_word
-|
-- pWalk[3]
-+ ((uw_object_hdr_t *)pWalk)->link_word
-)
-...>
-}
-
-@word_27_0@
-type R;
-identifier F =~ "^\(reallocate_object_to_arena\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
 - *(ushort *)((char *)puVar2 + 0)
 + ((uw_object_hdr_t *)puVar2)->type_flags
 |
@@ -2115,7 +2029,7 @@ R F(...) {
 ...>
 }
 
-@word_27_1@
+@word_26_1@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2135,7 +2049,7 @@ R F(...) {
 ...>
 }
 
-@word_27_2@
+@word_26_2@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2155,7 +2069,7 @@ R F(...) {
 ...>
 }
 
-@word_27_3@
+@word_26_3@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;

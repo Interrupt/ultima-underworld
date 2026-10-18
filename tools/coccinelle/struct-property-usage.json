@@ -1,16 +1,15 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 170,
-    "packed_word": 462,
-    "raw_audited_object_access": 7,
-    "signed_word_view": 9
+    "byte_view": 37,
+    "packed_word": 454,
+    "raw_audited_object_access": 8
   },
   "records": [
     {
       "source": "src/ai.c",
       "function": "npc_walk_toward_tile",
-      "line": 493,
+      "line": 512,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -19,7 +18,16 @@
     {
       "source": "src/ai.c",
       "function": "npc_walk_toward_tile",
-      "line": 574,
+      "line": 530,
+      "category": "raw_audited_object_access",
+      "member": null,
+      "pointer": "DAT_00101904",
+      "code": "((*(byte *)((char *)DAT_00101904 + 0xb) & 0xf) == 5)) {"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "npc_walk_toward_tile",
+      "line": 594,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -28,25 +36,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_walk_toward_tile",
-      "line": 577,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)npc_bytes)->goal_word_low = (byte)(char)uVar8;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_walk_toward_tile",
-      "line": 578,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_walk_toward_tile",
-      "line": 624,
+      "line": 642,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -54,26 +44,8 @@
     },
     {
       "source": "src/ai.c",
-      "function": "npc_walk_toward_tile",
-      "line": 625,
-      "category": "byte_view",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "DAT_0010190c->tile_word_low = local_40[0] & 0xf | (byte)uVar8;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_walk_toward_tile",
-      "line": 626,
-      "category": "byte_view",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "DAT_0010190c->tile_word_high = (byte)(char)(uVar8 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 788,
+      "line": 780,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -82,7 +54,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 792,
+      "line": 784,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -91,7 +63,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 832,
+      "line": 810,
       "category": "byte_view",
       "member": "goal_word",
       "pointer": null,
@@ -100,7 +72,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 834,
+      "line": 812,
       "category": "byte_view",
       "member": "goal_word",
       "pointer": null,
@@ -109,7 +81,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 848,
+      "line": 826,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -118,7 +90,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 849,
+      "line": 827,
       "category": "byte_view",
       "member": "goal_word",
       "pointer": null,
@@ -127,7 +99,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 860,
+      "line": 838,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -136,7 +108,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 871,
+      "line": 849,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -145,7 +117,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 884,
+      "line": 862,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -154,7 +126,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 886,
+      "line": 864,
       "category": "packed_word",
       "member": "target_word",
       "pointer": null,
@@ -163,7 +135,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1106,
+      "line": 1166,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -172,7 +144,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1117,
+      "line": 1177,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -181,7 +153,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1134,
+      "line": 1194,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -190,7 +162,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1165,
+      "line": 1234,
       "category": "packed_word",
       "member": "tile_position",
       "pointer": null,
@@ -199,7 +171,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1210,
+      "line": 1288,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -208,421 +180,241 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1267,
+      "line": 1346,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar11 = ((uw_object_hdr_t *)object)->type_flags & 0xffc2 | 0x1c2;"
+      "code": "uVar11 = header->type_flags & 0xffc2 | 0x1c2;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1268,
+      "line": 1352,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar1 = header->position_word;"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "settle_mobile_to_immobile",
+      "line": 1390,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->type_flags = (ushort)uVar11;"
+      "code": "puVar9->type_flags = header->type_flags;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1273,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)object)->position_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1275,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_low = ((bVar4 & 7) + bVar5 + 4 ^ bVar5) & 0x7f ^ bVar5;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1276,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_high = (byte)(uVar1 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1312,
+      "line": 1390,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->type_flags = ((uw_object_hdr_t *)object)->type_flags;"
+      "code": "puVar9->type_flags = header->type_flags;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1312,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->type_flags = ((uw_object_hdr_t *)object)->type_flags;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1313,
+      "line": 1391,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->position_word = ((uw_object_hdr_t *)object)->position_word;"
+      "code": "puVar9->position_word = header->position_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1313,
+      "line": 1391,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->position_word = ((uw_object_hdr_t *)object)->position_word;"
+      "code": "puVar9->position_word = header->position_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1314,
+      "line": 1392,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->chain_word = ((uw_object_hdr_t *)object)->chain_word;"
+      "code": "puVar9->chain_word = header->chain_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1314,
+      "line": 1392,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->chain_word = ((uw_object_hdr_t *)object)->chain_word;"
+      "code": "puVar9->chain_word = header->chain_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1315,
+      "line": 1393,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->link_word = ((uw_object_hdr_t *)object)->link_word;"
+      "code": "puVar9->link_word = header->link_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1315,
+      "line": 1393,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->link_word = ((uw_object_hdr_t *)object)->link_word;"
+      "code": "puVar9->link_word = header->link_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1316,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->link_word_low = ((uw_object_hdr_t *)object)->owner;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1317,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->link_word_high = 0;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1318,
+      "line": 1395,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar9)->type_flags;"
+      "code": "uVar1 = puVar9->type_flags;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1324,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->type_flags_low = (bVar5 - 4 ^ bVar5) & 0xf ^ bVar5;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1325,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->type_flags_high = (byte)(uVar1 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1328,
+      "line": 1404,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar9)->chain_word;"
+      "code": "uVar1 = puVar9->chain_word;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1329,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->chain_word_low = ((uw_mobile_object_t *)object)->hit_points & 0x3f | (byte)(uVar1 & 0xffc0);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1330,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->chain_word_high = (byte)((uVar1 & 0xffc0) >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1331,
+      "line": 1406,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar12 = (uint)(ushort)((uw_object_hdr_t *)puVar9)->type_flags;"
+      "code": "uVar12 = (uint)(ushort)puVar9->type_flags;"
     },
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1336,
+      "line": 1411,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar11 = ((uw_object_hdr_t *)puVar9)->position_word;"
+      "code": "uVar11 = puVar9->position_word;"
     },
     {
       "source": "src/ai.c",
       "function": "spawn_creature_treasure_drop",
-      "line": 1449,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pObj)->link_word_low = ((uw_object_hdr_t *)pObj)->owner | (byte)((uVar2 & 0x3ff) << 6);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_creature_treasure_drop",
-      "line": 1450,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pObj)->link_word_high = (byte)(char)((uVar2 << 0x16) >> 0x18);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_creature_equipment_drop",
-      "line": 1523,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)pbVar4)->chain_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_creature_equipment_drop",
       "line": 1525,
-      "category": "byte_view",
-      "member": "chain_word",
+      "category": "packed_word",
+      "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pbVar4)->chain_word_low = (bVar2 ^ bVar6) & 0x3f ^ bVar2;"
+      "code": "object_list_insert_head(&creature->link_word,pObj);"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "spawn_creature_special_item_drop",
+      "line": 1553,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_insert_head(&creature->link_word,pObj);"
     },
     {
       "source": "src/ai.c",
       "function": "spawn_creature_equipment_drop",
-      "line": 1526,
-      "category": "byte_view",
+      "line": 1597,
+      "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pbVar4)->chain_word_high = (byte)((ushort)uVar1 >> 8);"
+      "code": "uVar1 = pbVar4->chain_word;"
     },
     {
       "source": "src/ai.c",
       "function": "spawn_creature_equipment_drop",
-      "line": 1532,
-      "category": "byte_view",
+      "line": 1608,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pbVar4)->link_word_low = ((uw_object_hdr_t *)pbVar4)->owner ^ (char)uVar7 * '@';"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_creature_equipment_drop",
-      "line": 1533,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pbVar4)->link_word_high = (byte)(uVar7 >> 2);"
+      "code": "object_list_insert_head(&creature->link_word,pbVar4);"
     },
     {
       "source": "src/ai.c",
       "function": "spawn_creature_misc_item_drop",
-      "line": 1590,
+      "line": 1659,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)iVar6)->chain_word;"
+      "code": "uVar2 = iVar6->chain_word;"
     },
     {
       "source": "src/ai.c",
       "function": "spawn_creature_misc_item_drop",
-      "line": 1592,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar6)->chain_word_low = (bVar3 ^ bVar7) & 0x3f ^ bVar3;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_creature_misc_item_drop",
-      "line": 1593,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar6)->chain_word_high = (byte)(char)((ushort)uVar2 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1697,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar6 = (((uw_object_hdr_t *)pDropObj)->position_word ^ *(ushort *)(monster + 2)) & 0x1fff ^"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1700,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_low = bVar1;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1702,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_high = bVar2;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1704,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_low = bVar1;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1705,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_high = bVar2;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1706,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_low = (monster[2] ^ bVar1) & 0x7f ^ bVar1;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1707,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->position_word_high = bVar2;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1708,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "uVar6 = ((uw_object_hdr_t *)pDropObj)->chain_word & 0xffe8;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1709,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->chain_word_low = (byte)uVar6 | 0x28;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1710,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->chain_word_high = (byte)(char)(uVar6 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "drop_monster_loot",
-      "line": 1719,
+      "line": 1662,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)pDropObj)->link_word;"
+      "code": "object_list_insert_head(&creature->link_word,iVar6);"
     },
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1721,
-      "category": "byte_view",
-      "member": "link_word",
+      "line": 1758,
+      "category": "packed_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->link_word_low = (*monster ^ bVar1) & 0x3f ^ bVar1;"
+      "code": "uVar6 = (pDropObj->position_word ^ monster->hdr.position_word) & 0x1fff ^"
     },
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1722,
-      "category": "byte_view",
+      "line": 1758,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar6 = (pDropObj->position_word ^ monster->hdr.position_word) & 0x1fff ^"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "drop_monster_loot",
+      "line": 1759,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "(uint)monster->hdr.position_word;"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "drop_monster_loot",
+      "line": 1763,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "bVar2 = ((byte)(monster->hdr.position_word >> 8) ^ bVar2) & 0x1c ^ bVar2;"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "drop_monster_loot",
+      "line": 1766,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "uVar6 = pDropObj->chain_word & 0xffe8;"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "drop_monster_loot",
+      "line": 1776,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pDropObj)->link_word_high = (byte)(char)((ushort)uVar3 >> 8);"
+      "code": "uVar3 = pDropObj->link_word;"
     },
     {
       "source": "src/ai.c",
       "function": "npc_react_to_nearby_player",
-      "line": 2676,
+      "line": 2732,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -631,7 +423,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_react_to_nearby_player",
-      "line": 2687,
+      "line": 2743,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -640,7 +432,7 @@
     {
       "source": "src/ai.c",
       "function": "detect_npc_wander_proximity",
-      "line": 2746,
+      "line": 2802,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -649,7 +441,7 @@
     {
       "source": "src/ai.c",
       "function": "compute_vertical_aim_offset",
-      "line": 2784,
+      "line": 2840,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -657,8 +449,17 @@
     },
     {
       "source": "src/ai.c",
+      "function": "compute_vertical_aim_offset",
+      "line": 2841,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "bVar2 = ((uw_object_hdr_t *)DAT_00101400)->position_word_low;"
+    },
+    {
+      "source": "src/ai.c",
       "function": "setup_npc_ai_tick_state",
-      "line": 2842,
+      "line": 2898,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -667,7 +468,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2905,
+      "line": 2961,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -676,7 +477,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2946,
+      "line": 3002,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -685,7 +486,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2965,
+      "line": 3021,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "npc_rec",
@@ -694,7 +495,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2967,
+      "line": 3023,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -703,7 +504,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2969,
+      "line": 3025,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -712,7 +513,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2976,
+      "line": 3032,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -721,7 +522,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3080,
+      "line": 3131,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -730,7 +531,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3096,
+      "line": 3147,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -739,7 +540,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3115,
+      "line": 3166,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -748,7 +549,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3116,
+      "line": 3167,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -757,7 +558,7 @@
     {
       "source": "src/ai.c",
       "function": "initiate_npc_death",
-      "line": 3263,
+      "line": 3317,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -766,7 +567,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3609,
+      "line": 3659,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -775,7 +576,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3620,
+      "line": 3670,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -784,7 +585,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3634,
+      "line": 3684,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -793,7 +594,7 @@
     {
       "source": "src/ai.c",
       "function": "alert_npc_to_noise_callback",
-      "line": 3783,
+      "line": 3833,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -802,7 +603,7 @@
     {
       "source": "src/ai.c",
       "function": "alert_npc_to_noise_callback",
-      "line": 3811,
+      "line": 3861,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -811,7 +612,7 @@
     {
       "source": "src/ai.c",
       "function": "emit_noise_alert",
-      "line": 3845,
+      "line": 3895,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -820,7 +621,7 @@
     {
       "source": "src/ai.c",
       "function": "resolve_unique_npc_special_behavior",
-      "line": 3876,
+      "line": 3926,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -829,7 +630,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4095,
+      "line": 4145,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -838,7 +639,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4098,
+      "line": 4148,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -847,7 +648,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4098,
+      "line": 4148,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -856,7 +657,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4219,
+      "line": 4263,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -865,7 +666,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4247,
+      "line": 4291,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -874,7 +675,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4264,
+      "line": 4308,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -883,7 +684,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4279,
+      "line": 4323,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -892,7 +693,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4290,
+      "line": 4334,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -901,16 +702,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_notice_and_idle_tick",
-      "line": 4373,
-      "category": "packed_word",
-      "member": "status_word",
-      "pointer": null,
-      "code": "ushort _de = DAT_0010190c->status_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_notice_and_idle_tick",
-      "line": 4379,
+      "line": 4409,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -919,7 +711,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_notice_and_idle_tick",
-      "line": 4445,
+      "line": 4473,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -928,7 +720,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_wander_return_home_exact_tick",
-      "line": 4495,
+      "line": 4523,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -937,7 +729,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4530,
+      "line": 4558,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -946,7 +738,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4533,
+      "line": 4561,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -955,7 +747,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4536,
+      "line": 4564,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -964,7 +756,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4539,
+      "line": 4567,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -973,7 +765,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4542,
+      "line": 4570,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -982,7 +774,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5014,
+      "line": 5042,
       "category": "packed_word",
       "member": "size_weight",
       "pointer": null,
@@ -991,7 +783,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5025,
+      "line": 5053,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1000,7 +792,16 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5055,
+      "line": 5078,
+      "category": "packed_word",
+      "member": "type_flags",
+      "pointer": null,
+      "code": "if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) != 0x40 && physics_subtick_units() != 0) {"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "build_object_placement_snapshot",
+      "line": 5091,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1009,16 +810,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5073,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(int)((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40));"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "build_object_placement_snapshot",
-      "line": 5074,
+      "line": 5106,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1027,7 +819,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5081,
+      "line": 5111,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1036,7 +828,7 @@
     {
       "source": "src/audio.c",
       "function": "play_positional_sound_effect",
-      "line": 629,
+      "line": 651,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -1045,70 +837,61 @@
     {
       "source": "src/audio.c",
       "function": "play_positional_sound_effect",
-      "line": 632,
+      "line": 654,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
       "code": "((int)(((g_player_object->tile_word >> 1 & 0x1f8) +"
     },
     {
-      "source": "src/audio.c",
-      "function": "play_positional_sound_effect",
-      "line": 660,
-      "category": "signed_word_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((int) g_player_object->hdr.position_word_signed & 0x380U)) * 0x40,"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
-      "line": 544,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar3)->chain_word;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
-      "line": 545,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->chain_word_low = (byte)uVar1 | 0x3f;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_do_inv_create",
-      "line": 546,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->chain_word_high = (byte)(char)(uVar1 >> 8);"
-    },
-    {
       "source": "src/babl.c",
       "function": "babl_builtin_do_inv_create",
       "line": 550,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "chain_word",
       "pointer": null,
-      "code": "&& ((((puVar4[3] & 0x8000) == 0 && (((*puVar4 ^ ((uw_object_hdr_t *)puVar3)->type_flags) & 0x1ff) == 0)) &&"
+      "code": "uVar1 = puVar3->chain_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 552,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "link_cursor = &(*piVar2)->hdr.link_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 564,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "link_cursor = &puVar4->chain_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_do_inv_create",
+      "line": 567,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_insert_head(&(*piVar2)->hdr.link_word,puVar3);"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_set_race_attitude",
-      "line": 605,
+      "line": 610,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)DAT_00100674)->type_flags;"
+      "code": "uVar1 = DAT_00100674->hdr.type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_set_race_attitude",
-      "line": 640,
+      "line": 645,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -1117,7 +900,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_set_race_attitude",
-      "line": 643,
+      "line": 648,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1126,259 +909,115 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_place_object",
+      "line": 717,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "puVar7 = &DAT_00100674->hdr.link_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_place_object",
+      "line": 726,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "puVar7 = &link_cursor->chain_word;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_place_object",
       "line": 731,
       "category": "packed_word",
-      "member": "tile_word",
+      "member": "link_word",
       "pointer": null,
-      "code": "place_object_in_world(g_player_object->tile_word >> 7 & 0x1f8,"
+      "code": "object_list_unlink(&DAT_00100674->hdr.link_word,puVar4);"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_place_object",
-      "line": 732,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "g_player_object->tile_word >> 1 & 0x1f8,"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 743,
+      "line": 748,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)puVar4)->position_word;"
+      "code": "uVar2 = puVar4->position_word;"
     },
     {
       "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 744,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_low = (byte)(uVar2 & 0xff80) | *pbVar9 >> 1 & 0x78;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_place_object",
-      "line": 745,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_high = (char)((uVar2 & 0xff80) >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_gronk_door",
-      "line": 890,
+      "function": "babl_builtin_take_from_npc_inv",
+      "line": 778,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "(int)sVar3, (unsigned)((uw_object_hdr_t *)iVar6)->type_flags);"
+      "code": "puVar2 = (ushort *)((char *)&DAT_00100674->hdr.link_word);"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_add_to_npc_inv",
+      "line": 798,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_append_tail((char *)&DAT_00100674->hdr.link_word,uVar1);"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 944,
-      "category": "byte_view",
-      "member": "type_flags",
+      "line": 958,
+      "category": "packed_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "*psVar6 = (short)((((uw_object_hdr_t *)puVar11_rec)->type_flags_high & 0x1e) >> 1);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 950,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "*psVar8 = ((short)(char)((uw_object_hdr_t *)puVar11_rec)->type_flags_high & 4U) << 8;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 953,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "*psVar9 = ((short)(char)((uw_object_hdr_t *)puVar11_rec)->type_flags_high & 2U) << 8;"
+      "code": "uVar12 = puVar11_rec->position_word & 0xfc7f | ((int)*psVar4 & 7U) << 7;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
       "line": 962,
       "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar12 = ((uw_object_hdr_t *)puVar11_rec)->position_word & 0xfc7f | ((int)*psVar4 & 7U) << 7;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 963,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->position_word = (ushort)uVar12;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 966,
-      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar11_rec)->link_word;"
+      "code": "uVar1 = puVar11_rec->link_word;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
       "line": 968,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->link_word_low = (bVar2 ^ (byte)*puVar5) & 0x3f ^ bVar2;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 969,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->link_word_high = (byte)(char)(uVar1 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 973,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar11_rec)->type_flags;"
+      "code": "uVar1 = puVar11_rec->type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 974,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_low = (byte)(char)(uVar1 & 0xe1ff);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 975,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_high ="
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 980,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->link_word_low = ((uw_object_hdr_t *)puVar11_rec)->owner | (byte)(uVar12 << 6);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 981,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->link_word_high = (byte)(char)((uVar12 & 0x3ffffff | 0xfe00) >> 2);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 985,
+      "line": 978,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar11_rec)->type_flags;"
+      "code": "uVar1 = puVar11_rec->type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
-      "line": 986,
-      "category": "byte_view",
+      "line": 983,
+      "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_low = (byte)(char)(uVar1 & 0xfbff);"
+      "code": "uVar1 = puVar11_rec->type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_stuff",
       "line": 987,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_high ="
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 992,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar11_rec)->type_flags;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 993,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_low = (byte)(char)(uVar1 & 0xfdff);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 994,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->type_flags_high ="
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 998,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar11_rec)->chain_word;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 1000,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->chain_word_low = (bVar2 ^ (byte)*puVar10) & 0x3f ^ bVar2;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "babl_builtin_x_obj_stuff",
-      "line": 1001,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar11_rec)->chain_word_high = (byte)(char)(uVar1 >> 8);"
+      "code": "uVar1 = puVar11_rec->chain_word;"
     },
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1039,
+      "line": 1027,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1387,7 +1026,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1044,
+      "line": 1032,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1396,7 +1035,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1051,
+      "line": 1039,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1405,7 +1044,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1057,
+      "line": 1045,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1414,7 +1053,7 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_x_obj_pos",
-      "line": 1059,
+      "line": 1047,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1422,8 +1061,17 @@
     },
     {
       "source": "src/babl.c",
+      "function": "babl_builtin_do_demand",
+      "line": 2047,
+      "category": "packed_word",
+      "member": "type_flags",
+      "pointer": null,
+      "code": "bVar1 = (byte)DAT_00100674->hdr.type_flags;"
+    },
+    {
+      "source": "src/babl.c",
       "function": "babl_builtin_set_inv_quality",
-      "line": 2926,
+      "line": 2851,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1432,7 +1080,7 @@
     {
       "source": "src/babl.c",
       "function": "sync_conv_vars_from_npc",
-      "line": 3005,
+      "line": 2929,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1441,7 +1089,16 @@
     {
       "source": "src/babl.c",
       "function": "babl_builtin_setup_to_barter",
-      "line": 3561,
+      "line": 3466,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "iVar13 = (intptr_t)((char *)&DAT_00100674->hdr.link_word);"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "babl_builtin_setup_to_barter",
+      "line": 3477,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1449,8 +1106,17 @@
     },
     {
       "source": "src/babl.c",
+      "function": "babl_builtin_setup_to_barter",
+      "line": 3491,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_insert_head((char *)&DAT_00100674->hdr.link_word,uVar9);"
+    },
+    {
+      "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3869,
+      "line": 3786,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -1459,7 +1125,7 @@
     {
       "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3870,
+      "line": 3787,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -1467,116 +1133,71 @@
     },
     {
       "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 4018,
-      "category": "signed_word_view",
+      "function": "merge_or_swap_barter_slot_item",
+      "line": 4056,
+      "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar9 = (int)((uw_object_hdr_t *)psVar6)->type_flags_signed & 0x1ff;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 4035,
-      "category": "signed_word_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "if (((short)(((uw_object_hdr_t *)psVar6)->type_flags_signed & -0x8000) == 0) || ((((uw_object_hdr_t *)psVar6)->link_word_signed & 0x8000U) != 0)) {"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 4035,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if (((short)(((uw_object_hdr_t *)psVar6)->type_flags_signed & -0x8000) == 0) || ((((uw_object_hdr_t *)psVar6)->link_word_signed & 0x8000U) != 0)) {"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "redraw_barter_slot_icon",
-      "line": 4039,
-      "category": "signed_word_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "uVar8 = (ushort)((uw_object_hdr_t *)psVar6)->link_word_signed >> 6;"
+      "code": "uVar1 = puVar5->type_flags;"
     },
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4138,
+      "line": 4061,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar5)->type_flags;"
+      "code": "uVar2 = held_header->link_word;"
     },
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4145,
+      "line": 4063,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)puVar5)->link_word;"
+      "code": "uVar3 = puVar5->link_word;"
     },
     {
       "source": "src/babl.c",
-      "function": "merge_or_swap_barter_slot_item",
-      "line": 4149,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_low = (byte)iVar6 ^ (byte)uVar3 & 0x3f;"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "merge_or_swap_barter_slot_item",
-      "line": 4150,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_high = (byte)(char)((uint)iVar6 >> 8);"
-    },
-    {
-      "source": "src/babl.c",
-      "function": "finalize_player_barter_items",
-      "line": 4282,
+      "function": "finalize_npc_barter_items",
+      "line": 4155,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "((((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0 && (((((uw_object_hdr_t *)puVar3)->type_flags ^ ((uw_object_hdr_t *)puVar2)->type_flags) & 0x1ff) == 0)) &&"
+      "code": "object_list_insert_head((char *)&DAT_00100674->hdr.link_word,uVar1);"
     },
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4282,
+      "line": 4194,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "((((((uw_object_hdr_t *)puVar3)->link & 0x200) == 0 && (((((uw_object_hdr_t *)puVar3)->type_flags ^ ((uw_object_hdr_t *)puVar2)->type_flags) & 0x1ff) == 0)) &&"
+      "code": "puVar3 = resolve_object_link(&DAT_00100674->hdr.link_word);"
     },
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4285,
-      "category": "byte_view",
-      "member": "link_word",
+      "line": 4196,
+      "category": "packed_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->link_word_low = (byte)iVar4 ^ ((uw_object_hdr_t *)puVar3)->owner;"
+      "code": "for (; puVar3 != NULL; puVar3 = resolve_object_link(&puVar3->chain_word)) {"
     },
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4286,
-      "category": "byte_view",
+      "line": 4210,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar3)->link_word_high = (byte)(char)((uint)iVar4 >> 8);"
+      "code": "object_list_insert_head(&DAT_00100674->hdr.link_word,puVar2);"
     },
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4464,
+      "line": 4380,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1585,16 +1206,43 @@
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4472,
+      "line": 4388,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
       "code": "uVar7 = (uint)((uw_object_hdr_t *)puVar4)->type_flags;"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "add_item_to_npc_inventory",
+      "line": 4471,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "puVar1 = (ushort *)((char *)&DAT_00100674->hdr.link_word);"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "add_item_to_npc_inventory",
+      "line": 4487,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "object_list_insert_head((char *)&DAT_00100674->hdr.link_word,object);"
+    },
+    {
+      "source": "src/babl.c",
+      "function": "remove_item_from_npc_inventory_by_id",
+      "line": 4529,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "iVar2 = (char *)&DAT_00100674->hdr.link_word;"
     },
     {
       "source": "src/bitmap.c",
       "function": "sprite_partition_by_depth",
-      "line": 408,
+      "line": 395,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1603,7 +1251,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
-      "line": 118,
+      "line": 119,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1612,25 +1260,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
-      "line": 121,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)iVar5_rec)->goal_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 122,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(uVar7 >> 8) | (byte)(((uw_ord2005_rem_40 & 0xf) << 0xc) >> 8)"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 157,
+      "line": 156,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -1640,24 +1270,6 @@
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
       "line": 158,
-      "category": "byte_view",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "DAT_0010190c->tile_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 159,
-      "category": "byte_view",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "DAT_0010190c->tile_word_high ="
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 161,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -1666,16 +1278,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
-      "line": 163,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "DAT_0010190c->tile_word = (ushort)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 164,
+      "line": 161,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1684,25 +1287,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
-      "line": 165,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 166,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_high = (byte)(uVar7 >> 8) | 0x80;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 167,
+      "line": 163,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1711,25 +1296,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_approach_tick",
-      "line": 168,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 169,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_high = (byte)(uVar7 >> 8) | 0x10;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 170,
+      "line": 165,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1737,26 +1304,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 171,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_low = *pbVar6 >> 1 & 0x78 | (byte)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_approach_tick",
-      "line": 172,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar7 >> 8);"
-    },
-    {
-      "source": "src/combat.c",
       "function": "npc_combat_engage_close_tick",
-      "line": 216,
+      "line": 210,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -1765,7 +1314,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_engage_close_tick",
-      "line": 248,
+      "line": 242,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1773,98 +1322,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "npc_combat_engage_close_tick",
-      "line": 251,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)iVar6_rec)->goal_word_low = (byte)(char)uVar5;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_engage_close_tick",
-      "line": 252,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(uVar5 >> 8) | (byte)(((uw_ord2005_rem_46 & 0xf) << 0xc) >> 8);"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 394,
-      "category": "packed_word",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "uVar4 = DAT_0010190c->goal_word & 0xfff;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 395,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_low = (byte)(char)uVar4;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 398,
-      "category": "packed_word",
-      "member": "target_word",
-      "pointer": null,
-      "code": "uVar4 = (uint) DAT_0010190c->target_word;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 400,
-      "category": "byte_view",
-      "member": "target_word",
-      "pointer": null,
-      "code": "DAT_0010190c->target_word_low = (byte)(char)(uVar4 & 0xfff);"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 401,
-      "category": "byte_view",
-      "member": "target_word",
-      "pointer": null,
-      "code": "DAT_0010190c->target_word_high ="
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 407,
-      "category": "packed_word",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "uVar2 = DAT_0010190c->goal_word;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 411,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)iVar6_rec)->goal_word_low = (byte)(char)uVar9;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_set_stance",
-      "line": 413,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(char)(uVar4 >> 8);"
-    },
-    {
-      "source": "src/combat.c",
       "function": "npc_combat_engage_wide_tick",
-      "line": 449,
+      "line": 439,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1872,26 +1331,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "npc_combat_engage_wide_tick",
-      "line": 452,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)iVar2_rec)->goal_word_low = (byte)(char)uVar3;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_engage_wide_tick",
-      "line": 453,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(uVar3 >> 8) | (byte)(((uw_ord2005_rem_63 & 0xf) << 0xc) >> 8)"
-    },
-    {
-      "source": "src/combat.c",
       "function": "npc_combat_position_tick",
-      "line": 512,
+      "line": 501,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -1900,7 +1341,16 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_position_tick",
-      "line": 540,
+      "line": 503,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "bVar4 = target_header->position_word_low;"
+    },
+    {
+      "source": "src/combat.c",
+      "function": "npc_combat_position_tick",
+      "line": 530,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1909,25 +1359,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_position_tick",
-      "line": 543,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "iVar7_rec->goal_word_low = (char)uVar1;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 544,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 595,
+      "line": 581,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1936,52 +1368,16 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_position_tick",
-      "line": 598,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "iVar7_rec->goal_word_low = (char)uVar1;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 599,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 632,
+      "line": 615,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
       "code": "uVar6 = DAT_0010190c->goal_word;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 635,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "iVar7_rec->goal_word_low = (char)uVar1;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_position_tick",
-      "line": 636,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
     },
     {
       "source": "src/combat.c",
       "function": "npc_combat_disengage_tick",
-      "line": 667,
+      "line": 648,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -1990,25 +1386,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_disengage_tick",
-      "line": 668,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_low = (byte)uVar7 | 0x10;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 669,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(char)(uVar7 >> 8);"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 681,
+      "line": 661,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2017,25 +1395,7 @@
     {
       "source": "src/combat.c",
       "function": "npc_combat_disengage_tick",
-      "line": 684,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "iVar2->goal_word_low = (char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 685,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 698,
+      "line": 676,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2043,26 +1403,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 701,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "iVar2->goal_word_low = (char)uVar5;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "npc_combat_disengage_tick",
-      "line": 702,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high ="
-    },
-    {
-      "source": "src/combat.c",
       "function": "find_nearest_hit_target",
-      "line": 809,
+      "line": 785,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "puVar6",
@@ -2071,7 +1413,7 @@
     {
       "source": "src/combat.c",
       "function": "spawn_blood_splat_object",
-      "line": 903,
+      "line": 875,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2080,7 +1422,7 @@
     {
       "source": "src/combat.c",
       "function": "resolve_weapon_hit_skill_check",
-      "line": 1044,
+      "line": 1007,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2089,7 +1431,7 @@
     {
       "source": "src/combat.c",
       "function": "apply_melee_damage",
-      "line": 1125,
+      "line": 1088,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2098,7 +1440,7 @@
     {
       "source": "src/combat.c",
       "function": "apply_melee_damage",
-      "line": 1163,
+      "line": 1126,
       "category": "byte_view",
       "member": "status_word",
       "pointer": null,
@@ -2107,7 +1449,7 @@
     {
       "source": "src/combat.c",
       "function": "process_melee_attack_swing",
-      "line": 1391,
+      "line": 1354,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "puAttacker",
@@ -2116,7 +1458,7 @@
     {
       "source": "src/combat.c",
       "function": "process_melee_attack_swing",
-      "line": 1391,
+      "line": 1354,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "puTarget",
@@ -2125,7 +1467,7 @@
     {
       "source": "src/combat.c",
       "function": "resolve_equipped_weapon_attack",
-      "line": 1426,
+      "line": 1389,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2134,7 +1476,7 @@
     {
       "source": "src/combat.c",
       "function": "resolve_equipped_weapon_attack",
-      "line": 1442,
+      "line": 1405,
       "category": "packed_word",
       "member": "size_weight",
       "pointer": null,
@@ -2143,7 +1485,7 @@
     {
       "source": "src/combat.c",
       "function": "try_npc_special_ability_no_los",
-      "line": 1702,
+      "line": 1651,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2152,7 +1494,7 @@
     {
       "source": "src/combat.c",
       "function": "try_npc_special_ability_ranged",
-      "line": 1750,
+      "line": 1699,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2161,7 +1503,7 @@
     {
       "source": "src/combat.c",
       "function": "try_npc_special_ability_alt",
-      "line": 1785,
+      "line": 1738,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2170,7 +1512,7 @@
     {
       "source": "src/combat.c",
       "function": "check_npc_target_alignment",
-      "line": 1870,
+      "line": 1823,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2178,26 +1520,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "check_npc_target_alignment",
-      "line": 1887,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "check_npc_target_alignment",
-      "line": 1888,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar7 >> 8);"
-    },
-    {
-      "source": "src/combat.c",
       "function": "check_npc_fine_facing_alignment",
-      "line": 1919,
+      "line": 1871,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2206,7 +1530,7 @@
     {
       "source": "src/combat.c",
       "function": "check_npc_fine_facing_alignment",
-      "line": 1963,
+      "line": 1915,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2215,7 +1539,7 @@
     {
       "source": "src/combat.c",
       "function": "check_npc_fine_facing_alignment",
-      "line": 1964,
+      "line": 1916,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2224,7 +1548,7 @@
     {
       "source": "src/combat.c",
       "function": "apply_object_durability_damage",
-      "line": 2127,
+      "line": 2081,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2233,7 +1557,7 @@
     {
       "source": "src/combat.c",
       "function": "apply_object_durability_damage",
-      "line": 2137,
+      "line": 2091,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2242,7 +1566,7 @@
     {
       "source": "src/combat.c",
       "function": "damage_equipped_item_in_slot",
-      "line": 2226,
+      "line": 2180,
       "category": "byte_view",
       "member": "chain_word",
       "pointer": null,
@@ -2251,7 +1575,7 @@
     {
       "source": "src/combat.c",
       "function": "damage_equipped_item_in_slot",
-      "line": 2255,
+      "line": 2209,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2260,7 +1584,7 @@
     {
       "source": "src/combat.c",
       "function": "damage_equipped_item_in_slot",
-      "line": 2256,
+      "line": 2210,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2269,7 +1593,7 @@
     {
       "source": "src/combat.c",
       "function": "damage_equipped_item_in_slot",
-      "line": 2257,
+      "line": 2211,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2278,7 +1602,7 @@
     {
       "source": "src/combat.c",
       "function": "resolve_collision_candidate_interaction",
-      "line": 2457,
+      "line": 2355,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2287,7 +1611,7 @@
     {
       "source": "src/containers.c",
       "function": "release_container_reference",
-      "line": 51,
+      "line": 52,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2296,7 +1620,7 @@
     {
       "source": "src/containers.c",
       "function": "release_container_reference",
-      "line": 53,
+      "line": 54,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2305,7 +1629,7 @@
     {
       "source": "src/containers.c",
       "function": "release_container_reference",
-      "line": 54,
+      "line": 55,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2314,7 +1638,7 @@
     {
       "source": "src/containers.c",
       "function": "leave_nested_container_level",
-      "line": 189,
+      "line": 183,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2323,7 +1647,7 @@
     {
       "source": "src/containers.c",
       "function": "leave_nested_container_level",
-      "line": 189,
+      "line": 183,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2332,7 +1656,7 @@
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 351,
+      "line": 341,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2341,7 +1665,7 @@
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 500,
+      "line": 487,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2350,7 +1674,7 @@
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 502,
+      "line": 489,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2359,7 +1683,7 @@
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 503,
+      "line": 490,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -2368,7 +1692,7 @@
     {
       "source": "src/containers.c",
       "function": "sum_container_weight",
-      "line": 766,
+      "line": 753,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2377,7 +1701,7 @@
     {
       "source": "src/containers.c",
       "function": "sum_container_weight",
-      "line": 768,
+      "line": 755,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2386,34 +1710,16 @@
     {
       "source": "src/containers.c",
       "function": "discard_container_contents",
-      "line": 945,
+      "line": 932,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
       "code": "(local_18 = &container->link_word, (*local_18 & 0xffc0) != 0)) {"
     },
     {
-      "source": "src/debug_shim.c",
-      "function": "uw_debug_force_item_id_once",
-      "line": 344,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "ushort old = ((uw_object_hdr_t *)obj)->type_flags;"
-    },
-    {
-      "source": "src/debug_shim.c",
-      "function": "uw_debug_force_item_id_once",
-      "line": 345,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)obj)->type_flags = (old & ~(ushort)0x1ff) | (newid & 0x1ff);"
-    },
-    {
       "source": "src/demomode.c",
-      "function": "demomode_pump",
-      "line": 616,
+      "function": "demo_exec_line",
+      "line": 751,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2421,8 +1727,8 @@
     },
     {
       "source": "src/demomode.c",
-      "function": "demomode_pump",
-      "line": 625,
+      "function": "demo_exec_line",
+      "line": 760,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2430,8 +1736,8 @@
     },
     {
       "source": "src/demomode.c",
-      "function": "demomode_pump",
-      "line": 686,
+      "function": "demo_exec_line",
+      "line": 821,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2439,8 +1745,8 @@
     },
     {
       "source": "src/demomode.c",
-      "function": "demomode_pump",
-      "line": 687,
+      "function": "demo_exec_line",
+      "line": 822,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2449,7 +1755,7 @@
     {
       "source": "src/doors.c",
       "function": "spawn_scheduled_door_texture_object",
-      "line": 164,
+      "line": 159,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2458,7 +1764,7 @@
     {
       "source": "src/game.c",
       "function": "reset_player_object_record",
-      "line": 619,
+      "line": 623,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2467,7 +1773,7 @@
     {
       "source": "src/game.c",
       "function": "set_custom_view_target",
-      "line": 834,
+      "line": 863,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2476,7 +1782,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1445,
+      "line": 1458,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -2485,7 +1791,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1448,
+      "line": 1461,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -2494,7 +1800,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1452,
+      "line": 1465,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2503,7 +1809,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1455,
+      "line": 1468,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2512,7 +1818,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1462,
+      "line": 1471,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2521,7 +1827,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1472,
+      "line": 1481,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -2530,7 +1836,7 @@
     {
       "source": "src/input.c",
       "function": "begin_directional_move",
-      "line": 1530,
+      "line": 1539,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2539,7 +1845,7 @@
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 525,
+      "line": 558,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -2548,7 +1854,7 @@
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 526,
+      "line": 559,
       "category": "byte_view",
       "member": "link_word",
       "pointer": null,
@@ -2557,7 +1863,7 @@
     {
       "source": "src/interact.c",
       "function": "target_in_range",
-      "line": 686,
+      "line": 716,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2566,7 +1872,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 225,
+      "line": 220,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2575,7 +1881,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 225,
+      "line": 220,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2584,7 +1890,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 226,
+      "line": 221,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2593,7 +1899,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 226,
+      "line": 221,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2602,7 +1908,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 227,
+      "line": 222,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2611,7 +1917,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 227,
+      "line": 222,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2620,7 +1926,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 228,
+      "line": 223,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2629,7 +1935,7 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "line": 228,
+      "line": 223,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2638,7 +1944,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 255,
+      "line": 250,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2647,7 +1953,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 255,
+      "line": 250,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2656,7 +1962,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 256,
+      "line": 251,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2665,7 +1971,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 256,
+      "line": 251,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2674,7 +1980,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 257,
+      "line": 252,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2683,7 +1989,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 257,
+      "line": 252,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2692,7 +1998,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 258,
+      "line": 253,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2701,7 +2007,7 @@
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "line": 258,
+      "line": 253,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2710,7 +2016,7 @@
     {
       "source": "src/inventory.c",
       "function": "handle_inventory_panel_click",
-      "line": 328,
+      "line": 319,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2719,7 +2025,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 239,
+      "line": 229,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2728,7 +2034,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 239,
+      "line": 229,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2737,7 +2043,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 239,
+      "line": 229,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2746,7 +2052,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 241,
+      "line": 231,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2755,7 +2061,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 244,
+      "line": 234,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2764,7 +2070,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 249,
+      "line": 239,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2773,7 +2079,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 318,
+      "line": 286,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2782,7 +2088,7 @@
     {
       "source": "src/item_use.c",
       "function": "drop_held_object_near_player",
-      "line": 328,
+      "line": 292,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2790,17 +2096,8 @@
     },
     {
       "source": "src/item_use.c",
-      "function": "begin_holding_object_on_cursor",
-      "line": 909,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "object_type = (int)((uw_object_hdr_t *)object)->type_flags_signed & 0x1ff;"
-    },
-    {
-      "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1413,
+      "line": 1368,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2809,7 +2106,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1413,
+      "line": 1368,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2818,7 +2115,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1414,
+      "line": 1369,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2827,7 +2124,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1414,
+      "line": 1369,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2836,7 +2133,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1415,
+      "line": 1370,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2845,7 +2142,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1415,
+      "line": 1370,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2854,7 +2151,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1416,
+      "line": 1371,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2863,7 +2160,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1416,
+      "line": 1371,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2872,7 +2169,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1422,
+      "line": 1377,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2881,7 +2178,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1422,
+      "line": 1377,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2890,7 +2187,7 @@
     {
       "source": "src/item_use.c",
       "function": "complete_use_item_scatter_spawn",
-      "line": 1433,
+      "line": 1388,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2899,7 +2196,7 @@
     {
       "source": "src/item_use.c",
       "function": "trigger_object_trap_or_use_action",
-      "line": 1853,
+      "line": 1805,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2908,7 +2205,7 @@
     {
       "source": "src/item_use.c",
       "function": "check_offering_container_puzzle",
-      "line": 2003,
+      "line": 1955,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2917,7 +2214,7 @@
     {
       "source": "src/item_use.c",
       "function": "check_offering_container_puzzle",
-      "line": 2004,
+      "line": 1956,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2926,7 +2223,7 @@
     {
       "source": "src/item_use.c",
       "function": "objects_can_stack",
-      "line": 2236,
+      "line": 2188,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2935,7 +2232,7 @@
     {
       "source": "src/item_use.c",
       "function": "objects_can_stack",
-      "line": 2237,
+      "line": 2189,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2944,7 +2241,7 @@
     {
       "source": "src/item_use.c",
       "function": "objects_can_stack",
-      "line": 2240,
+      "line": 2192,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2953,7 +2250,7 @@
     {
       "source": "src/item_use.c",
       "function": "objects_can_stack",
-      "line": 2240,
+      "line": 2192,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2962,7 +2259,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2495,
+      "line": 2447,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2971,7 +2268,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2504,
+      "line": 2456,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2980,7 +2277,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2504,
+      "line": 2456,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2989,7 +2286,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2505,
+      "line": 2457,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2998,7 +2295,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2505,
+      "line": 2457,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3007,7 +2304,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2506,
+      "line": 2458,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3016,7 +2313,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2506,
+      "line": 2458,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3025,7 +2322,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2507,
+      "line": 2459,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3034,7 +2331,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2507,
+      "line": 2459,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3043,7 +2340,7 @@
     {
       "source": "src/item_use.c",
       "function": "reduce_object_count",
-      "line": 2511,
+      "line": 2463,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3052,7 +2349,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2619,
+      "line": 2581,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3061,7 +2358,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2619,
+      "line": 2581,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3070,7 +2367,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2620,
+      "line": 2582,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3079,7 +2376,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2620,
+      "line": 2582,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3088,7 +2385,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2621,
+      "line": 2583,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3097,7 +2394,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2621,
+      "line": 2583,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3106,7 +2403,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2622,
+      "line": 2584,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3115,7 +2412,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2622,
+      "line": 2584,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3124,7 +2421,7 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2627,
+      "line": 2589,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3133,65 +2430,38 @@
     {
       "source": "src/item_use.c",
       "function": "extract_matching_object_from_slot",
-      "line": 2641,
+      "line": 2603,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
       "code": "object_list_unlink(&((uw_object_hdr_t *)local_28)->link_word, puVar3);"
     },
     {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 227,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.chain_word_low = g_player_object->hdr.quality;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 228,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.chain_word_high = 0;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 229,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.link_word_low = g_player_object->hdr.owner;"
-    },
-    {
-      "source": "src/level.c",
-      "function": "reset_level_object_arena",
-      "line": 230,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.link_word_high = 0;"
-    },
-    {
-      "source": "src/movement.c",
-      "function": "reticle_object_pick",
-      "line": 391,
-      "category": "signed_word_view",
+      "source": "src/item_use.c",
+      "function": "check_object_fits_in_slot",
+      "line": 3113,
+      "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "DAT_00086999 = (undefined1)((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU);"
+      "code": "uVar1 = header->type_flags;"
     },
     {
-      "source": "src/movement.c",
-      "function": "reticle_object_pick",
-      "line": 392,
-      "category": "signed_word_view",
+      "source": "src/item_use.c",
+      "function": "check_object_fits_in_slot",
+      "line": 3121,
+      "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "DAT_0008699a = (undefined1)(((int)((uw_object_hdr_t *)psVar3)->type_flags_signed & 0x1ffU) >> 8);"
+      "code": "uVar1 = header->type_flags;"
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "check_object_fits_in_slot",
+      "line": 3156,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "sum_container_weight(&puVar11->link_word,local_54);"
     },
     {
       "source": "src/movement.c",
@@ -3205,7 +2475,7 @@
     {
       "source": "src/movement.c",
       "function": "collision_response_default",
-      "line": 1750,
+      "line": 1808,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -3214,7 +2484,7 @@
     {
       "source": "src/movement.c",
       "function": "collision_response_default",
-      "line": 1751,
+      "line": 1809,
       "category": "byte_view",
       "member": "goal_word",
       "pointer": null,
@@ -3223,7 +2493,7 @@
     {
       "source": "src/movement.c",
       "function": "collision_response_default",
-      "line": 1752,
+      "line": 1810,
       "category": "byte_view",
       "member": "goal_word",
       "pointer": null,
@@ -3232,7 +2502,7 @@
     {
       "source": "src/movement.c",
       "function": "find_nearby_door_in_candidates",
-      "line": 1944,
+      "line": 2002,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3241,7 +2511,7 @@
     {
       "source": "src/object_actions.c",
       "function": "dispatch_object_action",
-      "line": 171,
+      "line": 160,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3250,7 +2520,7 @@
     {
       "source": "src/object_actions.c",
       "function": "dispatch_object_action",
-      "line": 204,
+      "line": 193,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3259,7 +2529,7 @@
     {
       "source": "src/object_actions.c",
       "function": "dispatch_object_action_dup",
-      "line": 494,
+      "line": 433,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3268,7 +2538,7 @@
     {
       "source": "src/object_actions.c",
       "function": "dispatch_object_action_dup",
-      "line": 527,
+      "line": 466,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3277,115 +2547,34 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_drop_height",
-      "line": 566,
+      "line": 507,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)object)->type_flags;"
+      "code": "uVar2 = projectile->hdr.type_flags;"
     },
     {
       "source": "src/object_actions.c",
       "function": "check_object_drop_height",
-      "line": 578,
+      "line": 544,
       "category": "packed_word",
       "member": "tile_position",
       "pointer": null,
-      "code": "(unsigned)((uw_mobile_object_t *)object)->tile_position,"
+      "code": "uVar2 = projectile->tile_position;"
     },
     {
       "source": "src/object_actions.c",
       "function": "check_object_drop_height",
-      "line": 579,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)object)->position_word_high);"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 622,
-      "category": "packed_word",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "uVar2 = ((uw_mobile_object_t *)object)->tile_position;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 627,
-      "category": "byte_view",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)object)->tile_position_low = (byte)(char)uVar6;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 628,
-      "category": "byte_view",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)object)->tile_position_high = (byte)(uVar6 >> 8) | (byte)(uVar7 >> 8);"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 630,
-      "category": "packed_word",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "((uw_mobile_object_t *)object)->tile_position = (ushort)uVar7;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 631,
+      "line": 552,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar7 = (uint)((uw_object_hdr_t *)object)->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 634,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_low = (byte)(char)uVar6;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 635,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_high = (byte)(uVar6 >> 8) | bVar1;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 638,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_low = (byte)(char)uVar7;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_drop_height",
-      "line": 640,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word_high ="
+      "code": "uVar7 = (uint)projectile->hdr.position_word;"
     },
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 672,
+      "line": 590,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3394,7 +2583,7 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 681,
+      "line": 599,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -3403,7 +2592,7 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 682,
+      "line": 600,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -3412,7 +2601,7 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 702,
+      "line": 620,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3421,7 +2610,7 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 703,
+      "line": 621,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3429,143 +2618,8 @@
     },
     {
       "source": "src/object_actions.c",
-      "function": "spawn_and_prime_spell_effect_object",
-      "line": 920,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)iVar4)->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_and_prime_spell_effect_object",
-      "line": 922,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (bVar3 ^ bVar6) & 0x7f ^ bVar3;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_and_prime_spell_effect_object",
-      "line": 923,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)((ushort)uVar2 >> 8);"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1411,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)caster)->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1484,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar2 = pObj->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1510,
-      "category": "packed_word",
-      "member": "status_word",
-      "pointer": null,
-      "code": "uVar10 = ((uw_mobile_object_t *)pObj)->status_word & 0x3fff;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1513,
-      "category": "packed_word",
-      "member": "target_word",
-      "pointer": null,
-      "code": "uVar2 = ((uw_mobile_object_t *)pObj)->target_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1522,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "uVar7 = pObj->chain_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_summon_or_spawn_effect",
-      "line": 1525,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar7 = pObj->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_random_variant_object_at_tile",
-      "line": 1565,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar6 = ((uw_object_hdr_t *)iVar4)->position_word & 0xffee;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_random_variant_object_at_tile",
-      "line": 1566,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_random_variant_object_at_tile",
-      "line": 1567,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "cast_detect_life_spell",
-      "line": 1622,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "uVar2 = g_player_object->tile_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "complete_pending_player_command_target",
-      "line": 1709,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)target)->position_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "complete_pending_player_command_target",
-      "line": 1710,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)target)->position_word = (ushort)(uVar1 | 0x380);"
-    },
-    {
-      "source": "src/object_actions.c",
       "function": "consume_linked_special_object_charge",
-      "line": 2097,
+      "line": 1175,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3574,7 +2628,7 @@
     {
       "source": "src/object_actions.c",
       "function": "consume_linked_special_object_charge",
-      "line": 2107,
+      "line": 1185,
       "category": "byte_view",
       "member": "chain_word",
       "pointer": null,
@@ -3583,7 +2637,7 @@
     {
       "source": "src/object_actions.c",
       "function": "consume_linked_special_object_charge",
-      "line": 2108,
+      "line": 1186,
       "category": "byte_view",
       "member": "chain_word",
       "pointer": null,
@@ -3592,7 +2646,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2245,
+      "line": 1323,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3601,7 +2655,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2245,
+      "line": 1323,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3610,7 +2664,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2246,
+      "line": 1324,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3619,7 +2673,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2246,
+      "line": 1324,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3628,7 +2682,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2247,
+      "line": 1325,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3637,7 +2691,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2247,
+      "line": 1325,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3646,7 +2700,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2248,
+      "line": 1326,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3655,7 +2709,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2248,
+      "line": 1326,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3664,7 +2718,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2250,
+      "line": 1328,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3673,7 +2727,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2261,
+      "line": 1339,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3682,7 +2736,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2272,
+      "line": 1350,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3691,7 +2745,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 2275,
+      "line": 1353,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3700,7 +2754,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2345,
+      "line": 1423,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3709,7 +2763,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2346,
+      "line": 1424,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3718,7 +2772,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2347,
+      "line": 1425,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3727,7 +2781,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2348,
+      "line": 1426,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3736,7 +2790,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2349,
+      "line": 1427,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3745,7 +2799,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 2373,
+      "line": 1451,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -3754,7 +2808,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
-      "line": 99,
+      "line": 100,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3763,7 +2817,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
-      "line": 103,
+      "line": 104,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3772,11 +2826,20 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
+      "line": 112,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar7 = puVar6->hdr.position_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "spawn_object_near_player",
       "line": 115,
       "category": "packed_word",
-      "member": "tile_position",
+      "member": "type_flags",
       "pointer": null,
-      "code": "(unsigned) puVar6->tile_position, (int)(puVar6->tile_x),"
+      "code": "uVar9 = puVar6->hdr.type_flags;"
     },
     {
       "source": "src/objects.c",
@@ -3790,34 +2853,16 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
-      "line": 121,
+      "line": 120,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "position_word",
       "pointer": null,
-      "code": "uVar9 = puVar6->hdr.type_flags;"
+      "code": "uVar7 = puVar6->hdr.position_word;"
     },
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
       "line": 124,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar7 = puVar6->hdr.position_word;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_object_near_player",
-      "line": 126,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "uVar7 = puVar6->hdr.position_word;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_object_near_player",
-      "line": 130,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -3826,7 +2871,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
-      "line": 135,
+      "line": 129,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -3835,34 +2880,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_object_near_player",
-      "line": 147,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned) puVar6->hdr.type_flags,"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_object_near_player",
-      "line": 149,
-      "category": "packed_word",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "(unsigned) puVar6->tile_position,"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_object_near_player",
-      "line": 167,
-      "category": "packed_word",
-      "member": "tile_position",
-      "pointer": null,
-      "code": "(unsigned) puVar6->tile_position, (int)(puVar6->tile_x),"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_object_near_player",
-      "line": 173,
+      "line": 157,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3871,7 +2889,7 @@
     {
       "source": "src/objects.c",
       "function": "object_list_append_tail",
-      "line": 290,
+      "line": 274,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3880,7 +2898,7 @@
     {
       "source": "src/objects.c",
       "function": "object_list_unlink",
-      "line": 328,
+      "line": 312,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3889,7 +2907,7 @@
     {
       "source": "src/objects.c",
       "function": "object_list_unlink",
-      "line": 330,
+      "line": 314,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3898,7 +2916,7 @@
     {
       "source": "src/objects.c",
       "function": "free_linked_object_recursive",
-      "line": 352,
+      "line": 336,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3907,7 +2925,7 @@
     {
       "source": "src/objects.c",
       "function": "free_linked_object_recursive",
-      "line": 356,
+      "line": 340,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3916,7 +2934,7 @@
     {
       "source": "src/objects.c",
       "function": "unlink_and_free_object",
-      "line": 379,
+      "line": 363,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3925,7 +2943,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_new_object",
-      "line": 442,
+      "line": 426,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3934,7 +2952,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_new_object",
-      "line": 443,
+      "line": 427,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3943,7 +2961,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_new_object",
-      "line": 444,
+      "line": 428,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3952,7 +2970,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_new_object",
-      "line": 447,
+      "line": 431,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3961,7 +2979,7 @@
     {
       "source": "src/objects.c",
       "function": "spawn_new_object",
-      "line": 452,
+      "line": 436,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3970,7 +2988,7 @@
     {
       "source": "src/objects.c",
       "function": "clear_object_temp_flag_callback",
-      "line": 837,
+      "line": 827,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3979,7 +2997,7 @@
     {
       "source": "src/objects.c",
       "function": "clear_object_temp_flag_callback",
-      "line": 838,
+      "line": 828,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3988,7 +3006,7 @@
     {
       "source": "src/objects.c",
       "function": "calculate_object_weight",
-      "line": 917,
+      "line": 907,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3997,7 +3015,7 @@
     {
       "source": "src/objects.c",
       "function": "despawn_objects_outside_radius",
-      "line": 1156,
+      "line": 1146,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -4006,7 +3024,7 @@
     {
       "source": "src/objects.c",
       "function": "despawn_objects_outside_radius",
-      "line": 1173,
+      "line": 1163,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4015,7 +3033,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_by_encoded_slot_in_chain",
-      "line": 1286,
+      "line": 1276,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4024,7 +3042,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_by_encoded_slot_in_chain",
-      "line": 1289,
+      "line": 1279,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4033,7 +3051,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1364,
+      "line": 1354,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4042,7 +3060,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1366,
+      "line": 1356,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4051,7 +3069,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1370,
+      "line": 1360,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4060,7 +3078,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1376,
+      "line": 1366,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4069,7 +3087,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1382,
+      "line": 1372,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4077,17 +3095,8 @@
     },
     {
       "source": "src/objects.c",
-      "function": "settle_dropped_object",
-      "line": 1566,
-      "category": "signed_word_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "uVar8 = (int)((uw_object_hdr_t *)psVar7)->type_flags_signed & 0x1ff;"
-    },
-    {
-      "source": "src/objects.c",
       "function": "class6_variant_effect_table_lookup",
-      "line": 1676,
+      "line": 1645,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4096,7 +3105,7 @@
     {
       "source": "src/objects.c",
       "function": "class0_variant_effect_table_lookup",
-      "line": 1720,
+      "line": 1689,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4105,7 +3114,7 @@
     {
       "source": "src/objects.c",
       "function": "class2_variant_effect_table_lookup",
-      "line": 1747,
+      "line": 1716,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4114,7 +3123,7 @@
     {
       "source": "src/objects.c",
       "function": "compute_object_placement_fields",
-      "line": 1811,
+      "line": 1777,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4123,7 +3132,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1871,
+      "line": 1820,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4132,7 +3141,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1871,
+      "line": 1820,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4141,7 +3150,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1872,
+      "line": 1821,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4150,7 +3159,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1872,
+      "line": 1821,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4159,7 +3168,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1873,
+      "line": 1822,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4168,7 +3177,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1873,
+      "line": 1822,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4177,7 +3186,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1874,
+      "line": 1823,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4186,7 +3195,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1874,
+      "line": 1823,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4195,7 +3204,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 244,
+      "line": 254,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4204,7 +3213,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 246,
+      "line": 256,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -4213,7 +3222,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 249,
+      "line": 259,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -4222,7 +3231,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 250,
+      "line": 260,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4231,7 +3240,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 252,
+      "line": 262,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4240,7 +3249,7 @@
     {
       "source": "src/player.c",
       "function": "set_player_tile_position",
-      "line": 256,
+      "line": 266,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4249,7 +3258,7 @@
     {
       "source": "src/player.c",
       "function": "debug_print_player_position",
-      "line": 293,
+      "line": 301,
       "category": "byte_view",
       "member": "tile_word",
       "pointer": null,
@@ -4258,7 +3267,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 324,
+      "line": 332,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -4267,7 +3276,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 327,
+      "line": 335,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -4276,7 +3285,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 330,
+      "line": 338,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4285,7 +3294,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 333,
+      "line": 341,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4294,7 +3303,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 335,
+      "line": 343,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4303,7 +3312,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 338,
+      "line": 346,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -4312,7 +3321,7 @@
     {
       "source": "src/player.c",
       "function": "commit_player_move",
-      "line": 358,
+      "line": 368,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4321,7 +3330,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 518,
+      "line": 524,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4330,7 +3339,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 518,
+      "line": 524,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4339,7 +3348,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 519,
+      "line": 525,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4348,7 +3357,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 519,
+      "line": 525,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4357,7 +3366,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 520,
+      "line": 526,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4366,7 +3375,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 520,
+      "line": 526,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4375,7 +3384,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 521,
+      "line": 527,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4384,7 +3393,7 @@
     {
       "source": "src/player.c",
       "function": "build_player_save_record",
-      "line": 521,
+      "line": 527,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4393,7 +3402,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 613,
+      "line": 618,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4402,7 +3411,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 613,
+      "line": 618,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4411,7 +3420,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 614,
+      "line": 619,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4420,7 +3429,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 614,
+      "line": 619,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4429,7 +3438,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 615,
+      "line": 620,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4438,7 +3447,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 615,
+      "line": 620,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -4447,7 +3456,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 616,
+      "line": 621,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4456,7 +3465,7 @@
     {
       "source": "src/player.c",
       "function": "restore_player_save_record",
-      "line": 616,
+      "line": 621,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4465,16 +3474,7 @@
     {
       "source": "src/player.c",
       "function": "refresh_player_equipment_effects",
-      "line": 683,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "g_scratch_object_ptr ? (unsigned) g_scratch_object_ptr->type_flags : 0xffff);"
-    },
-    {
-      "source": "src/player.c",
-      "function": "refresh_player_equipment_effects",
-      "line": 685,
+      "line": 687,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4483,124 +3483,43 @@
     {
       "source": "src/player.c",
       "function": "handle_game_victory_sequence",
-      "line": 2702,
+      "line": 2671,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)puVar5)->type_flags;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_game_victory_sequence",
-      "line": 2703,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->type_flags_low = (byte)(char)uVar2;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_game_victory_sequence",
-      "line": 2704,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar2 >> 8) | 0x80;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_game_victory_sequence",
-      "line": 2705,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_low = ((uw_object_hdr_t *)puVar5)->owner;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_game_victory_sequence",
-      "line": 2706,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->link_word_high = 0xb0;"
+      "code": "uVar2 = puVar5->type_flags;"
     },
     {
       "source": "src/player.c",
       "function": "handle_starvation_penalty",
-      "line": 2819,
+      "line": 2786,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar4 = ((uw_object_hdr_t *)pNewObj)->position_word;"
+      "code": "uVar4 = pNewObj->position_word;"
     },
     {
       "source": "src/player.c",
       "function": "handle_starvation_penalty",
-      "line": 2821,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_low = (g_player_object->hdr.position_word_low ^ bVar1) & 0x7f ^ bVar1;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2821,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_low = (g_player_object->hdr.position_word_low ^ bVar1) & 0x7f ^ bVar1;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2822,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_high = (byte)(char)((ushort)uVar4 >> 8);"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2824,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->link_word_high = ((uw_object_hdr_t *)pNewObj)->link_word_high;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2824,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->link_word_high = ((uw_object_hdr_t *)pNewObj)->link_word_high;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2825,
+      "line": 2790,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar8 = (((uw_object_hdr_t *)pNewObj)->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^"
+      "code": "uVar8 = (pNewObj->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^"
     },
     {
       "source": "src/player.c",
       "function": "handle_starvation_penalty",
-      "line": 2825,
+      "line": 2790,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar8 = (((uw_object_hdr_t *)pNewObj)->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^"
+      "code": "uVar8 = (pNewObj->position_word ^ g_player_object->hdr.position_word) & 0x1fff ^"
     },
     {
       "source": "src/player.c",
       "function": "handle_starvation_penalty",
-      "line": 2826,
+      "line": 2791,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4609,52 +3528,16 @@
     {
       "source": "src/player.c",
       "function": "handle_starvation_penalty",
-      "line": 2828,
-      "category": "byte_view",
+      "line": 2795,
+      "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_low = uVar2;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2830,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_high = bVar3;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2831,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "bVar1 = g_player_object->hdr.position_word_high;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2832,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_low = uVar2;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "handle_starvation_penalty",
-      "line": 2833,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)pNewObj)->position_word_high = (bVar1 ^ bVar3) & 0x1c ^ bVar3;"
+      "code": "bVar1 = (byte)(g_player_object->hdr.position_word >> 8);"
     },
     {
       "source": "src/player.c",
       "function": "reset_player_for_resurrection",
-      "line": 3333,
+      "line": 3269,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -4663,70 +3546,34 @@
     {
       "source": "src/player.c",
       "function": "decay_equipped_light_sources",
-      "line": 3755,
+      "line": 3679,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)puVar6)->type_flags;"
+      "code": "uVar2 = puVar6->type_flags;"
     },
     {
       "source": "src/player.c",
       "function": "decay_equipped_light_sources",
-      "line": 3769,
+      "line": 3693,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)puVar6)->chain_word;"
+      "code": "uVar3 = puVar6->chain_word;"
     },
     {
       "source": "src/player.c",
       "function": "decay_equipped_light_sources",
-      "line": 3772,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->chain_word_low = (bVar4 - (char)uVar8 ^ bVar4) & 0x3f ^ bVar4;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "decay_equipped_light_sources",
-      "line": 3773,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->chain_word_high = (byte)(uVar3 >> 8);"
-    },
-    {
-      "source": "src/player.c",
-      "function": "decay_equipped_light_sources",
-      "line": 3777,
+      "line": 3702,
       "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->chain_word = (ushort)uVar7;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "decay_equipped_light_sources",
-      "line": 3779,
-      "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_low = (bVar4 - 4 ^ bVar4) & 0xf ^ bVar4;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "decay_equipped_light_sources",
-      "line": 3780,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_high = (byte)(uVar2 >> 8);"
+      "code": "puVar6->type_flags = (ushort)(uVar2 - 4);"
     },
     {
       "source": "src/saveload.c",
       "function": "commit_level_to_save_slot",
-      "line": 965,
+      "line": 955,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4735,7 +3582,7 @@
     {
       "source": "src/saveload.c",
       "function": "commit_level_to_save_slot",
-      "line": 966,
+      "line": 956,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -4744,142 +3591,34 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_finish_entry",
-      "line": 120,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar4)->type_flags, (int)uVar5,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 130,
+      "line": 145,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar10 = (byte)((byte)((uw_object_hdr_t *)puVar4)->link_word >> 4) & 3;"
+      "code": "uVar1 = puVar4->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_finish_entry",
-      "line": 135,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar4)->type_flags, (int)uVar5,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 155,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar4)->link_word;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 157,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->link_word_low = (bVar3 ^ (byte)uVar5) & 0x3f ^ bVar3;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 158,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->link_word_high = (byte)(uVar1 >> 8);"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 167,
+      "line": 156,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)puVar4)->position_word;"
+      "code": "uVar2 = puVar4->position_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_finish_entry",
-      "line": 169,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_low = (bVar3 ^ (byte)uVar8) & 0x7f ^ bVar3;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 170,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_high = (byte)(uVar2 >> 8);"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 171,
+      "line": 159,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar10 = ((uw_object_hdr_t *)puVar4)->type_flags & 0xff4f | (uVar10 | 0x14) << 4;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 173,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)uVar5;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 174,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(uVar10 >> 8);"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 176,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->link_word = (ushort)uVar10;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 184,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags = (ushort)uVar8;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_finish_entry",
-      "line": 187,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar4)->type_flags,"
+      "code": "uVar10 = puVar4->type_flags & 0xff4f | (uVar10 | 0x14) << 4;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_add_entry",
-      "line": 265,
+      "line": 248,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4888,7 +3627,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_add_entry",
-      "line": 266,
+      "line": 249,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4897,7 +3636,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_add_entry",
-      "line": 269,
+      "line": 252,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4906,7 +3645,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_add_entry",
-      "line": 275,
+      "line": 258,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -4915,115 +3654,43 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 317,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar4)->type_flags,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 324,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar4)->type_flags,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 333,
+      "line": 300,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;"
+      "code": "uVar8 = puVar4->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 342,
+      "line": 315,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->link_word = (ushort)uVar8;"
+      "code": "uVar8 = puVar4->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 349,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->link_word;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 365,
+      "line": 331,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar8 = ((uw_object_hdr_t *)puVar4)->position_word;"
+      "code": "uVar8 = puVar4->position_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_step_entry",
-      "line": 367,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_low = ((char)elapsed * '\\x06' + bVar2 ^ bVar2) & 0x7f ^ bVar2;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 368,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->position_word_high = (byte)(char)(uVar8 >> 8);"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 370,
+      "line": 335,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar5 = (uint)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 372,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 372,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar4)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_step_entry",
-      "line": 373,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(char)(uVar5 >> 8);"
+      "code": "uVar5 = (uint)puVar4->type_flags;"
     },
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 467,
+      "line": 425,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5032,7 +3699,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 467,
+      "line": 425,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5041,7 +3708,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 467,
+      "line": 425,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5050,7 +3717,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 471,
+      "line": 429,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5059,7 +3726,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 475,
+      "line": 433,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5068,7 +3735,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 481,
+      "line": 439,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5077,7 +3744,7 @@
     {
       "source": "src/scheduler.c",
       "function": "spawn_scheduled_effect_object",
-      "line": 485,
+      "line": 443,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5086,7 +3753,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 592,
+      "line": 550,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5095,25 +3762,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 608,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "iVar4, (unsigned)((uw_object_hdr_t *)puVar2)->type_flags,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_advance_effect",
-      "line": 611,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)puVar2)->position_word, (int)uVar9,"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_advance_effect",
-      "line": 615,
+      "line": 564,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5122,7 +3771,7 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 621,
+      "line": 570,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -5131,25 +3780,151 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 622,
+      "line": 571,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
       "code": "((uw_object_hdr_t *)puVar2)->type_flags_high ="
     },
     {
-      "source": "src/scheduler.c",
-      "function": "scheduler_advance_effect",
-      "line": 627,
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 390,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "position_word",
       "pointer": null,
-      "code": "elapsed, (unsigned)((uw_object_hdr_t *)puVar2)->type_flags,"
+      "code": "uVar2 = ((uw_object_hdr_t *)caster)->position_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 469,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar2 = pObj->position_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 495,
+      "category": "packed_word",
+      "member": "status_word",
+      "pointer": null,
+      "code": "uVar10 = ((uw_mobile_object_t *)pObj)->status_word & 0x3fff;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 498,
+      "category": "packed_word",
+      "member": "target_word",
+      "pointer": null,
+      "code": "uVar2 = ((uw_mobile_object_t *)pObj)->target_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 507,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "uVar7 = pObj->chain_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_summon_or_spawn_effect",
+      "line": 510,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar7 = pObj->position_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "cast_detect_life_spell",
+      "line": 563,
+      "category": "packed_word",
+      "member": "tile_word",
+      "pointer": null,
+      "code": "uVar2 = g_player_object->tile_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_and_prime_spell_effect_object",
+      "line": 688,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar2 = ((uw_object_hdr_t *)iVar4)->position_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_and_prime_spell_effect_object",
+      "line": 690,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (bVar3 ^ bVar6) & 0x7f ^ bVar3;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_and_prime_spell_effect_object",
+      "line": 691,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)((ushort)uVar2 >> 8);"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "complete_pending_player_command_target",
+      "line": 801,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar1 = ((uw_object_hdr_t *)target)->position_word;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "complete_pending_player_command_target",
+      "line": 802,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)target)->position_word = (ushort)(uVar1 | 0x380);"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_random_variant_object_at_tile",
+      "line": 839,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar6 = ((uw_object_hdr_t *)iVar4)->position_word & 0xffee;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_random_variant_object_at_tile",
+      "line": 840,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;"
+    },
+    {
+      "source": "src/spells.c",
+      "function": "spawn_random_variant_object_at_tile",
+      "line": 841,
+      "category": "byte_view",
+      "member": "position_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);"
     },
     {
       "source": "src/tmap.c",
       "function": "emit_tile_features",
-      "line": 1900,
+      "line": 1530,
       "category": "packed_word",
       "member": "size_weight",
       "pointer": null,
@@ -5158,7 +3933,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_features",
-      "line": 1906,
+      "line": 1536,
       "category": "packed_word",
       "member": "size_weight",
       "pointer": null,
@@ -5167,7 +3942,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2111,
+      "line": 1740,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5176,7 +3951,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2142,
+      "line": 1771,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5185,7 +3960,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2156,
+      "line": 1785,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5194,7 +3969,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2178,
+      "line": 1807,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5203,7 +3978,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2186,
+      "line": 1815,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5212,7 +3987,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2216,
+      "line": 1845,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5221,7 +3996,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2222,
+      "line": 1851,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5230,7 +4005,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2232,
+      "line": 1861,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5239,7 +4014,7 @@
     {
       "source": "src/tmap.c",
       "function": "emit_tile_objects",
-      "line": 2263,
+      "line": 1892,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5248,7 +4023,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 108,
+      "line": 109,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5257,7 +4032,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 109,
+      "line": 110,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5266,7 +4041,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 116,
+      "line": 117,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5275,7 +4050,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 123,
+      "line": 124,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5284,7 +4059,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 124,
+      "line": 125,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5293,16 +4068,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 147,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar8)->type_flags = ((uw_object_hdr_t *)puVar12)->type_flags;"
-    },
-    {
-      "source": "src/traps.c",
-      "function": "dispatch_trap_type_effect",
-      "line": 147,
+      "line": 148,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5313,14 +4079,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 148,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar8)->position_word = ((uw_object_hdr_t *)puVar12)->position_word;"
+      "code": "((uw_object_hdr_t *)puVar8)->type_flags = ((uw_object_hdr_t *)puVar12)->type_flags;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 148,
+      "line": 149,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5331,14 +4097,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 149,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar8)->chain_word = ((uw_object_hdr_t *)puVar12)->chain_word;"
+      "code": "((uw_object_hdr_t *)puVar8)->position_word = ((uw_object_hdr_t *)puVar12)->position_word;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 149,
+      "line": 150,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5349,14 +4115,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 150,
       "category": "packed_word",
-      "member": "link_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar8)->link_word = ((uw_object_hdr_t *)puVar12)->link_word;"
+      "code": "((uw_object_hdr_t *)puVar8)->chain_word = ((uw_object_hdr_t *)puVar12)->chain_word;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 150,
+      "line": 151,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5365,7 +4131,16 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 165,
+      "line": 151,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "((uw_object_hdr_t *)puVar8)->link_word = ((uw_object_hdr_t *)puVar12)->link_word;"
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "line": 166,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5374,16 +4149,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 175,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->type_flags = ((uw_object_hdr_t *)puVar10)->type_flags;"
-    },
-    {
-      "source": "src/traps.c",
-      "function": "dispatch_trap_type_effect",
-      "line": 175,
+      "line": 176,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5394,14 +4160,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 176,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->position_word = ((uw_object_hdr_t *)puVar10)->position_word;"
+      "code": "((uw_object_hdr_t *)puVar9)->type_flags = ((uw_object_hdr_t *)puVar10)->type_flags;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 176,
+      "line": 177,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5412,14 +4178,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 177,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->chain_word = ((uw_object_hdr_t *)puVar10)->chain_word;"
+      "code": "((uw_object_hdr_t *)puVar9)->position_word = ((uw_object_hdr_t *)puVar10)->position_word;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 177,
+      "line": 178,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5430,14 +4196,14 @@
       "function": "dispatch_trap_type_effect",
       "line": 178,
       "category": "packed_word",
-      "member": "link_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar9)->link_word = ((uw_object_hdr_t *)puVar10)->link_word;"
+      "code": "((uw_object_hdr_t *)puVar9)->chain_word = ((uw_object_hdr_t *)puVar10)->chain_word;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 178,
+      "line": 179,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5446,16 +4212,16 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 211,
+      "line": 179,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)_case8_p1)->type_flags);"
+      "code": "((uw_object_hdr_t *)puVar9)->link_word = ((uw_object_hdr_t *)puVar10)->link_word;"
     },
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 236,
+      "line": 232,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5464,7 +4230,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 236,
+      "line": 232,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5473,7 +4239,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 237,
+      "line": 233,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5482,7 +4248,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 237,
+      "line": 233,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5491,7 +4257,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 238,
+      "line": 234,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5500,7 +4266,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 238,
+      "line": 234,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5509,7 +4275,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 239,
+      "line": 235,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5518,7 +4284,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 239,
+      "line": 235,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5527,16 +4293,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 249,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(unsigned)((uw_object_hdr_t *)_case8_p1)->type_flags);"
-    },
-    {
-      "source": "src/traps.c",
-      "function": "dispatch_trap_type_effect",
-      "line": 274,
+      "line": 266,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5545,7 +4302,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 313,
+      "line": 305,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5554,7 +4311,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 314,
+      "line": 306,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5563,7 +4320,7 @@
     {
       "source": "src/traps.c",
       "function": "dispatch_trap_type_effect",
-      "line": 369,
+      "line": 361,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5572,7 +4329,7 @@
     {
       "source": "src/traps.c",
       "function": "create_scripted_trap_pair_at_tile",
-      "line": 533,
+      "line": 528,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5581,7 +4338,7 @@
     {
       "source": "src/traps.c",
       "function": "create_scripted_trap_pair_at_tile",
-      "line": 538,
+      "line": 533,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5590,7 +4347,7 @@
     {
       "source": "src/traps.c",
       "function": "create_scripted_trap_pair_at_tile",
-      "line": 553,
+      "line": 548,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -5599,7 +4356,7 @@
     {
       "source": "src/traps.c",
       "function": "create_scripted_trap_pair_at_tile",
-      "line": 559,
+      "line": 554,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5608,7 +4365,7 @@
     {
       "source": "src/traps.c",
       "function": "create_scripted_trap_pair_at_tile",
-      "line": 565,
+      "line": 560,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5617,7 +4374,7 @@
     {
       "source": "src/traps.c",
       "function": "remove_trap_chain_marker",
-      "line": 602,
+      "line": 597,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -5626,7 +4383,7 @@
     {
       "source": "src/traps.c",
       "function": "remove_trap_chain_marker",
-      "line": 603,
+      "line": 598,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -5635,7 +4392,7 @@
     {
       "source": "src/traps.c",
       "function": "process_nearby_background_traps",
-      "line": 711,
+      "line": 706,
       "category": "byte_view",
       "member": "type_flags",
       "pointer": null,
@@ -5644,7 +4401,7 @@
     {
       "source": "src/traps.c",
       "function": "process_nearby_background_traps",
-      "line": 718,
+      "line": 713,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "pbVar5",
@@ -5653,7 +4410,7 @@
     {
       "source": "src/traps.c",
       "function": "process_nearby_background_traps",
-      "line": 719,
+      "line": 714,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "pbVar5",
@@ -5662,7 +4419,7 @@
     {
       "source": "src/traps.c",
       "function": "process_nearby_background_traps",
-      "line": 720,
+      "line": 715,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "pbVar5",
@@ -5671,7 +4428,7 @@
     {
       "source": "src/traps.c",
       "function": "try_combine_shrine_markers",
-      "line": 1090,
+      "line": 1085,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5680,7 +4437,7 @@
     {
       "source": "src/traps.c",
       "function": "apply_quest_event_numeric_effect",
-      "line": 1129,
+      "line": 1124,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -5689,155 +4446,56 @@
     {
       "source": "src/weapon_swing.c",
       "function": "fire_ranged_weapon",
-      "line": 801,
+      "line": 783,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar8 = (*puVar7 ^ ((uw_object_hdr_t *)puVar6)->type_flags) & 0x7fff ^ (uint)*puVar7;"
+      "code": "uVar8 = (puVar7->type_flags ^ puVar6->hdr.type_flags) & 0x7fff ^ (uint)puVar7->type_flags;"
     },
     {
       "source": "src/weapon_swing.c",
       "function": "fire_ranged_weapon",
-      "line": 802,
+      "line": 783,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags = (ushort)uVar8;"
+      "code": "uVar8 = (puVar7->type_flags ^ puVar6->hdr.type_flags) & 0x7fff ^ (uint)puVar7->type_flags;"
     },
     {
       "source": "src/weapon_swing.c",
       "function": "fire_ranged_weapon",
-      "line": 805,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)((uw_object_hdr_t *)puVar6)->link_word ^ bVar2) & 0x3f ^ bVar2;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 805,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)((uw_object_hdr_t *)puVar6)->link_word ^ bVar2) & 0x3f ^ bVar2;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 806,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_high = (byte)(char)(uVar4 >> 8);"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 808,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 808,
+      "line": 783,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;"
+      "code": "uVar8 = (puVar7->type_flags ^ puVar6->hdr.type_flags) & 0x7fff ^ (uint)puVar7->type_flags;"
     },
     {
       "source": "src/weapon_swing.c",
       "function": "fire_ranged_weapon",
-      "line": 809,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_high ="
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 810,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(bVar2 ^ ((uw_object_hdr_t *)puVar6)->type_flags_high) & 0x1e ^ ((uw_object_hdr_t *)puVar6)->type_flags_high;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 810,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "(bVar2 ^ ((uw_object_hdr_t *)puVar6)->type_flags_high) & 0x1e ^ ((uw_object_hdr_t *)puVar6)->type_flags_high;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 812,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)puVar7[3] ^ (byte)((uw_object_hdr_t *)puVar6)->link_word) & 0x3f ^ (byte)((uw_object_hdr_t *)puVar6)->link_word;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 812,
+      "line": 785,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)puVar7[3] ^ (byte)((uw_object_hdr_t *)puVar6)->link_word) & 0x3f ^ (byte)((uw_object_hdr_t *)puVar6)->link_word;"
+      "code": "uVar4 = puVar7->link_word;"
     },
     {
       "source": "src/weapon_swing.c",
       "function": "fire_ranged_weapon",
-      "line": 812,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)puVar7[3] ^ (byte)((uw_object_hdr_t *)puVar6)->link_word) & 0x3f ^ (byte)((uw_object_hdr_t *)puVar6)->link_word;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 813,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_high = ((uw_object_hdr_t *)puVar6)->link_word_high;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 813,
-      "category": "byte_view",
-      "member": "link_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->link_word_high = ((uw_object_hdr_t *)puVar6)->link_word_high;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 815,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;"
-    },
-    {
-      "source": "src/weapon_swing.c",
-      "function": "fire_ranged_weapon",
-      "line": 815,
+      "line": 788,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;"
+      "code": "bVar2 = (byte)(puVar7->type_flags >> 8);"
+    },
+    {
+      "source": "src/weapon_swing.c",
+      "function": "fire_ranged_weapon",
+      "line": 793,
+      "category": "packed_word",
+      "member": "type_flags",
+      "pointer": null,
+      "code": "bVar2 = (byte)(puVar7->type_flags >> 8);"
     }
   ]
 }

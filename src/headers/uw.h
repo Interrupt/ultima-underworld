@@ -422,6 +422,7 @@ typedef struct __attribute__((packed)) {
     unsigned short wall_tex     : 6;  /* bits 0-5 */
     unsigned short obj_head     : 10; /* bits 6-15: first object slot index on this tile */
 } uw_tile_t;  /* 4 bytes total */
+_Static_assert(sizeof(uw_tile_t) == 4, "UW1 tile record layout");
 
 /* UW1 COMOBJ.DAT: 11 bytes on disk, expanded by the ARM loader to 13
  * bytes in memory. Disk bytes 4..10 become native bytes 5..11. */

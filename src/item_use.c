@@ -329,8 +329,7 @@ int drop_object_near_target(void *actor_ptr, void *object_ptr, short mode, uint 
 // was FUN_0007a990
 void use_light_source(ushort *object, int turn_on)
 {
-  byte bVar1;
-  byte bVar2;
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   int iVar3;
   ushort uVar4;
   undefined4 uVar5;
@@ -341,17 +340,17 @@ void use_light_source(ushort *object, int turn_on)
   int iVar9;
   ushort uVar10;
   
-  if (((*object & 0x8000) == 0) || ((object[3] & 0x8000) != 0)) {
+  if ((header->is_quant == 0) || (header->link >= 512)) {
     uVar10 = 1;
   }
   else {
-    uVar10 = object[3] >> 6;
+    uVar10 = header->link;
   }
   if (turn_on == 0) {
     uVar5 = 0x7b;
   }
   else {
-    if ((object[2] & 0x3f) != 0) {
+    if (header->quality != 0) {
       iVar6 = find_or_assign_object_widget(object);
       iVar8 = 0;
       do {
@@ -359,7 +358,7 @@ void use_light_source(ushort *object, int turn_on)
         iVar8 = (iVar8 + 1) * 0x10000 >> 0x10;
       } while (iVar8 < 4);
       if ((short)iVar8 == 4) {
-        uVar4 = *object & 0x1ff;
+        uVar4 = header->object_id;
         if ((((uVar4 == 0x91) || (uVar4 == 0x92)) || (uVar4 == 0x90)) || (uVar4 == 0x93)) {
           iVar8 = 5;
           iVar6 = 0;
@@ -382,19 +381,15 @@ void use_light_source(ushort *object, int turn_on)
           redraw_container_icon_slot();
         }
       }
-      uVar10 = *object;
-      bVar1 = (byte)(uVar10 >> 8);
-      bVar2 = (byte)uVar10;
+      uVar10 = header->object_id;
       if ((uVar10 & 0xf) < 4) {
-        *(byte *)object = (bVar2 + 4 ^ bVar2) & 0xf ^ bVar2;
-        *(byte *)((char *)object + 1) = bVar1;
+        header->object_id = uVar10 + 4;
         /* HACK: pass the lit light's real brightness (see set_ambient_bias_with_light). */
         g_scratch_object_ptr = (uw_object_hdr_t *)object;
         set_ambient_bias_with_light(((uw_light_type_props_t *)get_scanned_object_class_effect_ptr())->brightness);
       }
       else {
-        *(byte *)object = (bVar2 - 4 ^ bVar2) & 0xf ^ bVar2;
-        *(byte *)((char *)object + 1) = bVar1;
+        header->object_id = uVar10 - 4;
         set_ambient_bias_without_light(0);
       }
       refresh_player_equipment_effects();
@@ -866,7 +861,7 @@ short *begin_holding_object_on_cursor(short *object, uint object_type)
       object = (short *)spawn_new_object(object_type,0);
     }
     else {
-      object_type = (int)((uw_object_hdr_t *)object)->type_flags_signed & 0x1ff;
+      object_type = (int)((uw_object_hdr_t *)object)->object_id;
     }
     g_cursor_holding_state = 1;
     g_selected_object = (char *)object;
@@ -2979,11 +2974,12 @@ uint check_object_fits_in_slot(ushort *object, int slot)
   uint uVar8;
   short sVar9;
   undefined1 *puVar10;
-  ushort *puVar11;
+  uw_object_hdr_t *puVar11;
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   int iVar12;
   uw_armor_type_props_t *effect_ptr;
   char *container_rec;
-  byte *pbVar13;
+  uw_object_hdr_t *pbVar13;
   char *pcVar14;
   int iVar15;
   bool bVar16;
@@ -2998,13 +2994,13 @@ uint check_object_fits_in_slot(ushort *object, int slot)
   char *_parentRec;
   undefined2 _savedLink;
 
-  local_4c = (uint)(short)(*object & 0x1ff);
+  local_4c = (uint)(short)header->object_id;
   local_48 = &g_object_type_props[local_4c];
-  uVar1 = *object >> 6 & 7;
-  uVar5 = ((byte)*object & 0x30) >> 4;
-  bVar4 = (byte)*object & 0xf;
+  uVar1 = (header->object_id >> 6) & 7;
+  uVar5 = (header->object_id >> 4) & 3;
+  bVar4 = header->object_id & 0xf;
   iVar15 = (int)(short)slot;
-  g_scratch_object_ptr = (uw_object_hdr_t *)object;
+  g_scratch_object_ptr = header;
   if (iVar15 == 0x13) {
     if (g_current_container_record == 0) {
       return 0;
@@ -3030,18 +3026,18 @@ uint check_object_fits_in_slot(ushort *object, int slot)
     }
     _savedLink = g_current_container_link;
     g_current_container_link = *(undefined2 *)(_parentRec + 8);
-    puVar11 = (ushort *)resolve_object_link(&g_current_container_link);
+    puVar11 = resolve_object_link(&g_current_container_link);
     g_current_container_link = _savedLink;
   }
   else {
     if (iVar15 < 0x14) {
       puVar10 = &g_equipped_items + iVar15 * 2;
-      puVar11 = (ushort *)resolve_object_link(puVar10);
+      puVar11 = resolve_object_link(puVar10);
     }
     else {
-      puVar11 = (ushort *)resolve_object_link(&g_equipped_items + iVar15 * 2);
-      if ((puVar11 == (ushort *)0x0) || ((((uw_object_hdr_t *)puVar11)->object_id & 0x1f0) != 0x80)) {
-        puVar11 = (ushort *)resolve_object_link(&g_current_container_link);
+      puVar11 = resolve_object_link(&g_equipped_items + iVar15 * 2);
+      if ((puVar11 == (uw_object_hdr_t *)0x0) || ((puVar11->object_id & 0x1f0) != 0x80)) {
+        puVar11 = resolve_object_link(&g_current_container_link);
       }
     }
   }
@@ -3056,7 +3052,7 @@ uint check_object_fits_in_slot(ushort *object, int slot)
       }
       return 0xffffffff;
     }
-    if (((byte)*object & 0x30) < 0x20) {
+    if ((header->object_id & 0x30) < 0x20) {
       return 0;
     }
     effect_ptr = (uw_armor_type_props_t *)get_scanned_object_class_effect_ptr();
@@ -3088,7 +3084,7 @@ LAB_00047a68:
     if (uVar1 != 0) {
       return 0;
     }
-    if (((byte)*object & 0x30) < 0x20) {
+    if ((header->object_id & 0x30) < 0x20) {
       return 0;
     }
     effect_ptr = (uw_armor_type_props_t *)get_scanned_object_class_effect_ptr();
@@ -3096,11 +3092,11 @@ LAB_00047a68:
     goto LAB_00047a68;
   }
   if ((iVar15 == 8 - (*(byte *)(DAT_00086df8 + 100) & 1)) && ((uVar1 == 0 && (uVar5 == 0)))) {
-    if ((puVar11 != (ushort *)0x0) && ((((uw_object_hdr_t *)puVar11)->object_id) == local_4c)) {
+    if ((puVar11 != (uw_object_hdr_t *)0x0) && ((puVar11->object_id) == local_4c)) {
       return 0;
     }
-    if ((((*object & 0x8000) != 0) && ((object[3] & 0x8000) == 0)) &&
-       (0x40 < (object[3] & 0xffc0))) {
+    if (((header->is_quant != 0) && (header->link < 0x200)) &&
+       (1 < header->link)) {
       return 0;
     }
   }
@@ -3114,29 +3110,27 @@ LAB_00047a68:
         }
         iVar12 = (iVar12 + 1) * 0x10000 >> 0x10;
       } while (iVar12 < 4);
-      uVar1 = *object;
+      uVar1 = header->type_flags;
       bVar6 = (byte)uVar1;
-      *(byte *)object = (bVar4 - 4 ^ bVar6) & 0xf ^ bVar6;
-      *(byte *)((char *)object + 1) = (byte)(uVar1 >> 8);
+      header->object_id = (uVar1 & 0x1f0) | ((bVar4 - 4) & 0xf);
       set_ambient_bias_without_light(0);
       sVar9 = check_object_fits_in_slot(object,slot);
       if (sVar9 != 0) {
         return 1;
       }
-      uVar1 = *object;
+      uVar1 = header->type_flags;
       bVar6 = (byte)uVar1;
-      *(byte *)object = (bVar6 ^ bVar4) & 0xf ^ bVar6;
-      *(byte *)((char *)object + 1) = (byte)(uVar1 >> 8);
+      header->object_id = (uVar1 & 0x1f0) | (bVar4 & 0xf);
       return 0;
     }
   }
   local_50 = (int)(short)uVar1;
-  if ((puVar11 == (ushort *)0x0) || ((((uw_object_hdr_t *)puVar11)->object_id & 0x1f0) != 0x80)) {
+  if ((puVar11 == (uw_object_hdr_t *)0x0) || ((puVar11->object_id & 0x1f0) != 0x80)) {
 LAB_00047a0c:
     return local_48->flags >> 5 & 1;
   }
   bVar6 = 1;
-  local_54[0] = calculate_object_weight((uw_object_hdr_t *)object);
+  local_54[0] = calculate_object_weight(header);
   container_rec = g_current_container_record;
   bVar7 = 1;
   if (0x13 < iVar15) {
@@ -3145,23 +3139,23 @@ LAB_00047a0c:
     for (; bVar6 = bVar7, container_rec != 0; container_rec = *(char **)(container_rec + 0x14)) {
       _savedLink = g_current_container_link;
       g_current_container_link = *(undefined2 *)(container_rec + 8);
-      pbVar13 = (byte *)resolve_object_link(&g_current_container_link);
+      pbVar13 = resolve_object_link(&g_current_container_link);
       g_current_container_link = _savedLink;
-      if (pbVar13 == (byte *)0x0) {
+      if (pbVar13 == (uw_object_hdr_t *)0x0) {
         bVar7 = 1;
       }
-      else if (((short)(ushort)(byte) g_container_type_props[(((uw_object_hdr_t *)pbVar13)->object_id & 0xf)].capacity == 0) ||
+      else if (((short)(ushort)(byte) g_container_type_props[(pbVar13->object_id & 0xf)].capacity == 0) ||
                (bVar7 = 0,
                 (int)*(short *)(container_rec + 10) + (int)local_54[0] <=
-                (int)(short)(ushort)(byte) g_container_type_props[(((uw_object_hdr_t *)pbVar13)->object_id & 0xf)].capacity)) {
+                (int)(short)(ushort)(byte) g_container_type_props[(pbVar13->object_id & 0xf)].capacity)) {
         bVar7 = 1;
       }
       bVar7 = bVar6 & bVar7;
     }
   }
-  sum_container_weight(puVar11 + 3,local_54);
+  sum_container_weight(&puVar11->link_word,local_54);
   uVar8 = local_4c;
-  iVar15 = (((uw_object_hdr_t *)puVar11)->object_id & 0xf) * 3;
+  iVar15 = (puVar11->object_id & 0xf) * 3;
   if (((byte) g_container_type_props[(iVar15) / 3].capacity == 0) ||
       (bVar7 = 0, local_54[0] <= (short)(ushort)(byte) g_container_type_props[(iVar15) / 3].capacity)) {
     bVar7 = 1;

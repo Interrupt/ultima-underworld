@@ -1060,6 +1060,323 @@ callback events/counts are compared. Use `--reference PATH` with the original
 176 byte views (four fewer); the full captured words remain intentional.
 
 
+`generate_light_decay_rules.py` / `light-decay-fields.cocci` convert the
+equipped-light loop in `decay_equipped_light_sources` to a typed header pointer
+and named `quality` stores. The burnt-out ID byte pair becomes one
+`type_flags = (ushort)(uVar2 - 4)` store: the guarded original ID nibble is
+4..7, so subtraction changes only that nibble and restores every captured
+flag exactly as the original two stores did. A fresh `object_id` write alone
+would preserve current flags rather than the captured flags. Full scalar
+snapshots and both tick-phase/bulk-elapsed division paths remain intact.
+
+The complete-body rule and test verify generation, exact conversion,
+idempotence and rejection of intervening callbacks, volatile/escaping
+captures and changed masks/ranges. The 802,880 before/after cases cover all
+16-bit type/chain patterns, signed elapsed ticks and decay intervals, empty
+slots, repeated references, depletion boundaries, callback-mutated records,
+redraws and ambient updates. Record/guard bytes, return values and callback
+events/counts/arguments are compared. Use `--reference PATH` with the original
+`player.c` and `--asan` for AddressSanitizer. After incorporating the latest
+main and refreshing the audits, the worklist contains 165 byte views, 441
+packed-word uses, seven raw audited accesses and nine signed-word views.
+
+Main's diagnostic removal is accounted for in the held-drop and blood-splat
+tests by removing only the known environment-gated `fprintf` statements from
+their historical expected bodies. Current bodies still require an exact
+match (C tokens for blood splats); historical rule application and executable
+before/after references remain unchanged. The conversation fixture now sets
+its temporary data directory through the runtime options API used by main.
+
+`generate_starvation_rules.py` / `starvation-fields.json` convert the spawned
+header in `handle_starvation_penalty` to a typed pointer and named z/x/y
+position writes. The link-high self-store and redundant position-low stores
+are removed. Full word/byte captures and the original audio, experience,
+cursor, allocation, placement, settling, teleport and death/UI callbacks
+remain intact; heading and unrelated header bits remain unchanged.
+
+Coccinelle rejected the complete control-flow patch, so this batch uses
+`apply_exact_source_rules.py`, a reusable complete-function JSON applier.
+It masks comments and literals when locating a definition, rejects ambiguous
+definitions, then requires a byte-for-byte original-body match before writing.
+Changed callbacks, volatile/escaping captures, masks and intervening stores
+reject conversion. The test requires an actual exact conversion and verifies
+generation, idempotence, scope and an original body embedded in a comment.
+Its 1,179,648 original/current executions cover every packed position word,
+callback-mutated player/spawned positions, cursor states, early survival,
+allocation/placement failures, teleport gates and both death/UI paths.
+Record/guard/player/status bytes and callback arguments/events/counts are
+compared. Use `--reference PATH` with the original `player.c` and `--asan` for
+AddressSanitizer. The worklist now contains 155 byte views (ten fewer); full
+position captures remain intentional.
+
+`generate_ranged_rules.py` / `ranged-fields.json` convert `fire_ranged_weapon`
+using the exact-source applier. The spawned pointer uses the projectile layout
+constructed by `spawn_object_near_player`; the extracted ammo uses the common
+header returned through `extract_ammo_and_refresh`. Named quantity, link,
+owner, flag, lifetime and original-heading writes replace byte reconstruction
+and self-stores. Complete type/link/high-byte captures and callback order
+remain intact. The original caller still launches after a false aim result.
+
+The test requires generation consistency and an actual exact conversion,
+checks idempotence and guards against callbacks, volatile/escaping captures,
+changed masks, intervening writes, excluded scopes, quoted bodies and ambiguous
+definitions. Its 2,621,440 before/after executions cover every source type word,
+all source link words, every ammo selector, signed/high-bit/full-width ammo
+results, spawn failure, false aim results, callback-mutated ammo/projectile
+records, heading gates and sound-producing weapon types. Header/projectile/
+guard/player bytes, launch globals and callback events/counts are compared.
+Use `--reference PATH` with the original `weapon_swing.c` and `--asan` for
+AddressSanitizer. The worklist now contains 145 byte views (ten fewer); full
+captured words remain intentional.
+
+`generate_monster_loot_rules.py` / `monster-loot-fields.json` convert
+`drop_monster_loot` using the exact-source applier. Its sole caller supplies
+the current NPC (`DAT_0010190c`), which justifies the typed mobile pointer and
+named home-tile coordinates. Fresh loot records use common-header pointers.
+Named x/y/z writes replace position-byte reconstruction, the chain mask/store
+pair becomes `quality = 0x28`, and the item drop copies the monster ID's low
+six bits to `owner`. Full intermediate word/byte captures, allocation order,
+random-item gates and all insertion/settling/drop callbacks remain intact.
+
+The complete-body rule and test check exact generation/conversion,
+idempotence and rejection of callbacks, volatile/escaping captures, changed
+masks, intervening writes, excluded scopes, quoted bodies and ambiguous
+definitions. The 786,432 before/after executions cover every packed position,
+chain and link word, complete gold/item argument ranges, allocation failures,
+zero-argument gates, signed random results and callback-mutated source/loot
+records. Header/guard/tile bytes, placement globals and callback arguments/
+events/counts are compared. Use `--reference PATH` with the original `ai.c`
+and `--asan` for AddressSanitizer. The worklist now contains 135 byte views
+(ten fewer); retained captures remain intentional.
+
+`generate_babl_stuff_rules.py` / `babl-stuff-fields.json` convert
+`babl_builtin_x_obj_stuff` using the exact-source applier. The record returned
+by the slot accessor uses a common-header pointer. Named heading, owner,
+quality, link and flag properties replace byte views and paired stores.
+The flag getters retain their script-visible values of 512 and 1024, and the
+link setter still forces bit 9 while the getter exposes only the low nine bits.
+Full intermediate captures, sentinel checks, class gates and the order of
+script-variable reads/writes remain intact. Unknown flag slices keep their
+neutral `flags_res` name.
+
+The complete-body rule and test require exact generation/conversion,
+idempotence and rejection of changed callbacks, volatile/escaping captures,
+masks, intervening stores, excluded scopes, quoted bodies and ambiguous
+definitions. The 1,310,720 original/current executions cover every packed
+header word, getter/setter modes, sentinel combinations, shared script
+variables, script variables aliasing header words and callback-mutated records.
+Header/guard/argument/variable bytes and callback events/counts are compared.
+Use `--reference PATH` with the original `babl.c` and `--asan` for
+AddressSanitizer. The worklist now contains 120 byte views (fifteen fewer);
+retained full-word captures remain intentional.
+
+`generate_approach_rules.py` / `approach-fields.json` convert
+`npc_combat_approach_tick` using the exact-source applier. Its current-NPC
+alias uses a mobile pointer. Named animation frame, speed, home-tile x/y and
+header x/y/z writes replace byte reconstruction. The frame still advances
+modulo four, gravity remains intact when speed is cleared, and the far-range
+position still centers x/y at four and derives z from the destination tile.
+All captured words, arithmetic intermediates and callbacks remain in place.
+The six remaining packed-word operations in this function are retained
+captures. The `animation_flags & 0xc1 | 1` and `attack_pitch & 0xfc | 4`
+updates affect undocumented animation/attack-state bits; no semantic property
+is invented for them.
+
+The rule test requires exact generation/conversion and idempotence, and
+rejects callbacks, volatile/escaping captures, changed masks, intervening
+stores, excluded scopes, quoted bodies and ambiguous definitions. Its
+4,718,592 original/current executions cover all packed goal, home-tile and
+position words, all motion/animation/pitch bytes, distance thresholds of
+0/2/3/64/65/65535, active/inactive combat and signed coordinate arithmetic.
+Callbacks mutate records and rebind the current NPC; destination tile pointers
+also alias position or home-tile words. Full guarded records, tiles, globals,
+callback arguments/events/counts are compared. Use `--reference PATH` with
+the original `combat.c` and `--asan` for AddressSanitizer. The audited worklist
+now contains 110 byte views (ten fewer).
+
+`generate_settle_rules.py` / `settle-fields.json` convert
+`settle_mobile_to_immobile` using the exact-source applier. A common-header
+alias covers the input, and the allocated immobile record uses a header
+pointer; API signatures remain intact. Named z-position, link, object ID and
+quality writes replace paired byte stores. Debris keeps the captured low-byte
+position arithmetic, extinguishing changes only the ID nibble, and quality
+receives the low six bits of the shared hit-points/lifetime byte. The special
+effect ID update also uses the named ID property. Captured words/bytes,
+callbacks, return values and hazard/discard order remain intact.
+
+The input's mobile/projectile extension casts remain explicit because this
+routine handles both layouts; no NPC interpretation is applied to projectile
+coordinate words. The four complete header-word copies intentionally preserve
+the entire header. Other packed words remain captures or class gates; the
+owner-flags probability slice has no documented property name. Player-state
+offsets are outside this object-layout conversion.
+
+The rule test requires exact generation/conversion, idempotence and rejection
+of changed callbacks, volatile/escaping captures, masks, intervening stores,
+excluded scopes, quoted bodies and ambiguous definitions. Its 6,291,456
+original/current executions cover complete type/position/chain/link words,
+all lifetime/heading/source bytes, movement modes, destruction rolls,
+debris counters and center-distance boundaries, extinguishing and class gates,
+off-map tiles, allocation failures, scheduler relinking and hazard success/
+failure. Callbacks mutate source/destination records, player state and tile
+coordinates; allocation can alias the source and tile links can share its
+guard storage. Guarded records, tiles, player bytes, globals, callback
+arguments/events/counts and returned pointers are compared. Use
+`--reference PATH` with the original `ai.c` and `--asan` for AddressSanitizer.
+The audited worklist now contains 102 byte views (eight fewer).
+
+`generate_combat_position_rules.py` / `combat-position-fields.json` convert
+`npc_combat_position_tick` with the exact-source applier. Named animation
+frame, speed, pitch and NPC heading updates replace the three paired frame
+stores and several mask/XOR updates. Frame advancement remains modulo four;
+speed writes preserve gravity and truncate to seven bits, including the
+magic-power-255 case; pitch writes preserve the low attack-state bits.
+All captured words, bytes, arithmetic intermediates, random calls and exits
+remain intact.
+
+The target's raw `+2` read now uses a common-header alias acquired after the
+heading callback. `refresh_npc_target_delta` is the sole source assignment to
+`DAT_00101400` and supplies an object-slot accessor result. The role audit
+recognizes this global as a common header, without inferring an extension
+layout, and the test checks that assignment provenance. Its full low-byte
+position snapshot remains a byte view to preserve the original temporary;
+the four remaining full-word reads are intentional captures. Animation flag,
+AI-bit-4 and low attack-state masks remain because those individual bits have
+no documented semantic properties.
+
+The test requires exact generation/conversion and idempotence and rejects
+changed callbacks, volatile/escaping captures, masks, intervening stores,
+excluded scopes, quoted bodies and ambiguous definitions. Its 6,291,456
+original/current executions cover every goal and position word and all
+motion/pitch/heading bytes, each frame-update path, distance and vertical-gap
+boundaries, both flying pitch ranges, negative random results, special-ability
+exits, random-wander branches, heading adjustment and goal fallback. Callbacks
+mutate/rebind NPC, target and property pointers; the target can alias the NPC
+header. Guarded records, target/property bytes, globals and callback arguments/
+events/counts are compared. Use `--reference PATH` with the original `combat.c`
+and `--asan` for AddressSanitizer. The audited worklist now contains 97 byte
+views: six paired-store views removed and one retained target snapshot added.
+
+`generate_disengage_rules.py` / `disengage-fields.json` convert
+`npc_combat_disengage_tick` with the exact-source applier. Named goal-target
+and animation-frame writes replace three paired byte stores. The initial
+target is exactly one while goal and frame bits remain intact; optional frame
+advancement still uses the signed random remainder and modulo-four frame.
+Speed resets preserve gravity. The player heading uses its existing typed
+pointer directly. All full-word captures, arithmetic intermediates, callback
+order and pointer reloads remain intact.
+
+The three remaining goal-word operations are intentional captures, including
+the initial masked temporary. The far branch still reuses `uVar6` for a goal
+word; the near branch retains the distance captured before proximity detection
+for its conversation gate. Animation flags and low attack-state masks affect
+bits without documented semantic properties and remain explicit.
+
+The test requires exact generation/conversion, idempotence and rejection of
+changed callbacks, volatile/escaping captures, masks, intervening stores,
+excluded scopes, quoted bodies and ambiguous definitions. Its 6,815,744
+original/current executions cover every goal/position word and motion/pitch/
+heading byte, inactive combat, distance thresholds and 16-bit truncation,
+signed/high-bit detection and heading results, negative/zero random remainders,
+both frame-update paths and conversation gates. Callbacks mutate/rebind NPC
+and player pointers and alter deltas after the distance capture; the player
+can alias the NPC. Guarded records, globals and callback arguments/events/
+counts are compared. Assertions separately check target preservation, frame
+advancement, near/far branches and an actual conversation callback. Use
+`--reference PATH` with the original `combat.c` and `--asan` for AddressSanitizer.
+The audited worklist now contains 91 byte views (six fewer).
+
+`generate_drop_height_rules.py` / `drop-height-fields.json` convert
+`check_object_drop_height` with the exact-source applier. Its sole caller
+constructs a projectile in arena 1, so the input alias uses that layout and
+the reference uses a common header. The test checks that caller provenance.
+Named tile x/y and header x/y writes replace paired byte reconstruction and
+the packed tile-word store. Full word/byte captures, callback order and the
+order of scratch-buffer reads remain intact, including the X write before
+the Y read. Three remaining packed-word reads are intentional captures.
+The heading shift converts direction units. Raw collision-buffer offsets
+remain explicit because that contiguous scratch buffer has no defined UW1
+object struct layout.
+
+The role audit now recognizes incoming parameters cast into typed object
+aliases, using the same evidence as a cast followed by member access. It does
+not infer NPC extensions or approve locals with unproven buffer origins.
+Existing reassignment checks still remove parameters reused for unrelated
+buffers and their aliases; the AST regression checks both cases. This also
+restores alias evidence in earlier loot/drop/debris conversions. Regenerated
+scoped rules expose four previously unrecorded raw accesses in
+`check_object_fits_in_slot`, which remain on the worklist for conversion.
+
+The drop-height test requires exact generation/conversion, idempotence and
+rejection of callbacks, volatile/escaping captures, changed masks, intervening
+stores, excluded scopes, quoted bodies and ambiguous definitions. Its
+4,194,304 original/current executions cover every type, tile and fine-position
+word, full signed/high-bit X/Y projection results, reference aliasing,
+collision flags, candidate sorting and both placement results. Callbacks
+mutate objects and rebind the scratch pointer during projection, envelope,
+height-field and sorting calls, including scratch storage aliasing the header
+or extension. Guarded records, local/external scratch bytes, callback arguments/
+events/counts and return values are compared. Use `--reference PATH` with the
+original `object_actions.c` and `--asan` for AddressSanitizer. The audit now
+contains 85 byte views (six fewer) and 11 raw object accesses (four newly found).
+
+`generate_slot_fit_rules.py` / `slot-fit-fields.json` convert
+`check_object_fits_in_slot` with the exact-source applier. Source, resolved
+slot and ancestor-container objects use common-header pointers. ID category,
+subclass and nibble calculations read `object_id`; their masks remain numeric
+ID classifiers. The stack gate reads `is_quant` and the ten-bit `link` value:
+it rejects quantities greater than one and below 512. Extinguish/restore
+writes update only the ID nibble using the captured full type word and the
+original captured nibble. The container-weight helper receives the named
+`link_word` address. API signatures, live intermediates, recursion, capacity/
+acceptance rules, messages and temporary container-link swaps remain intact.
+UI container-record offsets have no defined UW1 object struct layout and are
+outside this conversion.
+
+The rule test requires exact generation/conversion and idempotence and
+rejects changed callbacks, volatile/escaping captures, masks, intervening
+stores, excluded scopes, quoted bodies and ambiguous definitions. Its
+14,680,064 original/current executions cover all type words and flags,
+fourteen equipment/backpack/container slots, nested/root/missing containers,
+capacity and signed acceptance masks, food results, light slots, recursive
+extinguishing and failed retries, and full signed weight results. Callbacks
+mutate source class/flags/link words, inventory-table and container pointers,
+player status and scratch-object identity. Guarded records, container/table/
+status bytes, globals, messages, callback arguments/events/counts and return
+values are compared. The reference's recursive retry calls the reference
+function throughout. Separate assertions check quantity boundaries
+0/1/2/511/512/1023, nibble restoration and missing-container behavior.
+Use `--reference PATH` with the original `item_use.c` and `--asan` for
+AddressSanitizer. All four newly audited raw accesses are converted, leaving
+seven raw object accesses and 85 byte views. Three additional packed accesses
+are now visible: two intentional full-type captures and the named link address.
+
+`generate_scheduler_finish_rules.py` / `scheduler-finish-fields.json` convert
+`scheduler_finish_entry` with the exact-source applier. The resolved object
+uses its native common-header pointer. The door subtype reads the upper two
+owner bits; blocked closure writes `owner`, completion writes `zpos` and
+`object_id`, clears `owner` while preserving `link`, and writes the computed
+`flags_res`/`enchanted` fields. Full word and byte captures remain in place,
+as do callback order, the captured door class and height, early returns,
+queue compaction, and the legacy delay-helper API. The ID/subtype masks
+classify values, and the final flag arithmetic still computes a live full
+word. The six-byte scheduler table has a separate layout; its byte copies
+are outside the object-header conversion.
+
+The rule test checks exact generation/conversion and idempotence, rejects
+changed callbacks, volatile/escaping captures, masks, intervening stores,
+excluded scopes, quoted bodies and duplicate definitions. Its 1,572,864
+original/current cases sweep all 16-bit seeds through type, position, chain
+and link words, covering unresolved entries, non-doors, opening/closing,
+blocked closure, catch-up and despawn gates, and queue removal/compaction.
+Callbacks mutate header words, tile globals and queue pointer identity;
+guarded object bytes, both queue buffers, globals, callback arguments/events
+and counts are compared. Independent assertions check unresolved entries,
+blocked owner restoration and link preservation, and owner clearing after
+completion. Use `--reference PATH` with the original `scheduler.c` and
+`--asan` for AddressSanitizer. The audit contains 79 byte views (six fewer),
+440 packed accesses (three fewer), seven raw object accesses and nine signed
+word views. This batch does not resolve the five excluded broad catalog tests.
 ## Geometry arena
 
 `generate_geom_arena_rules.py` writes three files that fold the decompiler's four-byte stores
@@ -1088,3 +1405,553 @@ spatch --sp-file tools/coccinelle/geom-arena.cocci --no-includes src/tmap.c --in
 Stores the rules do not recognise (the sign-extended `tex` word, single-byte constant stores of
 float exponent bytes, temporaries reused after their value changed) stay as byte stores through
 the `DAT_000a85d8`-style macros in `tmap.h`.
+
+
+## Combat stance fields
+
+`generate_combat_stance_rules.py` emits `combat-stance-fields.cocci` and its
+before/after recipe. `apply_combat_stance_rules.py SOURCE` runs Coccinelle only
+when the original function is present exactly once and its audited body is
+unchanged. It requires Coccinelle's output to match the recipe's C tokens before
+writing canonical formatting and comments. Modified calls, masks, volatile or
+escaping captures, ambiguous definitions and unrelated scopes are left alone.
+
+`npc_combat_set_stance` reads/writes animation frames and swing charge in their
+logical field units, uses a typed target header for height, and updates speed
+and pitch without rebuilding packed words. The saved NPC receiver and captured
+gravity bit survive the division callback, which can replace the current NPC
+and change its record. The speed-only branches have no intervening callback
+between capture and store. Animation/path flag masks and the undocumented low
+attack-state bits remain unchanged; no named semantic subfields exist for them.
+
+`combat_stance_fields` tests the generated patch, guards and idempotence, then
+compares 4,194,304 original/current cases across all word seeds, sixteen stance/
+random paths, callback mutations and target aliasing. It compares both guarded
+records, targets, templates, globals, return values and callback observations.
+Independent checks cover frame clearing/advancement, saturated charge and
+preserved goal/target coordinates. The live function is compared by behavior;
+its complete source text is not frozen to the generated spelling. Use
+`--reference PATH` with the pre-conversion `combat.c`, or `--asan` for the same
+matrix under AddressSanitizer. This suite is registered with `UW_SPATCH_TESTS=ON`.
+The post-merge audit covers 55 sources and 304 proven pointer roles, with
+74 byte views, 451 packed accesses, 12 raw audited object accesses and nine
+signed word views. These are remaining work items, not completion evidence.
+
+## Light source header fields
+
+`generate_light_use_rules.py` emits `light-use-fields.cocci` and its original/
+converted recipe. `apply_light_use_rules.py SOURCE` checks for one unchanged,
+audited original body, runs Coccinelle, and verifies the resulting C tokens
+before writing. Changed masks, escaping/volatile captures, inserted callbacks,
+ambiguous definitions and unrelated functions are rejected. The production
+function remains free to evolve: its test compares behavior, not exact text.
+
+`use_light_source` now reads `is_quant`, `link`, `quality` and `object_id` through
+a typed header alias without changing its public interface or moving it. The
+link's high-bit special-value test is expressed as `link >= 512`; the captured
+quantity still survives inventory callbacks. The four-step light-ID toggle
+updates only `object_id`, preserving all unrelated flags. Its low nibble is a
+light subtype encoding, not a separate documented object field: the add branch
+has nibble < 4 and cannot carry, and the subtract branch has nibble >= 4 and
+cannot borrow, so the original masked-byte writes equal an ID increment/
+decrement by four.
+
+`light_use_fields` checks generation, Coccinelle application, idempotence and
+negative guards. It compares 7,864,320 original/current cases across every type
+word, zero/full quality, six link quantities including both sides of the
+special-value boundary, lit-widget/ownership paths, null equipment, turn-on/
+turn-off and callback mutations. Guarded records, callback order/arguments and
+scratch-pointer identity must match; independent assertions verify ID toggles,
+quality and preserved flags. `--reference PATH` checks against the original
+`item_use.c`; `--asan` runs the same matrix under AddressSanitizer. This test is
+registered under `UW_SPATCH_TESTS=ON`. All 71 default game suites also pass.
+
+The refreshed audit covers 55 sources and 305 proven pointer roles with no AST
+errors. Raw audited accesses fall from 12 to seven; 74 byte views, 451 packed
+accesses and nine signed views remain. Those counts exclude unrecorded aliases
+and other structures and are not proof of completion. The remaining raw NPC
+AI-flag bit and trap status padding-bit accesses need separate semantic evidence.
+
+## Explicitly promoted field reads
+
+`generate_promoted_field_read_rules.py` / `promoted-field-reads.cocci` extend the
+read catalog to expressions where Ghidra casts a signed or unsigned word to
+`int`/`uint` before applying a documented field mask. The rules support pointer
+and value receivers, masked shifts, positioned masks and unsigned mask literals.
+They retain an explicit `int` or `uint` cast on the named field: the source cast
+and mask suffix determine the expression's signedness, which can affect later
+comparisons with negative values. An explicit cast also preserves the expression
+type instead of exposing a narrow bitfield to `sizeof` or `_Generic`.
+
+These rules deliberately exclude unmasked sign-extending shifts, cross-field
+masks, narrower `short` casts and whole-word copies. Receivers are evaluated once.
+The source sweep replaces object-ID extraction in cursor selection, barter icon
+redraw, dropped-object handling, positional-audio heading extraction and the
+movement object's byte encoding. The
+remaining byte shifts in that last case encode an ID into two output bytes;
+they are not object property reads and remain unchanged.
+
+`promoted_struct_fields` verifies reproducible generation, transformation to the
+expected property, exclusions and idempotence. It compares original and converted
+values for every 16-bit input using the actual UW1 layouts, and separately checks
+expression types and comparisons against -1. A callback receiver checks single
+evaluation. Run with `--asan` for AddressSanitizer; CTest registration is under
+`UW_SPATCH_TESTS=ON`.
+
+The matrix covers 1,489 expressions x 65,536 inputs (97,583,104 comparisons)
+and passes under AddressSanitizer. All 71 default suites pass after the six
+source conversions. Signed-word views fall from nine to three; the other
+remaining counts are 74 byte views, 451 packed accesses and seven raw audited
+accesses. The remaining signed views in `redraw_barter_slot_icon` include a
+negative mask and an explicit narrow cast; those forms remain separate work
+items, along with the broader packed-access inventory and unrecorded aliases.
+
+## Narrowed and special-link header reads
+
+`generate_special_header_read_rules.py` / `special-header-reads.cocci` cover the
+three remaining signed-word forms in barter icon drawing. The narrowed negative
+quantity mask becomes `is_quant == 0`; the link word's high-bit test becomes
+`link >= 512`; casting the signed link word to `ushort` before shifting becomes
+an `int` read of `link`. The last cast retains the integer promotion performed
+by the original unsigned-short extraction. These are deliberately separate from
+the general promoted-read rules, which exclude narrow casts and negative masks.
+
+`special_header_reads` checks all six pointer/value expressions over all 65,536
+words, with exact values, signed comparisons, expression types, exclusions,
+idempotence and a receiver called once. Nearby signed shifts, cross-field masks
+and other link bits must remain unchanged. The suite passes under AddressSanitizer
+and is registered with `UW_SPATCH_TESTS=ON`.
+All 71 default suites pass after this batch, and the optional CTest registration
+passes. No signed-word member accesses remain in `src/*.c`. The latest inventory
+still lists 74 byte views, 451 packed accesses and seven raw audited accesses;
+those and the unrecorded aliases remain work toward the broader goal.
+
+## Creature equipment, miscellaneous and special-item drops
+
+`generate_creature_drop_rules.py` generates the three `creature-*-drop.json`
+recipes for `apply_exact_source_rules.py`. Each requires its entire original
+function, preserves all scalar captures and keeps the function in `ai.c`.
+Equipment and miscellaneous drops write the six-bit `quality` field directly;
+the equipment ammo branch writes the ten-bit `link` quantity while preserving
+`owner`. Input creatures and spawned objects use common-header pointers, and
+insertion receives the named `link_word` address. The three handlers read the
+known monster-table `weapon_loot`, `item_loot` and `food_loot` fields without
+caching the global row pointer across callbacks. API signatures, allocations,
+chance/quality/quantity calculations, RNG and division order, and list updates
+remain unchanged. Masks on loot descriptors classify their packed drop format;
+ID masks select ranged subclasses rather than extract header properties. Full
+chain-word and byte captures are retained. The AI role catalogs are regenerated
+from the current pointer audit, including the newly typed creature aliases and
+their incoming pointer contracts.
+
+`creature_drop_fields` runs by default, without requiring spatch. It verifies
+reproducible recipes, exact conversion, idempotence and rejection of modified
+callbacks, masks, volatile/escaping captures, quoted bodies, duplicate
+functions and excluded scopes. Its 3,145,728 original/current executions sweep
+all 16-bit seeds through header words, both loot slots and drop descriptors.
+Eight modes exercise rejected/accepted chances, alternate quality branches,
+zero/signed level and random values, ranged quantities and source/output aliasing.
+Callbacks mutate object headers, monster rows and the level value, and rebind
+the current monster-record pointer between reads. Guarded records, row bytes,
+globals, callback arguments/events/counts and resulting chains are compared.
+Independent assertions check next/owner preservation, fixed quality boundaries and negative-RNG quantities,
+no-drop gates and allocation/insertion counts. Use `--reference PATH` with the
+original `ai.c` and `--asan` for AddressSanitizer.
+
+The inventory now lists 68 byte views (six fewer), 454 packed accesses (three
+additional named link addresses), seven raw audited accesses and no signed-word
+views. Other functions and unrecorded aliases still require conversion/auditing;
+this batch does not establish completion of the overall cleanup.
+
+## Scheduler animation steps
+
+`generate_scheduler_step_rules.py` / `scheduler-step-fields.json` convert
+`scheduler_step_entry` with the exact-source applier. The resolved common-header
+pointer stays local across callbacks. Sequential animation compares the named
+`owner` frame; both frame branches write `owner` and restore `link` from the
+captured full link word. Restoring that captured link is necessary because the
+random-frame branch calls division between the snapshot and the store: a
+callback mutation must not replace the original high bits. Sliding-door height
+writes use `zpos`; rotation writes use `flags_res` and `enchanted`. Unrelated
+header fields and all scalar captures, callback ordering, labels, elapsed-tick
+narrowing and direction reversal remain intact.
+
+The full `link_word`, `position_word` and `type_flags` snapshots remain explicit.
+The masked arithmetic on their scratch values computes the live words used by
+later branches; the ID masks classify animation subtypes, owner masks classify
+door styles, and the animation table's flag loop is a separate bitmap format.
+Those calculations are not replaced with guessed semantic names. The four
+remaining byte views in this function are removed. Across the inventory there
+are now 64 byte views, 452 packed accesses (two fewer), seven raw audited
+accesses and no signed-word views.
+
+`scheduler_step_fields` runs by default. It verifies exact generation/conversion,
+idempotence and rejection of changed callbacks, volatile/escaping captures,
+masks, intervening stores, excluded functions, quoted bodies and duplicate
+definitions. Its 1,572,864 original/current cases cover all 16-bit seeds across
+header words and animation descriptors, all flag bits (including combinations),
+stale entries, non-animation IDs, sequential/random frames, zero frame counts,
+signed start frames/random values, positive/negative/truncated elapsed values,
+and door height/direction boundaries. Callbacks mutate headers, table records
+and queue bytes and rebind the queue pointer. Guarded records, table/queue bytes,
+callback arguments/events/counts and pointer identity are compared. Independent
+assertions check stale/no-op entries, frame wrap, zero-divisor frames, captured
+link restoration, sliding height and advance-effect boundaries. Use
+`--reference PATH` with the original `scheduler.c` and `--asan` for
+AddressSanitizer. Remaining functions and unrecorded aliases still require work.
+
+## Level-arena link reset
+
+`generate_arena_reset_rules.py` / `arena-reset-fields.json` convert
+`reset_level_object_arena` with the exact-source applier. The tile cursor is a
+`uw_tile_t *`, advances one four-byte record at a time, and clears `obj_head`.
+A shared compile-time size assertion fixes that stride to the documented tile
+layout. Player `next` and `link` are cleared through their named properties,
+preserving `quality` and `owner`. The function stays in `level.c`; all loop
+counts, 16-bit free-list stores, arena-region offsets, pointer assignments and
+the inventory-reset callback remain in their original order. Region offsets
+are allocation-layout boundaries rather than properties of individual records,
+so they remain explicit. The free-list cursor still stores slot IDs as words;
+this preserves the cold-load inventory fix.
+
+`arena_reset_fields` runs by default and checks reproducible generation,
+exact conversion/idempotence and rejection of changed masks, callbacks,
+volatile/escaping cursors, intervening stores, duplicate definitions, quoted
+bodies and excluded functions. Its 49,152 original/current cases compare the
+entire guarded arena, a shadow arena, external player storage, all pointer
+identities and the inventory callback's full arena snapshot. Player placements
+include external records, mobile slots, tiles, free-list storage, backpack
+storage and a missing player. The callback can mutate the player, rebind the
+player/arena/free-list globals and overwrite the scheduler count. Independent
+assertions check every tile texture and every initialized slot ID where the
+player does not overlap them, cleared player links and preserved low fields,
+region pointers, post-callback cursors, counter reset and buffer guards.
+Coverage assertions prove every preserved six-bit field, cleared ten-bit link
+value, wall texture and tile-head value is exercised; the tile fixtures also
+span all 65,536 first-word patterns. Use `--reference PATH` with the original
+`level.c` and `--asan` for AddressSanitizer.
+
+The object audit now lists 60 byte views (four fewer), 452 packed accesses and
+seven raw audited accesses, with no signed-word views. The separate raw tile
+writes removed here were outside that object-only count. Remaining functions,
+packed operations and unrecorded aliases still require work.
+
+## Victory-sequence quantity fields
+
+`generate_victory_rules.py` / `victory-fields.json` convert
+`handle_game_victory_sequence` with the exact-source applier. The spawned object
+uses a native common-header pointer and writes `is_quant = 1` and `link = 0x2c0`
+(the former high byte `0xb0` encodes quantity 704). `owner` and all unrelated
+header fields remain intact. The original full-type capture stays in place,
+as do allocation-failure handling, the saved object/list pointers across
+callbacks, messages, teleport, UI branches, string-buffer operations and the
+input loop. API signatures and the function's location in `player.c` are
+unchanged. The tile-list helpers still receive the packed wall/head word at
+tile offset +2: they require a word-storage address, while `uw_tile_t::obj_head`
+is a bitfield whose address cannot be taken. Player-stat and UI buffer accesses
+remain separate audit work rather than common-header conversions.
+
+`victory_fields` runs by default. It checks reproducible generation, exact
+conversion/idempotence and rejection of changed callbacks, volatile/escaping
+captures, masks/constants, inserted code, excluded functions, quoted bodies and
+duplicate definitions. Its 1,048,576 original/current cases cover all 16-bit
+header words, allocation failure, an already-latched sequence, spawned/player
+object aliasing, both UI branches and multiple path-prefix lengths. Callbacks
+mutate header words and tile chains and rebind the current player, player-stat
+and UI pointers. Guarded records, both stat/UI buffers, both tiles, callback
+arguments/events/counts, rendered path strings and final globals are compared.
+Independent assertions verify the complete type word except the quantity flag,
+quantity 704, preserved owner/position/chain, allocation/free and teleport gates,
+UI mode fields and the signed input-event loop (including 32768/65535/65536).
+Use `--reference PATH` with the original `player.c` and `--asan` for
+AddressSanitizer.
+
+The audit now contains 56 byte views (four fewer), 452 packed accesses and seven
+raw audited accesses, with no signed-word views. The full-type snapshot is an
+intentional retained capture. Other accesses and unrecorded aliases still
+require conversion or documented justification before the overall goal is done.
+
+## Creature treasure and loot dispatch
+
+`generate_treasure_rules.py` generates `treasure-fields.json` and
+`loot-dispatch-fields.json` for the exact-source applier. Treasure reads the
+named monster `coin_loot` field, writes the spawned header's `link` quantity
+and inserts through the creature's named `link_word` address. Both object
+pointers use the common-header type. The raw COMOBJ value alias and 13-byte
+index arithmetic become `g_object_type_props[0xa0 + (int)cVar4].monetary_value`,
+with explicit `(char)(byte)` narrowing. The old code reads only the low byte
+and then treats it as `char`; reading the full price would change the rolls.
+The index retains `cVar4`'s signedness, including negative signed-char subtype
+values. The obsolete product-side `DAT_002034b5` macro is removed.
+
+The dispatcher uses a typed NPC alias for the existing `npc_loot_spawned`
+property and selects `g_monster_type_props[object_id & 0x3f]`. That mask is a
+monster-class selector. The selected row, handler order, final flag write,
+function locations and API signatures remain intact. All live scalar captures,
+chance/price/level arithmetic, RNG/division/dice ordering and wrapped/signed
+conversions remain unchanged; the loot record pointer is not cached across
+callbacks. The storage address passed to list insertion is an intentional full
+packed-word address rather than another property extraction.
+
+`treasure_fields` runs by default and verifies reproducible recipes, exact
+conversion/idempotence and rejection of changed masks, constants, table stride,
+callbacks, volatile/escaping captures, excluded scopes, quoted bodies and
+duplicate functions. Its 3,145,728 original/current cases exercise both treasure
+and dispatch with every 16-bit seed, twelve roll/price modes and callback
+mutations. The reference dispatcher calls the reference treasure function.
+Callbacks alter headers, loot rows, monetary values and the level, rebind the
+loot-row pointer and alias the spawned output with the creature. Full guarded
+records, both entire property tables, globals and callback arguments/events/
+counts are compared. Assertions check owner/next preservation, quantities 1
+and 127, zero/negative quantity gates, signed low-byte prices (including a
+negative divisor), initially selected monster rows, already-dropped gating,
+three downstream calls and the final loot flag. The legacy value address is
+checked against the actual struct size and monetary-value offset.
+
+The same matrix passes normally at `-O2`, under AddressSanitizer and with
+`--o0`, preserving each build configuration's existing arithmetic behavior.
+Use `--reference PATH` with the original `ai.c`, `--asan` or `--o0` to repeat
+these checks. The audit lists 54 byte views (two fewer), 453 packed accesses
+(one additional intentional link address), seven raw audited accesses and no
+signed-word views. Unconverted operations and unrecorded aliases remain work
+for the broader cleanup.
+
+## Combat engage frames and target heading
+
+`generate_engage_rules.py` generates `combat-engage-close-fields.json`,
+`combat-engage-wide-fields.json` and `target-alignment-fields.json` for the
+exact-source applier. The two engage handlers use native NPC aliases and write
+`npc_animation_frame`; their motion resets write `speed = 0` while preserving
+`gravity_flag`. Target alignment writes the saved NPC header's `heading`.
+Aliases are captured at their original points after any callbacks, so a
+callback may still rebind the global NPC before the subsequent capture.
+Function locations, signatures, labels, all scalar captures and callback
+ordering remain unchanged. This includes the close handler's existing
+fall-through after the stance call and all spell fallback ordering.
+
+Full status/goal/position snapshots remain explicit. Arithmetic on captured
+words computes retained scratch values; heading/frame remainder calculations
+keep their original signed conversions. Animation-state masks, low attack-state
+bits and individual AI flags lack fully modeled properties and remain in their
+existing named byte members. Masks on loot/spell descriptors classify those
+separate table formats. This batch removes six byte views, leaving 48 byte
+views, 453 packed accesses and seven raw audited accesses, with no signed-word
+views. The full-word captures are intentional retained operations.
+
+`combat_engage_fields` runs by default. It checks reproducible generation,
+exact conversion/idempotence and rejection of changed masks, volatile/escaping
+captures, inserted calls/stores, excluded scopes, quoted bodies and duplicate
+functions. Its 9,437,184 original/current cases sweep all 16-bit seeds through
+header words with 24 modes and callback mutations for all three functions.
+Coverage includes distance/altitude boundaries, matching target tiles,
+wrapped squared distances, flying targets, spell/alternate/ranged abilities,
+frame-suppression states, wandering/fleeing and race/level/player flags.
+Heading inputs include negative/large returns and signed byte deltas; fine
+alignment returns include negative values, 32768 and 65536.
+
+Callbacks mutate header words, monster rows, target coordinates and player
+flags and rebind NPC, monster-property and player-stat pointers. Guarded records,
+complete rows/stat buffers, globals, callback arguments/events/counts and return
+values are compared. Independent assertions check disabled handlers, frame
+wrap, speed reset with preserved gravity, suppressed frames, flee selection,
+unchanged position bits outside heading, aligned returns and single-step turns.
+Use `--reference PATH` with the original `combat.c` and `--asan` for
+AddressSanitizer. Other remaining operations and unrecorded aliases continue to
+require conversion or documented justification.
+
+## BABL inventory and barter stack merges
+
+`generate_babl_stack_rules.py` generates `babl-inventory-stack-fields.json` and
+`barter-stack-fields.json` for the exact-source applier. Inventory creation
+writes `quality = 63`; both merge paths read `is_quant`, nine-bit `object_id`
+and ten-bit `link` values. The special-link gate is `link < 512` and the
+combined quantity must remain strictly below 999. Quantity writes update
+`link`, preserving `owner`. Container rejection in barter classifies the named
+ID range 0x80..0x8f. These numeric limits and classifiers retain the original
+behavior rather than introduce new field meanings.
+
+Inventory iteration now separates a native object pointer from its packed-word
+link cursor: the cursor retains the original live head/next address passed to
+each resolver call. The speaker cell uses `uw_mobile_object_t **`, preserving
+its address and the live global-pointer reread before insertion instead of
+round-tripping the pointer through an integer. Held objects and barter targets
+use common-header pointers. API signatures, function locations, scalar captures,
+allocation/free behavior, fallback pickup, slot updates and redraw/checkpoint
+ordering remain unchanged. Existing full chain/type/link snapshots remain
+explicit. List cursors/insertion require addresses of full packed link words;
+these are intentional storage addresses rather than property extractions.
+
+`babl_stack_fields` runs by default. It verifies reproducible generation,
+exact conversion/idempotence and rejection of changed thresholds, callbacks,
+volatile/escaping captures, cursor/slot writes, excluded scopes, quoted bodies
+and duplicate definitions. Its 4,194,304 original/current cases cover both
+functions, all 16-bit seeds, sixteen modes and callback mutations. Cases include
+allocation failure, source/target quantity flags, special-link boundaries,
+container rejection, the ninth ID bit, totals 998/999/1000, second-candidate
+matches, source/target/actor aliasing and signed/truncated side/slot/return values.
+Callbacks change object fields and slot/argument buffers, rebind the speaker
+after traversal starts and change the selected object before/after encoding.
+Guarded records, tables, globals, resolver cursor addresses and callback
+arguments/events/counts are compared. Assertions check full-quality initialization
+with preserved next links, owner/next preservation on merge, strict quantity
+boundaries, allocation/free and pickup gates, live insertion-head identity and
+captured slot writes. The matrix passes normally, under AddressSanitizer and
+with `--o0`; use `--reference PATH` with the original `babl.c` to repeat it.
+
+Four named byte views and additional raw inventory quantity stores are removed.
+The audit now lists 44 byte views, 456 packed accesses and seven raw audited
+accesses, with no signed-word views. Three word-address sites and one held-link
+capture become explicit while one full-type extraction disappears, explaining
+the net three additional packed items. The old mixed cursor was excluded from
+the object-role inventory; separating it now proves the candidate object role.
+Other remaining operations and unrecorded aliases still require work.
+
+## BABL placement and player-barter finalization
+
+`generate_babl_transfer_rules.py` generates `babl-placement-fields.json` and
+`barter-finalize-fields.json` for the exact-source applier. Placement uses native
+object/tile pointers, named `chain_word` cursor addresses, `floor_height` for
+both Z initialization and the clearance height, and player `tile_x`/`tile_y`
+for world positioning. Multiplication by eight remains the tile-to-world/Z-unit
+conversion. The complete position snapshot, other scalar captures, signed
+argument narrowing, unlink/clearance/append/settle order and return/placement-flag
+behavior remain unchanged. The tile-list helper still receives the packed word
+at byte +2: that storage contains wall texture and object head, and the
+`obj_head` bitfield has no address that can be passed to the existing word API.
+
+Finalization uses native header pointers for offered/inventory objects, named
+next-word addresses, `is_quant`/`link`/`object_id` merge gates and a named `link`
+quantity write. The currency ID, special-link boundary 512 and strict total
+limit below 999 remain unchanged. Four-slot traversal, initial resolver calls
+for non-currency items, live NPC-head rereads, free/insert ordering, backdrop
+restoration and offer/inclusion clearing remain in place. API signatures and
+both function locations are unchanged. Generic link-word snapshots and their
+high-ten-bit routing tests remain explicit because the cursor traverses both
+header link/chain storage; these are packed-list operations on retained values.
+UI tables remain separate scalar-array formats.
+
+`babl_transfer_fields` runs by default and checks reproducible recipes,
+exact conversion/idempotence and rejection of changed masks/constants,
+volatile/escaping captures, callbacks/cursor writes, excluded functions,
+quoted bodies and duplicate definitions. Two original/current fixtures each
+run 2,097,152 cases (4,194,304 total), sweeping all 16-bit seeds, sixteen modes
+and callback mutations. Placement covers present/absent/empty inventory chains,
+coordinate bounds and short truncation, player/NPC aliasing, all tile-height
+patterns, blocked/nonzero clearance results, live player coordinates and
+placement-flag reset. It independently checks Z and every unchanged position
+bit, packed cursor addresses and geometry/collision arguments.
+
+Finalization covers four positive/zero/negative offers, zero/high-bit inclusion
+flags, preference-return truncation, empty inventories, non-currency items,
+quantity flags and special links, totals 998/999, the ninth ID bit and aliased
+source/destination records. Callbacks swap pending offer IDs, mutate object
+fields and UI buffers and rebind the NPC between resolution and insertion.
+Assertions check owner/next preservation, strict totals, acceptance/free/insert
+gates, backdrop arguments and clearing before crosshair redraw. Full guarded
+records, property tables, argument/UI buffers, globals and callback arguments/
+events/counts are compared. Use `--reference PATH` with the original `babl.c`
+and `--asan` for AddressSanitizer.
+
+The audit now lists 40 byte views (four fewer), 454 packed accesses (two fewer)
+and seven raw audited accesses, with no signed-word views. Two direct packed
+player-coordinate reads and two full-type ID extractions disappear; two named
+next-word addresses become explicit. Other operations and unrecorded aliases
+still require work before the overall cleanup can be considered complete.
+
+## NPC walking target and path-cache fields
+
+`generate_walk_target_rules.py` generates `walk-target-fields.json` for the
+exact-source applier. `npc_walk_toward_tile` uses a native saved NPC pointer,
+`npc_animation_frame`, `npc_path_slot`, cached home coordinates, `speed`,
+`gravity_flag` and `pitch`. Full word snapshots and scalar temporaries remain
+in place, including the full gravity/speed value in `bVar9`. Function location,
+API signatures and callback order are preserved. Path-cache offsets and the
+28-byte stride describe a separate record format; unknown animation, heading
+and attack-state bits still use their existing whole-byte members.
+
+Nearby-candidate accessor results prove a common object header. The target ID
+read therefore uses `object_id`, retaining byte truncation and signed `char`
+extension into the original unsigned short. This deliberately preserves the
+existing loss of the ninth ID bit. The target's byte +11 goal check remains a
+raw exception: the narrowed class test can accept a non-NPC ID, so it cannot
+justify an NPC extension pointer. Under this signed-byte view, the subsequent
+flying-target class test is unreachable because bits 7 and 8 must agree.
+Its pitch assignment still becomes `pitch = 14`; all 256 original byte values
+are checked separately against the actual original and converted statements.
+The ID-width behavior is preserved rather than repaired by this cleanup.
+
+`walk_target_fields` runs by default. It checks exact recipe generation,
+conversion/idempotence, accessor provenance, retained raw-access inventory,
+and refusal of changed masks, volatile or escaping captures, inserted
+callbacks, excluded functions and duplicate definitions. Its 4,194,304
+original/current cases cover all word seeds, 32 modes and callback mutation.
+All fourteen mocked services are reached with and without mutation. Callbacks
+rebind NPC and candidate pointers, mutate fields and cache records, and change
+the escaped local slot buffer during search and saving. Assertions distinguish
+the slot used to clear the cache bitmap and save the path from the later live
+slot used to update the NPC and resume walking. Full guarded records, tables,
+cache bytes, globals, callback arguments, events and counts are compared.
+Use `--reference PATH` with the original `ai.c` and `--asan` for AddressSanitizer.
+
+The role and usage audits now share the proven object-global set. Including
+the previously omitted `DAT_00101400` and nearby-candidate `DAT_00101904`
+exposes eleven existing raw accesses (ten and one respectively). With four
+byte views removed, the inventory is now 36 byte views, 454 packed accesses
+and 18 raw audited accesses: 508 total, versus 501 before the scope correction.
+This increase records previously uncounted code. Remaining accesses and
+unrecorded aliases still require independent auditing and conversion or a
+documented exception.
+
+## Tracked-target coordinates, sight lines and aim snapshots
+
+`generate_target_coordinate_rules.py` generates five exact-source recipes for
+`refresh_npc_target_delta`, `detect_npc_wander_proximity`,
+`compute_vertical_aim_offset` and the ranged/alternate special-ability attempts.
+The target refresh uses a native mobile pointer for the shared `hit_points`,
+`tile_x` and `tile_y` properties, plus common-header Z and fine X/Y fields.
+The eight-bit `npc_gtarg` passed directly to `get_object_record_by_slot_index`
+proves this extent: its non-null values are below 256, where the resolver uses
+27-byte mobile records. Shared fields describe NPCs and projectiles; no NPC
+goal/status/target interpretation is inferred for the resolved object.
+Null/zero-health exits still leave cached target deltas unchanged. Existing
+coordinate-unit conversion, signed deltas, squared distances and truncation
+remain in place, together with the original temporaries and global writes.
+
+The sight-line consumers use common-header `object_id` and `zpos`. The wander
+routine's saved current-NPC pointer is native and supplies heading, Z and ID;
+its full position snapshot remains. The six-bit monster-class table selector
+still masks the named ID, because this is table routing rather than a separate
+header field. Both successful ability attempts clear named `speed`, preserving
+gravity. Unknown animation and AI flag bits remain whole-byte operations.
+Reads still occur after the same tile/heading callbacks and before the same
+sight/alignment/random callbacks; no target pointer is captured across them.
+
+Aim computation retains both full position-low-byte snapshots, now including a
+named target byte view. Their masks extract height from saved values after
+`integer_sqrt`; substituting fresh global-object reads would lose that capture.
+The snapshots include the low heading bit, and are deliberately not narrowed
+or moved across the call. Existing division argument order, short conversion,
+zero-distance behavior and pitch clamping are unchanged.
+
+`target_coordinate_fields` runs by default. It verifies exact generation,
+conversion/idempotence, changed-source and scope guards, and the eight-bit
+slot/resolver provenance. A single fixture compiles the actual original and
+converted bodies, running 10,485,760 comparisons across all 16-bit seeds,
+five functions, sixteen modes and callback mutation. It checks missing/dead
+and aliased targets, every ID/position/tile word, high ID bits, header flags,
+distance gates, spell/dexterity thresholds, signed random/heading returns,
+zero and truncated square roots, signed division and clamp boundaries.
+Callbacks rebind NPC/target/property pointers and change fields between reads.
+Independent assertions verify world/tile coordinates, signed deltas, squared
+distances, unchanged cached deltas on invalid targets, exact sight-line
+heights and saved height differences passed to division. Full guarded records,
+property rows, outputs, globals and callback arguments/events/counts are
+compared. Every mocked service is reached with and without mutation.
+Use `--reference-dir /private/tmp` while the saved baseline files are available,
+and `--asan` for AddressSanitizer.
+
+Ten raw audited accesses disappear. One full target-byte snapshot becomes an
+explicit named byte view, so the inventory now lists 37 byte views, 454 packed
+accesses and eight raw audited accesses: 499 total, nine fewer. Common-header
+ID and class reads that were outside the old raw-offset pattern are also
+converted. Other accesses and unrecorded aliases still require work.

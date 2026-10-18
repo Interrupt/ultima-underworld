@@ -756,8 +756,8 @@ void fire_ranged_weapon(short weapon_type)
   char cVar3;
   ushort uVar4;
   undefined4 uVar5;
-  ushort *puVar6;
-  ushort *puVar7;
+  uw_projectile_object_t *puVar6;
+  uw_object_hdr_t *puVar7;
   uint uVar8;
   
   /* Was a dropped argument -- find_and_consume_ammo's own weapon_type (weapon type). The very next line
@@ -774,31 +774,27 @@ void fire_ranged_weapon(short weapon_type)
     DAT_00202a50 = (undefined2)(g_player_object->npc_yhome);
     DAT_00202a54 = 1;
     compute_drop_aim_from_cursor();
-    puVar6 = (ushort *)spawn_object_near_player();
-    if (puVar6 == (ushort *)0x0) {
+    puVar6 = (uw_projectile_object_t *)spawn_object_near_player();
+    if (puVar6 == (uw_projectile_object_t *)0x0) {
       print_scroll_message_by_id(0xfe);
     }
     else {
-      puVar7 = (ushort *)extract_ammo_and_refresh(0,1,(int)cVar3,uVar5);
-      uVar8 = (*puVar7 ^ ((uw_object_hdr_t *)puVar6)->type_flags) & 0x7fff ^ (uint)*puVar7;
-      ((uw_object_hdr_t *)puVar6)->type_flags = (ushort)uVar8;
-      uVar4 = puVar7[3];
+      puVar7 = (uw_object_hdr_t *)extract_ammo_and_refresh(0,1,(int)cVar3,uVar5);
+      uVar8 = (puVar7->type_flags ^ puVar6->hdr.type_flags) & 0x7fff ^ (uint)puVar7->type_flags;
+      puVar6->hdr.is_quant = (uVar8 >> 15) & 1;
+      uVar4 = puVar7->link_word;
       bVar2 = (byte)uVar4;
-      ((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)((uw_object_hdr_t *)puVar6)->link_word ^ bVar2) & 0x3f ^ bVar2;
-      ((uw_object_hdr_t *)puVar6)->link_word_high = (byte)(char)(uVar4 >> 8);
-      bVar2 = *(byte *)((char *)puVar7 + 1);
-      ((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;
-      ((uw_object_hdr_t *)puVar6)->type_flags_high =
-          (bVar2 ^ ((uw_object_hdr_t *)puVar6)->type_flags_high) & 0x1e ^ ((uw_object_hdr_t *)puVar6)->type_flags_high;
-      ((uw_projectile_object_t *)puVar6)->lifetime = ((uw_object_hdr_t *)puVar7)->quality;
-      ((uw_object_hdr_t *)puVar6)->link_word_low = ((byte)puVar7[3] ^ (byte)((uw_object_hdr_t *)puVar6)->link_word) & 0x3f ^ (byte)((uw_object_hdr_t *)puVar6)->link_word;
-      ((uw_object_hdr_t *)puVar6)->link_word_high = ((uw_object_hdr_t *)puVar6)->link_word_high;
-      bVar2 = *(byte *)((char *)puVar7 + 1);
-      ((uw_object_hdr_t *)puVar6)->type_flags_low = (byte)(char)((uw_object_hdr_t *)puVar6)->type_flags;
-      ((uw_object_hdr_t *)puVar6)->doordir = (bVar2 >> 5) & 0x1;
-      if ((*puVar7 & 0x1c0) != 0x140) {
-        if ((g_object_type_props[(*puVar7 & 0x1ff)].class_flags & 3) != 2) {
-          ((uw_projectile_object_t *)puVar6)->original_heading = ((uw_object_hdr_t *)puVar7)->heading;
+      puVar6->hdr.link = uVar4 >> 6;
+      bVar2 = (byte)(puVar7->type_flags >> 8);
+      puVar6->hdr.flags_res = (bVar2 >> 1) & 7;
+      puVar6->hdr.enchanted = (bVar2 >> 4) & 1;
+      puVar6->lifetime = puVar7->quality;
+      puVar6->hdr.owner = puVar7->owner;
+      bVar2 = (byte)(puVar7->type_flags >> 8);
+      puVar6->hdr.doordir = (bVar2 >> 5) & 0x1;
+      if ((puVar7->object_id & 0x1c0) != 0x140) {
+        if ((g_object_type_props[(puVar7->object_id)].class_flags & 3) != 2) {
+          puVar6->original_heading = puVar7->heading;
         }
       }
       /* Was a dropped argument -- free_object_slot(weapon_type) always takes the object pointer to free

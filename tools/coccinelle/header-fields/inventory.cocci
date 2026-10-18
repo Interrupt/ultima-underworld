@@ -1677,3 +1677,547 @@ R F(...) {
 )
 ...>
 }
+
+@field_3_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)object)->object_id
+|
+- ((ushort *)object)[0] & 0x1ff
++ ((uw_object_hdr_t *)object)->object_id
+|
+- *(ushort *)object & 0x1ff
++ ((uw_object_hdr_t *)object)->object_id
+|
+- object[0] & 0x1ff
++ ((uw_object_hdr_t *)object)->object_id
+|
+- *object & 0x1ff
++ ((uw_object_hdr_t *)object)->object_id
+)
+...>
+}
+
+@field_3_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*(ushort *)((char *)object + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (((ushort *)object)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (((ushort *)object)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*(ushort *)object >> 9) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*(ushort *)object & 0xe00) >> 9
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (object[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (object[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*object >> 9) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*object & 0xe00) >> 9
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*(byte *)((char *)object + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)object)->flags_res
+|
+- (*(byte *)((char *)object + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)object)->flags_res
+)
+...>
+}
+
+@field_3_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*(ushort *)((char *)object + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (((ushort *)object)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (((ushort *)object)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*(ushort *)object >> 12) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*(ushort *)object & 0x1000) >> 12
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (object[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (object[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*object >> 12) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*object & 0x1000) >> 12
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*(byte *)((char *)object + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)object)->enchanted
+|
+- (*(byte *)((char *)object + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)object)->enchanted
+)
+...>
+}
+
+@field_3_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*(ushort *)((char *)object + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (((ushort *)object)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (((ushort *)object)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*(ushort *)object >> 13) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*(ushort *)object & 0x2000) >> 13
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (object[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (object[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*object >> 13) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*object & 0x2000) >> 13
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*(byte *)((char *)object + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)object)->doordir
+|
+- (*(byte *)((char *)object + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)object)->doordir
+)
+...>
+}
+
+@field_3_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*(ushort *)((char *)object + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (((ushort *)object)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (((ushort *)object)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*(ushort *)object >> 14) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*(ushort *)object & 0x4000) >> 14
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (object[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (object[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*object >> 14) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*object & 0x4000) >> 14
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*(byte *)((char *)object + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)object)->invisible
+|
+- (*(byte *)((char *)object + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)object)->invisible
+)
+...>
+}
+
+@field_3_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*(ushort *)((char *)object + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- *(ushort *)((char *)object + 0x0) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (((ushort *)object)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (((ushort *)object)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- ((ushort *)object)[0] >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*(ushort *)object >> 15) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*(ushort *)object & 0x8000) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- *(ushort *)object >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (object[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (object[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- object[0] >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*object >> 15) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*object & 0x8000) >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- *object >> 15
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*(byte *)((char *)object + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- (*(byte *)((char *)object + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)object)->is_quant
+|
+- *(byte *)((char *)object + 0x1) >> 7
++ ((uw_object_hdr_t *)object)->is_quant
+)
+...>
+}
+
+@field_3_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0x2) & 0x7f
++ ((uw_object_hdr_t *)object)->zpos
+|
+- ((ushort *)object)[1] & 0x7f
++ ((uw_object_hdr_t *)object)->zpos
+|
+- object[1] & 0x7f
++ ((uw_object_hdr_t *)object)->zpos
+|
+- *(byte *)((char *)object + 0x2) & 0x7f
++ ((uw_object_hdr_t *)object)->zpos
+|
+- (byte)object[1] & 0x7f
++ ((uw_object_hdr_t *)object)->zpos
+)
+...>
+}
+
+@field_3_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)object)->heading
+|
+- (*(ushort *)((char *)object + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)object)->heading
+|
+- (((ushort *)object)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)object)->heading
+|
+- (((ushort *)object)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)object)->heading
+|
+- (object[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)object)->heading
+|
+- (object[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)object)->heading
+)
+...>
+}
+
+@field_3_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (*(ushort *)((char *)object + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (((ushort *)object)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (((ushort *)object)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (object[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (object[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (*(byte *)((char *)object + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)object)->ypos
+|
+- (*(byte *)((char *)object + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)object)->ypos
+)
+...>
+}
+
+@field_3_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (*(ushort *)((char *)object + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- *(ushort *)((char *)object + 0x2) >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (((ushort *)object)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (((ushort *)object)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- ((ushort *)object)[1] >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (object[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (object[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- object[1] >> 13
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (*(byte *)((char *)object + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)object)->xpos
+|
+- (*(byte *)((char *)object + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)object)->xpos
+|
+- *(byte *)((char *)object + 0x3) >> 5
++ ((uw_object_hdr_t *)object)->xpos
+)
+...>
+}
+
+@field_3_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0x4) & 0x3f
++ ((uw_object_hdr_t *)object)->quality
+|
+- ((ushort *)object)[2] & 0x3f
++ ((uw_object_hdr_t *)object)->quality
+|
+- object[2] & 0x3f
++ ((uw_object_hdr_t *)object)->quality
+|
+- *(byte *)((char *)object + 0x4) & 0x3f
++ ((uw_object_hdr_t *)object)->quality
+|
+- (byte)object[2] & 0x3f
++ ((uw_object_hdr_t *)object)->quality
+)
+...>
+}
+
+@field_3_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->next
+|
+- (*(ushort *)((char *)object + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->next
+|
+- *(ushort *)((char *)object + 0x4) >> 6
++ ((uw_object_hdr_t *)object)->next
+|
+- (((ushort *)object)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->next
+|
+- (((ushort *)object)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->next
+|
+- ((ushort *)object)[2] >> 6
++ ((uw_object_hdr_t *)object)->next
+|
+- (object[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->next
+|
+- (object[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->next
+|
+- object[2] >> 6
++ ((uw_object_hdr_t *)object)->next
+)
+...>
+}
+
+@field_3_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0x6) & 0x3f
++ ((uw_object_hdr_t *)object)->owner
+|
+- ((ushort *)object)[3] & 0x3f
++ ((uw_object_hdr_t *)object)->owner
+|
+- object[3] & 0x3f
++ ((uw_object_hdr_t *)object)->owner
+|
+- *(byte *)((char *)object + 0x6) & 0x3f
++ ((uw_object_hdr_t *)object)->owner
+|
+- (byte)object[3] & 0x3f
++ ((uw_object_hdr_t *)object)->owner
+)
+...>
+}
+
+@field_3_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(redraw_lit_light_source_widgets\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)object + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->link
+|
+- (*(ushort *)((char *)object + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->link
+|
+- *(ushort *)((char *)object + 0x6) >> 6
++ ((uw_object_hdr_t *)object)->link
+|
+- (((ushort *)object)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->link
+|
+- (((ushort *)object)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->link
+|
+- ((ushort *)object)[3] >> 6
++ ((uw_object_hdr_t *)object)->link
+|
+- (object[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)object)->link
+|
+- (object[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)object)->link
+|
+- object[3] >> 6
++ ((uw_object_hdr_t *)object)->link
+)
+...>
+}
