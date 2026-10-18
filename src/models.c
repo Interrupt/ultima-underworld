@@ -1,6 +1,7 @@
 /* The 3D "catalog object" model-rendering pipeline: animation-record ticking (resolving a catalog
    index to its real .E model geometry), emitting a catalog object (door, bridge, decal, sign) as
    textured model geometry, and door animation-frame emission. */
+#include "headers/platform_compat.h"
 #include "headers/models.h"
 #include "headers/models_dos.h"
 #include "headers/options.h"
@@ -1982,7 +1983,7 @@ void scale_model_part_offsets(void *model_block_ptr, int scale_x, int scale_y, i
 // lotus, rocks, arrow, beam, shrine, doors, tilemap decals, grave, gate, table, chest, nightstand,
 // barrel/closet, chair, bed) via parse_e_model_file into their respective geometry buffers...
 /* One model slot: from the DOS executable when the data directory is a DOS
-   install, else from the slot's own DATA3D/*.E file.
+   install, else from the slot's own DATA3D/<slot>.E file.
  
    The port's slot order below is exactly DOS built-in model order shifted by
    one -- slot 0 is the door frame, DOS model 1 -- which is how `slot + 1`

@@ -12,3 +12,8 @@ __pycache__/
 
 # macOS Finder metadata
 .DS_Store
+.zig-cache/
+zig-out/
+zig-pkg/
+build-tests/
+build-integration/

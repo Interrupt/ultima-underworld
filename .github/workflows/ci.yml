@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ZIG_VERSION: 0.16.0
+
+jobs:
+  # Unit tests, which run against synthetic game data (data/ is not in the repo; see
+  # tests/unit-cases.txt). The suite builds with CMake.
+  unit-tests:
+    name: Unit tests (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux, os: ubuntu-latest }
+          - { name: macos-arm, os: macos-latest }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y cmake pkg-config libsdl2-dev
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cmake pkg-config sdl2
+      - name: Run unit tests
+        run: ./run-unit-tests.sh
+
+  # Game executables built with build.zig, one per platform.
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux links the system SDL2 (needs libsdl2 installed to run).
+          - { name: linux-x86_64, os: ubuntu-latest, args: "" }
+          # Windows is cross-compiled; SDL2 is built from source and linked statically.
+          - { name: windows-x86_64, os: ubuntu-latest, args: "-Dtarget=x86_64-windows-gnu -Dsystem-sdl=false" }
+          # macOS Apple silicon with SDL2 built from source, so no Homebrew dylib is needed to run.
+          - { name: macos-arm64, os: macos-latest, args: "-Dsystem-sdl=false" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ env.ZIG_VERSION }}
+      - name: Install SDL2 (Linux)
+        if: matrix.name == 'linux-x86_64'
+        run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
+      - name: Build
+        run: zig build ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uw_dbg-${{ matrix.name }}
+          path: zig-out/bin/
+          if-no-files-found: error

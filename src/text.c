@@ -4,7 +4,7 @@
 #include "headers/text.h"
 #include "headers/options.h"
 #include "headers/debug.h"
-#include <dlfcn.h>
+#include "headers/platform_compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 
