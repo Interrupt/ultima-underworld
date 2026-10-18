@@ -4,7 +4,7 @@
 
 Grandaddy is an Ultima Underworld 1 port, based off of a decompile of the PocketPC WinCE port of Ultima Underworld 1.
 
-This was an upgraded version of the engine over the DOS version, having been upgraded to 32 bit and with a more advanced software renderer that fixed the warping issues the original had and added smoother lighting.
+This was an upgraded version of the engine over the DOS version, having been upgraded to 32 bit and with a more advanced software renderer that fixed the warping issues the original had and added smoother lighting. The PocketPC port also seemed like a good option to use as it supported a touch screen mode, which could be good for mobile devices.
 
 ## Building
 
