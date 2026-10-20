@@ -2343,3 +2343,37 @@ raw audited accesses: 483 total. The net increase of one reflects named API
 storage addresses, not added raw property manipulation. Other remaining
 accesses and unrecorded aliases still require auditing and conversion or
 documented reasons.
+
+## Equipped-player object-ID store
+
+`generate_equipment_id_rules.py` generates `equipment-player-id-fields.json`
+for the exact `damage_equipped_item_in_slot` body. Its player-only paired type
+byte stores become `object_id = 0xf`. The full `uVar3` type snapshot, saved item
+pointer, live player-pointer identity test and every surrounding statement
+remain unchanged. For every input header word, the result is exactly
+`(old_type & 0xfe00) | 15`: only the nine ID bits change. The low chain-byte
+snapshot across the damage helper remains a full byte, preserving its width.
+
+`equipment_id_fields` runs by default and verifies reproducible generation,
+exact whole-function conversion/idempotence and refusal of changed constants,
+volatile/escaping captures, inserted observers, excluded/quoted bodies and
+duplicate definitions. It extracts the actual original/converted player-write
+blocks and compares 1,048,576 executions across every 16-bit header value,
+four aligned offsets and player/other/NULL pointer identities. The scratch
+value is returned by the fixture to verify its complete original contents.
+Independent assertions check the complete type word, all retained flags,
+player-pointer identity and every neighboring byte in both guarded records.
+The field-block matrix passes normally and with AddressSanitizer; use
+`--reference PATH` with the original `combat.c` and `--asan` to repeat it.
+
+Validation scope: the matrix executes this header-write block, not the parent
+message path. That existing path passes uninitialized `acStack_4d + 1` to
+`ce_strlen`, which calls `strlen`; the preceding prefix copy targets the other
+local buffer. This cleanup preserves that code. The full game source is built
+and the regular unit/focused sanitizer suites run independently; their success
+is not an end-to-end message-path comparison. Pointer-role output is verified
+unchanged, so no unrelated catalogs are regenerated.
+
+Two byte views disappear. The inventory now lists eight byte views, 465 packed
+accesses and eight raw audited accesses: 481 total. Remaining accesses and
+unrecorded aliases still require auditing and conversion or documented reasons.

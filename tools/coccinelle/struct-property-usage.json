@@ -1,7 +1,7 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 10,
+    "byte_view": 8,
     "packed_word": 465,
     "raw_audited_object_access": 8
   },
@@ -1529,26 +1529,8 @@
     },
     {
       "source": "src/combat.c",
-      "function": "damage_equipped_item_in_slot",
-      "line": 2210,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->type_flags_low = 0xf;"
-    },
-    {
-      "source": "src/combat.c",
-      "function": "damage_equipped_item_in_slot",
-      "line": 2211,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar3 >> 8) & 0xfe;"
-    },
-    {
-      "source": "src/combat.c",
       "function": "resolve_collision_candidate_interaction",
-      "line": 2355,
+      "line": 2354,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
