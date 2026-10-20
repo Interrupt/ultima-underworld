@@ -2377,3 +2377,28 @@ unchanged, so no unrelated catalogs are regenerated.
 Two byte views disappear. The inventory now lists eight byte views, 465 packed
 accesses and eight raw audited accesses: 481 total. Remaining accesses and
 unrecorded aliases still require auditing and conversion or documented reasons.
+
+## Unread projectile-spawn byte captures
+
+`generate_dead_spawn_view_rules.py` generates `dead-spawn-byte-views.json` for
+the exact `spawn_object_near_player` body. It removes only the declarations
+and assignments of `bVar2` and `bVar3`. Clang AST inspection using the actual
+build command proves that `bVar2` has two writes and zero reads, and `bVar3`
+has one write and zero reads. Every reference is an assignment's left operand;
+the right operands have no calls or volatile accesses. The assignments consist
+of a scalar shift and two nonvolatile position-byte reads.
+
+`bVar1` is live: it has one write and two later reads, including the saved
+height used after division. That capture keeps its full byte value and stays
+in place. Post-conversion AST inspection confirms those same counts and the
+absence of the two dead variables. All remaining temporaries, pointer identity,
+field writes, callbacks, labels and function/API placement are unchanged.
+The strict recipe refuses changed bodies, including any newly added use of
+a removed temporary; generation/application and idempotence are verified.
+Existing throw/placement regressions and the full unit/focused sanitizer suites
+provide runtime validation. Pointer-role output is verified unchanged, so
+unrelated catalogs are not regenerated.
+
+Two byte views disappear. The inventory now lists six byte views, 465 packed
+accesses and eight raw audited accesses: 479 total. Remaining accesses and
+unrecorded aliases still require auditing and conversion or documented reasons.

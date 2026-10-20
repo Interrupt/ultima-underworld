@@ -80,8 +80,6 @@ uw_object_hdr_t *spawn_object_near_player()
 
 {
   byte bVar1;
-  byte bVar2;
-  byte bVar3;
   char cVar4;
   short sVar5;
   uw_projectile_object_t *puVar6;
@@ -119,14 +117,11 @@ LAB_0004b06c:
     puVar6->hdr.xpos = ((uw_object_hdr_t *)DAT_00202a44)->xpos;
     uVar7 = puVar6->hdr.position_word;
     bVar1 = (byte)uVar7;
-    bVar2 = (byte)(uVar7 >> 8);
     puVar6->hdr.ypos = ((uw_object_hdr_t *)DAT_00202a44)->ypos;
-    bVar2 = puVar6->hdr.position_word_high;
     if ((byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height != 0) {
       cVar4 = ordint_divmod(6,
                             (uint)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height * 5).quot;
       puVar6->hdr.zpos = cVar4 + (char)DAT_00202a3c * '\x02' + (bVar1 & 0x7f);
-      bVar3 = puVar6->hdr.position_word_low;
       if ((DAT_00202a44 == g_player_object) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {
         puVar6->hdr.zpos = ((char)DAT_00202a3c * '\x02' - (*(byte *)(DAT_00086df8 + 0xb9) >> 3)) + g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height + (bVar1 & 0x7f);
       }
