@@ -298,8 +298,8 @@ void debug_print_player_position(const char *label)
     fprintf(stderr, "[playerpos:%s] fine=(%d,%d)=world(%g,%g) obj_bytes tile=(%d,%d)\n",
             label, (int)DAT_00204880, (int)DAT_00204882,
             (double)DAT_00204880 / 256.0, (double)DAT_00204882 / 256.0,
-            (int)((byte) g_player_object->tile_word_high >> 2),
-            (int)(g_player_object->npc_yhome));
+            (int)g_player_object->tile_x,
+            (int)g_player_object->tile_y);
 }
 
 

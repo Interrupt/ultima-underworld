@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 25,
-    "packed_word": 458,
+    "byte_view": 21,
+    "packed_word": 459,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -2483,26 +2483,8 @@
     },
     {
       "source": "src/movement.c",
-      "function": "collision_response_default",
-      "line": 1809,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_low = (byte)(char)uVar5;"
-    },
-    {
-      "source": "src/movement.c",
-      "function": "collision_response_default",
-      "line": 1810,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(uVar5 >> 8) | 0x30;"
-    },
-    {
-      "source": "src/movement.c",
       "function": "find_nearby_door_in_candidates",
-      "line": 2002,
+      "line": 2001,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3236,15 +3218,6 @@
       "member": "chain_word",
       "pointer": null,
       "code": "g_player_object->hdr.chain_word = 0;"
-    },
-    {
-      "source": "src/player.c",
-      "function": "debug_print_player_position",
-      "line": 301,
-      "category": "byte_view",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "(int)((byte) g_player_object->tile_word_high >> 2),"
     },
     {
       "source": "src/player.c",
@@ -4320,11 +4293,11 @@
     {
       "source": "src/traps.c",
       "function": "process_nearby_background_traps",
-      "line": 706,
-      "category": "byte_view",
-      "member": "type_flags",
+      "line": 707,
+      "category": "packed_word",
+      "member": "link_word",
       "pointer": null,
-      "code": "if ((((uw_object_hdr_t *)pObj)->type_flags_high & 0x1e) == 0) {"
+      "code": "pbVar5 = (char *)resolve_object_link(&pObj->link_word);"
     },
     {
       "source": "src/traps.c",

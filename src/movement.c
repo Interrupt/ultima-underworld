@@ -1806,8 +1806,7 @@ LAB_0002bb2c:
                    (short)(char)((ushort)_DAT_002048c2 >> 8));
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xcc | 0xc;
       uVar5 = DAT_0010190c->goal_word & 0xfff;
-      DAT_0010190c->goal_word_low = (byte)(char)uVar5;
-      DAT_0010190c->goal_word_high = (byte)(uVar5 >> 8) | 0x30;
+      DAT_0010190c->npc_animation_frame = 3;
       DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xf9 | 1;
       return 1;
     }

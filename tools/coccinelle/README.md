@@ -2061,3 +2061,50 @@ spell catalogs. Six byte views disappear; the inventory now lists 25 byte
 views, 458 packed accesses and eight raw audited accesses: 491 total. Remaining
 packed captures, other accesses and unrecorded aliases still require auditing
 and conversion or documented reasons before the overall goal is complete.
+
+## Collision animation, player tile output and trap header gating
+
+`generate_consumer_view_rules.py` generates three exact-source recipes for
+`collision_response_default`, `debug_print_player_position` and
+`process_nearby_background_traps`. Collision response sets the native current
+NPC's `npc_animation_frame` to three after the scheduled-effect callback.
+The full masked goal snapshot remains, and the setter preserves goal/target
+bits on whichever NPC the callback leaves current. The input collision word
+is a separate response format; its masks are not reinterpreted as header flags.
+The attack-pitch and animation control bits remain unchanged.
+
+Player debug output reads shared `tile_x` and `tile_y` fields. The format,
+label, signed fine coordinates, floating world conversion and debug-enable
+gate remain unchanged. Trap scanning uses native common-header pointers and
+accepts a trap only when both `flags_res` and `enchanted` are zero, exactly the
+old high-byte mask of 0x1e. Its link resolver receives the named `link_word`
+address; the dispatcher's existing word-pointer API has an explicit cast.
+
+The resolved trap link still has three raw accesses at bytes +13/+14. The
+arena predicate and header provenance do not prove an NPC extension, so these
+remain an explicit layout exception rather than guessed NPC status fields.
+The complete word capture, low-byte rewrite and high-byte OR of one are
+unchanged. Later range/dispatch helpers still receive the live scan coordinates,
+including changes made through addresses passed to earlier callbacks.
+
+`consumer_view_fields` runs by default and checks reproducible recipes, exact
+conversion/idempotence, retained extension expressions and refusal of changed
+callback/capture contexts, excluded/quoted bodies and duplicate definitions.
+Its actual original/current functions run 6,291,456 comparisons across all
+16-bit seeds, three functions, sixteen modes and callback mutation. Cases
+cover every collision word, header flag combination and tile word, disabled
+debug output, negative fine positions, missing/present door candidates,
+three-item world scans and arena/range rejection. Callbacks rebind NPC/player
+pointers, mutate records and alter escaped scan coordinates. All nine mocked
+services are reached in both mutation variants. Independent assertions verify
+frame three with preserved goal/target bits, printed integer/double values,
+exact range/dispatch coordinates and the unchanged raw word update before
+range testing. Full guarded records, snapshots, candidate buffers, globals
+and callback arguments/events/counts are compared. Use `--reference-dir
+/private/tmp` while the baseline files are available, and `--asan` for
+AddressSanitizer.
+
+Four byte views disappear and a named link-word address becomes explicit.
+The inventory now lists 21 byte views, 459 packed accesses and eight raw
+audited accesses: 488 total. Remaining captures, accesses and unrecorded
+aliases still require auditing and conversion or documented reasons.
