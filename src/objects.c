@@ -1489,7 +1489,7 @@ void randomize_settled_snapshot_position(void *snapshot_ptr)
 uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
                                        short tile_y, int force)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int uw_ord2005_rem_119 = 0;
   bool bVar1;
   ushort uVar2;
@@ -1497,9 +1497,9 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   char cVar4;
   byte bVar5;
   undefined2 uVar6;
-  short *psVar7;
+  uw_object_hdr_t *supporting_object;
   uint uVar8;
-  ushort *puVar9;
+  uw_object_hdr_t *puVar9;
   undefined4 uVar10;
   char extraout_r1;
   int iVar11;
@@ -1517,7 +1517,7 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   uVar6 = encode_object_slot_index(object);
   DAT_00202c6c[10] = (char)uVar6;
   DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
-  iVar12 = (*object & 0x1ff) * 0xd;
+  iVar12 = object->object_id * 0xd;
   bVar5 = g_object_type_props[iVar12 / 0xd].flags;
   do {
     if ((bVar5 & 8) != 0) {
@@ -1525,12 +1525,12 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
     }
     DAT_00202c6c[8] = g_object_type_props[iVar12 / 0xd].collision_radius;
     DAT_00202c6c[9] = g_object_type_props[iVar12 / 0xd].height;
-    DAT_00202c6c[4] = (byte)object[1] & 0x7f;
+    DAT_00202c6c[4] = object->zpos;
     DAT_00202c6c[5] = 0;
-    iVar12 = tile_x * 8 + (uint)(*(byte *)((char *)object + 3) >> 5);
+    iVar12 = tile_x * 8 + (uint)object->xpos;
     *DAT_00202c6c = (char)iVar12;
     DAT_00202c6c[1] = (char)((uint)iVar12 >> 8);
-    iVar12 = tile_y * 8 + ((*(byte *)((char *)object + 3) & 0x1c) >> 2);
+    iVar12 = tile_y * 8 + object->ypos;
     DAT_00202c6c[2] = (char)iVar12;
     DAT_00202c6c[3] = (char)((uint)iVar12 >> 8);
     collision_build_height_field(DAT_00202c6c[8]);
@@ -1550,8 +1550,8 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
         if ((cVar4 < 0) ||
            ((ushort)(byte)(&DAT_00202c38)[cVar4 * 6] != *(ushort *)(DAT_00202c6c + 4))) break;
         DAT_00086998 = cVar4;
-        psVar7 = (short *)resolve_object_link(&DAT_00202c3a + cVar4 * 6);
-        uVar8 = (int)((uw_object_hdr_t *)psVar7)->object_id;
+        supporting_object = resolve_object_link((ushort *)(&DAT_00202c3a + cVar4 * 6));
+        uVar8 = (int)supporting_object->object_id;
         DAT_00086999 = (undefined1)uVar8;
         DAT_0008699a = (undefined1)(uVar8 >> 8);
         if ((g_object_type_props[(short)uVar8].flags & 2) == 2) {
@@ -1576,15 +1576,15 @@ LAB_000564d0:
       }
 LAB_000564d8:
       pDropTile = (char *)tilemap_lookup((int)tile_x,(int)tile_y);
-      puVar9 = (ushort *)discard_misplaced_object(pDropTile + 2,object,0);
+      puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pDropTile + 2,(ushort *)object,0);
       return puVar9;
     }
     if ((uVar2 & 7) == 5) goto LAB_000564d8;
     if ((uVar2 & 7) == 6) {
-      if ((g_object_type_props[(*object & 0x1ff)].quality_flags & 0xc) == 0xc) {
+      if ((g_object_type_props[object->object_id].quality_flags & 0xc) == 0xc) {
         return object;
       }
-      cVar4 = resolve_damage_type_resistance(object,1,8);
+      cVar4 = resolve_damage_type_resistance((ushort *)object,1,8);
       goto LAB_000564d0;
     }
     if ((uVar2 & 8) != 0) {
@@ -1596,22 +1596,23 @@ LAB_000564d8:
     if (iVar12 == 0) {
       DAT_0010144c = tile_x;
       DAT_00101454 = tile_y;
-      puVar9 = (ushort *)reallocate_object_to_arena(object);
+      puVar9 = reallocate_object_to_arena((ushort *)object);
+      uw_mobile_object_t *mobile = (uw_mobile_object_t *)puVar9;
       DAT_0010144c = uVar6;
       DAT_00101454 = uVar3;
       if (DAT_002046d4 != 0) {
-        ((uw_mobile_object_t *)puVar9)->motion_flags = ((uw_mobile_object_t *)puVar9)->motion_flags & 0x83 | 3;
+        mobile->speed = 3;
         uVar10 = ce_rand();
         uw_ord2005_rem_119 = ((int)(uVar10)) % (9);
-        ((uw_mobile_object_t *)puVar9)->full_heading = (byte)((char)((uw_mobile_object_t *)puVar9)->full_heading + (uw_ord2005_rem_119 + '\f') * '\x10');
+        mobile->full_heading = (byte)((char)mobile->full_heading + (uw_ord2005_rem_119 + '\f') * '\x10');
       }
       if (force == 0) {
         return puVar9;
       }
       bVar5 = ce_rand();
-      ((uw_mobile_object_t *)puVar9)->speed = ((bVar5 & 3) + 1) & 0x7f;
+      mobile->speed = ((bVar5 & 3) + 1) & 0x7f;
       bVar5 = ce_rand();
-      ((uw_mobile_object_t *)puVar9)->attack_pitch = ((uw_mobile_object_t *)puVar9)->attack_pitch & 7 ^ ((bVar5 & 3) + 0xe) * '\b';
+      mobile->pitch = (bVar5 & 3) + 14;
       return puVar9;
     }
     DAT_00202c6c = local_4c;
@@ -1619,7 +1620,7 @@ LAB_000564d8:
     uVar6 = encode_object_slot_index(object);
     DAT_00202c6c[10] = (char)uVar6;
     DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
-    iVar12 = (*object & 0x1ff) * 0xd;
+    iVar12 = object->object_id * 0xd;
     bVar5 = g_object_type_props[iVar12 / 0xd].flags;
   } while( true );
 }

@@ -1293,6 +1293,9 @@ add_test(NAME world_placement_fields
 add_test(NAME object_init_fields
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_object_init_fields.py")
+add_test(NAME settle_native_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_settle_native_fields.py")
 # Coccinelle semantic-patch checks: they re-parse the whole of src/ with spatch
 # and take minutes where the rest of the suite takes seconds (530s against 6s
 # when measured on this tree). They are a tool for large type-conversion

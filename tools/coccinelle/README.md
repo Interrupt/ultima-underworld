@@ -2820,3 +2820,62 @@ packed constructor accesses disappear without adding exceptions. The current
 report lists **476 accesses: 117 justified (104 transfer, nine cursor and four
 snapshot accesses), and 359 still unreviewed**. Remaining properties, exceptions
 and unrecorded aliases still require auditing.
+
+## Native dropped-object settling state
+
+`generate_settle_native_rules.py` generates `settle-native-fields.json` for
+`settle_dropped_object`. The incoming object, collision candidate and returned
+record now use native common-header pointers. Object ID and Z/X/Y reads replace
+raw header words/bytes at their original read sites, including reads after slot
+encoding or collision callbacks. Candidate IDs retain their original full
+`uint` capture. The relocated slot gets a separate native mobile alias only in
+the branch calling `reallocate_object_to_arena`, whose non-null result comes
+from `alloc_object_slot(1)`. No NPC-only extension is inferred for an arbitrary
+collision candidate or discarded record.
+
+The jitter write now sets shared `speed = 3` instead of masking its full motion
+byte with `0x83` and ORing three: both clear all seven speed bits before setting
+three and preserve gravity. Forced launch uses the named five-bit `pitch`,
+retaining the current low three bits after the random callback. Full-heading
+signed-byte arithmetic, random-value captures, modulo/carry behavior and the
+saved tile-coordinate scalars remain unchanged. The incoming object pointer
+is stable; fields remain live. Returned/discarded pointer identity, callback
+order, both passes through the settling loop, scratch operations and labels
+remain in place. No null-handling or collision behavior is changed.
+
+`test_settle_native_fields.py` validates original/current exact bodies,
+generation, application, idempotence and observer/width/scope guards. Actual
+before/after complete functions agree for 2,097,152 cases: every 16-bit seed,
+16 collision scenarios, and helpers with/without record mutations. Scenarios
+cover the cached-property early exit, both settling passes, blocked/liquid
+floors, resistance results, candidate-height mismatch, support/blocking objects,
+discard results, relocated jitter, forced launch and the defined null-return
+case. Helpers rebind the live scratch buffer and mutate both incoming and
+relocated records. All ten helpers execute in both mutation modes. The fixture
+compares record and persistent scratch/candidate bytes, return identity,
+callback arguments/order/counts, random state, pass counts, placement flags,
+coordinate globals and scratch identity class.
+
+Independent assertions check fresh header coordinates/metadata entering the
+collision builder, saved-coordinate restoration after relocation, speed/gravity,
+heading wrap, and pitch/low-bit preservation before the next callback or return.
+Scratch inputs are observed only once defined: source inspection confirms the
+real corner/build/envelope/sort helpers initialize the consumed outputs for
+in-map contexts. The fixture models those contracts, initializes unused tracing
+bytes, and observes borrowed stack scratch only while the function is active;
+it does not read the expired local buffer or exercise off-map/uninitialized
+scratch outcomes. The same complete comparison passes under AddressSanitizer.
+Full game build, unit and focused sanitizer suites validate integration.
+
+The role audit reports 55 sources, 345 roles, no errors. Header catalogs refresh
+only this function. The shared-mobile selector now targets the native `mobile`
+alias in its relocation branch; its three scoped catalogs are regenerated after
+checking that all unrelated function rules remain unchanged. With the explicit
+`--spatch` option, all five header/shared-mobile catalogs parse and apply
+idempotently to the current complete function; that check passes. No global
+catalog sweep or unrelated alias reinterpretation is performed.
+
+The inventory remains **476 accesses: 117 justified and 359 still unreviewed**.
+The converted raw settling accesses were outside the prior audited aliases;
+the newly recognized roles now cover them. Other properties, exceptions and
+unrecorded aliases still require auditing and conversion or justification.

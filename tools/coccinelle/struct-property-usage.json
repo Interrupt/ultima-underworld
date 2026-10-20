@@ -2925,7 +2925,7 @@
     {
       "source": "src/objects.c",
       "function": "class6_variant_effect_table_lookup",
-      "line": 1648,
+      "line": 1649,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2934,7 +2934,7 @@
     {
       "source": "src/objects.c",
       "function": "class0_variant_effect_table_lookup",
-      "line": 1692,
+      "line": 1693,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2943,7 +2943,7 @@
     {
       "source": "src/objects.c",
       "function": "class2_variant_effect_table_lookup",
-      "line": 1719,
+      "line": 1720,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2952,7 +2952,7 @@
     {
       "source": "src/objects.c",
       "function": "place_object_in_world",
-      "line": 1750,
+      "line": 1751,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2961,7 +2961,7 @@
     {
       "source": "src/objects.c",
       "function": "compute_object_placement_fields",
-      "line": 1777,
+      "line": 1778,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2970,7 +2970,7 @@
     {
       "source": "src/objects.c",
       "function": "compute_object_placement_fields",
-      "line": 1781,
+      "line": 1782,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2979,16 +2979,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1822,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "puVar2->type_flags = header->type_flags;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "reallocate_object_to_arena",
-      "line": 1822,
+      "line": 1823,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2999,14 +2990,14 @@
       "function": "reallocate_object_to_arena",
       "line": 1823,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "type_flags",
       "pointer": null,
-      "code": "puVar2->position_word = header->position_word;"
+      "code": "puVar2->type_flags = header->type_flags;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1823,
+      "line": 1824,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3017,14 +3008,14 @@
       "function": "reallocate_object_to_arena",
       "line": 1824,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "puVar2->chain_word = header->chain_word;"
+      "code": "puVar2->position_word = header->position_word;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1824,
+      "line": 1825,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3034,6 +3025,15 @@
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
       "line": 1825,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "puVar2->chain_word = header->chain_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "line": 1826,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3042,7 +3042,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1825,
+      "line": 1826,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3051,7 +3051,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_placement",
-      "line": 1875,
+      "line": 1876,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
