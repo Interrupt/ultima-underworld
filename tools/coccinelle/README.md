@@ -2465,3 +2465,44 @@ pointer-role audit output is unchanged (55 sources, 327 roles, no errors).
 Four packed accesses disappear. The inventory lists five byte views, 461 packed
 accesses and eight raw audited accesses: 474 entries. This remains a conservative
 review list; the remaining properties and unrecorded aliases are not complete.
+
+## Direct audio, sprite, temporary-flag and use-trap consumers
+
+`generate_field_consumer_rules.py` produces four `field-consumer-*.json`
+complete-function recipes:
+
+* `play_positional_sound_effect` reads shared `tile_x` and `tile_y` fields,
+  scaled by eight, at the original coordinate read sites. It retains the
+  original sub-tile coordinates, arithmetic, player-pointer read timing and
+  all callback boundaries.
+* `sprite_partition_by_depth` reads `heading` in its low-two-bit direction
+  test. Bits above heading in the original shifted position word are multiples
+  of four and disappear in the existing final mask; the named heading value
+  produces the same condition, including the original heading bit 2.
+* `clear_object_temp_flag_callback` updates `heading` from the saved `uVar1`
+  word, clearing heading bit 2 (position bit 9). The full snapshot remains in
+  place. Only the field write changes; X, Y, Z and the lower heading bits
+  retain their original values.
+* `trigger_object_trap_or_use_action` checks `flags_res == 0` and
+  `enchanted == 0` for the existing `0x1e00` gate. It retains trap lookup,
+  pointer identity, action truncation, callback ordering and link cursors.
+  Other raw actor/object aliases in this function still require review.
+
+`test_field_consumers.py` verifies exact original/current bodies, generation,
+application, idempotence and refusal of modified or duplicate definitions.
+The fixture compiles both actual bodies and compares 4,194,304 complete calls:
+all 65,536 packed seeds, 16 modes and four consumers. It compares return/output
+values, every record byte, callback arguments/order/counts, and the live player
+pointer. Helpers mutate records and rebind the player pointer; assertions
+require every relevant helper to execute both with and without mutations.
+Independent assertions check audio world-coordinate extraction, sprite branch
+arguments, preserved header/type bits and the temporary heading-bit clear.
+Null lookups, null used objects, disabled audio, arena/class exclusions, and
+trap application versus unlock paths are included. The same fixture passes
+under AddressSanitizer. Audio debug logging is disabled in the fixture; game
+build and integration tests exercise the production source.
+
+Pointer-role output stays unchanged (55 sources, 327 roles, no errors), so
+unrelated catalogs are retained. The inventory now lists five byte views,
+456 packed accesses and eight raw audited accesses: 469 entries. Known accesses,
+remaining packed exceptions and unrecorded aliases still require further audit.

@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 461,
+    "packed_word": 456,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -727,24 +727,6 @@
       "code": "uVar1 = ((uw_object_hdr_t *)object)->position_word;"
     },
     {
-      "source": "src/audio.c",
-      "function": "play_positional_sound_effect",
-      "line": 651,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "((int)(((g_player_object->tile_word >> 7 & 0x1f8) +"
-    },
-    {
-      "source": "src/audio.c",
-      "function": "play_positional_sound_effect",
-      "line": 654,
-      "category": "packed_word",
-      "member": "tile_word",
-      "pointer": null,
-      "code": "((int)(((g_player_object->tile_word >> 1 & 0x1f8) +"
-    },
-    {
       "source": "src/babl.c",
       "function": "babl_builtin_do_inv_create",
       "line": 550,
@@ -1139,15 +1121,6 @@
       "member": "link_word",
       "pointer": null,
       "code": "iVar2 = (char *)&DAT_00100674->hdr.link_word;"
-    },
-    {
-      "source": "src/bitmap.c",
-      "function": "sprite_partition_by_depth",
-      "line": 395,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "if (((((uw_object_hdr_t *)_o)->position_word >> 7) + DAT_0023b4a0 * -2 & 3) == 0) {"
     },
     {
       "source": "src/combat.c",
@@ -2087,15 +2060,6 @@
     },
     {
       "source": "src/item_use.c",
-      "function": "trigger_object_trap_or_use_action",
-      "line": 1805,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if (((((uw_object_hdr_t *)puVar1)->type_flags & 0x1e00) == 0) && ((short)action == 4)) {"
-    },
-    {
-      "source": "src/item_use.c",
       "function": "check_offering_container_puzzle",
       "line": 1955,
       "category": "packed_word",
@@ -2831,15 +2795,6 @@
       "member": "position_word",
       "pointer": null,
       "code": "uVar1 = ((uw_object_hdr_t *)object)->position_word;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "clear_object_temp_flag_callback",
-      "line": 823,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)object)->position_word = (ushort)(uVar1 & 0xfdff);"
     },
     {
       "source": "src/objects.c",

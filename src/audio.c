@@ -648,10 +648,10 @@ LAB_00072f24:
   else {
     iVar10 = (sound_id & 0xff) * 5;
     uVar9 = (int)world_x -
-            ((int)(((g_player_object->tile_word >> 7 & 0x1f8) +
+            ((int)(((g_player_object->tile_x << 3) +
                     (uint)(g_player_object->hdr.xpos)) * 0x10000) >> 0x10);
     uVar8 = (int)world_y -
-            ((int)(((g_player_object->tile_word >> 1 & 0x1f8) +
+            ((int)(((g_player_object->tile_y << 3) +
                     (g_player_object->hdr.ypos)) * 0x10000) >> 0x10);
     uVar3 = integer_sqrt(uVar8 * uVar8 + uVar9 * uVar9);
     uVar3 = uVar3 & 0xffff;
