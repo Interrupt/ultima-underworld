@@ -2434,3 +2434,34 @@ focused sanitizer suite validate integration. Pointer roles are unchanged.
 The inventory now lists five byte views, 465 packed accesses and eight raw
 audited accesses: 478 entries. Full-word snapshots, unknown properties and
 unrecorded aliases still require review; this is not proof of completion.
+
+## Placement-snapshot object class checks
+
+`generate_placement_class_rules.py` generates `placement-class-fields.json`.
+All four class decisions in `build_object_placement_snapshot` now mask the
+nine-bit `object_id` property instead of the complete `type_flags` word. The
+`0x1c0` class mask lies entirely inside that field. This covers the fine-physics
+branch, NPC/projectile coordinate selection, speed scaling, and the NPC marker.
+The common-header casts are retained at the original read sites: no ID is
+cached across a helper, and no full-word snapshot or live temporary is narrowed.
+The independent packed `position_word` capture used for the initial heading
+snapshot remains unchanged, as do snapshot-buffer operations and precise
+projectile coordinates (which overlap NPC fields).
+
+`test_placement_class_fields.py` verifies strict complete-function generation,
+application, refusal of changed context, and idempotence. It compiles actual
+before/after function bodies with the real headers, intrinsic macros and the
+source's `physics_vz_remainder` definition. The existing placement fixture
+checks 196,608 complete snapshots against an independent byte oracle, then
+compares the original and converted outputs. The additional
+`placement_class_fixture.c` exercises all 65,536 type/flag words and 32 modes:
+2,097,152 complete-function comparisons across mobile/static objects, fine
+physics enabled/disabled, and mutations at slot encoding, fine-physics and
+random callbacks. It compares every snapshot byte, arena byte, callback event,
+call count and random state. Both fixtures also pass under AddressSanitizer.
+
+The game build, default unit suite and focused sanitizer suite check integration;
+pointer-role audit output is unchanged (55 sources, 327 roles, no errors).
+Four packed accesses disappear. The inventory lists five byte views, 461 packed
+accesses and eight raw audited accesses: 474 entries. This remains a conservative
+review list; the remaining properties and unrecorded aliases are not complete.

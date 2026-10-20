@@ -5071,7 +5071,7 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     snapshot[0x28] = (byte)(1 << (((uw_mobile_object_t *)object)->movement_mode));
     iVar7 = ((byte)(((uw_mobile_object_t *)object)->pitch) - 0x10) * 0x40;
     /* HACK: not original behaviour -- see g_physics_vz_remainder. */
-    if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+    if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
       int slot = (int)(((char *)object - DAT_002046b8) / 0x1b);
       if (slot >= 0 && slot < 256 &&
           g_physics_vz_remainder[slot].pitch == ((uw_mobile_object_t *)object)->pitch) {
@@ -5084,7 +5084,7 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     snapshot[0x10] = (byte)iVar7;
     snapshot[0x11] = (byte)((uint)iVar7 >> 8);
     snapshot[0x1e] = ((uw_mobile_object_t *)object)->hit_points;
-    bVar8 = (((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40;
+    bVar8 = (((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40;
     if (!bVar8) {
       uVar2 = ((uw_projectile_object_t *)object)->precise_x;
       *snapshot = (byte)uVar2;
@@ -5099,12 +5099,12 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     uVar4 = ((uw_mobile_object_t *)object)->speed;
     snapshot[0x14] = (byte)uVar4;
     snapshot[0x15] = 0;
-    if ((((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) ||
+    if ((((((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40) ||
          (*(short *)(snapshot + 0x10) != 0 || *(short *)(snapshot + 10) != 0)) ||
         ((g_object_type_props[iVar5 / 0xd].flags & 8) != 0)) {
       snapshot[0x14] = (byte)(uVar4 * 0x2f);
       snapshot[0x15] = (byte)(uVar4 * 0x2f >> 8);
-      if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) {
+      if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40) {
         snapshot[0x27] = 8;
       }
     }

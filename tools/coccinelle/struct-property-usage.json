@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 465,
+    "packed_word": 461,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -725,42 +725,6 @@
       "member": "position_word",
       "pointer": null,
       "code": "uVar1 = ((uw_object_hdr_t *)object)->position_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "build_object_placement_snapshot",
-      "line": 5074,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) != 0x40 && physics_subtick_units() != 0) {"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "build_object_placement_snapshot",
-      "line": 5087,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "bVar8 = (((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "build_object_placement_snapshot",
-      "line": 5102,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if ((((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) ||"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "build_object_placement_snapshot",
-      "line": 5107,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) {"
     },
     {
       "source": "src/audio.c",
