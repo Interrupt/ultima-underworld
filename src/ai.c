@@ -2928,8 +2928,9 @@ void npc_ai_default_tick()
   uint uVar5;
   undefined4 uVar6;
   int iVar7;
-  char *npc_rec;
-  ushort *puVar8;
+  uw_object_hdr_t *damage_source_object;
+  uw_mobile_object_t *current_npc;
+  uw_tile_t *puVar8;
   undefined1 extraout_r1;
   undefined1 uVar9;
   undefined1 extraout_r1_00;
@@ -3016,11 +3017,11 @@ LAB_000339fc:
       if ((cVar4 != '\0') &&
          (((cVar4 == '\x01' && ((DAT_0010190c->npc_ai_flags & 0x40) == 0)) ||
            (((DAT_0010190c->npc_ai_flags & 0x40) != 0 ||
-             (npc_rec = get_object_record_by_slot_index(cVar4), (npc_rec != 0) && (*(byte *)(npc_rec + 0x19) & 0x40) != 0)))))) {
+             (damage_source_object = get_object_record_by_slot_index(cVar4), (damage_source_object != 0) && (*(byte *)((char *)damage_source_object + 0x19) & 0x40) != 0)))))) {
         if ((uint) DAT_0010190c->damage_source != (DAT_0010190c->npc_gtarg)) {
           uVar11 = DAT_0010190c->goal_word & 0xf00f |
                    (uint) DAT_0010190c->damage_source << 4;
-          DAT_0010190c->goal_word = (ushort)uVar11;
+          DAT_0010190c->npc_gtarg = DAT_0010190c->damage_source;
         }
         iVar7 = refresh_npc_target_delta();
         if (iVar7 != 0) {
@@ -3072,8 +3073,8 @@ LAB_00033d18:
   case 0:
     goto LAB_00033e9c;
   case 1:
-    puVar8 = (ushort *)tilemap_lookup(DAT_0010143c,DAT_0010173c);
-    npc_walk_toward_tile(DAT_0010143c,DAT_0010173c,*puVar8 >> 4 & 0xf);
+    puVar8 = (uw_tile_t *)tilemap_lookup(DAT_0010143c,DAT_0010173c);
+    npc_walk_toward_tile(DAT_0010143c,DAT_0010173c,puVar8->floor_height);
     break;
   case 2:
     npc_idle_behavior_tick();
@@ -3114,18 +3115,17 @@ LAB_00033e9c:
   case 0xb:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
     uVar6 = ce_rand();
-    npc_rec = (char *)DAT_0010190c;
+    current_npc = DAT_0010190c;
     bVar10 = DAT_0010190c->motion_flags;
     uw_ord2005_rem_93 = ((int)(uVar6)) % (2);
-    ((uw_mobile_object_t *)npc_rec)->motion_flags = (uw_ord2005_rem_93 ^ bVar10) & 0x7f ^ bVar10;
+    current_npc->speed = uw_ord2005_rem_93 & 0x7f;
     uVar6 = ce_rand();
     uw_ord2005_rem_94 = ((int)(uVar6)) % (0x100);
     DAT_0010190c->full_heading = uw_ord2005_rem_94;
     uVar6 = ce_rand();
     uw_ord2005_rem_95 = ((int)(uVar6)) % (3);
-    DAT_0010190c->attack_pitch =
-      DAT_0010190c->attack_pitch & 7 ^ (uw_ord2005_rem_95 + '\x0f') * '\b';
-    npc_rec = (char *)DAT_0010190c;
+    DAT_0010190c->pitch = uw_ord2005_rem_95 + 15;
+    current_npc = DAT_0010190c;
     uVar2 = DAT_0010190c->goal_word;
     uw_ord2005_rem_96 = ((int)(DAT_0010190c->npc_animation_frame + 1)) % (4);
     uVar11 = uVar2 & 0xfff;
@@ -3138,14 +3138,14 @@ LAB_00033e9c:
   default:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch | 7;
   }
-  npc_rec = (char *)DAT_0010190c;
+  current_npc = DAT_0010190c;
   /* HACK: same ushort-vs-byte pointer-arithmetic scaling bug as process_visible_tile_cell's sibling
      npc_notice_and_idle_tick (fixed earlier this session) -- DAT_0010190c is `ushort *`, so bare
      `DAT_0010190c + 2` scales to byte offset 4... */
   uVar2 = DAT_0010190c->hdr.position_word;
   bVar10 = DAT_0010190c->full_heading;
   uVar11 = uVar2 >> 2 & 0xff;
-  uVar11 = (uVar11 ^ DAT_0010190c->heading_flags) & 0x1f ^ uVar11;
+  uVar11 = (DAT_0010190c->hdr.heading << 5) | DAT_0010190c->npc_heading;
   uVar12 = (uint)DAT_001018fc;
   /* Was `ordint_divmod(0x100,(uVar11-uVar12)+0x100,*(undefined1*)(DAT_0010190c+2),
      ordint_divmod_exref,unaff_r4,unaff_r5,unaff_r6,unaff_r7,unaff_r8,unaff_r9, unaff_lr);` -- badly
@@ -3161,11 +3161,9 @@ LAB_00033e9c:
     uVar11 = uVar11 & 0xff;
   }
   uVar5 = uVar2 & 0xfc7f | (uVar11 & 0xffe0) << 2;
-  ((uw_object_hdr_t *)npc_rec)->position_word_low = (byte)(char)uVar5;
-  DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar5 >> 8);
-  DAT_0010190c->heading_flags =
-    (DAT_0010190c->heading_flags ^ (byte)uVar11) & 0x1f ^ DAT_0010190c->heading_flags;
-  npc_rec = (char *)DAT_0010190c;
+  current_npc->hdr.heading = (uVar11 >> 5) & 7;
+  DAT_0010190c->npc_heading = uVar11 & 0x1f;
+  current_npc = DAT_0010190c;
   /* Was `if (DAT_00101430 == 0)` -- an inverted condition, confirmed via real disassembly (`cmp
      r0,#0x0; beq 0x326a4`, where r0 is DAT_00101430 and 0x326a4 is the simple "just copy
      DAT_00101458" branch this decompile currently has as the ELSE)... */
@@ -3180,7 +3178,7 @@ LAB_00033e9c:
     uVar5 = (uint)DAT_00101458;
     uVar11 = ((bVar10 - uVar5) + 0x100) & 0xff;
     if ((uVar11 < 0x20) || (0xe0 < uVar11)) {
-      ((uw_mobile_object_t *)npc_rec)->full_heading = bVar10;
+      current_npc->full_heading = bVar10;
       return;
     }
     if (uVar11 < 0x40) {
@@ -3188,12 +3186,12 @@ LAB_00033e9c:
     }
     else {
       if (uVar11 < 0xc1) {
-        ((uw_mobile_object_t *)npc_rec)->motion_flags = bVar1 & 0x80;
+        current_npc->speed = 0;
         goto LAB_00032690;
       }
       uVar9 = (uVar5 + 0xe0) & 0xff;
     }
-    ((uw_mobile_object_t *)npc_rec)->full_heading = uVar9;
+    current_npc->full_heading = uVar9;
   }
   else {
 LAB_00032690:

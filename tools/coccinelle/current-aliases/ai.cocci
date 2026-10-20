@@ -17283,3 +17283,2388 @@ R F(...) {
 )
 ...>
 }
+
+@npc_default_npc_ai_default_tick_current_npc_word_0_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 0)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_0_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 0)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_0_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 0)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_2_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 2)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_2_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 2)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_2_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 2)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_4_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 4)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_4_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 4)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_4_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 4)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_6_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 6)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_6_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 6)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_6_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 6)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_11_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 11)
++ ((uw_mobile_object_t *)current_npc)->goal_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_11_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 11)
++ ((uw_mobile_object_t *)current_npc)->goal_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_11_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 11)
++ ((uw_mobile_object_t *)current_npc)->goal_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_13_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 13)
++ ((uw_mobile_object_t *)current_npc)->status_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_13_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 13)
++ ((uw_mobile_object_t *)current_npc)->status_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_13_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 13)
++ ((uw_mobile_object_t *)current_npc)->status_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_15_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 15)
++ ((uw_mobile_object_t *)current_npc)->target_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_15_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 15)
++ ((uw_mobile_object_t *)current_npc)->target_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_15_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 15)
++ ((uw_mobile_object_t *)current_npc)->target_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_22_ushort@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)current_npc + 22)
++ ((uw_mobile_object_t *)current_npc)->tile_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_22_undefined2@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined2 *)((char *)current_npc + 22)
++ ((uw_mobile_object_t *)current_npc)->tile_word
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_word_22_short@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(short *)((char *)current_npc + 22)
++ ((uw_mobile_object_t *)current_npc)->tile_word_signed
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_0_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 0)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_0_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 0)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_0_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 0)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.type_flags_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_0_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 0) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_0_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 0)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.type_flags_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_1_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 1)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_1_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 1)
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_1_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 1)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.type_flags_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_1_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 1) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.type_flags_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_1_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 1)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.type_flags_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_2_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 2)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_2_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 2)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_2_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 2)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.position_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_2_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 2) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_2_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 2)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.position_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_3_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 3)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_3_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 3)
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_3_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 3)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.position_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_3_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 3) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.position_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_3_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 3)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.position_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_4_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 4)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_4_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 4)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_4_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 4)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.chain_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_4_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 4) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_4_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 4)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.chain_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_5_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 5)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_5_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 5)
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_5_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 5)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.chain_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_5_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 5) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.chain_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_5_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 5)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.chain_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_6_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 6)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_6_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 6)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_6_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 6)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.link_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_6_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 6) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_6_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 6)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.link_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_7_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 7)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_7_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 7)
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_7_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 7)
++ (char *)&((uw_mobile_object_t *)current_npc)->hdr.link_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_7_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 7) = E;
++ ((uw_mobile_object_t *)current_npc)->hdr.link_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_7_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 7)
++ (char)((uw_mobile_object_t *)current_npc)->hdr.link_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_8_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 8)
++ ((uw_mobile_object_t *)current_npc)->npc_hp
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_8_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 8)
++ ((uw_mobile_object_t *)current_npc)->npc_hp
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_8_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 8)
++ (char *)&((uw_mobile_object_t *)current_npc)->npc_hp
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_8_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 8) = E;
++ ((uw_mobile_object_t *)current_npc)->npc_hp = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_8_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 8)
++ (char)((uw_mobile_object_t *)current_npc)->npc_hp
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_9_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 9)
++ ((uw_mobile_object_t *)current_npc)->full_heading
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_9_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 9)
++ ((uw_mobile_object_t *)current_npc)->full_heading
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_9_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 9)
++ (char *)&((uw_mobile_object_t *)current_npc)->full_heading
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_9_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 9) = E;
++ ((uw_mobile_object_t *)current_npc)->full_heading = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_9_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 9)
++ (char)((uw_mobile_object_t *)current_npc)->full_heading
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_10_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 10)
++ ((uw_mobile_object_t *)current_npc)->movement_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_10_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 10)
++ ((uw_mobile_object_t *)current_npc)->movement_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_10_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 10)
++ (char *)&((uw_mobile_object_t *)current_npc)->movement_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_10_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 10) = E;
++ ((uw_mobile_object_t *)current_npc)->movement_flags = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_10_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 10)
++ (char)((uw_mobile_object_t *)current_npc)->movement_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_11_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 11)
++ ((uw_mobile_object_t *)current_npc)->goal_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_11_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 11)
++ ((uw_mobile_object_t *)current_npc)->goal_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_11_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 11)
++ (char *)&((uw_mobile_object_t *)current_npc)->goal_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_11_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 11) = E;
++ ((uw_mobile_object_t *)current_npc)->goal_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_11_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 11)
++ (char)((uw_mobile_object_t *)current_npc)->goal_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_12_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 12)
++ ((uw_mobile_object_t *)current_npc)->goal_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_12_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 12)
++ ((uw_mobile_object_t *)current_npc)->goal_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_12_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 12)
++ (char *)&((uw_mobile_object_t *)current_npc)->goal_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_12_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 12) = E;
++ ((uw_mobile_object_t *)current_npc)->goal_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_12_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 12)
++ (char)((uw_mobile_object_t *)current_npc)->goal_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_13_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 13)
++ ((uw_mobile_object_t *)current_npc)->status_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_13_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 13)
++ ((uw_mobile_object_t *)current_npc)->status_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_13_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 13)
++ (char *)&((uw_mobile_object_t *)current_npc)->status_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_13_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 13) = E;
++ ((uw_mobile_object_t *)current_npc)->status_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_13_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 13)
++ (char)((uw_mobile_object_t *)current_npc)->status_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_14_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 14)
++ ((uw_mobile_object_t *)current_npc)->status_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_14_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 14)
++ ((uw_mobile_object_t *)current_npc)->status_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_14_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 14)
++ (char *)&((uw_mobile_object_t *)current_npc)->status_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_14_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 14) = E;
++ ((uw_mobile_object_t *)current_npc)->status_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_14_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 14)
++ (char)((uw_mobile_object_t *)current_npc)->status_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_15_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 15)
++ ((uw_mobile_object_t *)current_npc)->target_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_15_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 15)
++ ((uw_mobile_object_t *)current_npc)->target_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_15_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 15)
++ (char *)&((uw_mobile_object_t *)current_npc)->target_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_15_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 15) = E;
++ ((uw_mobile_object_t *)current_npc)->target_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_15_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 15)
++ (char)((uw_mobile_object_t *)current_npc)->target_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_16_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 16)
++ ((uw_mobile_object_t *)current_npc)->target_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_16_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 16)
++ ((uw_mobile_object_t *)current_npc)->target_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_16_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 16)
++ (char *)&((uw_mobile_object_t *)current_npc)->target_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_16_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 16) = E;
++ ((uw_mobile_object_t *)current_npc)->target_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_16_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 16)
++ (char)((uw_mobile_object_t *)current_npc)->target_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_17_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 17)
++ ((uw_mobile_object_t *)current_npc)->recent_damage
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_17_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 17)
++ ((uw_mobile_object_t *)current_npc)->recent_damage
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_17_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 17)
++ (char *)&((uw_mobile_object_t *)current_npc)->recent_damage
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_17_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 17) = E;
++ ((uw_mobile_object_t *)current_npc)->recent_damage = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_17_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 17)
++ (char)((uw_mobile_object_t *)current_npc)->recent_damage
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_18_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 18)
++ ((uw_mobile_object_t *)current_npc)->damage_source
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_18_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 18)
++ ((uw_mobile_object_t *)current_npc)->damage_source
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_18_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 18)
++ (char *)&((uw_mobile_object_t *)current_npc)->damage_source
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_18_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 18) = E;
++ ((uw_mobile_object_t *)current_npc)->damage_source = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_18_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 18)
++ (char)((uw_mobile_object_t *)current_npc)->damage_source
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_19_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 19)
++ ((uw_mobile_object_t *)current_npc)->motion_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_19_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 19)
++ ((uw_mobile_object_t *)current_npc)->motion_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_19_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 19)
++ (char *)&((uw_mobile_object_t *)current_npc)->motion_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_19_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 19) = E;
++ ((uw_mobile_object_t *)current_npc)->motion_flags = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_19_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 19)
++ (char)((uw_mobile_object_t *)current_npc)->motion_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_20_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 20)
++ ((uw_mobile_object_t *)current_npc)->attack_pitch
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_20_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 20)
++ ((uw_mobile_object_t *)current_npc)->attack_pitch
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_20_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 20)
++ (char *)&((uw_mobile_object_t *)current_npc)->attack_pitch
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_20_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 20) = E;
++ ((uw_mobile_object_t *)current_npc)->attack_pitch = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_20_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 20)
++ (char)((uw_mobile_object_t *)current_npc)->attack_pitch
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_21_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 21)
++ ((uw_mobile_object_t *)current_npc)->animation_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_21_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 21)
++ ((uw_mobile_object_t *)current_npc)->animation_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_21_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 21)
++ (char *)&((uw_mobile_object_t *)current_npc)->animation_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_21_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 21) = E;
++ ((uw_mobile_object_t *)current_npc)->animation_flags = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_21_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 21)
++ (char)((uw_mobile_object_t *)current_npc)->animation_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_22_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 22)
++ ((uw_mobile_object_t *)current_npc)->tile_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_22_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 22)
++ ((uw_mobile_object_t *)current_npc)->tile_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_22_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 22)
++ (char *)&((uw_mobile_object_t *)current_npc)->tile_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_22_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 22) = E;
++ ((uw_mobile_object_t *)current_npc)->tile_word_low = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_22_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 22)
++ (char)((uw_mobile_object_t *)current_npc)->tile_word_low
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_23_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 23)
++ ((uw_mobile_object_t *)current_npc)->tile_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_23_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 23)
++ ((uw_mobile_object_t *)current_npc)->tile_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_23_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 23)
++ (char *)&((uw_mobile_object_t *)current_npc)->tile_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_23_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 23) = E;
++ ((uw_mobile_object_t *)current_npc)->tile_word_high = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_23_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 23)
++ (char)((uw_mobile_object_t *)current_npc)->tile_word_high
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_24_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 24)
++ ((uw_mobile_object_t *)current_npc)->heading_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_24_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 24)
++ ((uw_mobile_object_t *)current_npc)->heading_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_24_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 24)
++ (char *)&((uw_mobile_object_t *)current_npc)->heading_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_24_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 24) = E;
++ ((uw_mobile_object_t *)current_npc)->heading_flags = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_24_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 24)
++ (char)((uw_mobile_object_t *)current_npc)->heading_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_25_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 25)
++ ((uw_mobile_object_t *)current_npc)->npc_ai_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_25_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 25)
++ ((uw_mobile_object_t *)current_npc)->npc_ai_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_25_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 25)
++ (char *)&((uw_mobile_object_t *)current_npc)->npc_ai_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_25_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 25) = E;
++ ((uw_mobile_object_t *)current_npc)->npc_ai_flags = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_25_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 25)
++ (char)((uw_mobile_object_t *)current_npc)->npc_ai_flags
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_26_byte@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(byte *)((char *)current_npc + 26)
++ ((uw_mobile_object_t *)current_npc)->npc_whoami
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_26_undefined1@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(undefined1 *)((char *)current_npc + 26)
++ ((uw_mobile_object_t *)current_npc)->npc_whoami
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_26_char_address@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- &*(char *)((char *)current_npc + 26)
++ (char *)&((uw_mobile_object_t *)current_npc)->npc_whoami
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_26_char_store@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+expression E;
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 26) = E;
++ ((uw_mobile_object_t *)current_npc)->npc_whoami = (byte)E;
+)
+...>
+}
+
+@npc_default_npc_ai_default_tick_current_npc_byte_26_char@
+type R;
+identifier F =~ "^\(npc_ai_default_tick\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+@@
+R F(...) {
+<...
+(
+- *(char *)((char *)current_npc + 26)
++ (char)((uw_mobile_object_t *)current_npc)->npc_whoami
+)
+...>
+}

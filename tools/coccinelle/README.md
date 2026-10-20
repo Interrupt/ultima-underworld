@@ -2204,3 +2204,52 @@ The inventory now lists 14 byte views, 462 packed accesses and eight raw
 audited accesses: 484 total, three fewer. The converted raw pitch test was
 outside the old raw-offset inventory pattern. Other remaining accesses and
 unrecorded aliases still require auditing and conversion or documented reasons.
+
+## Default NPC movement and separated damage-source pointers
+
+`generate_default_npc_rules.py` generates `default-npc-movement-fields.json` for
+`npc_ai_default_tick`. The old mixed `npc_rec` is split into a native saved
+`current_npc` and a common-header `damage_source_object`. The source lookup's
+signed index/null guard and unsigned byte-25 flag test remain explicit. A
+resolved source does not establish NPC-specific flag semantics, so its raw
+access is retained with byte-scaled pointer arithmetic. It is never reused
+as a native current-NPC alias. The home-tile lookup has a native tile pointer
+and reads named `floor_height` without changing units.
+
+Damage retargeting writes named `npc_gtarg`, preserving goal and animation
+bits. Random wandering writes named `speed` and `pitch`, preserving gravity
+and low attack-state bits. Original signed remainders remain: a remainder
+of minus one yields speed 127 after the seven-bit mask, and the pitch range
+is 13 through 17 for signed modulo-three results. The full random values,
+byte snapshots, goal/status captures and masked scratch values remain.
+
+The heading calculation combines named coarse/fine fields and retains the
+existing eight-bit turn difference, 32-unit limit and wrap boundaries. A
+native coarse-heading setter replaces both position-byte stores, preserving
+Z and fine X/Y. Named `npc_heading` preserves the high path flags, and the
+collision-shaped full-heading correction clears only named `speed` where
+the old motion-byte mask preserved gravity. Pointer identity, switch/label
+structure, callback order, reaction gates, return points and APIs are unchanged.
+
+`default_npc_fields` runs by default. It checks reproducible generation,
+exact conversion/idempotence and refusal of changed masks, volatile/escaping
+captures, inserted callbacks, excluded/quoted bodies and duplicate definitions.
+The actual original/current functions execute 2,097,152 comparisons over all
+16-bit seeds, sixteen modes and callback mutation. Cases cover every goal,
+coarse/fine heading combinations, signed source indices and null lookups,
+all eight retarget bits, allegiance flags, aggression/time/distance gates,
+spell/morale reactions, home-floor values and signed wandering random values.
+Callbacks rebind the current NPC and property row and change live record
+fields and heading globals. All twenty services are reached with and without
+mutation. Independent assertions check the complete position word and heading-flag
+byte, retargeting, random speed/gravity, byte heading, pitch/attack-state
+preservation and animation-frame updates. Full guarded objects, player/tile
+buffers, property rows, globals and callback arguments/events/counts are
+compared. Use `--reference PATH` with the original `ai.c`, and `--asan` for
+AddressSanitizer. Header/saved-alias catalogs refresh only this function, and
+the alias AST/scaling regression remains part of validation.
+
+Two byte views and one whole goal-word store disappear. The inventory now
+lists 12 byte views, 461 packed accesses and eight raw audited accesses: 481
+total. Other remaining accesses and unrecorded aliases still require auditing
+and conversion or documented reasons.

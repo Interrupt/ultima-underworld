@@ -1866,10 +1866,17 @@
           "function": "npc_ai_default_tick",
           "roles": [
             {
-              "name": "npc_rec",
-              "type": "char *",
+              "name": "current_npc",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": true
+            },
+            {
+              "name": "damage_source_object",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],
