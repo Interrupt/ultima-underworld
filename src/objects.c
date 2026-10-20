@@ -1756,7 +1756,7 @@ int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr
 // its render/collision height from the low 7 bits of its own offset 2-3 field...
 void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 {
-  byte *object = (byte *)object_ptr;
+  uw_mobile_object_t *object = (uw_mobile_object_t *)object_ptr;
   char cVar1;
   uint uVar2;
   int iVar3;
@@ -1765,35 +1765,32 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
   uint uVar6;
   uint uVar7;
   
-  uVar7 = (uint)*(ushort *)(object + 2);
-  object[9] = (byte)(*(ushort *)(object + 2) >> 2) & 0xe0;
-  object[0x18] = object[0x18] & 0xe0;
-  object[0x14] = object[0x14] & 7 | 0x80;
-  uVar6 = (uint)((uw_object_hdr_t *)object)->type_flags;
+  uVar7 = (uint)object->hdr.position_word;
+  object->full_heading = object->hdr.heading << 5;
+  object->fine_heading = 0;
+  object->pitch = 16;
+  uVar6 = (uint)object->hdr.type_flags;
   bVar4 = ((g_object_type_props[(uVar6 & 0x1ff)].flags & 8) == 0) << 7;
-  object[0x13] = bVar4 | object[0x13] & 0x7f;
+  object->gravity_flag = bVar4 >> 7;
   uVar2 = tile_y & 0x3f | (tile_x & 0x3ff) << 6;
-  object[0x16] = object[0x16] & 0xf | (byte)(uVar2 << 4);
-  object[0x17] = (char)(uVar2 >> 4);
+  object->tile_y = uVar2 & 0x3f;
+  object->tile_x = (uVar2 >> 6) & 0x3f;
   cVar1 = DAT_00101928;
-  object[0x13] = bVar4;
-  object[10] = (cVar1 + 1U ^ object[10]) & 0xf ^ object[10];
-  object[0x14] = 0x82;
-  *object = (char)(uVar6 & 0xbfff);
-  object[1] = (char)((uVar6 & 0xbfff) >> 8);
-  object[8] = 0x3f;
-  object[10] = object[10] & 0x8f;
+  object->speed = 0;
+  object->tick_phase = (cVar1 + 1U) & 0xf;
+  object->attack_pitch = 0x82;
+  object->hdr.invisible = 0;
+  object->hit_points = 0x3f;
+  object->movement_mode = 0;
   if ((uVar6 & 0x1c0) != 0x40) {
+    uw_projectile_object_t *projectile = (uw_projectile_object_t *)object;
     iVar5 = ((uVar7 & 0x1c00) >> 5) + tile_y * 0x100 + 0xf;
-    object[0xd] = (char)iVar5;
-    object[0xe] = (char)((uint)iVar5 >> 8);
+    projectile->precise_y = (ushort)iVar5;
     iVar5 = (uVar7 & 0x7f) << 3;
-    object[0xf] = (char)iVar5;
+    projectile->precise_z = (ushort)iVar5;
     iVar3 = ((uVar7 & 0xe000) >> 8) + (tile_x & 0xff) * 0x100 + 0xf;
-    object[0xb] = (char)iVar3;
-    object[0x10] = (char)((uint)iVar5 >> 8);
-    object[0x12] = 0;
-    object[0xc] = (char)((uint)iVar3 >> 8);
+    projectile->precise_x = (ushort)iVar3;
+    projectile->source_slot = 0;
   }
 }
 

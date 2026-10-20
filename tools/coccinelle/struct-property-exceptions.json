@@ -1,6 +1,6 @@
 {
-  "scope": "Reviewed complete common-header transfers and explicitly listed live word-cursor addresses only. These exceptions do not approve other accesses in their containing functions.",
-  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors.",
+  "scope": "Reviewed complete common-header transfers, explicitly listed live word-cursor addresses and full-width snapshots only. These exceptions do not approve other accesses in their containing functions.",
+  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed full-width snapshots with their reviewed complete-function context; narrowing them would change preserved scalar values.",
   "transfers": [
     {
       "source": "src/ai.c",
@@ -136,6 +136,24 @@
       "function": "commit_level_to_save_slot",
       "statement": "free_player_inventory_chain((char *)&g_player_object->hdr.link_word);",
       "reason": "Pass the current player contents-link word to the existing free-chain API after write_player_save_record may update the live player pointer."
+    }
+  ],
+  "snapshots": [
+    {
+      "source": "src/objects.c",
+      "function": "compute_object_placement_fields",
+      "statement": "uVar7 = (uint)object->hdr.position_word;",
+      "recipe": "tools/coccinelle/placement-init-fields.json",
+      "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
+      "reason": "Preserve the complete position word before placement writes; its original full scalar value supplies precise projectile coordinates."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "compute_object_placement_fields",
+      "statement": "uVar6 = (uint)object->hdr.type_flags;",
+      "recipe": "tools/coccinelle/placement-init-fields.json",
+      "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
+      "reason": "Preserve the complete type/flag word at its original read site; the original full scalar value supplies table indexing and the NPC/projectile branch."
     }
   ]
 }

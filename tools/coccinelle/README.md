@@ -2678,3 +2678,52 @@ API; cursor validation now also accepts the explicitly named common `hdr`
 member. The report lists **478 accesses: 113 justified (104 transfer and nine
 cursor accesses), and 365 still unreviewed**. Other properties, exceptions and
 unrecorded aliases still require auditing; the goal remains incomplete.
+
+## Named mobile placement initialization
+
+`generate_placement_init_rules.py` generates `placement-init-fields.json` for
+`compute_object_placement_fields`. Both production callers pass slots allocated
+with `alloc_object_slot(1)`, proving the existing 27-byte mobile extent. The
+initializer now uses a native mobile pointer for fields shared by NPCs and
+projectiles: full/fine heading, launch pitch, gravity, tile coordinates, speed,
+tick phase, hit points and movement mode. It clears the common header's
+`invisible` property directly. The original `attack_pitch = 0x82` composite byte
+initialization remains explicit; this pass does not invent meanings for its
+low three bits.
+
+The non-NPC branch uses a projectile pointer for complete `precise_x`,
+`precise_y`, `precise_z` words and `source_slot`. These words overlap NPC state
+and are not interpreted as NPC goal/status/target properties. The Z and X byte
+pairs were separated only by local arithmetic and other independent stores;
+there are no intervening record reads or observers of those partial values.
+Clang AST inspection with the actual compilation command confirms zero calls
+and zero volatile accesses in both complete definitions. All seven scalar
+locals retain their original types (`char`, `byte`, `uint` or `int`). The full
+position/type snapshots, full ten-bit-X intermediate tile expression, signed
+phase capture and precise-coordinate arithmetic remain intact. No scalar
+capture is narrowed to a property value.
+
+`test_placement_init_fields.py` validates exact original/current bodies,
+generation, application, idempotence, refusal of an observer inserted at every
+conversion site, and width-change guards. The fixture checks every byte of the
+record and surrounding guards against both the actual original body and an
+independent binary-layout oracle for 2,097,152 cases. These cover all 16-bit
+position/type-word values, all phase-byte values, NPC/projectile branches,
+reserved-bit preservation, two aligned offsets and coordinate boundaries up to
+`0xffffffff`. The same oracle passes under AddressSanitizer. The game build,
+full unit suite and focused sanitizer suite validate integration.
+
+The pointer audit now recognizes this function's incoming pointer and native
+mobile/projectile locals: 55 sources, 335 roles, no errors. Only its common-header
+field/word catalog scopes change; both catalogs parse, and every unrelated
+function's rules remain unchanged. The two full-width word captures are
+explicitly justified in the exception manifest. Snapshot validation requires a
+plain complete-word read plus the exact reviewed function body and its fixed
+SHA-256 digest; changing the source or conversion recipe requires review of the
+consumers. Six negative probes reject inserted observers, narrowed locals or
+statements, recipe drift, missing reasons and duplicate entries.
+
+The report now lists **479 accesses: 115 justified (104 transfer, nine cursor
+and two snapshot accesses), and 364 still unreviewed**. The newly named position
+snapshot is now visible to the conservative inventory. Other properties,
+exceptions and unrecorded aliases remain incomplete.

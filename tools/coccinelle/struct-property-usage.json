@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 465,
+    "packed_word": 466,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -2997,16 +2997,25 @@
     {
       "source": "src/objects.c",
       "function": "compute_object_placement_fields",
+      "line": 1768,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar7 = (uint)object->hdr.position_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "compute_object_placement_fields",
       "line": 1772,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar6 = (uint)((uw_object_hdr_t *)object)->type_flags;"
+      "code": "uVar6 = (uint)object->hdr.type_flags;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1816,
+      "line": 1813,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3015,7 +3024,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1816,
+      "line": 1813,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3024,7 +3033,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1817,
+      "line": 1814,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3033,7 +3042,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1817,
+      "line": 1814,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3042,7 +3051,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1818,
+      "line": 1815,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3051,7 +3060,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1818,
+      "line": 1815,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3060,7 +3069,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1819,
+      "line": 1816,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -3069,7 +3078,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1819,
+      "line": 1816,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,

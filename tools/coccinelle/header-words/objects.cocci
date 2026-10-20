@@ -2230,3 +2230,228 @@ R F(...) {
 )
 ...>
 }
+
+@placement_init_word_0_0@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@placement_init_word_0_1@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@placement_init_word_0_2@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@placement_init_word_0_3@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@placement_init_word_1_0@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)projectile + 0)
++ ((uw_object_hdr_t *)projectile)->type_flags
+|
+- ((ushort *)projectile)[0]
++ ((uw_object_hdr_t *)projectile)->type_flags
+|
+- *(ushort *)projectile
++ ((uw_object_hdr_t *)projectile)->type_flags
+)
+...>
+}
+
+@placement_init_word_1_1@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)projectile + 2)
++ ((uw_object_hdr_t *)projectile)->position_word
+|
+- ((ushort *)projectile)[1]
++ ((uw_object_hdr_t *)projectile)->position_word
+)
+...>
+}
+
+@placement_init_word_1_2@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)projectile + 4)
++ ((uw_object_hdr_t *)projectile)->chain_word
+|
+- ((ushort *)projectile)[2]
++ ((uw_object_hdr_t *)projectile)->chain_word
+)
+...>
+}
+
+@placement_init_word_1_3@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)projectile + 6)
++ ((uw_object_hdr_t *)projectile)->link_word
+|
+- ((ushort *)projectile)[3]
++ ((uw_object_hdr_t *)projectile)->link_word
+)
+...>
+}
+
+@placement_init_word_2_0@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@placement_init_word_2_1@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@placement_init_word_2_2@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@placement_init_word_2_3@
+type R;
+identifier F =~ "^\(compute_object_placement_fields\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+)
+...>
+}

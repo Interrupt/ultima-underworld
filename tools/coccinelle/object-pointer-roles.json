@@ -1551,10 +1551,30 @@
         },
         {
           "function": "compute_object_placement_fields",
-          "roles": [],
-          "requires_review": [
-            "object"
-          ]
+          "roles": [
+            {
+              "name": "object",
+              "type": "uw_mobile_object_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "projectile",
+              "type": "uw_projectile_object_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "object_ptr",
+              "type": "void *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
         },
         {
           "function": "reallocate_object_to_arena",

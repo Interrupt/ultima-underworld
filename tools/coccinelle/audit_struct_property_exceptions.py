@@ -1,16 +1,18 @@
 """Validate curated packed-operation exceptions against current source accesses.
 
 Only exact, explicitly reviewed common-header transfers and live word-cursor
-addresses qualify.
+addresses and full-width snapshots qualify.
 All other accesses remain unreviewed, even in a function containing a transfer.
 """
 import argparse
+import hashlib
 from collections import Counter
 import json
 from pathlib import Path
 import re
 
 from audit_struct_property_usage import inventory, ROOT, HERE
+from apply_exact_source_rules import apply
 
 WORDS = ('type_flags', 'position_word', 'chain_word', 'link_word')
 
@@ -68,14 +70,39 @@ def report(manifest):
             raise ValueError('Stale, mixed or duplicate cursor exception: ' + statement)
         accepted.update(found)
         cursors.append(dict(entry, line=line, access_count=len(found)))
+    snapshots = []
+    for entry in manifest.get('snapshots', []):
+        if not entry['reason'].strip():
+            raise ValueError('A snapshot exception needs a reviewed reason')
+        source_path, recipe_path = ROOT / entry['source'], ROOT / entry['recipe']
+        if source_path.parent != ROOT / 'src' or recipe_path.parent != ROOT / 'tools/coccinelle':
+            raise ValueError('Snapshot source/recipe path is outside its reviewed scope')
+        recipe = json.loads(recipe_path.read_text())
+        body = recipe['after']
+        if recipe['function'] != entry['function'] or hashlib.sha256(body.encode()).hexdigest() != entry['reviewed_body_sha256']:
+            raise ValueError('Snapshot function context changed; review its full-width consumers')
+        _, matches = apply(source_path.read_text(), dict(function=entry['function'], before=body, after=''))
+        if not matches:
+            raise ValueError('Current snapshot function differs from its reviewed body')
+        statement = entry['statement']
+        pattern = r'[A-Za-z_]\w* = (?:\((?:uint|ushort)\))?[A-Za-z_]\w*->(?:hdr\.)?(' + '|'.join(WORDS) + r');'
+        match = re.fullmatch(pattern, statement)
+        found = [i for i, record in enumerate(records)
+                 if record['source'] == entry['source'] and record['function'] == entry['function']
+                 and record['code'] == statement and record['category'] == 'packed_word']
+        if not match or len(found) != 1 or found[0] in accepted or records[found[0]]['member'] != match[1]:
+            raise ValueError('Stale, narrowed or duplicate full-word snapshot: ' + statement)
+        accepted.update(found)
+        snapshots.append(dict(entry, line=records[found[0]]['line'], access_count=1))
     remaining = [record for i, record in enumerate(records) if i not in accepted]
     return dict(scope=manifest['scope'], policy=manifest['policy'],
                 summary=dict(inventory_accesses=len(records), reviewed_transfer_blocks=len(transfers),
                              justified_transfer_accesses=sum(t["access_count"] for t in transfers),
                              justified_cursor_accesses=sum(c["access_count"] for c in cursors),
+                             justified_snapshot_accesses=len(snapshots),
                              justified_accesses=len(accepted), unreviewed_accesses=len(remaining),
                              unreviewed_by_category=dict(sorted(Counter(r['category'] for r in remaining).items()))),
-                justified_transfers=transfers, justified_cursor_uses=cursors, unreviewed=remaining)
+                justified_transfers=transfers, justified_cursor_uses=cursors, justified_snapshots=snapshots, unreviewed=remaining)
 
 
 def main():
