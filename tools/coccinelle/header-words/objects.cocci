@@ -823,7 +823,7 @@ R F(...) {
 
 @word_11_0@
 type R;
-identifier F =~ "^\(clear_object_temp_flag_callback\|reallocate_object_to_arena\)$";
+identifier F =~ "^\(clear_object_temp_flag_callback\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -849,7 +849,7 @@ R F(...) {
 
 @word_11_1@
 type R;
-identifier F =~ "^\(clear_object_temp_flag_callback\|reallocate_object_to_arena\)$";
+identifier F =~ "^\(clear_object_temp_flag_callback\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -869,7 +869,7 @@ R F(...) {
 
 @word_11_2@
 type R;
-identifier F =~ "^\(clear_object_temp_flag_callback\|reallocate_object_to_arena\)$";
+identifier F =~ "^\(clear_object_temp_flag_callback\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -889,7 +889,7 @@ R F(...) {
 
 @word_11_3@
 type R;
-identifier F =~ "^\(clear_object_temp_flag_callback\|reallocate_object_to_arena\)$";
+identifier F =~ "^\(clear_object_temp_flag_callback\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -2003,7 +2003,7 @@ R F(...) {
 ...>
 }
 
-@word_26_0@
+@save_relocation_word_0_0@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2019,17 +2019,11 @@ R F(...) {
 |
 - *(ushort *)puVar2
 + ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- puVar2[0]
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- *puVar2
-+ ((uw_object_hdr_t *)puVar2)->type_flags
 )
 ...>
 }
 
-@word_26_1@
+@save_relocation_word_0_1@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2042,14 +2036,11 @@ R F(...) {
 |
 - ((ushort *)puVar2)[1]
 + ((uw_object_hdr_t *)puVar2)->position_word
-|
-- puVar2[1]
-+ ((uw_object_hdr_t *)puVar2)->position_word
 )
 ...>
 }
 
-@word_26_2@
+@save_relocation_word_0_2@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2062,14 +2053,11 @@ R F(...) {
 |
 - ((ushort *)puVar2)[2]
 + ((uw_object_hdr_t *)puVar2)->chain_word
-|
-- puVar2[2]
-+ ((uw_object_hdr_t *)puVar2)->chain_word
 )
 ...>
 }
 
-@word_26_3@
+@save_relocation_word_0_3@
 type R;
 identifier F =~ "^\(reallocate_object_to_arena\)$";
 typedef ushort, uw_object_hdr_t;
@@ -2082,9 +2070,163 @@ R F(...) {
 |
 - ((ushort *)puVar2)[3]
 + ((uw_object_hdr_t *)puVar2)->link_word
+)
+...>
+}
+
+@save_relocation_word_1_0@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 0)
++ ((uw_object_hdr_t *)header)->type_flags
 |
-- puVar2[3]
-+ ((uw_object_hdr_t *)puVar2)->link_word
+- ((ushort *)header)[0]
++ ((uw_object_hdr_t *)header)->type_flags
+|
+- *(ushort *)header
++ ((uw_object_hdr_t *)header)->type_flags
+)
+...>
+}
+
+@save_relocation_word_1_1@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 2)
++ ((uw_object_hdr_t *)header)->position_word
+|
+- ((ushort *)header)[1]
++ ((uw_object_hdr_t *)header)->position_word
+)
+...>
+}
+
+@save_relocation_word_1_2@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 4)
++ ((uw_object_hdr_t *)header)->chain_word
+|
+- ((ushort *)header)[2]
++ ((uw_object_hdr_t *)header)->chain_word
+)
+...>
+}
+
+@save_relocation_word_1_3@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 6)
++ ((uw_object_hdr_t *)header)->link_word
+|
+- ((ushort *)header)[3]
++ ((uw_object_hdr_t *)header)->link_word
+)
+...>
+}
+
+@save_relocation_word_2_0@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- object[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@save_relocation_word_2_1@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+|
+- object[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@save_relocation_word_2_2@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- object[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@save_relocation_word_2_3@
+type R;
+identifier F =~ "^\(reallocate_object_to_arena\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+|
+- object[3]
++ ((uw_object_hdr_t *)object)->link_word
 )
 ...>
 }

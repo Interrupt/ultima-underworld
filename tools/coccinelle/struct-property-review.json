@@ -5,12 +5,12 @@
     "inventory_accesses": 478,
     "reviewed_transfer_blocks": 13,
     "justified_transfer_accesses": 104,
-    "justified_cursor_accesses": 8,
-    "justified_accesses": 112,
-    "unreviewed_accesses": 366,
+    "justified_cursor_accesses": 9,
+    "justified_accesses": 113,
+    "unreviewed_accesses": 365,
     "unreviewed_by_category": {
       "byte_view": 5,
-      "packed_word": 353,
+      "packed_word": 352,
       "raw_audited_object_access": 8
     }
   },
@@ -123,15 +123,15 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "destination": "((uw_object_hdr_t *)puVar2)",
-      "origin": "((uw_object_hdr_t *)object)",
+      "destination": "puVar2",
+      "origin": "header",
       "reason": "Transfer the common header into the allocated mobile slot before constructing its extension and relinking.",
-      "first_line": 1815,
+      "first_line": 1816,
       "statements": [
-        "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;",
-        "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;",
-        "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;",
-        "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;"
+        "puVar2->type_flags = header->type_flags;",
+        "puVar2->position_word = header->position_word;",
+        "puVar2->chain_word = header->chain_word;",
+        "puVar2->link_word = header->link_word;"
       ],
       "access_count": 8
     },
@@ -259,6 +259,14 @@
       "reason": "Pass the actual restored and saved contents link words to recursive restoration.",
       "line": 264,
       "access_count": 2
+    },
+    {
+      "source": "src/saveload.c",
+      "function": "commit_level_to_save_slot",
+      "statement": "free_player_inventory_chain((char *)&g_player_object->hdr.link_word);",
+      "reason": "Pass the current player contents-link word to the existing free-chain API after write_player_save_record may update the live player pointer.",
+      "line": 950,
+      "access_count": 1
     }
   ],
   "unreviewed": [
@@ -2907,15 +2915,6 @@
       "member": "type_flags",
       "pointer": null,
       "code": "uVar1 = g_player_object->hdr.type_flags;"
-    },
-    {
-      "source": "src/saveload.c",
-      "function": "commit_level_to_save_slot",
-      "line": 956,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "g_player_object->hdr.type_flags = (ushort)(uVar1 & 0xfe3f);"
     },
     {
       "source": "src/scheduler.c",

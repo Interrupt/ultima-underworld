@@ -1561,16 +1561,23 @@
           "roles": [
             {
               "name": "puVar2",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "header",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             },
             {
               "name": "object",
               "type": "ushort *",
               "parameter": true,
-              "evidence": "UW1 object struct member access",
+              "evidence": "incoming UW1 object pointer cast",
               "current_mobile_alias": false
             }
           ],

@@ -2636,3 +2636,45 @@ by their existing traversal/recursion APIs. The current report therefore lists
 **478 accesses: 112 justified (104 transfer and eight cursor accesses), and 366
 still unreviewed**. The game build, full unit suite and focused sanitizer suite
 check integration. Other accesses and unrecorded aliases remain incomplete.
+
+## Named level-save ID update and native relocation headers
+
+`generate_save_relocation_rules.py` generates strict complete-function recipes
+for `commit_level_to_save_slot` and `reallocate_object_to_arena`. The save
+path names the live player's inventory-link word address and assigns
+`object_id = uVar1 & 0x3f` instead of rewriting `type_flags & 0xfe3f`. This
+clears only the ID's upper three class bits; the full `uVar1` flags snapshot
+remains in place, and all non-ID flags remain unchanged. The player pointer is
+read at the original call/write sites, including after helper callbacks.
+
+Relocation now keeps a native common-header alias for its incoming object and
+a native header pointer for the newly allocated slot. The alias saves only
+the existing parameter pointer, not any fields. All fields remain live at their
+original read sites. The ordered full-header copy, shared hit-points write,
+existing mobile/projectile extension accesses, scheduler relinking, old-object
+free, and list operations remain in the same order. The public function/API
+and original pointer identities are unchanged.
+
+`test_save_relocation_fields.py` checks exact scope, generation, application,
+idempotence and refusal of changed bodies. Its fixture compares actual
+before/after complete functions for 4,194,304 calls: every 16-bit seed, 32
+modes and both functions. Cases cover archive open/write/close failures,
+allocation failure, tile unlink exclusions, object classes, scheduler
+relinking, helper mutations and live-player pointer rebinding. Every applicable
+helper runs with and without mutations. It compares all record bytes, return
+values, live globals, pointer selection and callback arguments/order/counts.
+Independent assertions check the save-time flags against the original full-word
+mask and the relocated complete header/shared hit points. The archive fixture
+initializes the complete handle buffer before observing its bytes. The same
+checks pass under AddressSanitizer; full builds, unit and focused sanitizer
+suites check integration.
+
+The pointer audit adds the native relocation header alias: 55 sources, 332
+roles, no errors. Only relocation's header-field/header-word scopes are
+refreshed; both catalogs parse and all unrelated function rules remain
+unchanged. Its full-header transfer exception is rebased to the native syntax.
+The named live-player link address is separately justified for the free-chain
+API; cursor validation now also accepts the explicitly named common `hdr`
+member. The report lists **478 accesses: 113 justified (104 transfer and nine
+cursor accesses), and 365 still unreviewed**. Other properties, exceptions and
+unrecorded aliases still require auditing; the goal remains incomplete.

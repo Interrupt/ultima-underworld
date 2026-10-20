@@ -3006,74 +3006,74 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1815,
+      "line": 1816,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "reallocate_object_to_arena",
-      "line": 1815,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;"
+      "code": "puVar2->type_flags = header->type_flags;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
       "line": 1816,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "reallocate_object_to_arena",
-      "line": 1816,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;"
+      "code": "puVar2->type_flags = header->type_flags;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
       "line": 1817,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;"
+      "code": "puVar2->position_word = header->position_word;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
       "line": 1817,
       "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "puVar2->position_word = header->position_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "line": 1818,
+      "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;"
+      "code": "puVar2->chain_word = header->chain_word;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
       "line": 1818,
       "category": "packed_word",
-      "member": "link_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;"
+      "code": "puVar2->chain_word = header->chain_word;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1818,
+      "line": 1819,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;"
+      "code": "puVar2->link_word = header->link_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "line": 1819,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "puVar2->link_word = header->link_word;"
     },
     {
       "source": "src/player.c",
@@ -3438,20 +3438,20 @@
     {
       "source": "src/saveload.c",
       "function": "commit_level_to_save_slot",
+      "line": 950,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "free_player_inventory_chain((char *)&g_player_object->hdr.link_word);"
+    },
+    {
+      "source": "src/saveload.c",
+      "function": "commit_level_to_save_slot",
       "line": 955,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
       "code": "uVar1 = g_player_object->hdr.type_flags;"
-    },
-    {
-      "source": "src/saveload.c",
-      "function": "commit_level_to_save_slot",
-      "line": 956,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "g_player_object->hdr.type_flags = (ushort)(uVar1 & 0xfe3f);"
     },
     {
       "source": "src/scheduler.c",

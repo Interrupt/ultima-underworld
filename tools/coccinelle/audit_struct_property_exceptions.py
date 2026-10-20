@@ -60,7 +60,7 @@ def report(manifest):
         if len(matches) != 1:
             raise ValueError('Expected exactly one reviewed cursor statement: ' + statement)
         line = path.read_text().count('\n', 0, matches[0].start()) + 1
-        fields = re.findall(r'&[A-Za-z_]\w*->(' + '|'.join(WORDS) + r')\b', statement)
+        fields = re.findall(r'&[A-Za-z_]\w*->(?:hdr\.)?(' + '|'.join(WORDS) + r')\b', statement)
         found = [i for i, record in enumerate(records)
                  if record['source'] == entry['source'] and record['function'] == entry['function']
                  and record['line'] == line and record['code'] == statement and record['category'] == 'packed_word']

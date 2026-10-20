@@ -54,8 +54,8 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "destination": "((uw_object_hdr_t *)puVar2)",
-      "origin": "((uw_object_hdr_t *)object)",
+      "destination": "puVar2",
+      "origin": "header",
       "reason": "Transfer the common header into the allocated mobile slot before constructing its extension and relinking."
     },
     {
@@ -130,6 +130,12 @@
       "function": "deserialize_inventory_link_chain",
       "statement": "deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);",
       "reason": "Pass the actual restored and saved contents link words to recursive restoration."
+    },
+    {
+      "source": "src/saveload.c",
+      "function": "commit_level_to_save_slot",
+      "statement": "free_player_inventory_chain((char *)&g_player_object->hdr.link_word);",
+      "reason": "Pass the current player contents-link word to the existing free-chain API after write_player_save_record may update the live player pointer."
     }
   ]
 }

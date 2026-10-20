@@ -1804,24 +1804,25 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
 {
   char *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
-  ushort *puVar2;
+  uw_object_hdr_t *puVar2;
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
 
   iVar1 = (char *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
-  puVar2 = (ushort *)alloc_object_slot(1);
-  if (puVar2 == (ushort *)0x0) {
-    puVar2 = (ushort *)0x0;
+  puVar2 = alloc_object_slot(1);
+  if (puVar2 == NULL) {
+    puVar2 = NULL;
   }
   else {
-    ((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;
-    ((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;
-    ((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;
-    ((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;
+    puVar2->type_flags = header->type_flags;
+    puVar2->position_word = header->position_word;
+    puVar2->chain_word = header->chain_word;
+    puVar2->link_word = header->link_word;
     compute_object_placement_fields(puVar2,(int)DAT_0010144c,(int)DAT_00101454);
-    ((uw_mobile_object_t *)puVar2)->hit_points = ((uw_object_hdr_t *)object)->quality;
-    if (((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {
-      ((uw_projectile_object_t *)puVar2)->original_heading = ((uw_object_hdr_t *)object)->heading;
+    ((uw_mobile_object_t *)puVar2)->hit_points = header->quality;
+    if (((header->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(header->object_id)].class_flags & 3) != 2)) {
+      ((uw_projectile_object_t *)puVar2)->original_heading = header->heading;
     }
-    if ((((uw_object_hdr_t *)puVar2)->object_id & 0x1c0) == 0x1c0) {
+    if ((puVar2->object_id & 0x1c0) == 0x1c0) {
       scheduler_relink_entry(puVar2,object);
     }
     object_list_unlink(iVar1 + 2,object);
