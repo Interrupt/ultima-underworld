@@ -578,26 +578,26 @@ int check_object_combination(void *actor_ptr, ushort *object, short count)
   ushort uVar1;
   ushort uVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
+  uw_object_hdr_t *object_header = (uw_object_hdr_t *)object;
   uint uVar5;
   uint uVar6;
   ushort *local_18;
   
-  if ((((*object & 0x8000) != 0) || (local_18 = object + 3, (*local_18 & 0xffc0) == 0)) ||
-     (puVar4 = (ushort *)find_object_in_chain(&local_18,0,4,0,0xf), puVar4 == (ushort *)0x0)) {
+  if (((object_header->is_quant != 0) || (local_18 = &object_header->link_word, object_header->link == 0)) ||
+     (puVar4 = find_object_in_chain(&local_18,0,4,0,0xf), puVar4 == NULL)) {
     return 1;
   }
-  uVar1 = ((uw_object_hdr_t *)puVar4)->type_flags;
-  if ((uVar1 & 0x200) == 0) {
+  uVar1 = puVar4->type_flags;
+  if ((puVar4->flags_res & 1) == 0) {
     if (0 < count) {
-      uVar2 = *object;
+      uVar2 = object_header->type_flags;
       if ((((uVar2 & 0x1f0) != 0x140) || ((uVar2 & 0xf) < 8)) &&
          (((uVar2 & 0x1f0) != 0x80 || ((0xb < (uVar2 & 0xf) || ((uVar2 & 1) == 0)))))) {
-        if ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) != (int)count) {
+        if ((puVar4->link & 0x1ff) != (int)count) {
           return 0;
         }
-        ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)uVar1;
-        ((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(uVar1 >> 8) | 2;
+        puVar4->flags_res = puVar4->flags_res | 1;
         return 2;
       }
     }
@@ -605,25 +605,25 @@ int check_object_combination(void *actor_ptr, ushort *object, short count)
   }
   uVar6 = (uint)count;
   if ((int)uVar6 < 0) {
-    uVar5 = ((uw_object_hdr_t *)puVar4)->zpos;
+    uVar5 = puVar4->zpos;
     if (((uVar5 != 0xe) || (0x1e < (int)-uVar6)) &&
        ((uVar5 != 0xf &&
-        (sVar3 = roll_skill_check((int)(uVar6 * -0x10000) >> 0x10,(((uw_object_hdr_t *)puVar4)->zpos) * 3),
+        (sVar3 = roll_skill_check((int)(uVar6 * -0x10000) >> 0x10,(puVar4->zpos) * 3),
          0 < sVar3)))) {
 LAB_0007c130:
       trigger_object_trap_or_use_action(actor,object,6,(int)DAT_002020a0,DAT_002020a4);
-      if ((((uw_object_hdr_t *)puVar4)->flags_res & 0x2) == 0) {
+      if ((puVar4->flags_res & 0x2) == 0) {
         object_list_unlink(local_18,puVar4);
         free_object_slot(puVar4);
       }
       else {
-        uVar6 = ((uw_object_hdr_t *)puVar4)->type_flags & 0xfdff;
-        ((uw_object_hdr_t *)puVar4)->type_flags = (ushort)uVar6;
+        uVar6 = puVar4->type_flags & 0xfdff;
+        puVar4->flags_res = puVar4->flags_res & 6;
       }
       return 3;
     }
   }
-  else if (((0 < (int)uVar6) && ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) != 0)) && ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) == uVar6))
+  else if (((0 < (int)uVar6) && ((puVar4->link & 0x1ff) != 0)) && ((puVar4->link & 0x1ff) == uVar6))
   goto LAB_0007c130;
   return 0;
 }
@@ -1162,18 +1162,18 @@ void clear_object_pending_special_flag(void *object_ptr)
 // (src/item_use.c's own comment already names this function).
 void consume_linked_special_object_charge(void *object_ptr)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   ushort uVar1;
   byte bVar2;
-  void *iVar3;
+  uw_object_hdr_t *iVar3;
   int iVar4;
   ushort *local_c;
   
-  if (((((*(byte *)(object + 1) & 0x80) == 0) &&
-       (local_c = (ushort *)(object + 6), (*local_c & 0xffc0) != 0)) &&
-      (iVar3 = find_object_in_chain(&local_c,0,4,2,0), iVar3 != 0)) && ((((uw_object_hdr_t *)iVar3)->flags_res & 0x4) != 0)) {
-    uVar1 = ((uw_object_hdr_t *)iVar3)->chain_word;
-    if ((uVar1 & 0x3f) == 0) {
+  if ((((object->is_quant == 0) &&
+       (local_c = &object->link_word, object->link != 0)) &&
+      (iVar3 = find_object_in_chain(&local_c,0,4,2,0), iVar3 != 0)) && ((iVar3->flags_res & 0x4) != 0)) {
+    uVar1 = iVar3->chain_word;
+    if (iVar3->quality == 0) {
       iVar4 = rand_below(10);
       if (iVar4 < 4) {
         object_list_unlink(local_c,iVar3);
@@ -1182,8 +1182,7 @@ void consume_linked_special_object_charge(void *object_ptr)
     }
     else {
       bVar2 = (byte)uVar1;
-      ((uw_object_hdr_t *)iVar3)->chain_word_low = (bVar2 - 1 ^ bVar2) & 0x3f ^ bVar2;
-      ((uw_object_hdr_t *)iVar3)->chain_word_high = (byte)(char)(uVar1 >> 8);
+      iVar3->quality = (bVar2 - 1) & 0x3f;
     }
   }
 }

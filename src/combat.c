@@ -2207,8 +2207,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
   } while (cVar2 != '\0');
   if (puVar5 == g_player_object) {
     uVar3 = ((uw_object_hdr_t *)puVar5)->type_flags;
-    ((uw_object_hdr_t *)puVar5)->type_flags_low = 0xf;
-    ((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar3 >> 8) & 0xfe;
+    ((uw_object_hdr_t *)puVar5)->object_id = 0xf;
   }
   iVar6 = ce_strlen(acStack_4d + 1);
   build_object_display_name(acStack_4d + iVar6 + 1,puVar5,0,0);

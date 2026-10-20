@@ -1,89 +1,3 @@
-@word_0_0@
-type R;
-identifier F =~ "^\(release_container_reference\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar2 + 0)
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- ((ushort *)puVar2)[0]
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- *(ushort *)puVar2
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- puVar2[0]
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- *puVar2
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-)
-...>
-}
-
-@word_0_1@
-type R;
-identifier F =~ "^\(release_container_reference\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar2 + 2)
-+ ((uw_object_hdr_t *)puVar2)->position_word
-|
-- ((ushort *)puVar2)[1]
-+ ((uw_object_hdr_t *)puVar2)->position_word
-|
-- puVar2[1]
-+ ((uw_object_hdr_t *)puVar2)->position_word
-)
-...>
-}
-
-@word_0_2@
-type R;
-identifier F =~ "^\(release_container_reference\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar2 + 4)
-+ ((uw_object_hdr_t *)puVar2)->chain_word
-|
-- ((ushort *)puVar2)[2]
-+ ((uw_object_hdr_t *)puVar2)->chain_word
-|
-- puVar2[2]
-+ ((uw_object_hdr_t *)puVar2)->chain_word
-)
-...>
-}
-
-@word_0_3@
-type R;
-identifier F =~ "^\(release_container_reference\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar2 + 6)
-+ ((uw_object_hdr_t *)puVar2)->link_word
-|
-- ((ushort *)puVar2)[3]
-+ ((uw_object_hdr_t *)puVar2)->link_word
-|
-- puVar2[3]
-+ ((uw_object_hdr_t *)puVar2)->link_word
-)
-...>
-}
-
 @word_1_0@
 type R;
 identifier F =~ "^\(leave_nested_container_level\)$";
@@ -329,264 +243,6 @@ R F(...) {
 |
 - *(ushort *)(_pMatch + 6)
 + ((uw_object_hdr_t *)_pMatch)->link_word
-)
-...>
-}
-
-@word_4_0@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar7 + 0)
-+ ((uw_object_hdr_t *)puVar7)->type_flags
-|
-- ((ushort *)puVar7)[0]
-+ ((uw_object_hdr_t *)puVar7)->type_flags
-|
-- *(ushort *)puVar7
-+ ((uw_object_hdr_t *)puVar7)->type_flags
-|
-- puVar7[0]
-+ ((uw_object_hdr_t *)puVar7)->type_flags
-|
-- *puVar7
-+ ((uw_object_hdr_t *)puVar7)->type_flags
-)
-...>
-}
-
-@word_4_1@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar7 + 2)
-+ ((uw_object_hdr_t *)puVar7)->position_word
-|
-- ((ushort *)puVar7)[1]
-+ ((uw_object_hdr_t *)puVar7)->position_word
-|
-- puVar7[1]
-+ ((uw_object_hdr_t *)puVar7)->position_word
-)
-...>
-}
-
-@word_4_2@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar7 + 4)
-+ ((uw_object_hdr_t *)puVar7)->chain_word
-|
-- ((ushort *)puVar7)[2]
-+ ((uw_object_hdr_t *)puVar7)->chain_word
-|
-- puVar7[2]
-+ ((uw_object_hdr_t *)puVar7)->chain_word
-)
-...>
-}
-
-@word_4_3@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar7 + 6)
-+ ((uw_object_hdr_t *)puVar7)->link_word
-|
-- ((ushort *)puVar7)[3]
-+ ((uw_object_hdr_t *)puVar7)->link_word
-|
-- puVar7[3]
-+ ((uw_object_hdr_t *)puVar7)->link_word
-)
-...>
-}
-
-@word_5_0@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar15 + 0)
-+ ((uw_object_hdr_t *)puVar15)->type_flags
-|
-- ((ushort *)puVar15)[0]
-+ ((uw_object_hdr_t *)puVar15)->type_flags
-|
-- *(ushort *)puVar15
-+ ((uw_object_hdr_t *)puVar15)->type_flags
-|
-- puVar15[0]
-+ ((uw_object_hdr_t *)puVar15)->type_flags
-|
-- *puVar15
-+ ((uw_object_hdr_t *)puVar15)->type_flags
-)
-...>
-}
-
-@word_5_1@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar15 + 2)
-+ ((uw_object_hdr_t *)puVar15)->position_word
-|
-- ((ushort *)puVar15)[1]
-+ ((uw_object_hdr_t *)puVar15)->position_word
-|
-- puVar15[1]
-+ ((uw_object_hdr_t *)puVar15)->position_word
-)
-...>
-}
-
-@word_5_2@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar15 + 4)
-+ ((uw_object_hdr_t *)puVar15)->chain_word
-|
-- ((ushort *)puVar15)[2]
-+ ((uw_object_hdr_t *)puVar15)->chain_word
-|
-- puVar15[2]
-+ ((uw_object_hdr_t *)puVar15)->chain_word
-)
-...>
-}
-
-@word_5_3@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar15 + 6)
-+ ((uw_object_hdr_t *)puVar15)->link_word
-|
-- ((ushort *)puVar15)[3]
-+ ((uw_object_hdr_t *)puVar15)->link_word
-|
-- puVar15[3]
-+ ((uw_object_hdr_t *)puVar15)->link_word
-)
-...>
-}
-
-@word_6_0@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar14 + 0)
-+ ((uw_object_hdr_t *)puVar14)->type_flags
-|
-- ((ushort *)puVar14)[0]
-+ ((uw_object_hdr_t *)puVar14)->type_flags
-|
-- *(ushort *)puVar14
-+ ((uw_object_hdr_t *)puVar14)->type_flags
-|
-- puVar14[0]
-+ ((uw_object_hdr_t *)puVar14)->type_flags
-|
-- *puVar14
-+ ((uw_object_hdr_t *)puVar14)->type_flags
-)
-...>
-}
-
-@word_6_1@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar14 + 2)
-+ ((uw_object_hdr_t *)puVar14)->position_word
-|
-- ((ushort *)puVar14)[1]
-+ ((uw_object_hdr_t *)puVar14)->position_word
-|
-- puVar14[1]
-+ ((uw_object_hdr_t *)puVar14)->position_word
-)
-...>
-}
-
-@word_6_2@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar14 + 4)
-+ ((uw_object_hdr_t *)puVar14)->chain_word
-|
-- ((ushort *)puVar14)[2]
-+ ((uw_object_hdr_t *)puVar14)->chain_word
-|
-- puVar14[2]
-+ ((uw_object_hdr_t *)puVar14)->chain_word
-)
-...>
-}
-
-@word_6_3@
-type R;
-identifier F =~ "^\(open_backpack_container\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar14 + 6)
-+ ((uw_object_hdr_t *)puVar14)->link_word
-|
-- ((ushort *)puVar14)[3]
-+ ((uw_object_hdr_t *)puVar14)->link_word
-|
-- puVar14[3]
-+ ((uw_object_hdr_t *)puVar14)->link_word
 )
 ...>
 }
@@ -1123,6 +779,290 @@ R F(...) {
 |
 - ((ushort *)rune_object)[3]
 + ((uw_object_hdr_t *)rune_object)->link_word
+)
+...>
+}
+
+@container_word_0_0@
+type R;
+identifier F =~ "^\(release_container_reference\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0)
++ ((uw_object_hdr_t *)puVar2)->type_flags
+|
+- ((ushort *)puVar2)[0]
++ ((uw_object_hdr_t *)puVar2)->type_flags
+|
+- *(ushort *)puVar2
++ ((uw_object_hdr_t *)puVar2)->type_flags
+)
+...>
+}
+
+@container_word_0_1@
+type R;
+identifier F =~ "^\(release_container_reference\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 2)
++ ((uw_object_hdr_t *)puVar2)->position_word
+|
+- ((ushort *)puVar2)[1]
++ ((uw_object_hdr_t *)puVar2)->position_word
+)
+...>
+}
+
+@container_word_0_2@
+type R;
+identifier F =~ "^\(release_container_reference\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 4)
++ ((uw_object_hdr_t *)puVar2)->chain_word
+|
+- ((ushort *)puVar2)[2]
++ ((uw_object_hdr_t *)puVar2)->chain_word
+)
+...>
+}
+
+@container_word_0_3@
+type R;
+identifier F =~ "^\(release_container_reference\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 6)
++ ((uw_object_hdr_t *)puVar2)->link_word
+|
+- ((ushort *)puVar2)[3]
++ ((uw_object_hdr_t *)puVar2)->link_word
+)
+...>
+}
+
+@container_word_1_0@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar7 + 0)
++ ((uw_object_hdr_t *)puVar7)->type_flags
+|
+- ((ushort *)puVar7)[0]
++ ((uw_object_hdr_t *)puVar7)->type_flags
+|
+- *(ushort *)puVar7
++ ((uw_object_hdr_t *)puVar7)->type_flags
+)
+...>
+}
+
+@container_word_1_1@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar7 + 2)
++ ((uw_object_hdr_t *)puVar7)->position_word
+|
+- ((ushort *)puVar7)[1]
++ ((uw_object_hdr_t *)puVar7)->position_word
+)
+...>
+}
+
+@container_word_1_2@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar7 + 4)
++ ((uw_object_hdr_t *)puVar7)->chain_word
+|
+- ((ushort *)puVar7)[2]
++ ((uw_object_hdr_t *)puVar7)->chain_word
+)
+...>
+}
+
+@container_word_1_3@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar7 + 6)
++ ((uw_object_hdr_t *)puVar7)->link_word
+|
+- ((ushort *)puVar7)[3]
++ ((uw_object_hdr_t *)puVar7)->link_word
+)
+...>
+}
+
+@container_word_2_0@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar14 + 0)
++ ((uw_object_hdr_t *)puVar14)->type_flags
+|
+- ((ushort *)puVar14)[0]
++ ((uw_object_hdr_t *)puVar14)->type_flags
+|
+- *(ushort *)puVar14
++ ((uw_object_hdr_t *)puVar14)->type_flags
+)
+...>
+}
+
+@container_word_2_1@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar14 + 2)
++ ((uw_object_hdr_t *)puVar14)->position_word
+|
+- ((ushort *)puVar14)[1]
++ ((uw_object_hdr_t *)puVar14)->position_word
+)
+...>
+}
+
+@container_word_2_2@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar14 + 4)
++ ((uw_object_hdr_t *)puVar14)->chain_word
+|
+- ((ushort *)puVar14)[2]
++ ((uw_object_hdr_t *)puVar14)->chain_word
+)
+...>
+}
+
+@container_word_2_3@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar14 + 6)
++ ((uw_object_hdr_t *)puVar14)->link_word
+|
+- ((ushort *)puVar14)[3]
++ ((uw_object_hdr_t *)puVar14)->link_word
+)
+...>
+}
+
+@container_word_3_0@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar15 + 0)
++ ((uw_object_hdr_t *)puVar15)->type_flags
+|
+- ((ushort *)puVar15)[0]
++ ((uw_object_hdr_t *)puVar15)->type_flags
+|
+- *(ushort *)puVar15
++ ((uw_object_hdr_t *)puVar15)->type_flags
+)
+...>
+}
+
+@container_word_3_1@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar15 + 2)
++ ((uw_object_hdr_t *)puVar15)->position_word
+|
+- ((ushort *)puVar15)[1]
++ ((uw_object_hdr_t *)puVar15)->position_word
+)
+...>
+}
+
+@container_word_3_2@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar15 + 4)
++ ((uw_object_hdr_t *)puVar15)->chain_word
+|
+- ((ushort *)puVar15)[2]
++ ((uw_object_hdr_t *)puVar15)->chain_word
+)
+...>
+}
+
+@container_word_3_3@
+type R;
+identifier F =~ "^\(open_backpack_container\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar15 + 6)
++ ((uw_object_hdr_t *)puVar15)->link_word
+|
+- ((ushort *)puVar15)[3]
++ ((uw_object_hdr_t *)puVar15)->link_word
 )
 ...>
 }

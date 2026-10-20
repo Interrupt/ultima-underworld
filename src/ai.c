@@ -669,7 +669,7 @@ int npc_ai_tick()
      (get_object_record_by_slot_index(1) and tilemap_lookup() both return real pointers, and the two
      dereferences below and the object_list_unlink(iVar5+2,...) call both need the full address)... */
   int iVar5;
-  char *player_rec;
+  uw_mobile_object_t *player_rec;
   char *tile_pos;
   int iVar6;
   undefined4 uVar7;
@@ -679,28 +679,28 @@ int npc_ai_tick()
   short extraout_r1_01;
   uint uVar9;
   uint uVar10;
-  ushort *puVar11;
+  uw_mobile_object_t *puVar11;
 
   DAT_00101738 = encode_object_slot_index(DAT_0010190c);
   DAT_00101404 = &g_monster_type_props[(DAT_0010190c->hdr.object_id & 0x3f)];
   DAT_00101918 = DAT_0010190c->npc_xhome;
   DAT_001013f8 = DAT_0010190c->npc_yhome;
-  player_rec = get_object_record_by_slot_index(1);
+  player_rec = (uw_mobile_object_t *)get_object_record_by_slot_index(1);
   puVar11 = DAT_0010190c;
   if (((100 < ((((int)(char)DAT_00101918 - (int)DAT_00101938) * 0x10000 >> 0x10) *
                (((int)(char)DAT_00101918 - (int)DAT_00101938) * 0x10000 >> 0x10) +
               (((int)(char)DAT_001013f8 - (int)DAT_0010193c) * 0x10000 >> 0x10) *
               (((int)(char)DAT_001013f8 - (int)DAT_0010193c) * 0x10000 >> 0x10)) * 0x10000 >> 0x10)
       && (iVar6 = (int)(char)DAT_001013f8 -
-                  (int)(char)(((uw_mobile_object_t *)player_rec)->tile_y),
-                  iVar5 = (int)(char)DAT_00101918 - (int)(char)(byte)(((uw_mobile_object_t *)player_rec)->tile_x),
+                  (int)(char)(player_rec->tile_y),
+                  iVar5 = (int)(char)DAT_00101918 - (int)(char)(byte)(player_rec->tile_x),
                   100 < (iVar5 * iVar5 + iVar6 * iVar6) * 0x10000 >> 0x10)) &&
       ((DAT_0010190c->npc_goal) != 3)) {
     bVar3 = DAT_0010190c->movement_flags;
     /* Was `ordint_divmod(0x10,(bVar3&0xf)+8); bVar8 = extraout_r1;` -- the classic "call idivmod,
        then read its remainder back through the extraout_r1 register-leftover fiction" pattern
        already fixed elsewhere this session (itoa_radix, draw_chargen_field_options's sVar_rem)... */
-    bVar8 = ((bVar3 & 0xf) + 8) % 0x10;
+    bVar8 = (puVar11->tick_phase + 8) % 0x10;
     goto LAB_00033860;
   }
   if ((*(char *)&DAT_00101404->movement_flags & 0x80) == 0) {
@@ -741,7 +741,7 @@ int npc_ai_tick()
     DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0x7f;
   }
   if ((((DAT_0010190c->animation_flags & 0x40) == 0) ||
-       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((ushort *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
+       ((DAT_0010190c->speed) != 0)) || (DAT_0010190c->pitch != 16)) {
     build_object_placement_snapshot(DAT_0010190c,DAT_0010172c);
     bVar3 = DAT_0010190c->full_heading;
     /* Was `build_collision_height_field_for_object()` -- a dropped argument (K&R declared, relying
@@ -778,8 +778,8 @@ int npc_ai_tick()
   DAT_0010173c = DAT_0010190c->hdr.owner;
   DAT_00101458 = DAT_0010190c->full_heading;
   bVar3 = (byte)(DAT_0010190c->hdr.position_word >> 2);
-  DAT_001018fc = (bVar3 ^ DAT_0010190c->heading_flags) & 0x1f ^ bVar3;
-  DAT_00101434 = DAT_0010190c->motion_flags & 0x7f;
+  DAT_001018fc = (DAT_0010190c->hdr.heading << 5) | DAT_0010190c->npc_heading;
+  DAT_00101434 = DAT_0010190c->speed;
   DAT_00101730 = g_object_type_props[(DAT_0010190c->hdr.object_id)].height;
   uVar9 = (uint) DAT_0010190c->goal_word;
   if (((uVar9 & 0xf) == 0xb) || ((uVar9 & 0xf) == 3)) {
@@ -807,9 +807,8 @@ LAB_00033830:
     }
 LAB_00033810:
     uVar10 = (uVar9 & 0xf000) + 0x1000 ^ uVar9 & 0xfff;
-    DAT_0010190c->goal_word_low = (byte)(uVar9 & 0xfff);
 LAB_000337fc:
-    DAT_0010190c->goal_word_high = (byte)(uVar10 >> 8);
+    DAT_0010190c->npc_animation_frame = (uVar10 >> 12) & 0xf;
   }
   else if (((DAT_0010190c->animation_flags & 0x3f) == 0) || (3 < bVar3)) {
     if ((bVar3 != 0xd) || ((DAT_0010190c->npc_ai_flags & 0xc) == 0)) {
@@ -824,7 +823,6 @@ LAB_000337fc:
                               g_ranged_type_props[(iVar5) / 3].projectile_speed);
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xc0;
       uVar10 = DAT_0010190c->goal_word & 0xfff;
-      DAT_0010190c->goal_word_low = (byte)uVar10;
       goto LAB_000337fc;
     }
     if ((uVar9 & 0xf000) != 0x4000) goto LAB_00033810;
@@ -869,9 +867,9 @@ LAB_00033834:
   /* Was `ordint_divmod(...); bVar8 = extraout_r1_00;` -- same fabricated-
      remainder bug as the other ordint_divmod call above in this function,
      see that comment. Compute the remainder directly instead. */
-  bVar8 = ((DAT_0010190c->attack_pitch & 7) + (bVar3 & 0xf)) % 0x10;
+  bVar8 = ((DAT_0010190c->attack_pitch & 7) + puVar11->tick_phase) % 0x10;
 LAB_00033860:
-  ((uw_mobile_object_t *)puVar11)->movement_flags = (bVar3 ^ bVar8) & 0xf ^ bVar3;
+  puVar11->tick_phase = bVar8;
   return 1;
 }
 
@@ -2930,8 +2928,9 @@ void npc_ai_default_tick()
   uint uVar5;
   undefined4 uVar6;
   int iVar7;
-  char *npc_rec;
-  ushort *puVar8;
+  uw_object_hdr_t *damage_source_object;
+  uw_mobile_object_t *current_npc;
+  uw_tile_t *puVar8;
   undefined1 extraout_r1;
   undefined1 uVar9;
   undefined1 extraout_r1_00;
@@ -3018,11 +3017,11 @@ LAB_000339fc:
       if ((cVar4 != '\0') &&
          (((cVar4 == '\x01' && ((DAT_0010190c->npc_ai_flags & 0x40) == 0)) ||
            (((DAT_0010190c->npc_ai_flags & 0x40) != 0 ||
-             (npc_rec = get_object_record_by_slot_index(cVar4), (npc_rec != 0) && (*(byte *)(npc_rec + 0x19) & 0x40) != 0)))))) {
+             (damage_source_object = get_object_record_by_slot_index(cVar4), (damage_source_object != 0) && (*(byte *)((char *)damage_source_object + 0x19) & 0x40) != 0)))))) {
         if ((uint) DAT_0010190c->damage_source != (DAT_0010190c->npc_gtarg)) {
           uVar11 = DAT_0010190c->goal_word & 0xf00f |
                    (uint) DAT_0010190c->damage_source << 4;
-          DAT_0010190c->goal_word = (ushort)uVar11;
+          DAT_0010190c->npc_gtarg = DAT_0010190c->damage_source;
         }
         iVar7 = refresh_npc_target_delta();
         if (iVar7 != 0) {
@@ -3074,8 +3073,8 @@ LAB_00033d18:
   case 0:
     goto LAB_00033e9c;
   case 1:
-    puVar8 = (ushort *)tilemap_lookup(DAT_0010143c,DAT_0010173c);
-    npc_walk_toward_tile(DAT_0010143c,DAT_0010173c,*puVar8 >> 4 & 0xf);
+    puVar8 = (uw_tile_t *)tilemap_lookup(DAT_0010143c,DAT_0010173c);
+    npc_walk_toward_tile(DAT_0010143c,DAT_0010173c,puVar8->floor_height);
     break;
   case 2:
     npc_idle_behavior_tick();
@@ -3116,18 +3115,17 @@ LAB_00033e9c:
   case 0xb:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
     uVar6 = ce_rand();
-    npc_rec = (char *)DAT_0010190c;
+    current_npc = DAT_0010190c;
     bVar10 = DAT_0010190c->motion_flags;
     uw_ord2005_rem_93 = ((int)(uVar6)) % (2);
-    ((uw_mobile_object_t *)npc_rec)->motion_flags = (uw_ord2005_rem_93 ^ bVar10) & 0x7f ^ bVar10;
+    current_npc->speed = uw_ord2005_rem_93 & 0x7f;
     uVar6 = ce_rand();
     uw_ord2005_rem_94 = ((int)(uVar6)) % (0x100);
     DAT_0010190c->full_heading = uw_ord2005_rem_94;
     uVar6 = ce_rand();
     uw_ord2005_rem_95 = ((int)(uVar6)) % (3);
-    DAT_0010190c->attack_pitch =
-      DAT_0010190c->attack_pitch & 7 ^ (uw_ord2005_rem_95 + '\x0f') * '\b';
-    npc_rec = (char *)DAT_0010190c;
+    DAT_0010190c->pitch = uw_ord2005_rem_95 + 15;
+    current_npc = DAT_0010190c;
     uVar2 = DAT_0010190c->goal_word;
     uw_ord2005_rem_96 = ((int)(DAT_0010190c->npc_animation_frame + 1)) % (4);
     uVar11 = uVar2 & 0xfff;
@@ -3140,14 +3138,14 @@ LAB_00033e9c:
   default:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch | 7;
   }
-  npc_rec = (char *)DAT_0010190c;
+  current_npc = DAT_0010190c;
   /* HACK: same ushort-vs-byte pointer-arithmetic scaling bug as process_visible_tile_cell's sibling
      npc_notice_and_idle_tick (fixed earlier this session) -- DAT_0010190c is `ushort *`, so bare
      `DAT_0010190c + 2` scales to byte offset 4... */
   uVar2 = DAT_0010190c->hdr.position_word;
   bVar10 = DAT_0010190c->full_heading;
   uVar11 = uVar2 >> 2 & 0xff;
-  uVar11 = (uVar11 ^ DAT_0010190c->heading_flags) & 0x1f ^ uVar11;
+  uVar11 = (DAT_0010190c->hdr.heading << 5) | DAT_0010190c->npc_heading;
   uVar12 = (uint)DAT_001018fc;
   /* Was `ordint_divmod(0x100,(uVar11-uVar12)+0x100,*(undefined1*)(DAT_0010190c+2),
      ordint_divmod_exref,unaff_r4,unaff_r5,unaff_r6,unaff_r7,unaff_r8,unaff_r9, unaff_lr);` -- badly
@@ -3163,11 +3161,9 @@ LAB_00033e9c:
     uVar11 = uVar11 & 0xff;
   }
   uVar5 = uVar2 & 0xfc7f | (uVar11 & 0xffe0) << 2;
-  ((uw_object_hdr_t *)npc_rec)->position_word_low = (byte)(char)uVar5;
-  DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar5 >> 8);
-  DAT_0010190c->heading_flags =
-    (DAT_0010190c->heading_flags ^ (byte)uVar11) & 0x1f ^ DAT_0010190c->heading_flags;
-  npc_rec = (char *)DAT_0010190c;
+  current_npc->hdr.heading = (uVar11 >> 5) & 7;
+  DAT_0010190c->npc_heading = uVar11 & 0x1f;
+  current_npc = DAT_0010190c;
   /* Was `if (DAT_00101430 == 0)` -- an inverted condition, confirmed via real disassembly (`cmp
      r0,#0x0; beq 0x326a4`, where r0 is DAT_00101430 and 0x326a4 is the simple "just copy
      DAT_00101458" branch this decompile currently has as the ELSE)... */
@@ -3182,7 +3178,7 @@ LAB_00033e9c:
     uVar5 = (uint)DAT_00101458;
     uVar11 = ((bVar10 - uVar5) + 0x100) & 0xff;
     if ((uVar11 < 0x20) || (0xe0 < uVar11)) {
-      ((uw_mobile_object_t *)npc_rec)->full_heading = bVar10;
+      current_npc->full_heading = bVar10;
       return;
     }
     if (uVar11 < 0x40) {
@@ -3190,12 +3186,12 @@ LAB_00033e9c:
     }
     else {
       if (uVar11 < 0xc1) {
-        ((uw_mobile_object_t *)npc_rec)->motion_flags = bVar1 & 0x80;
+        current_npc->speed = 0;
         goto LAB_00032690;
       }
       uVar9 = (uVar5 + 0xe0) & 0xff;
     }
-    ((uw_mobile_object_t *)npc_rec)->full_heading = uVar9;
+    current_npc->full_heading = uVar9;
   }
   else {
 LAB_00032690:
@@ -3667,7 +3663,7 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
                                  DAT_0010190c->hdr.zpos >> 3,(uint)(uVar4 >> 10),
                                  CONCAT11(uVar16,(char)(uVar4 >> 4)) & 0xff3f,
                                  CONCAT31((int3)((uint)in_stack_ffffffd0 >> 8),
-                                          g_player_object->hdr.position_word_low >> 3) & 0xffffff0f,0),
+                                          g_player_object->hdr.zpos >> 3) & 0xffffff0f,0),
            iVar11 != 0)) && (1 < DAT_0010142c)) {
         uVar9 = 0;
         if (DAT_0010142c != 0) {
@@ -5075,7 +5071,7 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     snapshot[0x28] = (byte)(1 << (((uw_mobile_object_t *)object)->movement_mode));
     iVar7 = ((byte)(((uw_mobile_object_t *)object)->pitch) - 0x10) * 0x40;
     /* HACK: not original behaviour -- see g_physics_vz_remainder. */
-    if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
+    if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40 && physics_subtick_units() != 0) {
       int slot = (int)(((char *)object - DAT_002046b8) / 0x1b);
       if (slot >= 0 && slot < 256 &&
           g_physics_vz_remainder[slot].pitch == ((uw_mobile_object_t *)object)->pitch) {
@@ -5088,7 +5084,7 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     snapshot[0x10] = (byte)iVar7;
     snapshot[0x11] = (byte)((uint)iVar7 >> 8);
     snapshot[0x1e] = ((uw_mobile_object_t *)object)->hit_points;
-    bVar8 = (((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40;
+    bVar8 = (((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40;
     if (!bVar8) {
       uVar2 = ((uw_projectile_object_t *)object)->precise_x;
       *snapshot = (byte)uVar2;
@@ -5103,12 +5099,12 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
     uVar4 = ((uw_mobile_object_t *)object)->speed;
     snapshot[0x14] = (byte)uVar4;
     snapshot[0x15] = 0;
-    if ((((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) ||
+    if ((((((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40) ||
          (*(short *)(snapshot + 0x10) != 0 || *(short *)(snapshot + 10) != 0)) ||
         ((g_object_type_props[iVar5 / 0xd].flags & 8) != 0)) {
       snapshot[0x14] = (byte)(uVar4 * 0x2f);
       snapshot[0x15] = (byte)(uVar4 * 0x2f >> 8);
-      if ((((uw_object_hdr_t *)object)->type_flags & 0x1c0) == 0x40) {
+      if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) == 0x40) {
         snapshot[0x27] = 8;
       }
     }

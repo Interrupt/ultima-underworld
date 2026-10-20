@@ -1,0 +1,196 @@
+{
+  "scope": "Reviewed complete common-header transfers, explicitly listed live word-cursor addresses and full-width snapshots only. These exceptions do not approve other accesses in their containing functions.",
+  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed scalar snapshots at their original widths and values with reviewed complete-function context; narrowing or changing them would change preserved scalar values.",
+  "transfers": [
+    {
+      "source": "src/ai.c",
+      "function": "settle_mobile_to_immobile",
+      "destination": "puVar9",
+      "origin": "header",
+      "reason": "Transfer the complete common header to the replacement static slot before link and quality adjustments."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "destination": "puVar2",
+      "origin": "puVar1",
+      "reason": "Copy all common-header bits to the save record before separately translating chain and equipment links."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "destination": "puVar1",
+      "origin": "puVar3",
+      "reason": "Restore all common-header bits from the save record before separately translating live links."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "complete_use_item_scatter_spawn",
+      "destination": "puVar8",
+      "origin": "((uw_object_hdr_t *)target)",
+      "reason": "Clone the source header before selecting the new object ID, quantity and placement."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "reduce_object_count",
+      "destination": "puVar6",
+      "origin": "puVar5",
+      "reason": "Clone the complete stack header before setting the two resulting counts and inserting the new record."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "extract_matching_object_from_slot",
+      "destination": "pbVar10",
+      "origin": "puVar3",
+      "reason": "Clone the complete selected-stack header before setting the resulting quantities and link placement."
+    },
+    {
+      "source": "src/object_actions.c",
+      "function": "spawn_effect_debris_burst",
+      "destination": "puVar8",
+      "origin": "template",
+      "reason": "Clone the template header before randomizing the spawned ID and position."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "destination": "puVar2",
+      "origin": "header",
+      "reason": "Transfer the common header into the allocated mobile slot before constructing its extension and relinking."
+    },
+    {
+      "source": "src/player.c",
+      "function": "build_player_save_record",
+      "destination": "((uw_object_hdr_t *)(out_record + 0x1b))",
+      "origin": "((uw_object_hdr_t *)puVar4)",
+      "reason": "Store the complete cursor-held object header in the save record before serializing its contents."
+    },
+    {
+      "source": "src/player.c",
+      "function": "restore_player_save_record",
+      "destination": "((uw_object_hdr_t *)puVar2)",
+      "origin": "((uw_object_hdr_t *)(record + 0x1b))",
+      "reason": "Restore the complete cursor-held object header before restoring any contents links."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar8)",
+      "origin": "((uw_object_hdr_t *)puVar12)",
+      "reason": "Clone the static template common header; the adjacent mobile-template branch separately copies the full mobile record."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar9)",
+      "origin": "((uw_object_hdr_t *)puVar10)",
+      "reason": "Clone the linked record header before replacing the parent link and clearing the cloned next link."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar10)",
+      "origin": "((uw_object_hdr_t *)puVar9)",
+      "reason": "Clone the linked record header before inserting the new record in the trap-owned chain."
+    }
+  ],
+  "cursor_uses": [
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "link_chain = (byte *)&puVar1->chain_word;",
+      "reason": "Carry the source next-link word as the live input cursor for the next resolve call."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "out_link = (byte *)&puVar2->chain_word;",
+      "reason": "Carry the saved next-link word as the output cursor for subsequent records."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "serialize_inventory_link_chain((byte *)&puVar1->link_word,(byte *)&puVar2->link_word);",
+      "reason": "Pass the actual contents link words to recursive serialization, preserving source and output cursor identity."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "link_field = (byte *)&puVar1->chain_word;",
+      "reason": "Carry the restored next-link word as the output cursor for subsequent live records."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "saved_link = &puVar3->chain_word;",
+      "reason": "Carry the saved next-link word as the live input cursor for the next saved-record lookup."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);",
+      "reason": "Pass the actual restored and saved contents link words to recursive restoration."
+    },
+    {
+      "source": "src/saveload.c",
+      "function": "commit_level_to_save_slot",
+      "statement": "free_player_inventory_chain((char *)&g_player_object->hdr.link_word);",
+      "reason": "Pass the current player contents-link word to the existing free-chain API after write_player_save_record may update the live player pointer."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "statement": "contents = resolve_object_link(&object->link_word); /* confirmed via ARM disassembly, 0x52b54 */",
+      "reason": "Resolve the actual live contents word after the callback; the generic chain resolver consumes a word cursor, not an addressable bitfield."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "statement": "object = resolve_object_link(&object->chain_word); /* confirmed via ARM disassembly, 0x52b84 */",
+      "reason": "Resolve the actual next-link word after recursive callbacks may have changed it; preserve the current parent word address."
+    }
+  ],
+  "snapshots": [
+    {
+      "source": "src/objects.c",
+      "function": "compute_object_placement_fields",
+      "statement": "uVar7 = (uint)object->hdr.position_word;",
+      "recipe": "tools/coccinelle/placement-init-fields.json",
+      "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
+      "reason": "Preserve the complete position word before placement writes; its original full scalar value supplies precise projectile coordinates."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "compute_object_placement_fields",
+      "statement": "uVar6 = (uint)object->hdr.type_flags;",
+      "recipe": "tools/coccinelle/placement-init-fields.json",
+      "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
+      "reason": "Preserve the complete type/flag word at its original read site; the original full scalar value supplies table indexing and the NPC/projectile branch."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "place_object_in_world",
+      "statement": "uVar2 = object->position_word & 0x3ff;",
+      "recipe": "tools/coccinelle/world-placement-place_object_in_world.json",
+      "reviewed_body_sha256": "7d61a32550a26699f4edfbafb9aa856b90f792a2dada45a8e3217d5434bd5677",
+      "reason": "Retain the original uint snapshot of both Z and heading (ten bits) while naming both field writes; preserve its exact combined scalar value.",
+      "mask": "0x3ff"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "find_object_placement",
+      "statement": "uVar1 = header->position_word;",
+      "recipe": "tools/coccinelle/world-placement-find_object_placement.json",
+      "reviewed_body_sha256": "ab0d9e870b26d199b33d374c7d4a92036134c6a81b758b03044a369d866f172b",
+      "reason": "Retain the full ushort position snapshot captured after tile lookup; its original heading bits are used for the position update."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "object_exceeds_size_threshold",
+      "statement": "uVar1 = object->type_flags;",
+      "recipe": "tools/coccinelle/object-tree-native-object_exceeds_size_threshold.json",
+      "reviewed_body_sha256": "3512cad90bc333986880ffb4ffc3015eace84467ff4c5d4aff5c9b5ecda21693",
+      "reason": "Preserve the complete ushort flags capture at its original read site; the original class-table index is projected from that saved value without narrowing the scalar."
+    }
+  ]
+}

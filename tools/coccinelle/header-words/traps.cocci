@@ -929,175 +929,6 @@ R F(...) {
 ...>
 }
 
-@word_11_0@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pObj + 0)
-+ ((uw_object_hdr_t *)pObj)->type_flags
-|
-- ((ushort *)pObj)[0]
-+ ((uw_object_hdr_t *)pObj)->type_flags
-|
-- *(ushort *)pObj
-+ ((uw_object_hdr_t *)pObj)->type_flags
-|
-- pObj[0]
-+ ((uw_object_hdr_t *)pObj)->type_flags
-|
-- *pObj
-+ ((uw_object_hdr_t *)pObj)->type_flags
-)
-...>
-}
-
-@word_11_1@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pObj + 2)
-+ ((uw_object_hdr_t *)pObj)->position_word
-|
-- ((ushort *)pObj)[1]
-+ ((uw_object_hdr_t *)pObj)->position_word
-|
-- pObj[1]
-+ ((uw_object_hdr_t *)pObj)->position_word
-)
-...>
-}
-
-@word_11_2@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pObj + 4)
-+ ((uw_object_hdr_t *)pObj)->chain_word
-|
-- ((ushort *)pObj)[2]
-+ ((uw_object_hdr_t *)pObj)->chain_word
-|
-- pObj[2]
-+ ((uw_object_hdr_t *)pObj)->chain_word
-)
-...>
-}
-
-@word_11_3@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pObj + 6)
-+ ((uw_object_hdr_t *)pObj)->link_word
-|
-- ((ushort *)pObj)[3]
-+ ((uw_object_hdr_t *)pObj)->link_word
-|
-- pObj[3]
-+ ((uw_object_hdr_t *)pObj)->link_word
-)
-...>
-}
-
-@word_12_0@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pbVar5 + 0)
-+ ((uw_object_hdr_t *)pbVar5)->type_flags
-|
-- ((ushort *)pbVar5)[0]
-+ ((uw_object_hdr_t *)pbVar5)->type_flags
-|
-- *(ushort *)pbVar5
-+ ((uw_object_hdr_t *)pbVar5)->type_flags
-|
-- *(ushort *)(pbVar5 + 0)
-+ ((uw_object_hdr_t *)pbVar5)->type_flags
-)
-...>
-}
-
-@word_12_1@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pbVar5 + 2)
-+ ((uw_object_hdr_t *)pbVar5)->position_word
-|
-- ((ushort *)pbVar5)[1]
-+ ((uw_object_hdr_t *)pbVar5)->position_word
-|
-- *(ushort *)(pbVar5 + 2)
-+ ((uw_object_hdr_t *)pbVar5)->position_word
-)
-...>
-}
-
-@word_12_2@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pbVar5 + 4)
-+ ((uw_object_hdr_t *)pbVar5)->chain_word
-|
-- ((ushort *)pbVar5)[2]
-+ ((uw_object_hdr_t *)pbVar5)->chain_word
-|
-- *(ushort *)(pbVar5 + 4)
-+ ((uw_object_hdr_t *)pbVar5)->chain_word
-)
-...>
-}
-
-@word_12_3@
-type R;
-identifier F =~ "^\(process_nearby_background_traps\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pbVar5 + 6)
-+ ((uw_object_hdr_t *)pbVar5)->link_word
-|
-- ((ushort *)pbVar5)[3]
-+ ((uw_object_hdr_t *)pbVar5)->link_word
-|
-- *(ushort *)(pbVar5 + 6)
-+ ((uw_object_hdr_t *)pbVar5)->link_word
-)
-...>
-}
-
 @word_13_0@
 type R;
 identifier F =~ "^\(tick_ambient_doors_and_scheduler\)$";
@@ -1752,6 +1583,160 @@ R F(...) {
 |
 - puVar3[3]
 + ((uw_object_hdr_t *)puVar3)->link_word
+)
+...>
+}
+
+@consumer_word_0_0@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pObj + 0)
++ ((uw_object_hdr_t *)pObj)->type_flags
+|
+- ((ushort *)pObj)[0]
++ ((uw_object_hdr_t *)pObj)->type_flags
+|
+- *(ushort *)pObj
++ ((uw_object_hdr_t *)pObj)->type_flags
+)
+...>
+}
+
+@consumer_word_0_1@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pObj + 2)
++ ((uw_object_hdr_t *)pObj)->position_word
+|
+- ((ushort *)pObj)[1]
++ ((uw_object_hdr_t *)pObj)->position_word
+)
+...>
+}
+
+@consumer_word_0_2@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pObj + 4)
++ ((uw_object_hdr_t *)pObj)->chain_word
+|
+- ((ushort *)pObj)[2]
++ ((uw_object_hdr_t *)pObj)->chain_word
+)
+...>
+}
+
+@consumer_word_0_3@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pObj + 6)
++ ((uw_object_hdr_t *)pObj)->link_word
+|
+- ((ushort *)pObj)[3]
++ ((uw_object_hdr_t *)pObj)->link_word
+)
+...>
+}
+
+@consumer_word_1_0@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pbVar5 + 0)
++ ((uw_object_hdr_t *)pbVar5)->type_flags
+|
+- ((ushort *)pbVar5)[0]
++ ((uw_object_hdr_t *)pbVar5)->type_flags
+|
+- *(ushort *)pbVar5
++ ((uw_object_hdr_t *)pbVar5)->type_flags
+|
+- *(ushort *)(pbVar5 + 0)
++ ((uw_object_hdr_t *)pbVar5)->type_flags
+)
+...>
+}
+
+@consumer_word_1_1@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pbVar5 + 2)
++ ((uw_object_hdr_t *)pbVar5)->position_word
+|
+- ((ushort *)pbVar5)[1]
++ ((uw_object_hdr_t *)pbVar5)->position_word
+|
+- *(ushort *)(pbVar5 + 2)
++ ((uw_object_hdr_t *)pbVar5)->position_word
+)
+...>
+}
+
+@consumer_word_1_2@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pbVar5 + 4)
++ ((uw_object_hdr_t *)pbVar5)->chain_word
+|
+- ((ushort *)pbVar5)[2]
++ ((uw_object_hdr_t *)pbVar5)->chain_word
+|
+- *(ushort *)(pbVar5 + 4)
++ ((uw_object_hdr_t *)pbVar5)->chain_word
+)
+...>
+}
+
+@consumer_word_1_3@
+type R;
+identifier F =~ "^\(process_nearby_background_traps\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)pbVar5 + 6)
++ ((uw_object_hdr_t *)pbVar5)->link_word
+|
+- ((ushort *)pbVar5)[3]
++ ((uw_object_hdr_t *)pbVar5)->link_word
+|
+- *(ushort *)(pbVar5 + 6)
++ ((uw_object_hdr_t *)pbVar5)->link_word
 )
 ...>
 }

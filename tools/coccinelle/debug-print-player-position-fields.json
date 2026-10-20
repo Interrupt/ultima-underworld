@@ -1,0 +1,5 @@
+{
+  "function": "debug_print_player_position",
+  "before": "void debug_print_player_position(const char *label)\n{\n  if (g_opts.debug)\n    fprintf(stderr, \"[playerpos:%s] fine=(%d,%d)=world(%g,%g) obj_bytes tile=(%d,%d)\\n\",\n            label, (int)DAT_00204880, (int)DAT_00204882,\n            (double)DAT_00204880 / 256.0, (double)DAT_00204882 / 256.0,\n            (int)((byte) g_player_object->tile_word_high >> 2),\n            (int)(g_player_object->npc_yhome));\n}",
+  "after": "void debug_print_player_position(const char *label)\n{\n  if (g_opts.debug)\n    fprintf(stderr, \"[playerpos:%s] fine=(%d,%d)=world(%g,%g) obj_bytes tile=(%d,%d)\\n\",\n            label, (int)DAT_00204880, (int)DAT_00204882,\n            (double)DAT_00204880 / 256.0, (double)DAT_00204882 / 256.0,\n            (int)g_player_object->tile_x,\n            (int)g_player_object->tile_y);\n}"
+}
