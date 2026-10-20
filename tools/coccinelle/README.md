@@ -2727,3 +2727,55 @@ The report now lists **479 accesses: 115 justified (104 transfer, nine cursor
 and two snapshot accesses), and 364 still unreviewed**. The newly named position
 snapshot is now visible to the conservative inventory. Other properties,
 exceptions and unrecorded aliases remain incomplete.
+
+## Named world-placement coordinates
+
+`generate_world_placement_rules.py` generates strict complete-function recipes
+for `place_object_in_world` and `find_object_placement`. Both now use native
+common-header pointers for ID/position properties. Failed-search fallback
+preserves the original combined Z/heading scalar, then names all four position
+field writes. Successful search preserves the full position snapshot captured
+after tile lookup, sets Z from height, and names heading/X/Y writes. The mobile
+branch names the shared six-bit tile fields only after the existing
+`object_ptr_in_arena` check. The tile record remains a distinct byte pointer
+whose `+ 2` list cursor belongs to the tile API, not an object header.
+
+The search loop's byte counter, full signed/unsigned coordinate calculations,
+slot result and callback ordering remain in place. Its obsolete post-loop
+counter overwrite (previously used only for byte reassembly) is removed; no
+counter reference remains after tile lookup. The full `ushort` position value
+and the wrapper's original ten-bit `uint` combined Z/heading value retain their
+exact widths and values. Position and tile-field writes preserve the relevant
+live heading/reserved bits, including mutations performed by prior helpers.
+Functions and public APIs stay in place.
+
+`test_world_placement_fields.py` validates exact original/current bodies,
+generation, application, idempotence and observer/duplicate/scope guards. It
+compiles independent original and converted complete call trees, including the
+wrapper calling its corresponding search implementation. The fixture compares
+2,097,152 calls across every 16-bit seed, 16 modes and both entry points, with
+mutations at all 11 helper boundaries. Cases include direct first placement,
+random retries, third-attempt success, the 24-attempt limit, destruction versus
+fallback, skipped destruction rolls, mobile/static paths and ignored settle
+return values. Every applicable helper executes with and without mutation.
+All record bytes, return values, callback arguments/order/counts, random state,
+attempt totals and the live placement flag agree. Independent assertions check
+fresh object ID reads after slot encoding, header Z/heading/X/Y, fallback
+sub-tile coordinates and reserved tile bits after the region-check callback.
+The same fixture passes under AddressSanitizer. Full build, unit and focused
+sanitizer suites validate integration.
+
+The role audit adds the two common-header aliases, incoming pointers and guarded
+mobile alias: 55 sources, 340 roles, no errors. Only these two functions'
+header-field/header-word scopes change; both catalogs parse and every unrelated
+function's rules remain unchanged. The full search snapshot and the wrapper's
+combined ten-bit snapshot are justified explicitly. Snapshot validation permits
+a mask only when its exact literal is declared in the reviewed entry, and still
+pins the complete function body/hash; it does not approve arbitrary masks.
+Seven negative probes reject undeclared/changed masks, narrowed values/locals,
+missing reasons, recipe drift and duplicate entries.
+
+The conservative report now lists **481 accesses: 117 justified (104 transfer,
+nine cursor and four snapshot accesses), and 364 still unreviewed**. Newly named
+snapshots expand the inventory's coverage. Other properties, exceptions and
+unrecorded aliases remain incomplete.

@@ -1,7 +1,7 @@
 """Validate curated packed-operation exceptions against current source accesses.
 
 Only exact, explicitly reviewed common-header transfers and live word-cursor
-addresses and full-width snapshots qualify.
+addresses and explicitly reviewed scalar snapshots qualify.
 All other accesses remain unreviewed, even in a function containing a transfer.
 """
 import argparse
@@ -85,13 +85,13 @@ def report(manifest):
         if not matches:
             raise ValueError('Current snapshot function differs from its reviewed body')
         statement = entry['statement']
-        pattern = r'[A-Za-z_]\w* = (?:\((?:uint|ushort)\))?[A-Za-z_]\w*->(?:hdr\.)?(' + '|'.join(WORDS) + r');'
+        pattern = r'[A-Za-z_]\w* = (?:\((?:uint|ushort)\))?[A-Za-z_]\w*->(?:hdr\.)?(' + '|'.join(WORDS) + r')(?: & (0x[0-9a-fA-F]+))?;'
         match = re.fullmatch(pattern, statement)
         found = [i for i, record in enumerate(records)
                  if record['source'] == entry['source'] and record['function'] == entry['function']
                  and record['code'] == statement and record['category'] == 'packed_word']
-        if not match or len(found) != 1 or found[0] in accepted or records[found[0]]['member'] != match[1]:
-            raise ValueError('Stale, narrowed or duplicate full-word snapshot: ' + statement)
+        if not match or len(found) != 1 or found[0] in accepted or records[found[0]]['member'] != match[1] or match[2] != entry.get('mask'):
+            raise ValueError('Stale, altered or duplicate scalar snapshot: ' + statement)
         accepted.update(found)
         snapshots.append(dict(entry, line=records[found[0]]['line'], access_count=1))
     remaining = [record for i, record in enumerate(records) if i not in accepted]

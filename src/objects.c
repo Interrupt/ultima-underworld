@@ -1729,7 +1729,7 @@ void *class2_variant_effect_table_lookup()
    declares its own param_1 as `ushort *`) truncated to 32 bits on this host. */
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr, short radius, int skip_roll)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int iVar1;
   uint uVar2;
   
@@ -1739,10 +1739,11 @@ int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr
       unlink_and_free_object(0,object);
       return 0;
     }
-    uVar2 = *(ushort *)(object + 2) & 0x3ff;
-    *(char *)(object + 2) = (char)uVar2;
-    *(byte *)(object + 3) =
-         (byte)(uVar2 >> 8) | (byte)(((tile_y & 7 | (tile_x & 0x1fff) << 3) << 10) >> 8);
+    uVar2 = object->position_word & 0x3ff;
+    object->zpos = uVar2 & 0x7f;
+    object->heading = uVar2 >> 7;
+    object->ypos = tile_y & 7;
+    object->xpos = tile_x & 7;
     /* was folded into `int iVar1` (reused above for unrelated int
        values) -- truncated tilemap_lookup's real `void *` return */
     char *_tile1 = (char *)tilemap_lookup((int)(short)tile_x >> 3,(int)(short)tile_y >> 3);
@@ -1833,6 +1834,7 @@ uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
 // was FUN_00052450
 int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height, short radius)
 {
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   ushort uVar1;
   undefined4 uVar2;
   byte bVar3;
@@ -1854,7 +1856,7 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
       uVar6 = (ordint_divmod(iVar5,(int)uVar2).rem - (int)radius) + tile_y;
     }
     uVar2 = encode_object_slot_index(object);
-    iVar5 = check_object_placement_clearance(*object & 0x1ff,uVar2,uVar4,uVar6,height,1,0);
+    iVar5 = check_object_placement_clearance(header->object_id,uVar2,uVar4,uVar6,height,1,0);
     if (iVar5 != 0) break;
     bVar3 = bVar3 + 1;
     if (0x17 < bVar3) {
@@ -1862,11 +1864,11 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
     }
   }
   pTile = (char *)tilemap_lookup((int)uVar4 >> 3,(int)uVar6 >> 3);
-  uVar1 = object[1];
-  bVar3 = (byte)(uVar1 & 0x3ff);
-  *(byte *)(object + 1) = (bVar3 ^ (byte)height) & 0x7f ^ bVar3;
-  *(byte *)((char *)object + 3) =
-       (byte)((uVar1 & 0x3ff) >> 8) | (byte)(((uVar6 & 7 | (uVar4 & 0x1fff) << 3) << 10) >> 8);
+  uVar1 = header->position_word;
+  header->zpos = (byte)height;
+  header->heading = uVar1 >> 7;
+  header->ypos = uVar6 & 7;
+  header->xpos = uVar4 & 7;
   object_list_append_tail(pTile + 2,object);
   iVar5 = object_ptr_in_arena(object);
   if (iVar5 == 0) {
@@ -1875,8 +1877,9 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
   else {
     uVar4 = ((int)(short)((ushort)uVar4 & 0x1f8) >> 3) << 6 |
             (int)(((int)(short)uVar6 & 0x1f8U) << 0x10) >> 0x13;
-    *(byte *)(object + 0xb) = (byte)object[0xb] & 0xf | (byte)(uVar4 << 4);
-    *(char *)((char *)object + 0x17) = (char)(uVar4 >> 4);
+    uw_mobile_object_t *mobile = (uw_mobile_object_t *)object;
+    mobile->tile_y = uVar4 & 0x3f;
+    mobile->tile_x = (uVar4 >> 6) & 0x3f;
   }
   return 1;
 }

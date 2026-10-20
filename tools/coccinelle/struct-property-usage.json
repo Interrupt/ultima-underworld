@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 466,
+    "packed_word": 468,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -2996,8 +2996,17 @@
     },
     {
       "source": "src/objects.c",
+      "function": "place_object_in_world",
+      "line": 1742,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar2 = object->position_word & 0x3ff;"
+    },
+    {
+      "source": "src/objects.c",
       "function": "compute_object_placement_fields",
-      "line": 1768,
+      "line": 1769,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3006,7 +3015,7 @@
     {
       "source": "src/objects.c",
       "function": "compute_object_placement_fields",
-      "line": 1772,
+      "line": 1773,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3015,16 +3024,7 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1813,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "puVar2->type_flags = header->type_flags;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "reallocate_object_to_arena",
-      "line": 1813,
+      "line": 1814,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -3035,14 +3035,14 @@
       "function": "reallocate_object_to_arena",
       "line": 1814,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "type_flags",
       "pointer": null,
-      "code": "puVar2->position_word = header->position_word;"
+      "code": "puVar2->type_flags = header->type_flags;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1814,
+      "line": 1815,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3053,14 +3053,14 @@
       "function": "reallocate_object_to_arena",
       "line": 1815,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "position_word",
       "pointer": null,
-      "code": "puVar2->chain_word = header->chain_word;"
+      "code": "puVar2->position_word = header->position_word;"
     },
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1815,
+      "line": 1816,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -3071,6 +3071,15 @@
       "function": "reallocate_object_to_arena",
       "line": 1816,
       "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "puVar2->chain_word = header->chain_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "line": 1817,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
       "code": "puVar2->link_word = header->link_word;"
@@ -3078,11 +3087,20 @@
     {
       "source": "src/objects.c",
       "function": "reallocate_object_to_arena",
-      "line": 1816,
+      "line": 1817,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
       "code": "puVar2->link_word = header->link_word;"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "find_object_placement",
+      "line": 1867,
+      "category": "packed_word",
+      "member": "position_word",
+      "pointer": null,
+      "code": "uVar1 = header->position_word;"
     },
     {
       "source": "src/player.c",

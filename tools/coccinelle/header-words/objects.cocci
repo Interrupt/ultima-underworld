@@ -2455,3 +2455,385 @@ R F(...) {
 )
 ...>
 }
+
+@world_placement_word_0_0@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@world_placement_word_0_1@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@world_placement_word_0_2@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@world_placement_word_0_3@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@world_placement_word_1_0@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@world_placement_word_1_1@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@world_placement_word_1_2@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@world_placement_word_1_3@
+type R;
+identifier F =~ "^\(place_object_in_world\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+)
+...>
+}
+
+@world_placement_word_2_0@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 0)
++ ((uw_object_hdr_t *)header)->type_flags
+|
+- ((ushort *)header)[0]
++ ((uw_object_hdr_t *)header)->type_flags
+|
+- *(ushort *)header
++ ((uw_object_hdr_t *)header)->type_flags
+)
+...>
+}
+
+@world_placement_word_2_1@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 2)
++ ((uw_object_hdr_t *)header)->position_word
+|
+- ((ushort *)header)[1]
++ ((uw_object_hdr_t *)header)->position_word
+)
+...>
+}
+
+@world_placement_word_2_2@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 4)
++ ((uw_object_hdr_t *)header)->chain_word
+|
+- ((ushort *)header)[2]
++ ((uw_object_hdr_t *)header)->chain_word
+)
+...>
+}
+
+@world_placement_word_2_3@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)header + 6)
++ ((uw_object_hdr_t *)header)->link_word
+|
+- ((ushort *)header)[3]
++ ((uw_object_hdr_t *)header)->link_word
+)
+...>
+}
+
+@world_placement_word_3_0@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)mobile + 0)
++ ((uw_object_hdr_t *)mobile)->type_flags
+|
+- ((ushort *)mobile)[0]
++ ((uw_object_hdr_t *)mobile)->type_flags
+|
+- *(ushort *)mobile
++ ((uw_object_hdr_t *)mobile)->type_flags
+)
+...>
+}
+
+@world_placement_word_3_1@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)mobile + 2)
++ ((uw_object_hdr_t *)mobile)->position_word
+|
+- ((ushort *)mobile)[1]
++ ((uw_object_hdr_t *)mobile)->position_word
+)
+...>
+}
+
+@world_placement_word_3_2@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)mobile + 4)
++ ((uw_object_hdr_t *)mobile)->chain_word
+|
+- ((ushort *)mobile)[2]
++ ((uw_object_hdr_t *)mobile)->chain_word
+)
+...>
+}
+
+@world_placement_word_3_3@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)mobile + 6)
++ ((uw_object_hdr_t *)mobile)->link_word
+|
+- ((ushort *)mobile)[3]
++ ((uw_object_hdr_t *)mobile)->link_word
+)
+...>
+}
+
+@world_placement_word_4_0@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- object[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@world_placement_word_4_1@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+|
+- object[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@world_placement_word_4_2@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- object[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@world_placement_word_4_3@
+type R;
+identifier F =~ "^\(find_object_placement\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+|
+- object[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}

@@ -1550,6 +1550,26 @@
           "requires_review": []
         },
         {
+          "function": "place_object_in_world",
+          "roles": [
+            {
+              "name": "object",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "object_ptr",
+              "type": "void *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
           "function": "compute_object_placement_fields",
           "roles": [
             {
@@ -1589,6 +1609,33 @@
             {
               "name": "header",
               "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "object",
+              "type": "ushort *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
+              "current_mobile_alias": false
+            }
+          ],
+          "requires_review": []
+        },
+        {
+          "function": "find_object_placement",
+          "roles": [
+            {
+              "name": "header",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "mobile",
+              "type": "uw_mobile_object_t *",
               "parameter": false,
               "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false

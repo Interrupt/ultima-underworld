@@ -1,6 +1,6 @@
 {
   "scope": "Reviewed complete common-header transfers, explicitly listed live word-cursor addresses and full-width snapshots only. These exceptions do not approve other accesses in their containing functions.",
-  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed full-width snapshots with their reviewed complete-function context; narrowing them would change preserved scalar values.",
+  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed scalar snapshots at their original widths and values with reviewed complete-function context; narrowing or changing them would change preserved scalar values.",
   "transfers": [
     {
       "source": "src/ai.c",
@@ -154,6 +154,23 @@
       "recipe": "tools/coccinelle/placement-init-fields.json",
       "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
       "reason": "Preserve the complete type/flag word at its original read site; the original full scalar value supplies table indexing and the NPC/projectile branch."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "place_object_in_world",
+      "statement": "uVar2 = object->position_word & 0x3ff;",
+      "recipe": "tools/coccinelle/world-placement-place_object_in_world.json",
+      "reviewed_body_sha256": "7d61a32550a26699f4edfbafb9aa856b90f792a2dada45a8e3217d5434bd5677",
+      "reason": "Retain the original uint snapshot of both Z and heading (ten bits) while naming both field writes; preserve its exact combined scalar value.",
+      "mask": "0x3ff"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "find_object_placement",
+      "statement": "uVar1 = header->position_word;",
+      "recipe": "tools/coccinelle/world-placement-find_object_placement.json",
+      "reviewed_body_sha256": "ab0d9e870b26d199b33d374c7d4a92036134c6a81b758b03044a369d866f172b",
+      "reason": "Retain the full ushort position snapshot captured after tile lookup; its original heading bits are used for the position update."
     }
   ]
 }
