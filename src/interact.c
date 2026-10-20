@@ -548,19 +548,18 @@ int apply_trap_or_link_effect(void *trigger_object_ptr, void *trigger_link_ptr, 
 void purge_tagged_objects_from_chain(void *link_field_ptr)
 {
   ushort *link_field = (ushort *)link_field_ptr;
-  ushort *puVar1;
+  uw_object_hdr_t *puVar1;
   
-  for (puVar1 = (ushort *)resolve_object_link(link_field); puVar1 != (ushort *)0x0; /* confirmed via ARM disassembly, 0x7deec */
-      puVar1 = (ushort *)resolve_object_link(puVar1 + 2)) {
-    if (((((uw_object_hdr_t *)puVar1)->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(((uw_object_hdr_t *)puVar1)->link))) {
+  for (puVar1 = resolve_object_link(link_field); puVar1 != NULL; /* confirmed via ARM disassembly, 0x7deec */
+      puVar1 = resolve_object_link(&puVar1->chain_word)) {
+    if (((puVar1->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(puVar1->link))) {
       object_list_unlink(link_field,puVar1);
       free_object_slot(puVar1);
-      ((uw_object_hdr_t *)puVar1)->link_word_low = ((uw_object_hdr_t *)puVar1)->owner;
-      ((uw_object_hdr_t *)puVar1)->link_word_high = 0;
+      puVar1->link = 0;
       DAT_0024cfd8 = DAT_0024cfd8 + -1;
     }
-    if ((((uw_object_hdr_t *)puVar1)->is_quant == 0) && (((uw_object_hdr_t *)puVar1)->link != 0)) {
-      purge_tagged_objects_from_chain(puVar1 + 3); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
+    if ((puVar1->is_quant == 0) && (puVar1->link != 0)) {
+      purge_tagged_objects_from_chain(&puVar1->link_word); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
     }
   }
 }

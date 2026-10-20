@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 37,
-    "packed_word": 454,
+    "byte_view": 31,
+    "packed_word": 458,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -1845,25 +1845,25 @@
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 558,
-      "category": "byte_view",
-      "member": "link_word",
+      "line": 554,
+      "category": "packed_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->link_word_low = ((uw_object_hdr_t *)puVar1)->owner;"
+      "code": "puVar1 = resolve_object_link(&puVar1->chain_word)) {"
     },
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 559,
-      "category": "byte_view",
+      "line": 562,
+      "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->link_word_high = 0;"
+      "code": "purge_tagged_objects_from_chain(&puVar1->link_word); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */"
     },
     {
       "source": "src/interact.c",
       "function": "target_in_range",
-      "line": 716,
+      "line": 715,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2574,29 +2574,29 @@
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 590,
+      "line": 587,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "if (((object_header->is_quant != 0) || (local_18 = &object_header->link_word, object_header->link == 0)) ||"
+    },
+    {
+      "source": "src/object_actions.c",
+      "function": "check_object_combination",
+      "line": 591,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar4)->type_flags;"
+      "code": "uVar1 = puVar4->type_flags;"
     },
     {
       "source": "src/object_actions.c",
       "function": "check_object_combination",
-      "line": 599,
-      "category": "byte_view",
+      "line": 594,
+      "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)uVar1;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "check_object_combination",
-      "line": 600,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(uVar1 >> 8) | 2;"
+      "code": "uVar2 = object_header->type_flags;"
     },
     {
       "source": "src/object_actions.c",
@@ -2605,16 +2605,16 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar6 = ((uw_object_hdr_t *)puVar4)->type_flags & 0xfdff;"
+      "code": "uVar6 = puVar4->type_flags & 0xfdff;"
     },
     {
       "source": "src/object_actions.c",
-      "function": "check_object_combination",
-      "line": 621,
+      "function": "consume_linked_special_object_charge",
+      "line": 1173,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar4)->type_flags = (ushort)uVar6;"
+      "code": "(local_c = &object->link_word, object->link != 0)) &&"
     },
     {
       "source": "src/object_actions.c",
@@ -2623,30 +2623,21 @@
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)iVar3)->chain_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "consume_linked_special_object_charge",
-      "line": 1185,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar3)->chain_word_low = (bVar2 - 1 ^ bVar2) & 0x3f ^ bVar2;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "consume_linked_special_object_charge",
-      "line": 1186,
-      "category": "byte_view",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar3)->chain_word_high = (byte)(char)(uVar1 >> 8);"
+      "code": "uVar1 = iVar3->chain_word;"
     },
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1323,
+      "line": 1322,
+      "category": "packed_word",
+      "member": "type_flags",
+      "pointer": null,
+      "code": "puVar8->type_flags = template->type_flags;"
+    },
+    {
+      "source": "src/object_actions.c",
+      "function": "spawn_effect_debris_burst",
+      "line": 1322,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2657,14 +2648,14 @@
       "function": "spawn_effect_debris_burst",
       "line": 1323,
       "category": "packed_word",
-      "member": "type_flags",
+      "member": "position_word",
       "pointer": null,
-      "code": "puVar8->type_flags = template->type_flags;"
+      "code": "puVar8->position_word = template->position_word;"
     },
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1324,
+      "line": 1323,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2675,14 +2666,14 @@
       "function": "spawn_effect_debris_burst",
       "line": 1324,
       "category": "packed_word",
-      "member": "position_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "puVar8->position_word = template->position_word;"
+      "code": "puVar8->chain_word = template->chain_word;"
     },
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1325,
+      "line": 1324,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2693,14 +2684,14 @@
       "function": "spawn_effect_debris_burst",
       "line": 1325,
       "category": "packed_word",
-      "member": "chain_word",
+      "member": "link_word",
       "pointer": null,
-      "code": "puVar8->chain_word = template->chain_word;"
+      "code": "puVar8->link_word = template->link_word;"
     },
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1326,
+      "line": 1325,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2709,16 +2700,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1326,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "puVar8->link_word = template->link_word;"
-    },
-    {
-      "source": "src/object_actions.c",
-      "function": "spawn_effect_debris_burst",
-      "line": 1328,
+      "line": 1327,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2727,7 +2709,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1339,
+      "line": 1338,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2736,7 +2718,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1350,
+      "line": 1349,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2745,7 +2727,7 @@
     {
       "source": "src/object_actions.c",
       "function": "spawn_effect_debris_burst",
-      "line": 1353,
+      "line": 1352,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2754,7 +2736,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1423,
+      "line": 1422,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2763,7 +2745,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1424,
+      "line": 1423,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2772,7 +2754,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1425,
+      "line": 1424,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2781,7 +2763,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1426,
+      "line": 1425,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2790,7 +2772,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1427,
+      "line": 1426,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -2799,7 +2781,7 @@
     {
       "source": "src/object_actions.c",
       "function": "init_monster_spawn_defaults",
-      "line": 1451,
+      "line": 1450,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,

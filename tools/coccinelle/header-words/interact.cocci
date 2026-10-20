@@ -413,92 +413,6 @@ R F(...) {
 ...>
 }
 
-@word_5_0@
-type R;
-identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0)
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- ((ushort *)puVar1)[0]
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- *(ushort *)puVar1
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- puVar1[0]
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- *puVar1
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-)
-...>
-}
-
-@word_5_1@
-type R;
-identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 2)
-+ ((uw_object_hdr_t *)puVar1)->position_word
-|
-- ((ushort *)puVar1)[1]
-+ ((uw_object_hdr_t *)puVar1)->position_word
-|
-- puVar1[1]
-+ ((uw_object_hdr_t *)puVar1)->position_word
-)
-...>
-}
-
-@word_5_2@
-type R;
-identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 4)
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-|
-- ((ushort *)puVar1)[2]
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-|
-- puVar1[2]
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-)
-...>
-}
-
-@word_5_3@
-type R;
-identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 6)
-+ ((uw_object_hdr_t *)puVar1)->link_word
-|
-- ((ushort *)puVar1)[3]
-+ ((uw_object_hdr_t *)puVar1)->link_word
-|
-- puVar1[3]
-+ ((uw_object_hdr_t *)puVar1)->link_word
-)
-...>
-}
-
 @word_6_0@
 type R;
 identifier F =~ "^\(pick_object_under_cursor\)$";
@@ -581,6 +495,77 @@ R F(...) {
 |
 - puVar3[3]
 + ((uw_object_hdr_t *)puVar3)->link_word
+)
+...>
+}
+
+@linked_word_0_0@
+type R;
+identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0)
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- ((ushort *)puVar1)[0]
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- *(ushort *)puVar1
++ ((uw_object_hdr_t *)puVar1)->type_flags
+)
+...>
+}
+
+@linked_word_0_1@
+type R;
+identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 2)
++ ((uw_object_hdr_t *)puVar1)->position_word
+|
+- ((ushort *)puVar1)[1]
++ ((uw_object_hdr_t *)puVar1)->position_word
+)
+...>
+}
+
+@linked_word_0_2@
+type R;
+identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 4)
++ ((uw_object_hdr_t *)puVar1)->chain_word
+|
+- ((ushort *)puVar1)[2]
++ ((uw_object_hdr_t *)puVar1)->chain_word
+)
+...>
+}
+
+@linked_word_0_3@
+type R;
+identifier F =~ "^\(purge_tagged_objects_from_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 6)
++ ((uw_object_hdr_t *)puVar1)->link_word
+|
+- ((ushort *)puVar1)[3]
++ ((uw_object_hdr_t *)puVar1)->link_word
 )
 ...>
 }

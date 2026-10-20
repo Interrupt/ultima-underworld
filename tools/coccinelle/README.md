@@ -1955,3 +1955,60 @@ explicit named byte view, so the inventory now lists 37 byte views, 454 packed
 accesses and eight raw audited accesses: 499 total, nine fewer. Common-header
 ID and class reads that were outside the old raw-offset pattern are also
 converted. Other accesses and unrecorded aliases still require work.
+
+## Linked-object combination, charge and tagged-chain fields
+
+`generate_linked_object_rules.py` generates three exact-source recipes for
+`check_object_combination`, `consume_linked_special_object_charge` and
+`purge_tagged_objects_from_chain`. Native common-header pointers replace local
+word/void/byte views. Combination checks and charge consumption use named
+`is_quant`/`link` gates and pass the address of `link_word` to the existing
+chain finder. Its pointer-to-pointer cursor remains live: later unlinking
+uses the cursor value supplied or changed by callbacks, not a reconstructed
+address from the original object.
+
+Combination flag updates set or clear the appropriate bit of `flags_res`.
+The original complete type captures, class/subtype tests, low-nine-bit link
+comparisons, signed count arithmetic and skill-result narrowing remain.
+Flags are reread after the action callback before choosing release or clearing;
+no pre-callback value substitutes for that live read. Charge consumption keeps
+the full chain-word and low-byte captures, and writes named `quality` while
+preserving the next link. Zero-charge random release, finder filters, action
+arguments and return codes are unchanged. Individual reserved flag meanings
+are not guessed.
+
+Tagged-chain cleanup uses named `chain_word` and `link_word` addresses for
+iteration and recursion. It clears named `link` after unlinking and releasing
+the object slot, at the same point as the original paired byte stores. The
+owner used by the original low-byte store is read after release; clearing the
+field preserves that live owner, including changes made by the release helper.
+Traversal continues from the saved object pointer, not from a fresh resolver
+or a current-object global. Both original and converted recursion stay within
+their own implementations in the comparison fixture. Function locations and
+public signatures are unchanged.
+
+`linked_object_fields` runs by default and checks reproducible recipes, exact
+conversion/idempotence and rejection of volatile or escaping captures, inserted
+callbacks, excluded/quoted bodies and duplicate definitions. Its 6,291,456
+original/current cases sweep all 16-bit seeds, three functions, sixteen modes
+and callback mutation. Cases include empty/quantity chains, missing or aliased
+finder results, positive/zero/negative counts, special object classes, zero and
+nonzero quality, signed skill narrowing and unsigned random returns, nested
+chains and reused object slots. Callbacks mutate fields, replace the escaped
+cursor and rebind the player pointer; all seven helpers are reached in both
+mutation variants. Independent assertions check complete flag-word results,
+quality decrement with next-link preservation, post-release owner/link values,
+return/action gates and tag-count decrements. Full guarded records, actor
+buffers, globals, cursor identities and callback arguments/events/counts are
+compared. Use `--reference-dir /private/tmp` while the saved baseline files are
+available, and `--asan` for AddressSanitizer.
+
+Six byte views disappear. Naming three link-word cursor addresses, one
+chain-word cursor address and a previously uncounted full type snapshot adds
+five packed inventory entries; removing one full type-word store offsets one.
+The inventory is now 31 byte views, 458 packed accesses and eight raw audited
+accesses: 497 total, two fewer. Remaining packed snapshots, other accesses and
+unrecorded aliases still require auditing and conversion or documented reasons.
+Header field/word catalogs refresh only these three function scopes; rule
+bodies for every unrelated function are verified unchanged. This avoids
+folding older catalog drift into this batch.
