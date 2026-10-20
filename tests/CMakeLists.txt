@@ -1278,6 +1278,9 @@ add_test(NAME placement_class_fields
 add_test(NAME field_consumers
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_field_consumers.py")
+add_test(NAME inventory_native_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_inventory_native_fields.py")
 # Coccinelle semantic-patch checks: they re-parse the whole of src/ with spatch
 # and take minutes where the rest of the suite takes seconds (530s against 6s
 # when measured on this tree). They are a tool for large type-conversion

@@ -2586,3 +2586,53 @@ raw audited accesses). The latter are a review queue, not a count of required
 fixes; they still include snapshots and API addresses that need their own
 justification. Unrecorded aliases also require an independent audit, so neither
 number establishes completion.
+
+## Native inventory save/restore walkers
+
+`generate_inventory_native_rules.py` generates one strict complete-function
+recipe for each inventory walker. `serialize_inventory_link_chain` and
+`deserialize_inventory_link_chain` now use native common-header pointers for
+live objects and saved eight-byte records. Their ordered four-word copies
+remain complete header transfers. Next/contents cursor addresses use named
+`chain_word`/`link_word` members, and the restore recursion gate reads
+`is_quant` and `link`. Source, destination and recursive cursor identity,
+helper ordering, live counters and the original byte-store order are preserved.
+
+The incoming/outgoing cursors retain their byte/word API representations:
+callers can pass standalone encoded words or fields in packed save buffers.
+They are not themselves object-header base pointers, so this pass does not
+invent a containing object or reinterpret them as NPC extension fields. The
+encoded-word byte writes and equipment-index remapping remain in place.
+
+`test_inventory_native_fields.py` compares 2,097,152 complete calls against
+both original walkers: every 16-bit seed, 16 modes and both directions. Cases
+include nested contents, siblings, quantities, empty roots, counter/index
+truncation and mutations at all seven helper boundaries. It compares every
+source/destination header byte, both root words, callback arguments/order/counts,
+allocation totals and the live save-record counter. Each helper must execute
+both with and without mutation. The same checks pass under AddressSanitizer.
+A second run uses the real arena allocator, link resolvers, equipment mapping,
+player record builders and save-inventory regression fixture for both versions:
+cold restore/nested/equipment/cursor tests and 65,536 complete header-copy cases
+pass, with matching full-buffer hashes. The existing optional inventory-word
+conversion check now composes its original byte-to-word stage with these native
+recipes; that specific Coccinelle test also passes.
+
+The pointer auditor now recognizes `alloc_save_record_slot` and
+`save_record_slot_from_index` as common-header accessors. Their only callers
+are these walkers; their reviewed implementations return eight-byte records
+from the save buffer (or NULL for index zero). Tests pin that return provenance.
+This proves no mobile/NPC extension. Audit output is 55 sources, 331 roles, no
+errors. Only the two walkers' header-field/header-word catalog scopes change;
+both catalogs parse and every unrelated function's rules compare unchanged.
+
+The exception checker now also validates curated exact cursor-address uses,
+requiring every packed-word occurrence in the statement to be an address of
+a named word in the correct function. Seven negative probes reject changed
+words, observers, duplicate statements, wrong functions/sources, empty reasons
+and duplicate entries. The two header-transfer exceptions are rebased to the
+native pointer syntax. Eight new explicit cursor-address accesses are justified
+by their existing traversal/recursion APIs. The current report therefore lists
+**478 accesses: 112 justified (104 transfer and eight cursor accesses), and 366
+still unreviewed**. The game build, full unit suite and focused sanitizer suite
+check integration. Other accesses and unrecorded aliases remain incomplete.

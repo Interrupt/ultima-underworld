@@ -1,10 +1,12 @@
 {
-  "scope": "Reviewed complete common-header transfers only. These exceptions do not approve other accesses in the containing functions.",
-  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment.",
+  "scope": "Reviewed complete common-header transfers and explicitly listed live word-cursor addresses only. These exceptions do not approve other accesses in their containing functions.",
+  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors.",
   "summary": {
-    "inventory_accesses": 470,
+    "inventory_accesses": 478,
     "reviewed_transfer_blocks": 13,
     "justified_transfer_accesses": 104,
+    "justified_cursor_accesses": 8,
+    "justified_accesses": 112,
     "unreviewed_accesses": 366,
     "unreviewed_by_category": {
       "byte_view": 5,
@@ -31,30 +33,30 @@
     {
       "source": "src/inventory.c",
       "function": "serialize_inventory_link_chain",
-      "destination": "((uw_object_hdr_t *)puVar2)",
-      "origin": "((uw_object_hdr_t *)puVar1)",
+      "destination": "puVar2",
+      "origin": "puVar1",
       "reason": "Copy all common-header bits to the save record before separately translating chain and equipment links.",
       "first_line": 220,
       "statements": [
-        "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)puVar1)->type_flags;",
-        "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)puVar1)->position_word;",
-        "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)puVar1)->chain_word;",
-        "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)puVar1)->link_word;"
+        "puVar2->type_flags = puVar1->type_flags;",
+        "puVar2->position_word = puVar1->position_word;",
+        "puVar2->chain_word = puVar1->chain_word;",
+        "puVar2->link_word = puVar1->link_word;"
       ],
       "access_count": 8
     },
     {
       "source": "src/inventory.c",
       "function": "deserialize_inventory_link_chain",
-      "destination": "((uw_object_hdr_t *)puVar1)",
-      "origin": "((uw_object_hdr_t *)puVar3)",
+      "destination": "puVar1",
+      "origin": "puVar3",
       "reason": "Restore all common-header bits from the save record before separately translating live links.",
       "first_line": 250,
       "statements": [
-        "((uw_object_hdr_t *)puVar1)->type_flags = ((uw_object_hdr_t *)puVar3)->type_flags;",
-        "((uw_object_hdr_t *)puVar1)->position_word = ((uw_object_hdr_t *)puVar3)->position_word;",
-        "((uw_object_hdr_t *)puVar1)->chain_word = ((uw_object_hdr_t *)puVar3)->chain_word;",
-        "((uw_object_hdr_t *)puVar1)->link_word = ((uw_object_hdr_t *)puVar3)->link_word;"
+        "puVar1->type_flags = puVar3->type_flags;",
+        "puVar1->position_word = puVar3->position_word;",
+        "puVar1->chain_word = puVar3->chain_word;",
+        "puVar1->link_word = puVar3->link_word;"
       ],
       "access_count": 8
     },
@@ -207,6 +209,56 @@
         "((uw_object_hdr_t *)puVar10)->link_word = ((uw_object_hdr_t *)puVar9)->link_word;"
       ],
       "access_count": 8
+    }
+  ],
+  "justified_cursor_uses": [
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "link_chain = (byte *)&puVar1->chain_word;",
+      "reason": "Carry the source next-link word as the live input cursor for the next resolve call.",
+      "line": 228,
+      "access_count": 1
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "out_link = (byte *)&puVar2->chain_word;",
+      "reason": "Carry the saved next-link word as the output cursor for subsequent records.",
+      "line": 229,
+      "access_count": 1
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "statement": "serialize_inventory_link_chain((byte *)&puVar1->link_word,(byte *)&puVar2->link_word);",
+      "reason": "Pass the actual contents link words to recursive serialization, preserving source and output cursor identity.",
+      "line": 231,
+      "access_count": 2
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "link_field = (byte *)&puVar1->chain_word;",
+      "reason": "Carry the restored next-link word as the output cursor for subsequent live records.",
+      "line": 258,
+      "access_count": 1
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "saved_link = &puVar3->chain_word;",
+      "reason": "Carry the saved next-link word as the live input cursor for the next saved-record lookup.",
+      "line": 259,
+      "access_count": 1
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "statement": "deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);",
+      "reason": "Pass the actual restored and saved contents link words to recursive restoration.",
+      "line": 264,
+      "access_count": 2
     }
   ],
   "unreviewed": [

@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 457,
+    "packed_word": 465,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -1741,7 +1741,7 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)puVar1)->type_flags;"
+      "code": "puVar2->type_flags = puVar1->type_flags;"
     },
     {
       "source": "src/inventory.c",
@@ -1750,7 +1750,7 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)puVar1)->type_flags;"
+      "code": "puVar2->type_flags = puVar1->type_flags;"
     },
     {
       "source": "src/inventory.c",
@@ -1759,7 +1759,7 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)puVar1)->position_word;"
+      "code": "puVar2->position_word = puVar1->position_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1768,7 +1768,7 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)puVar1)->position_word;"
+      "code": "puVar2->position_word = puVar1->position_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1777,7 +1777,7 @@
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)puVar1)->chain_word;"
+      "code": "puVar2->chain_word = puVar1->chain_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1786,7 +1786,7 @@
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)puVar1)->chain_word;"
+      "code": "puVar2->chain_word = puVar1->chain_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1795,7 +1795,7 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)puVar1)->link_word;"
+      "code": "puVar2->link_word = puVar1->link_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1804,7 +1804,43 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)puVar1)->link_word;"
+      "code": "puVar2->link_word = puVar1->link_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "line": 228,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "link_chain = (byte *)&puVar1->chain_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "line": 229,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "out_link = (byte *)&puVar2->chain_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "line": 231,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "serialize_inventory_link_chain((byte *)&puVar1->link_word,(byte *)&puVar2->link_word);"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "line": 231,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "serialize_inventory_link_chain((byte *)&puVar1->link_word,(byte *)&puVar2->link_word);"
     },
     {
       "source": "src/inventory.c",
@@ -1813,7 +1849,7 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->type_flags = ((uw_object_hdr_t *)puVar3)->type_flags;"
+      "code": "puVar1->type_flags = puVar3->type_flags;"
     },
     {
       "source": "src/inventory.c",
@@ -1822,7 +1858,7 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->type_flags = ((uw_object_hdr_t *)puVar3)->type_flags;"
+      "code": "puVar1->type_flags = puVar3->type_flags;"
     },
     {
       "source": "src/inventory.c",
@@ -1831,7 +1867,7 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->position_word = ((uw_object_hdr_t *)puVar3)->position_word;"
+      "code": "puVar1->position_word = puVar3->position_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1840,7 +1876,7 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->position_word = ((uw_object_hdr_t *)puVar3)->position_word;"
+      "code": "puVar1->position_word = puVar3->position_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1849,7 +1885,7 @@
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->chain_word = ((uw_object_hdr_t *)puVar3)->chain_word;"
+      "code": "puVar1->chain_word = puVar3->chain_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1858,7 +1894,7 @@
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->chain_word = ((uw_object_hdr_t *)puVar3)->chain_word;"
+      "code": "puVar1->chain_word = puVar3->chain_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1867,7 +1903,7 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->link_word = ((uw_object_hdr_t *)puVar3)->link_word;"
+      "code": "puVar1->link_word = puVar3->link_word;"
     },
     {
       "source": "src/inventory.c",
@@ -1876,7 +1912,43 @@
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar1)->link_word = ((uw_object_hdr_t *)puVar3)->link_word;"
+      "code": "puVar1->link_word = puVar3->link_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "line": 258,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "link_field = (byte *)&puVar1->chain_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "line": 259,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "saved_link = &puVar3->chain_word;"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "line": 264,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);"
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "line": 264,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);"
     },
     {
       "source": "src/inventory.c",

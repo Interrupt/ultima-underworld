@@ -1,595 +1,3 @@
-@field_0_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-|
-- ((ushort *)puVar1)[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-|
-- *(ushort *)puVar1 & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-|
-- *(ushort *)(puVar1 + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-|
-- CONCAT11(puVar1[1], *puVar1) & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-|
-- CONCAT11(puVar1[1], puVar1[0]) & 0x1ff
-+ ((uw_object_hdr_t *)puVar1)->object_id
-)
-...>
-}
-
-@field_0_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(ushort *)((char *)puVar1 + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (((ushort *)puVar1)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (((ushort *)puVar1)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(ushort *)puVar1 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(ushort *)puVar1 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(ushort *)(puVar1 + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(ushort *)(puVar1 + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (CONCAT11(puVar1[1], *puVar1) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (CONCAT11(puVar1[1], *puVar1) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (CONCAT11(puVar1[1], puVar1[0]) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (CONCAT11(puVar1[1], puVar1[0]) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(byte *)((char *)puVar1 + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(byte *)((char *)puVar1 + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(byte *)(puVar1 + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-|
-- (*(byte *)(puVar1 + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)puVar1)->flags_res
-)
-...>
-}
-
-@field_0_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(ushort *)((char *)puVar1 + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (((ushort *)puVar1)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (((ushort *)puVar1)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(ushort *)puVar1 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(ushort *)puVar1 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(ushort *)(puVar1 + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(ushort *)(puVar1 + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (CONCAT11(puVar1[1], *puVar1) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (CONCAT11(puVar1[1], *puVar1) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (CONCAT11(puVar1[1], puVar1[0]) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (CONCAT11(puVar1[1], puVar1[0]) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(byte *)((char *)puVar1 + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(byte *)((char *)puVar1 + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(byte *)(puVar1 + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-|
-- (*(byte *)(puVar1 + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)puVar1)->enchanted
-)
-...>
-}
-
-@field_0_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(ushort *)((char *)puVar1 + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (((ushort *)puVar1)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (((ushort *)puVar1)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(ushort *)puVar1 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(ushort *)puVar1 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(ushort *)(puVar1 + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(ushort *)(puVar1 + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (CONCAT11(puVar1[1], *puVar1) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (CONCAT11(puVar1[1], *puVar1) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (CONCAT11(puVar1[1], puVar1[0]) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (CONCAT11(puVar1[1], puVar1[0]) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(byte *)((char *)puVar1 + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(byte *)((char *)puVar1 + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(byte *)(puVar1 + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->doordir
-|
-- (*(byte *)(puVar1 + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)puVar1)->doordir
-)
-...>
-}
-
-@field_0_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(ushort *)((char *)puVar1 + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (((ushort *)puVar1)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (((ushort *)puVar1)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(ushort *)puVar1 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(ushort *)puVar1 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(ushort *)(puVar1 + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(ushort *)(puVar1 + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (CONCAT11(puVar1[1], *puVar1) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (CONCAT11(puVar1[1], *puVar1) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (CONCAT11(puVar1[1], puVar1[0]) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (CONCAT11(puVar1[1], puVar1[0]) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(byte *)((char *)puVar1 + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(byte *)((char *)puVar1 + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(byte *)(puVar1 + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->invisible
-|
-- (*(byte *)(puVar1 + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)puVar1)->invisible
-)
-...>
-}
-
-@field_0_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(ushort *)((char *)puVar1 + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (((ushort *)puVar1)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (((ushort *)puVar1)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(ushort *)puVar1 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(ushort *)puVar1 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(ushort *)(puVar1 + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(ushort *)(puVar1 + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (CONCAT11(puVar1[1], *puVar1) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (CONCAT11(puVar1[1], *puVar1) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (CONCAT11(puVar1[1], puVar1[0]) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (CONCAT11(puVar1[1], puVar1[0]) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(byte *)((char *)puVar1 + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(byte *)((char *)puVar1 + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- *(byte *)((char *)puVar1 + 0x1) >> 7
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(byte *)(puVar1 + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- (*(byte *)(puVar1 + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-|
-- *(byte *)(puVar1 + 0x1) >> 7
-+ ((uw_object_hdr_t *)puVar1)->is_quant
-)
-...>
-}
-
-@field_0_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-|
-- ((ushort *)puVar1)[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-|
-- *(ushort *)(puVar1 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-|
-- *(byte *)((char *)puVar1 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-|
-- puVar1[2] & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-|
-- *(byte *)(puVar1 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar1)->zpos
-)
-...>
-}
-
-@field_0_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->heading
-|
-- (*(ushort *)((char *)puVar1 + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar1)->heading
-|
-- (((ushort *)puVar1)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->heading
-|
-- (((ushort *)puVar1)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar1)->heading
-|
-- (*(ushort *)(puVar1 + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->heading
-|
-- (*(ushort *)(puVar1 + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar1)->heading
-)
-...>
-}
-
-@field_0_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(ushort *)((char *)puVar1 + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (((ushort *)puVar1)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (((ushort *)puVar1)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(ushort *)(puVar1 + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(ushort *)(puVar1 + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(byte *)((char *)puVar1 + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(byte *)((char *)puVar1 + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(byte *)(puVar1 + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->ypos
-|
-- (*(byte *)(puVar1 + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)puVar1)->ypos
-)
-...>
-}
-
-@field_0_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(ushort *)((char *)puVar1 + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (((ushort *)puVar1)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (((ushort *)puVar1)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(ushort *)(puVar1 + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(ushort *)(puVar1 + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(byte *)((char *)puVar1 + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(byte *)((char *)puVar1 + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- *(byte *)((char *)puVar1 + 0x3) >> 5
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(byte *)(puVar1 + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- (*(byte *)(puVar1 + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)puVar1)->xpos
-|
-- *(byte *)(puVar1 + 0x3) >> 5
-+ ((uw_object_hdr_t *)puVar1)->xpos
-)
-...>
-}
-
-@field_0_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-|
-- ((ushort *)puVar1)[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-|
-- *(ushort *)(puVar1 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-|
-- *(byte *)((char *)puVar1 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-|
-- puVar1[4] & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-|
-- *(byte *)(puVar1 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->quality
-)
-...>
-}
-
-@field_0_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->next
-|
-- (*(ushort *)((char *)puVar1 + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->next
-|
-- (((ushort *)puVar1)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->next
-|
-- (((ushort *)puVar1)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->next
-|
-- (*(ushort *)(puVar1 + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->next
-|
-- (*(ushort *)(puVar1 + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->next
-)
-...>
-}
-
-@field_0_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-|
-- ((ushort *)puVar1)[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-|
-- *(ushort *)(puVar1 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-|
-- *(byte *)((char *)puVar1 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-|
-- puVar1[6] & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-|
-- *(byte *)(puVar1 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar1)->owner
-)
-...>
-}
-
-@field_0_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar1 + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->link
-|
-- (*(ushort *)((char *)puVar1 + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->link
-|
-- (((ushort *)puVar1)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->link
-|
-- (((ushort *)puVar1)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->link
-|
-- (*(ushort *)(puVar1 + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar1)->link
-|
-- (*(ushort *)(puVar1 + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar1)->link
-)
-...>
-}
-
 @field_1_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(redraw_inventory_widget_range\)$";
@@ -3306,6 +2714,1170 @@ R F(...) {
 |
 - puVar8[3] >> 6
 + ((uw_object_hdr_t *)puVar8)->link
+)
+...>
+}
+
+@inventory_native_field_0_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)puVar2)->object_id
+|
+- ((ushort *)puVar2)[0] & 0x1ff
++ ((uw_object_hdr_t *)puVar2)->object_id
+|
+- *(ushort *)puVar2 & 0x1ff
++ ((uw_object_hdr_t *)puVar2)->object_id
+)
+...>
+}
+
+@inventory_native_field_0_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (*(ushort *)((char *)puVar2 + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (((ushort *)puVar2)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (((ushort *)puVar2)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (*(ushort *)puVar2 >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (*(ushort *)puVar2 & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (*(byte *)((char *)puVar2 + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)puVar2)->flags_res
+|
+- (*(byte *)((char *)puVar2 + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)puVar2)->flags_res
+)
+...>
+}
+
+@inventory_native_field_0_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (*(ushort *)((char *)puVar2 + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (((ushort *)puVar2)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (((ushort *)puVar2)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (*(ushort *)puVar2 >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (*(ushort *)puVar2 & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (*(byte *)((char *)puVar2 + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)puVar2)->enchanted
+|
+- (*(byte *)((char *)puVar2 + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)puVar2)->enchanted
+)
+...>
+}
+
+@inventory_native_field_0_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (*(ushort *)((char *)puVar2 + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (((ushort *)puVar2)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (((ushort *)puVar2)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (*(ushort *)puVar2 >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (*(ushort *)puVar2 & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (*(byte *)((char *)puVar2 + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)puVar2)->doordir
+|
+- (*(byte *)((char *)puVar2 + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)puVar2)->doordir
+)
+...>
+}
+
+@inventory_native_field_0_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (*(ushort *)((char *)puVar2 + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (((ushort *)puVar2)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (((ushort *)puVar2)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (*(ushort *)puVar2 >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (*(ushort *)puVar2 & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (*(byte *)((char *)puVar2 + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)puVar2)->invisible
+|
+- (*(byte *)((char *)puVar2 + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)puVar2)->invisible
+)
+...>
+}
+
+@inventory_native_field_0_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (*(ushort *)((char *)puVar2 + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (((ushort *)puVar2)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (((ushort *)puVar2)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (*(ushort *)puVar2 >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (*(ushort *)puVar2 & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (*(byte *)((char *)puVar2 + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- (*(byte *)((char *)puVar2 + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)puVar2)->is_quant
+|
+- *(byte *)((char *)puVar2 + 0x1) >> 7
++ ((uw_object_hdr_t *)puVar2)->is_quant
+)
+...>
+}
+
+@inventory_native_field_0_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar2)->zpos
+|
+- ((ushort *)puVar2)[1] & 0x7f
++ ((uw_object_hdr_t *)puVar2)->zpos
+|
+- *(byte *)((char *)puVar2 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar2)->zpos
+)
+...>
+}
+
+@inventory_native_field_0_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar2)->heading
+|
+- (*(ushort *)((char *)puVar2 + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar2)->heading
+|
+- (((ushort *)puVar2)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar2)->heading
+|
+- (((ushort *)puVar2)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar2)->heading
+)
+...>
+}
+
+@inventory_native_field_0_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar2)->ypos
+|
+- (*(ushort *)((char *)puVar2 + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar2)->ypos
+|
+- (((ushort *)puVar2)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar2)->ypos
+|
+- (((ushort *)puVar2)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar2)->ypos
+|
+- (*(byte *)((char *)puVar2 + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)puVar2)->ypos
+|
+- (*(byte *)((char *)puVar2 + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)puVar2)->ypos
+)
+...>
+}
+
+@inventory_native_field_0_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- (*(ushort *)((char *)puVar2 + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- (((ushort *)puVar2)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- (((ushort *)puVar2)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- (*(byte *)((char *)puVar2 + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- (*(byte *)((char *)puVar2 + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)puVar2)->xpos
+|
+- *(byte *)((char *)puVar2 + 0x3) >> 5
++ ((uw_object_hdr_t *)puVar2)->xpos
+)
+...>
+}
+
+@inventory_native_field_0_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar2)->quality
+|
+- ((ushort *)puVar2)[2] & 0x3f
++ ((uw_object_hdr_t *)puVar2)->quality
+|
+- *(byte *)((char *)puVar2 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar2)->quality
+)
+...>
+}
+
+@inventory_native_field_0_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar2)->next
+|
+- (*(ushort *)((char *)puVar2 + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar2)->next
+|
+- (((ushort *)puVar2)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar2)->next
+|
+- (((ushort *)puVar2)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar2)->next
+)
+...>
+}
+
+@inventory_native_field_0_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar2)->owner
+|
+- ((ushort *)puVar2)[3] & 0x3f
++ ((uw_object_hdr_t *)puVar2)->owner
+|
+- *(byte *)((char *)puVar2 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar2)->owner
+)
+...>
+}
+
+@inventory_native_field_0_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar2 + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar2)->link
+|
+- (*(ushort *)((char *)puVar2 + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar2)->link
+|
+- (((ushort *)puVar2)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar2)->link
+|
+- (((ushort *)puVar2)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar2)->link
+)
+...>
+}
+
+@inventory_native_field_1_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)puVar1)->object_id
+|
+- ((ushort *)puVar1)[0] & 0x1ff
++ ((uw_object_hdr_t *)puVar1)->object_id
+|
+- *(ushort *)puVar1 & 0x1ff
++ ((uw_object_hdr_t *)puVar1)->object_id
+)
+...>
+}
+
+@inventory_native_field_1_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (*(ushort *)((char *)puVar1 + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (((ushort *)puVar1)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (((ushort *)puVar1)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (*(ushort *)puVar1 >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (*(ushort *)puVar1 & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (*(byte *)((char *)puVar1 + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)puVar1)->flags_res
+|
+- (*(byte *)((char *)puVar1 + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)puVar1)->flags_res
+)
+...>
+}
+
+@inventory_native_field_1_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (*(ushort *)((char *)puVar1 + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (((ushort *)puVar1)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (((ushort *)puVar1)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (*(ushort *)puVar1 >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (*(ushort *)puVar1 & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (*(byte *)((char *)puVar1 + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)puVar1)->enchanted
+|
+- (*(byte *)((char *)puVar1 + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)puVar1)->enchanted
+)
+...>
+}
+
+@inventory_native_field_1_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (*(ushort *)((char *)puVar1 + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (((ushort *)puVar1)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (((ushort *)puVar1)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (*(ushort *)puVar1 >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (*(ushort *)puVar1 & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (*(byte *)((char *)puVar1 + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)puVar1)->doordir
+|
+- (*(byte *)((char *)puVar1 + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)puVar1)->doordir
+)
+...>
+}
+
+@inventory_native_field_1_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (*(ushort *)((char *)puVar1 + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (((ushort *)puVar1)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (((ushort *)puVar1)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (*(ushort *)puVar1 >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (*(ushort *)puVar1 & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (*(byte *)((char *)puVar1 + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)puVar1)->invisible
+|
+- (*(byte *)((char *)puVar1 + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)puVar1)->invisible
+)
+...>
+}
+
+@inventory_native_field_1_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (*(ushort *)((char *)puVar1 + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (((ushort *)puVar1)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (((ushort *)puVar1)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (*(ushort *)puVar1 >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (*(ushort *)puVar1 & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (*(byte *)((char *)puVar1 + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- (*(byte *)((char *)puVar1 + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)puVar1)->is_quant
+|
+- *(byte *)((char *)puVar1 + 0x1) >> 7
++ ((uw_object_hdr_t *)puVar1)->is_quant
+)
+...>
+}
+
+@inventory_native_field_1_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar1)->zpos
+|
+- ((ushort *)puVar1)[1] & 0x7f
++ ((uw_object_hdr_t *)puVar1)->zpos
+|
+- *(byte *)((char *)puVar1 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar1)->zpos
+)
+...>
+}
+
+@inventory_native_field_1_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar1)->heading
+|
+- (*(ushort *)((char *)puVar1 + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar1)->heading
+|
+- (((ushort *)puVar1)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar1)->heading
+|
+- (((ushort *)puVar1)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar1)->heading
+)
+...>
+}
+
+@inventory_native_field_1_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar1)->ypos
+|
+- (*(ushort *)((char *)puVar1 + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar1)->ypos
+|
+- (((ushort *)puVar1)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar1)->ypos
+|
+- (((ushort *)puVar1)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar1)->ypos
+|
+- (*(byte *)((char *)puVar1 + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)puVar1)->ypos
+|
+- (*(byte *)((char *)puVar1 + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)puVar1)->ypos
+)
+...>
+}
+
+@inventory_native_field_1_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- (*(ushort *)((char *)puVar1 + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- (((ushort *)puVar1)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- (((ushort *)puVar1)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- (*(byte *)((char *)puVar1 + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- (*(byte *)((char *)puVar1 + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)puVar1)->xpos
+|
+- *(byte *)((char *)puVar1 + 0x3) >> 5
++ ((uw_object_hdr_t *)puVar1)->xpos
+)
+...>
+}
+
+@inventory_native_field_1_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar1)->quality
+|
+- ((ushort *)puVar1)[2] & 0x3f
++ ((uw_object_hdr_t *)puVar1)->quality
+|
+- *(byte *)((char *)puVar1 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar1)->quality
+)
+...>
+}
+
+@inventory_native_field_1_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar1)->next
+|
+- (*(ushort *)((char *)puVar1 + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar1)->next
+|
+- (((ushort *)puVar1)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar1)->next
+|
+- (((ushort *)puVar1)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar1)->next
+)
+...>
+}
+
+@inventory_native_field_1_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar1)->owner
+|
+- ((ushort *)puVar1)[3] & 0x3f
++ ((uw_object_hdr_t *)puVar1)->owner
+|
+- *(byte *)((char *)puVar1 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar1)->owner
+)
+...>
+}
+
+@inventory_native_field_1_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar1 + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar1)->link
+|
+- (*(ushort *)((char *)puVar1 + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar1)->link
+|
+- (((ushort *)puVar1)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar1)->link
+|
+- (((ushort *)puVar1)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar1)->link
+)
+...>
+}
+
+@inventory_native_field_2_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)puVar3)->object_id
+|
+- ((ushort *)puVar3)[0] & 0x1ff
++ ((uw_object_hdr_t *)puVar3)->object_id
+|
+- *(ushort *)puVar3 & 0x1ff
++ ((uw_object_hdr_t *)puVar3)->object_id
+)
+...>
+}
+
+@inventory_native_field_2_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (*(ushort *)((char *)puVar3 + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (((ushort *)puVar3)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (((ushort *)puVar3)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (*(ushort *)puVar3 >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (*(ushort *)puVar3 & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (*(byte *)((char *)puVar3 + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)puVar3)->flags_res
+|
+- (*(byte *)((char *)puVar3 + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)puVar3)->flags_res
+)
+...>
+}
+
+@inventory_native_field_2_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (*(ushort *)((char *)puVar3 + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (((ushort *)puVar3)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (((ushort *)puVar3)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (*(ushort *)puVar3 >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (*(ushort *)puVar3 & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (*(byte *)((char *)puVar3 + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)puVar3)->enchanted
+|
+- (*(byte *)((char *)puVar3 + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)puVar3)->enchanted
+)
+...>
+}
+
+@inventory_native_field_2_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (*(ushort *)((char *)puVar3 + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (((ushort *)puVar3)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (((ushort *)puVar3)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (*(ushort *)puVar3 >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (*(ushort *)puVar3 & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (*(byte *)((char *)puVar3 + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)puVar3)->doordir
+|
+- (*(byte *)((char *)puVar3 + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)puVar3)->doordir
+)
+...>
+}
+
+@inventory_native_field_2_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (*(ushort *)((char *)puVar3 + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (((ushort *)puVar3)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (((ushort *)puVar3)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (*(ushort *)puVar3 >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (*(ushort *)puVar3 & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (*(byte *)((char *)puVar3 + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)puVar3)->invisible
+|
+- (*(byte *)((char *)puVar3 + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)puVar3)->invisible
+)
+...>
+}
+
+@inventory_native_field_2_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (*(ushort *)((char *)puVar3 + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (((ushort *)puVar3)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (((ushort *)puVar3)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (*(ushort *)puVar3 >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (*(ushort *)puVar3 & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (*(byte *)((char *)puVar3 + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- (*(byte *)((char *)puVar3 + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)puVar3)->is_quant
+|
+- *(byte *)((char *)puVar3 + 0x1) >> 7
++ ((uw_object_hdr_t *)puVar3)->is_quant
+)
+...>
+}
+
+@inventory_native_field_2_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar3)->zpos
+|
+- ((ushort *)puVar3)[1] & 0x7f
++ ((uw_object_hdr_t *)puVar3)->zpos
+|
+- *(byte *)((char *)puVar3 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar3)->zpos
+)
+...>
+}
+
+@inventory_native_field_2_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar3)->heading
+|
+- (*(ushort *)((char *)puVar3 + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar3)->heading
+|
+- (((ushort *)puVar3)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar3)->heading
+|
+- (((ushort *)puVar3)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar3)->heading
+)
+...>
+}
+
+@inventory_native_field_2_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar3)->ypos
+|
+- (*(ushort *)((char *)puVar3 + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar3)->ypos
+|
+- (((ushort *)puVar3)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar3)->ypos
+|
+- (((ushort *)puVar3)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar3)->ypos
+|
+- (*(byte *)((char *)puVar3 + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)puVar3)->ypos
+|
+- (*(byte *)((char *)puVar3 + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)puVar3)->ypos
+)
+...>
+}
+
+@inventory_native_field_2_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- (*(ushort *)((char *)puVar3 + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- (((ushort *)puVar3)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- (((ushort *)puVar3)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- (*(byte *)((char *)puVar3 + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- (*(byte *)((char *)puVar3 + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)puVar3)->xpos
+|
+- *(byte *)((char *)puVar3 + 0x3) >> 5
++ ((uw_object_hdr_t *)puVar3)->xpos
+)
+...>
+}
+
+@inventory_native_field_2_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar3)->quality
+|
+- ((ushort *)puVar3)[2] & 0x3f
++ ((uw_object_hdr_t *)puVar3)->quality
+|
+- *(byte *)((char *)puVar3 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar3)->quality
+)
+...>
+}
+
+@inventory_native_field_2_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar3)->next
+|
+- (*(ushort *)((char *)puVar3 + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar3)->next
+|
+- (((ushort *)puVar3)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar3)->next
+|
+- (((ushort *)puVar3)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar3)->next
+)
+...>
+}
+
+@inventory_native_field_2_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar3)->owner
+|
+- ((ushort *)puVar3)[3] & 0x3f
++ ((uw_object_hdr_t *)puVar3)->owner
+|
+- *(byte *)((char *)puVar3 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar3)->owner
+)
+...>
+}
+
+@inventory_native_field_2_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar3 + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar3)->link
+|
+- (*(ushort *)((char *)puVar3 + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar3)->link
+|
+- (((ushort *)puVar3)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar3)->link
+|
+- (((ushort *)puVar3)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar3)->link
 )
 ...>
 }

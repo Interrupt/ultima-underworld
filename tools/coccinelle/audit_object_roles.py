@@ -18,7 +18,12 @@ ACCESSORS = {'alloc_object_slot', 'resolve_object_link', 'get_object_record_by_s
              'find_object_in_chain', 'find_object_by_encoded_slot_in_chain',
              'reallocate_object_to_arena', 'settle_dropped_object',
              'get_equipped_item_at_slot', 'find_equipped_item_by_category',
-             'discard_misplaced_object', 'prompt_split_object_stack'}
+             'discard_misplaced_object', 'prompt_split_object_stack',
+             'alloc_save_record_slot', 'save_record_slot_from_index'}
+# The save-record accessors return eight-byte common-header records, not mobile
+# extensions. alloc_save_record_slot advances the record count at an 8-byte
+# stride; save_record_slot_from_index returns NULL for zero or the same stride.
+# Their only callers are the audited inventory walkers.
 # prompt_split_object_stack returns only NULL, its incoming object header,
 # or a new alloc_object_slot(0) record. Its byte-pointer API does not return UI data.
 # refresh_npc_target_delta is the sole writer of DAT_00101400 in src: it

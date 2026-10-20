@@ -1,6 +1,7 @@
 """Validate curated packed-operation exceptions against current source accesses.
 
-Only exact, explicitly reviewed four-word common-header transfers qualify.
+Only exact, explicitly reviewed common-header transfers and live word-cursor
+addresses qualify.
 All other accesses remain unreviewed, even in a function containing a transfer.
 """
 import argparse
@@ -47,12 +48,34 @@ def report(manifest):
             accepted.update(found)
             indexes.extend(found)
         transfers.append(dict(entry, first_line=first_line, statements=statements, access_count=len(indexes)))
+    cursors = []
+    for entry in manifest.get('cursor_uses', []):
+        if not entry['reason'].strip():
+            raise ValueError('A cursor exception needs a reviewed reason')
+        path = ROOT / entry['source']
+        if path.parent != ROOT / 'src' or path.suffix != '.c':
+            raise ValueError('Cursor source must be a top-level src/*.c file')
+        statement = entry['statement']
+        matches = list(re.finditer(r'^[ \t]*' + re.escape(statement) + r'[ \t]*$', path.read_text(), re.M))
+        if len(matches) != 1:
+            raise ValueError('Expected exactly one reviewed cursor statement: ' + statement)
+        line = path.read_text().count('\n', 0, matches[0].start()) + 1
+        fields = re.findall(r'&[A-Za-z_]\w*->(' + '|'.join(WORDS) + r')\b', statement)
+        found = [i for i, record in enumerate(records)
+                 if record['source'] == entry['source'] and record['function'] == entry['function']
+                 and record['line'] == line and record['code'] == statement and record['category'] == 'packed_word']
+        if not fields or Counter(fields) != Counter(records[i]['member'] for i in found) or any(i in accepted for i in found):
+            raise ValueError('Stale, mixed or duplicate cursor exception: ' + statement)
+        accepted.update(found)
+        cursors.append(dict(entry, line=line, access_count=len(found)))
     remaining = [record for i, record in enumerate(records) if i not in accepted]
     return dict(scope=manifest['scope'], policy=manifest['policy'],
                 summary=dict(inventory_accesses=len(records), reviewed_transfer_blocks=len(transfers),
-                             justified_transfer_accesses=len(accepted), unreviewed_accesses=len(remaining),
+                             justified_transfer_accesses=sum(t["access_count"] for t in transfers),
+                             justified_cursor_accesses=sum(c["access_count"] for c in cursors),
+                             justified_accesses=len(accepted), unreviewed_accesses=len(remaining),
                              unreviewed_by_category=dict(sorted(Counter(r['category'] for r in remaining).items()))),
-                justified_transfers=transfers, unreviewed=remaining)
+                justified_transfers=transfers, justified_cursor_uses=cursors, unreviewed=remaining)
 
 
 def main():

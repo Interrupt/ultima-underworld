@@ -1,86 +1,3 @@
-@word_0_0@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 0)
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- ((ushort *)puVar1)[0]
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- *(ushort *)puVar1
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-|
-- *(ushort *)(puVar1 + 0)
-+ ((uw_object_hdr_t *)puVar1)->type_flags
-)
-...>
-}
-
-@word_0_1@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 2)
-+ ((uw_object_hdr_t *)puVar1)->position_word
-|
-- ((ushort *)puVar1)[1]
-+ ((uw_object_hdr_t *)puVar1)->position_word
-|
-- *(ushort *)(puVar1 + 2)
-+ ((uw_object_hdr_t *)puVar1)->position_word
-)
-...>
-}
-
-@word_0_2@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 4)
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-|
-- ((ushort *)puVar1)[2]
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-|
-- *(ushort *)(puVar1 + 4)
-+ ((uw_object_hdr_t *)puVar1)->chain_word
-)
-...>
-}
-
-@word_0_3@
-type R;
-identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar1 + 6)
-+ ((uw_object_hdr_t *)puVar1)->link_word
-|
-- ((ushort *)puVar1)[3]
-+ ((uw_object_hdr_t *)puVar1)->link_word
-|
-- *(ushort *)(puVar1 + 6)
-+ ((uw_object_hdr_t *)puVar1)->link_word
-)
-...>
-}
-
 @word_1_0@
 type R;
 identifier F =~ "^\(redraw_inventory_widget_range\)$";
@@ -507,6 +424,219 @@ R F(...) {
 |
 - puVar8[3]
 + ((uw_object_hdr_t *)puVar8)->link_word
+)
+...>
+}
+
+@inventory_native_word_0_0@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 0)
++ ((uw_object_hdr_t *)puVar2)->type_flags
+|
+- ((ushort *)puVar2)[0]
++ ((uw_object_hdr_t *)puVar2)->type_flags
+|
+- *(ushort *)puVar2
++ ((uw_object_hdr_t *)puVar2)->type_flags
+)
+...>
+}
+
+@inventory_native_word_0_1@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 2)
++ ((uw_object_hdr_t *)puVar2)->position_word
+|
+- ((ushort *)puVar2)[1]
++ ((uw_object_hdr_t *)puVar2)->position_word
+)
+...>
+}
+
+@inventory_native_word_0_2@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 4)
++ ((uw_object_hdr_t *)puVar2)->chain_word
+|
+- ((ushort *)puVar2)[2]
++ ((uw_object_hdr_t *)puVar2)->chain_word
+)
+...>
+}
+
+@inventory_native_word_0_3@
+type R;
+identifier F =~ "^\(serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar2 + 6)
++ ((uw_object_hdr_t *)puVar2)->link_word
+|
+- ((ushort *)puVar2)[3]
++ ((uw_object_hdr_t *)puVar2)->link_word
+)
+...>
+}
+
+@inventory_native_word_1_0@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0)
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- ((ushort *)puVar1)[0]
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- *(ushort *)puVar1
++ ((uw_object_hdr_t *)puVar1)->type_flags
+)
+...>
+}
+
+@inventory_native_word_1_1@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 2)
++ ((uw_object_hdr_t *)puVar1)->position_word
+|
+- ((ushort *)puVar1)[1]
++ ((uw_object_hdr_t *)puVar1)->position_word
+)
+...>
+}
+
+@inventory_native_word_1_2@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 4)
++ ((uw_object_hdr_t *)puVar1)->chain_word
+|
+- ((ushort *)puVar1)[2]
++ ((uw_object_hdr_t *)puVar1)->chain_word
+)
+...>
+}
+
+@inventory_native_word_1_3@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\|serialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 6)
++ ((uw_object_hdr_t *)puVar1)->link_word
+|
+- ((ushort *)puVar1)[3]
++ ((uw_object_hdr_t *)puVar1)->link_word
+)
+...>
+}
+
+@inventory_native_word_2_0@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 0)
++ ((uw_object_hdr_t *)puVar3)->type_flags
+|
+- ((ushort *)puVar3)[0]
++ ((uw_object_hdr_t *)puVar3)->type_flags
+|
+- *(ushort *)puVar3
++ ((uw_object_hdr_t *)puVar3)->type_flags
+)
+...>
+}
+
+@inventory_native_word_2_1@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 2)
++ ((uw_object_hdr_t *)puVar3)->position_word
+|
+- ((ushort *)puVar3)[1]
++ ((uw_object_hdr_t *)puVar3)->position_word
+)
+...>
+}
+
+@inventory_native_word_2_2@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 4)
++ ((uw_object_hdr_t *)puVar3)->chain_word
+|
+- ((ushort *)puVar3)[2]
++ ((uw_object_hdr_t *)puVar3)->chain_word
+)
+...>
+}
+
+@inventory_native_word_2_3@
+type R;
+identifier F =~ "^\(deserialize_inventory_link_chain\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar3 + 6)
++ ((uw_object_hdr_t *)puVar3)->link_word
+|
+- ((ushort *)puVar3)[3]
++ ((uw_object_hdr_t *)puVar3)->link_word
 )
 ...>
 }
