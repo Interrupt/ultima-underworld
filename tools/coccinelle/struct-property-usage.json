@@ -1,9 +1,9 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 12,
-    "packed_word": 461,
-    "raw_audited_object_access": 8
+    "byte_view": 10,
+    "packed_word": 463,
+    "raw_audited_object_access": 9
   },
   "records": [
     {
@@ -1062,25 +1062,25 @@
     {
       "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3786,
-      "category": "byte_view",
-      "member": "link_word",
+      "line": 3787,
+      "category": "packed_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)obj_rec)->link_word_low = (byte)iVar3 ^ ((uw_object_hdr_t *)obj_rec)->owner;"
+      "code": "object_list_unlink(&obj_rec->chain_word,split_rec);"
     },
     {
       "source": "src/babl.c",
       "function": "handle_barter_slot_click",
-      "line": 3787,
-      "category": "byte_view",
-      "member": "link_word",
+      "line": 3794,
+      "category": "packed_word",
+      "member": "chain_word",
       "pointer": null,
-      "code": "((uw_object_hdr_t *)obj_rec)->link_word_high = (byte)(char)((uint)iVar3 >> 8);"
+      "code": "object_list_insert_head(&obj_rec->chain_word,split_rec);"
     },
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4056,
+      "line": 4055,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1089,7 +1089,7 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4061,
+      "line": 4060,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1098,7 +1098,7 @@
     {
       "source": "src/babl.c",
       "function": "merge_or_swap_barter_slot_item",
-      "line": 4063,
+      "line": 4062,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1107,7 +1107,7 @@
     {
       "source": "src/babl.c",
       "function": "finalize_npc_barter_items",
-      "line": 4155,
+      "line": 4154,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1116,7 +1116,7 @@
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4194,
+      "line": 4193,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1125,7 +1125,7 @@
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4196,
+      "line": 4195,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1134,7 +1134,7 @@
     {
       "source": "src/babl.c",
       "function": "finalize_player_barter_items",
-      "line": 4210,
+      "line": 4209,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1143,7 +1143,7 @@
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4380,
+      "line": 4379,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1152,7 +1152,7 @@
     {
       "source": "src/babl.c",
       "function": "compute_barter_item_value",
-      "line": 4388,
+      "line": 4387,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -1161,7 +1161,7 @@
     {
       "source": "src/babl.c",
       "function": "add_item_to_npc_inventory",
-      "line": 4471,
+      "line": 4470,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1170,7 +1170,7 @@
     {
       "source": "src/babl.c",
       "function": "add_item_to_npc_inventory",
-      "line": 4487,
+      "line": 4486,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1179,7 +1179,7 @@
     {
       "source": "src/babl.c",
       "function": "remove_item_from_npc_inventory_by_id",
-      "line": 4529,
+      "line": 4528,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1778,6 +1778,15 @@
       "member": "position_word",
       "pointer": null,
       "code": "uVar10 = g_player_object->hdr.position_word;"
+    },
+    {
+      "source": "src/interact.c",
+      "function": "interact_default",
+      "line": 93,
+      "category": "raw_audited_object_access",
+      "member": null,
+      "pointer": "puVar3",
+      "code": "iVar1 = (g_interact_target[3] & 0xffc0) + (puVar3[3] & 0xffc0);"
     },
     {
       "source": "src/interact.c",

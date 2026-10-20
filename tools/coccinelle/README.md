@@ -2253,3 +2253,50 @@ Two byte views and one whole goal-word store disappear. The inventory now
 lists 12 byte views, 461 packed accesses and eight raw audited accesses: 481
 total. Other remaining accesses and unrecorded aliases still require auditing
 and conversion or documented reasons.
+
+## Barter-click stack restoration and split-object provenance
+
+`generate_barter_click_rules.py` generates `barter-click-fields.json` for
+`handle_barter_slot_click`. Original, split and action-object locals use native
+common-header pointers. A rejected carry attempt still computes the full
+scaled `iVar3` sum, now from named `link` fields, then writes named `link` with
+the original ten-bit truncation. It preserves the original owner's six bits,
+all other header fields and sums that carry above bit 15. It does not clamp
+quantities or discard the wide temporary. Rollback and successful split
+insertion pass named `chain_word` addresses to the existing APIs. Alias,
+NULL, quantity/special-link and carry gates remain in place, and rollback
+still unlinks, frees and reports in the original order.
+
+The split helper's byte-pointer return API is verified against its body:
+its result is assigned only NULL, the incoming object, or `alloc_object_slot(0)`.
+It is now a proven object accessor in `audit_object_roles.py`, enabling three
+previously unrecorded result roles in barter, inventory and interaction code.
+This does not infer a mobile/NPC extension. Corresponding header catalogs
+refresh only those three reviewed function scopes. Array/UI cursors keep
+their byte-pointer roles and escaped addresses; native object pointers are
+not mixed with count/inclusion-array pointers.
+
+`barter_click_fields` runs by default and checks reproducible generation,
+exact conversion/idempotence, helper return provenance, and refusal of changed
+masks, volatile/escaping captures, inserted callbacks, changed alias gates,
+excluded/quoted bodies and duplicate definitions. Its actual original/current
+functions execute 4,194,304 comparisons over all 16-bit seeds, thirty-two
+modes and callback mutation. Cases cover empty/NPC-disabled slots, cancelled
+or aliased splits, carry failures, quantity overflow through 2046, special
+links, pickup/placement, hit-test failure, wide side/slot arguments and skill
+results that differ after short conversion. Hit testing supplies alternate
+UI arrays and exposes its out-parameter addresses to later callbacks, which
+change sides, slots and pointers. All nineteen services are reached with and
+without mutation. Independent assertions check the complete restored header
+before unlinking, cursor addresses, rollback/free gates, signed skill routing
+and mouse values. Full guarded records, count/inclusion arrays, icon state,
+player data, globals and callback arguments/events/counts are compared.
+Use `--reference PATH` with the original `babl.c`, and `--asan` for AddressSanitizer.
+
+Two byte views disappear and two named chain-word addresses become explicit,
+leaving those categories' combined count unchanged. The stronger accessor
+audit exposes one existing raw quantity expression in `interact_default`;
+this is newly counted code, not a new raw access. The inventory is now ten
+byte views, 463 packed accesses and nine raw audited accesses: 482 total.
+Other remaining accesses and unrecorded aliases still require auditing and
+conversion or documented reasons.
