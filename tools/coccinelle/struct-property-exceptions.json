@@ -1,0 +1,97 @@
+{
+  "scope": "Reviewed complete common-header transfers only. These exceptions do not approve other accesses in the containing functions.",
+  "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment.",
+  "transfers": [
+    {
+      "source": "src/ai.c",
+      "function": "settle_mobile_to_immobile",
+      "destination": "puVar9",
+      "origin": "header",
+      "reason": "Transfer the complete common header to the replacement static slot before link and quality adjustments."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "serialize_inventory_link_chain",
+      "destination": "((uw_object_hdr_t *)puVar2)",
+      "origin": "((uw_object_hdr_t *)puVar1)",
+      "reason": "Copy all common-header bits to the save record before separately translating chain and equipment links."
+    },
+    {
+      "source": "src/inventory.c",
+      "function": "deserialize_inventory_link_chain",
+      "destination": "((uw_object_hdr_t *)puVar1)",
+      "origin": "((uw_object_hdr_t *)puVar3)",
+      "reason": "Restore all common-header bits from the save record before separately translating live links."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "complete_use_item_scatter_spawn",
+      "destination": "puVar8",
+      "origin": "((uw_object_hdr_t *)target)",
+      "reason": "Clone the source header before selecting the new object ID, quantity and placement."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "reduce_object_count",
+      "destination": "puVar6",
+      "origin": "puVar5",
+      "reason": "Clone the complete stack header before setting the two resulting counts and inserting the new record."
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "extract_matching_object_from_slot",
+      "destination": "pbVar10",
+      "origin": "puVar3",
+      "reason": "Clone the complete selected-stack header before setting the resulting quantities and link placement."
+    },
+    {
+      "source": "src/object_actions.c",
+      "function": "spawn_effect_debris_burst",
+      "destination": "puVar8",
+      "origin": "template",
+      "reason": "Clone the template header before randomizing the spawned ID and position."
+    },
+    {
+      "source": "src/objects.c",
+      "function": "reallocate_object_to_arena",
+      "destination": "((uw_object_hdr_t *)puVar2)",
+      "origin": "((uw_object_hdr_t *)object)",
+      "reason": "Transfer the common header into the allocated mobile slot before constructing its extension and relinking."
+    },
+    {
+      "source": "src/player.c",
+      "function": "build_player_save_record",
+      "destination": "((uw_object_hdr_t *)(out_record + 0x1b))",
+      "origin": "((uw_object_hdr_t *)puVar4)",
+      "reason": "Store the complete cursor-held object header in the save record before serializing its contents."
+    },
+    {
+      "source": "src/player.c",
+      "function": "restore_player_save_record",
+      "destination": "((uw_object_hdr_t *)puVar2)",
+      "origin": "((uw_object_hdr_t *)(record + 0x1b))",
+      "reason": "Restore the complete cursor-held object header before restoring any contents links."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar8)",
+      "origin": "((uw_object_hdr_t *)puVar12)",
+      "reason": "Clone the static template common header; the adjacent mobile-template branch separately copies the full mobile record."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar9)",
+      "origin": "((uw_object_hdr_t *)puVar10)",
+      "reason": "Clone the linked record header before replacing the parent link and clearing the cloned next link."
+    },
+    {
+      "source": "src/traps.c",
+      "function": "dispatch_trap_type_effect",
+      "destination": "((uw_object_hdr_t *)puVar10)",
+      "origin": "((uw_object_hdr_t *)puVar9)",
+      "reason": "Clone the linked record header before inserting the new record in the trap-owned chain."
+    }
+  ]
+}

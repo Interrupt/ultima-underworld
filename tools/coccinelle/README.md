@@ -2541,3 +2541,48 @@ rules remain unchanged. The inventory now records five byte views, 457 packed
 accesses and eight raw audited accesses: 470 entries. The extra packed entry
 is the now-explicit, justified escaped link-word address. Inventory counts
 remain a review list rather than a count of fixes or proof of completion.
+
+## Reviewed complete common-header transfers
+
+`struct-property-exceptions.json` explicitly lists 13 reviewed four-word
+transfers in settling, arena relocation, inventory/save serialization, stack
+splitting, template spawning and trap cloning. Each entry identifies the
+source, function, exact source/destination expressions and local purpose.
+These blocks intentionally copy the complete eight-byte common header:
+`type_flags`, `position_word`, `chain_word` and `link_word`, in that order.
+They preserve every header bit before any later field-specific adjustments.
+Replacing them with a selection of named properties could omit state, while
+combining them into a whole-struct assignment could change sequential behavior
+for overlapping records. This review retains the existing ordered assignments;
+it does not approve other operations in the containing functions or prove the
+surrounding paths free of unrelated defects.
+
+`audit_struct_property_exceptions.py` validates each curated block against
+current source and the freshly computed property inventory. It requires four
+consecutive exact assignments, one matching block in the named source, and
+exactly one inventoried read and write per word in the named function. Masks,
+intervening observers, partial/reordered blocks, ambiguous matches, wrong
+functions and duplicate manifest entries are refused. Only explicitly listed
+blocks qualify; newly encountered copies remain unreviewed. The checked-in
+`struct-property-review.json` separates these justified accesses from all
+remaining entries. The checker can require that report to be current:
+
+```sh
+python3 -B tools/coccinelle/audit_struct_property_exceptions.py \
+  --check tools/coccinelle/struct-property-review.json
+```
+
+After reviewing source changes, regenerate with `--json` instead of `--check`.
+Validation against the current source accepts all 13 blocks and 104 accesses;
+nine negative probes reject changed masks, observers, order, missing words,
+duplicate source blocks, wrong function/source, empty reasons and duplicate
+manifest entries. The game build, full unit suite and focused sanitizer suite
+remain required. No production source or conversion catalog changes in this
+classification batch.
+
+The full inventory remains **470 accesses**: **104 justified header-transfer
+accesses** and **366 unreviewed accesses** (353 packed, five byte views and eight
+raw audited accesses). The latter are a review queue, not a count of required
+fixes; they still include snapshots and API addresses that need their own
+justification. Unrecorded aliases also require an independent audit, so neither
+number establishes completion.
