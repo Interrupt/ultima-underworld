@@ -3663,7 +3663,7 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
                                  DAT_0010190c->hdr.zpos >> 3,(uint)(uVar4 >> 10),
                                  CONCAT11(uVar16,(char)(uVar4 >> 4)) & 0xff3f,
                                  CONCAT31((int3)((uint)in_stack_ffffffd0 >> 8),
-                                          g_player_object->hdr.position_word_low >> 3) & 0xffffff0f,0),
+                                          g_player_object->hdr.zpos >> 3) & 0xffffff0f,0),
            iVar11 != 0)) && (1 < DAT_0010142c)) {
         uVar9 = 0;
         if (DAT_0010142c != 0) {

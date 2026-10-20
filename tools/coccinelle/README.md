@@ -2402,3 +2402,35 @@ unrelated catalogs are not regenerated.
 Two byte views disappear. The inventory now lists six byte views, 465 packed
 accesses and eight raw audited accesses: 479 total. Remaining accesses and
 unrecorded aliases still require auditing and conversion or documented reasons.
+
+## Rest-interruption player path height
+
+`generate_rest_height_rules.py` generates `rest-player-height-field.json` for
+`spawn_rest_interrupt_monster_callback`. The path-finder's player Z argument
+reads `hdr.zpos >> 3` instead of shifting `position_word_low`. The original
+byte's heading bit becomes bit 4 after the shift and is discarded by the
+existing `0xffffff0f` mask. The seven-bit Z field therefore supplies exactly
+the same low four bits. The entire CONCAT31, its mask, and its upper operand
+remain in place; no other statement or live temporary changes.
+
+`test_rest_height_field.py` compiles the actual before/after argument with the
+real struct layout and intrinsic macro. It checks every 16-bit position word
+against 24 upper-bit basis vectors and four mixed/boundary patterns: 1,835,008
+comparisons, also run under AddressSanitizer. Independent assertions check
+that the upper 24 bits survive and the low nibble equals Z divided by eight,
+and that the record is unchanged. The upper operand is independent of the
+low operand and combined by OR in both expressions, so each upper-bit basis
+has the same result for every position. The strict complete-function recipe
+also verifies generation, application, idempotence, and refusal of changed
+masks, added observers, comments, or duplicate definitions.
+
+The parent contains pre-existing uninitialized decompiler stack temporaries
+(`in_stack_ffffffcc`, `in_stack_ffffffd0`) and extra-output registers. The
+expression fixture supplies arbitrary upper values; it does not execute the
+parent's undefined reads or claim an end-to-end oracle for that path. Those
+unrelated issues remain unchanged. The game build, default unit suite, and
+focused sanitizer suite validate integration. Pointer roles are unchanged.
+
+The inventory now lists five byte views, 465 packed accesses and eight raw
+audited accesses: 478 entries. Full-word snapshots, unknown properties and
+unrecorded aliases still require review; this is not proof of completion.

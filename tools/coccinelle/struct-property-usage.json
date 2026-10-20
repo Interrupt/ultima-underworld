@@ -1,7 +1,7 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 6,
+    "byte_view": 5,
     "packed_word": 465,
     "raw_audited_object_access": 8
   },
@@ -518,15 +518,6 @@
       "member": "tile_word",
       "pointer": null,
       "code": "uVar4 = g_player_object->tile_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3666,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "g_player_object->hdr.position_word_low >> 3) & 0xffffff0f,0),"
     },
     {
       "source": "src/ai.c",
