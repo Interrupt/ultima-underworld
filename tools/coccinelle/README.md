@@ -2779,3 +2779,44 @@ The conservative report now lists **481 accesses: 117 justified (104 transfer,
 nine cursor and four snapshot accesses), and 364 still unreviewed**. Newly named
 snapshots expand the inventory's coverage. Other properties, exceptions and
 unrecorded aliases remain incomplete.
+
+## Named object construction and burnout state
+
+`generate_object_init_rules.py` generates strict complete-function recipes for
+`spawn_new_object` and `reset_burnt_out_item_state`. The constructor now names
+its complete common-header state: Z/heading zero, X/Y three, requested object
+ID, cleared flag fields, quality 40, no next link, owner zero and either quantity
+one or no contents link. Allocator-supplied `is_quant` remains intact until the
+existing type-property branch sets its final value. The original table indexing,
+quantity classification, allocation argument, null handling and return identity
+stay unchanged. These eight-byte header writes apply to both static and mobile
+records; no extension field is initialized accidentally.
+
+The burnout helper now uses native common-header pointers for the incoming and
+discarded objects. Its lower-region branch names the shared `hit_points` byte
+at offset 8; the original region predicate and static-record discard call remain
+in place. It does not interpret a static header as a mobile extension, and all
+helper arguments and null-result behavior remain unchanged.
+
+`test_object_init_fields.py` validates strict original/current bodies,
+generation, application, idempotence and observer/scope guards. Actual original
+and converted functions agree with an independent eight-byte binary-layout
+oracle across 2,097,152 cases. These cover all 16-bit allocator header-word
+values, 512 valid type IDs, valid high-word type tags, quantity modes, allocation
+failure, aligned/unaligned header locations, region-boundary equality, mobile
+burnout and both discard outcomes. Helpers mutate records and type flags before
+returning; both helpers execute with and without mutation. Every record/guard
+byte, return pointer/value, callback argument/order/count and type-flag byte is
+compared. The same checks pass under AddressSanitizer. Clang AST inspection
+using the actual compilation command verifies that both constructor bodies
+have exactly one call (`alloc_object_slot`) and no volatile accesses; all named
+initialization writes follow it without intervening observers. Full game build,
+unit and focused sanitizer suites check integration.
+
+The pointer audit adds the burnout header aliases: 55 sources, 342 roles, no
+errors. Only that function's header-field/header-word scopes change. Both
+catalogs parse, and every unrelated function's rules remain unchanged. Five
+packed constructor accesses disappear without adding exceptions. The current
+report lists **476 accesses: 117 justified (104 transfer, nine cursor and four
+snapshot accesses), and 359 still unreviewed**. Remaining properties, exceptions
+and unrecorded aliases still require auditing.

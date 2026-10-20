@@ -418,17 +418,25 @@ uw_object_hdr_t *spawn_new_object(uint object_type, int region)
 
   puVar3 = alloc_object_slot(region);
   if (puVar3 != NULL) {
-    puVar3->position_word = 0x6c00;
-    puVar3->type_flags = (puVar3->is_quant << 15) ^ (object_type & 0x1ff);
-    puVar3->chain_word = 0x28;
+    puVar3->zpos = 0;
+    puVar3->heading = 0;
+    puVar3->ypos = 3;
+    puVar3->xpos = 3;
+    puVar3->object_id = object_type & 0x1ff;
+    puVar3->flags_res = 0;
+    puVar3->enchanted = 0;
+    puVar3->doordir = 0;
+    puVar3->invisible = 0;
+    puVar3->quality = 40;
+    puVar3->next = 0;
     puVar3->owner = 0;
     if (((g_object_type_props[(short)object_type].flags & 0xc0) == 0) || ((g_object_type_props[(short)object_type].flags & 0xc0) == 0x80)) {
-      puVar3->link_word = 0x40;
+      puVar3->link = 1;
       puVar3->is_quant = 1;
     }
     else {
       puVar3->is_quant = 0;
-      puVar3->link_word = 0;
+      puVar3->link = 0;
     }
   }
   return puVar3;
@@ -443,14 +451,14 @@ uw_object_hdr_t *spawn_new_object(uint object_type, int region)
    object_list_insert_head/object_list_append_tail below). */
 int reset_burnt_out_item_state(char *tile_link, void *object_ptr)
 {
-  char *object = (char *)object_ptr;
-  ushort *discarded;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
+  uw_object_hdr_t *discarded;
 
-  if (object < DAT_002046c4) {
-    *(undefined1 *)(object + 8) = 0;
+  if ((char *)object < DAT_002046c4) {
+    ((uw_mobile_object_t *)object)->hit_points = 0;
   }
   else {
-    discarded = discard_misplaced_object(tile_link,(ushort *)object,0);
+    discarded = (uw_object_hdr_t *)discard_misplaced_object(tile_link,(ushort *)object,0);
     if (discarded == 0) {
       return 1;
     }

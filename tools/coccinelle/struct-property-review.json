@@ -2,16 +2,16 @@
   "scope": "Reviewed complete common-header transfers, explicitly listed live word-cursor addresses and full-width snapshots only. These exceptions do not approve other accesses in their containing functions.",
   "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed scalar snapshots at their original widths and values with reviewed complete-function context; narrowing or changing them would change preserved scalar values.",
   "summary": {
-    "inventory_accesses": 481,
+    "inventory_accesses": 476,
     "reviewed_transfer_blocks": 13,
     "justified_transfer_accesses": 104,
     "justified_cursor_accesses": 9,
     "justified_snapshot_accesses": 4,
     "justified_accesses": 117,
-    "unreviewed_accesses": 364,
+    "unreviewed_accesses": 359,
     "unreviewed_by_category": {
       "byte_view": 5,
-      "packed_word": 351,
+      "packed_word": 346,
       "raw_audited_object_access": 8
     }
   },
@@ -127,7 +127,7 @@
       "destination": "puVar2",
       "origin": "header",
       "reason": "Transfer the common header into the allocated mobile slot before constructing its extension and relinking.",
-      "first_line": 1814,
+      "first_line": 1822,
       "statements": [
         "puVar2->type_flags = header->type_flags;",
         "puVar2->position_word = header->position_word;",
@@ -278,7 +278,7 @@
       "recipe": "tools/coccinelle/placement-init-fields.json",
       "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
       "reason": "Preserve the complete position word before placement writes; its original full scalar value supplies precise projectile coordinates.",
-      "line": 1769,
+      "line": 1777,
       "access_count": 1
     },
     {
@@ -288,7 +288,7 @@
       "recipe": "tools/coccinelle/placement-init-fields.json",
       "reviewed_body_sha256": "aba8e55db80b1c396c045344be45700eeb64d4b3cfe1f02935b156e6dcc248d3",
       "reason": "Preserve the complete type/flag word at its original read site; the original full scalar value supplies table indexing and the NPC/projectile branch.",
-      "line": 1773,
+      "line": 1781,
       "access_count": 1
     },
     {
@@ -299,7 +299,7 @@
       "reviewed_body_sha256": "7d61a32550a26699f4edfbafb9aa856b90f792a2dada45a8e3217d5434bd5677",
       "reason": "Retain the original uint snapshot of both Z and heading (ten bits) while naming both field writes; preserve its exact combined scalar value.",
       "mask": "0x3ff",
-      "line": 1742,
+      "line": 1750,
       "access_count": 1
     },
     {
@@ -309,7 +309,7 @@
       "recipe": "tools/coccinelle/world-placement-find_object_placement.json",
       "reviewed_body_sha256": "ab0d9e870b26d199b33d374c7d4a92036134c6a81b758b03044a369d866f172b",
       "reason": "Retain the full ushort position snapshot captured after tile lookup; its original heading bits are used for the position update.",
-      "line": 1867,
+      "line": 1875,
       "access_count": 1
     }
   ],
@@ -2557,53 +2557,8 @@
     },
     {
       "source": "src/objects.c",
-      "function": "spawn_new_object",
-      "line": 421,
-      "category": "packed_word",
-      "member": "position_word",
-      "pointer": null,
-      "code": "puVar3->position_word = 0x6c00;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_new_object",
-      "line": 422,
-      "category": "packed_word",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "puVar3->type_flags = (puVar3->is_quant << 15) ^ (object_type & 0x1ff);"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_new_object",
-      "line": 423,
-      "category": "packed_word",
-      "member": "chain_word",
-      "pointer": null,
-      "code": "puVar3->chain_word = 0x28;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_new_object",
-      "line": 426,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "puVar3->link_word = 0x40;"
-    },
-    {
-      "source": "src/objects.c",
-      "function": "spawn_new_object",
-      "line": 431,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "puVar3->link_word = 0;"
-    },
-    {
-      "source": "src/objects.c",
       "function": "clear_object_temp_flag_callback",
-      "line": 822,
+      "line": 830,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -2612,7 +2567,7 @@
     {
       "source": "src/objects.c",
       "function": "calculate_object_weight",
-      "line": 902,
+      "line": 910,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2621,7 +2576,7 @@
     {
       "source": "src/objects.c",
       "function": "despawn_objects_outside_radius",
-      "line": 1141,
+      "line": 1149,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -2630,7 +2585,7 @@
     {
       "source": "src/objects.c",
       "function": "despawn_objects_outside_radius",
-      "line": 1158,
+      "line": 1166,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2639,7 +2594,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_by_encoded_slot_in_chain",
-      "line": 1271,
+      "line": 1279,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2648,7 +2603,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_by_encoded_slot_in_chain",
-      "line": 1274,
+      "line": 1282,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2657,7 +2612,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1349,
+      "line": 1357,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2666,7 +2621,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1351,
+      "line": 1359,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2675,7 +2630,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1355,
+      "line": 1363,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2684,7 +2639,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1361,
+      "line": 1369,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -2693,7 +2648,7 @@
     {
       "source": "src/objects.c",
       "function": "find_object_in_chain",
-      "line": 1367,
+      "line": 1375,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -2702,7 +2657,7 @@
     {
       "source": "src/objects.c",
       "function": "class6_variant_effect_table_lookup",
-      "line": 1640,
+      "line": 1648,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2711,7 +2666,7 @@
     {
       "source": "src/objects.c",
       "function": "class0_variant_effect_table_lookup",
-      "line": 1684,
+      "line": 1692,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -2720,7 +2675,7 @@
     {
       "source": "src/objects.c",
       "function": "class2_variant_effect_table_lookup",
-      "line": 1711,
+      "line": 1719,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,

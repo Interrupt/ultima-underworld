@@ -1,0 +1,5 @@
+{
+  "function": "reset_burnt_out_item_state",
+  "before": "int reset_burnt_out_item_state(char *tile_link, void *object_ptr)\n{\n  char *object = (char *)object_ptr;\n  ushort *discarded;\n\n  if (object < DAT_002046c4) {\n    *(undefined1 *)(object + 8) = 0;\n  }\n  else {\n    discarded = discard_misplaced_object(tile_link,(ushort *)object,0);\n    if (discarded == 0) {\n      return 1;\n    }\n  }\n  return 0;\n}",
+  "after": "int reset_burnt_out_item_state(char *tile_link, void *object_ptr)\n{\n  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;\n  uw_object_hdr_t *discarded;\n\n  if ((char *)object < DAT_002046c4) {\n    ((uw_mobile_object_t *)object)->hit_points = 0;\n  }\n  else {\n    discarded = (uw_object_hdr_t *)discard_misplaced_object(tile_link,(ushort *)object,0);\n    if (discarded == 0) {\n      return 1;\n    }\n  }\n  return 0;\n}"
+}

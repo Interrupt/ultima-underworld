@@ -649,92 +649,6 @@ R F(...) {
 ...>
 }
 
-@word_9_0@
-type R;
-identifier F =~ "^\(reset_burnt_out_item_state\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)discarded + 0)
-+ ((uw_object_hdr_t *)discarded)->type_flags
-|
-- ((ushort *)discarded)[0]
-+ ((uw_object_hdr_t *)discarded)->type_flags
-|
-- *(ushort *)discarded
-+ ((uw_object_hdr_t *)discarded)->type_flags
-|
-- discarded[0]
-+ ((uw_object_hdr_t *)discarded)->type_flags
-|
-- *discarded
-+ ((uw_object_hdr_t *)discarded)->type_flags
-)
-...>
-}
-
-@word_9_1@
-type R;
-identifier F =~ "^\(reset_burnt_out_item_state\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)discarded + 2)
-+ ((uw_object_hdr_t *)discarded)->position_word
-|
-- ((ushort *)discarded)[1]
-+ ((uw_object_hdr_t *)discarded)->position_word
-|
-- discarded[1]
-+ ((uw_object_hdr_t *)discarded)->position_word
-)
-...>
-}
-
-@word_9_2@
-type R;
-identifier F =~ "^\(reset_burnt_out_item_state\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)discarded + 4)
-+ ((uw_object_hdr_t *)discarded)->chain_word
-|
-- ((ushort *)discarded)[2]
-+ ((uw_object_hdr_t *)discarded)->chain_word
-|
-- discarded[2]
-+ ((uw_object_hdr_t *)discarded)->chain_word
-)
-...>
-}
-
-@word_9_3@
-type R;
-identifier F =~ "^\(reset_burnt_out_item_state\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)discarded + 6)
-+ ((uw_object_hdr_t *)discarded)->link_word
-|
-- ((ushort *)discarded)[3]
-+ ((uw_object_hdr_t *)discarded)->link_word
-|
-- discarded[3]
-+ ((uw_object_hdr_t *)discarded)->link_word
-)
-...>
-}
-
 @word_10_0@
 type R;
 identifier F =~ "^\(apply_object_destruction_effect\)$";
@@ -2834,6 +2748,231 @@ R F(...) {
 |
 - object[3]
 + ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@object_init_word_0_0@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@object_init_word_0_1@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@object_init_word_0_2@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@object_init_word_0_3@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@object_init_word_1_0@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)discarded + 0)
++ ((uw_object_hdr_t *)discarded)->type_flags
+|
+- ((ushort *)discarded)[0]
++ ((uw_object_hdr_t *)discarded)->type_flags
+|
+- *(ushort *)discarded
++ ((uw_object_hdr_t *)discarded)->type_flags
+)
+...>
+}
+
+@object_init_word_1_1@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)discarded + 2)
++ ((uw_object_hdr_t *)discarded)->position_word
+|
+- ((ushort *)discarded)[1]
++ ((uw_object_hdr_t *)discarded)->position_word
+)
+...>
+}
+
+@object_init_word_1_2@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)discarded + 4)
++ ((uw_object_hdr_t *)discarded)->chain_word
+|
+- ((ushort *)discarded)[2]
++ ((uw_object_hdr_t *)discarded)->chain_word
+)
+...>
+}
+
+@object_init_word_1_3@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)discarded + 6)
++ ((uw_object_hdr_t *)discarded)->link_word
+|
+- ((ushort *)discarded)[3]
++ ((uw_object_hdr_t *)discarded)->link_word
+)
+...>
+}
+
+@object_init_word_2_0@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@object_init_word_2_1@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@object_init_word_2_2@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@object_init_word_2_3@
+type R;
+identifier F =~ "^\(reset_burnt_out_item_state\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
 )
 ...>
 }
