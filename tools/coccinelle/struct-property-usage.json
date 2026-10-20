@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 456,
+    "packed_word": 457,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -2057,6 +2057,15 @@
       "member": "position_word",
       "pointer": null,
       "code": "uVar3 = ((uw_object_hdr_t *)target)->position_word;"
+    },
+    {
+      "source": "src/item_use.c",
+      "function": "trigger_object_trap_or_use_action",
+      "line": 1801,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "(local_1c = &object->link_word, object->link != 0)) {"
     },
     {
       "source": "src/item_use.c",

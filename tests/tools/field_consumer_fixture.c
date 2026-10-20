@@ -17,6 +17,7 @@ static _Alignas(2) byte sound_rows[256*5];
 static unsigned seed,mode,which,calls[12],coverage[2][4][12];
 static uint64_t events;
 static short world_x,world_y;
+static void *refresh_cursor;
 static int expected_depth, expected_high, expected_phase, trap_applied,trap_refreshed,trap_unlocked;
 static unsigned read16(const void *p) {const byte *b=p;return b[0]|b[1]*256u;}
 static uw_object_hdr_t *object(unsigned n) {return (uw_object_hdr_t *)(records[n]+4);}
@@ -62,18 +63,23 @@ void sprite_partition_step(int condition,short *out,short entry,short low,short 
 int object_ptr_in_arena(const uw_object_hdr_t *p) {assert(p==object(2));observe(6);change(6);return mode&2;}
 uw_object_hdr_t *find_object_in_chain(ushort **cursor,int recurse,int cls,int sub,short quality) {
     assert(cursor && *cursor==(ushort *)((byte *)object(2)+6));assert(recurse==0&&cls==6&&sub==-1&&quality==-1);
-    observe(7);change(7);return mode&2 ? NULL:object(3);
+    observe(7);change(7);
+    /* Lookup may rewrite the caller's escaped cursor. The later refresh must
+       use that live cursor rather than recomputing the original object link. */
+    if (mode&1) *cursor=(ushort *)((byte *)object(1)+6);
+    refresh_cursor=*cursor;event(refresh_cursor==(byte *)object(1)+6);
+    return mode&2 ? NULL:object(3);
 }
 int apply_trap_or_link_effect(void *actor,void *obj,void *trap,int x,int y) {
     assert(actor==object(0)&&obj==object(2)&&trap==object(3));observe(8);event(x);event(y);trap_applied++;change(8);return -1;
 }
-void refresh_object_link_chain(void *link,void *trap) {assert(link==(byte *)object(2)+6&&trap==object(3));observe(9);trap_refreshed++;change(9);}
+void refresh_object_link_chain(void *link,void *trap) {assert(link==refresh_cursor&&trap==object(3));observe(9);trap_refreshed++;change(9);}
 uint resolve_skill_gated_unlock_or_use(void *actor,void *obj,void *trap,ushort action) {
     assert(actor==object(0)&&obj==object(2)&&trap==object(3));observe(10);event(action);trap_unlocked++;change(10);return 0xffff;
 }
 #include "field_consumers.c"
 static void setup(unsigned s,unsigned m,unsigned f) {
-    seed=s;mode=m;which=f;events=0;memset(calls,0,sizeof calls);trap_applied=trap_refreshed=trap_unlocked=0;
+    seed=s;mode=m;which=f;events=0;refresh_cursor=NULL;memset(calls,0,sizeof calls);trap_applied=trap_refreshed=trap_unlocked=0;
     for(unsigned n=0;n<4;n++)for(unsigned j=0;j<40;j++)records[n][j]=s*(j+1)+n*31+j*17;
     for(unsigned n=0;n<4;n++) {object(n)->type_flags=s;object(n)->position_word=s;((uw_mobile_object_t *)object(n))->tile_word=s;}
     g_player_object=(uw_mobile_object_t *)object(0);

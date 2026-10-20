@@ -2796,10 +2796,24 @@
           "function": "trigger_object_trap_or_use_action",
           "roles": [
             {
-              "name": "puVar1",
-              "type": "ushort *",
+              "name": "object",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "puVar1",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "object_ptr",
+              "type": "void *",
+              "parameter": true,
+              "evidence": "incoming UW1 object pointer cast",
               "current_mobile_alias": false
             }
           ],

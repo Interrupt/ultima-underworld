@@ -1793,16 +1793,16 @@ LAB_0007c2b8:
 void trigger_object_trap_or_use_action(void *actor_ptr, void *object_ptr, int action, int tile_x, short tile_y)
 {
   char *actor = (char *)actor_ptr;
-  char *object = (char *)object_ptr;
-  ushort *puVar1;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
+  uw_object_hdr_t *puVar1;
   ushort *local_1c;
   
-  if (((object != 0) && ((*(byte *)(object + 1) & 0x80) == 0)) &&
-     (local_1c = (ushort *)(object + 6), (*local_1c & 0xffc0) != 0)) {
-    puVar1 = (ushort *)find_object_in_chain(&local_1c,0,6,0xffffffff,0xffff);
-    if (puVar1 != (ushort *)0x0) {
-      if ((((uw_object_hdr_t *)puVar1)->object_id & 0x30) < 0x20) {
-        if (((((uw_object_hdr_t *)puVar1)->flags_res == 0 && ((uw_object_hdr_t *)puVar1)->enchanted == 0)) && ((short)action == 4)) {
+  if (((object != 0) && (object->is_quant == 0)) &&
+     (local_1c = &object->link_word, object->link != 0)) {
+    puVar1 = find_object_in_chain(&local_1c,0,6,0xffffffff,0xffff);
+    if (puVar1 != NULL) {
+      if ((puVar1->object_id & 0x30) < 0x20) {
+        if ((puVar1->flags_res == 0) && (puVar1->enchanted == 0) && ((short)action == 4)) {
           apply_trap_or_link_effect(actor,object,puVar1,tile_x,tile_y);
           refresh_object_link_chain(local_1c,puVar1);
         }

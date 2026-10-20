@@ -2506,3 +2506,38 @@ Pointer-role output stays unchanged (55 sources, 327 roles, no errors), so
 unrelated catalogs are retained. The inventory now lists five byte views,
 456 packed accesses and eight raw audited accesses: 469 entries. Known accesses,
 remaining packed exceptions and unrecorded aliases still require further audit.
+
+## Native used-object and matched-trap headers
+
+`generate_use_trap_native_rules.py` generates `use-trap-native-fields.json` for
+`trigger_object_trap_or_use_action`. The used object and matched trap now have
+native `uw_object_hdr_t *` declarations. The used object's byte-1 `0x80` gate
+becomes `is_quant == 0`, and its word-6 link gate becomes `link != 0`. The
+complete word's address is named `&object->link_word`. Matched-trap ID and flag
+reads use the native pointer directly; helper arguments keep the same pointer
+identity. The actor retains its original representation because this pass
+proves only the used object and trap header layout.
+
+`local_1c` remains an addressable word cursor. Lookup receives `&local_1c` and
+can replace it; refresh must use that modified cursor, so it cannot recompute
+`&object->link_word` after lookup. This packed-word address is an intentional
+exception required by the existing chain API, not a missed bitfield conversion.
+The historical field-consumer recipe is extended from its unchanged original
+body to reach the new current body, while the new recipe records this exact
+second-stage change separately.
+
+`test_field_consumers.py` checks both recipes, exact scope, refusal of altered
+cursor/offset context, and idempotence. Its complete-function fixture now also
+changes the escaped cursor during lookup and asserts the refresh pointer. All
+4,194,304 original-versus-current consumer comparisons pass normally and under
+AddressSanitizer, including every helper with and without record mutations.
+The game build, full unit suite and focused sanitizer suite check integration.
+
+The pointer audit adds the incoming `object_ptr` and native local `object`, and
+updates the matched-trap pointer type: 55 sources, 329 roles, no errors. Only
+this function's header-field/header-word catalogs are refreshed. Both catalogs
+parse with Coccinelle; canonical comparison confirms every unrelated function's
+rules remain unchanged. The inventory now records five byte views, 457 packed
+accesses and eight raw audited accesses: 470 entries. The extra packed entry
+is the now-explicit, justified escaped link-word address. Inventory counts
+remain a review list rather than a count of fixes or proof of completion.

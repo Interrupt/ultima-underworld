@@ -23,6 +23,20 @@ for entry in ENTRIES:
         directory=Path(sys.argv[sys.argv.index('--reference-dir')+1]);stem=Path(entry['source']).stem.replace('_','-')
         assert extract((directory/('uw-field-consumers-'+stem+'-original.c')).read_text(),name)==rule['before']
     bodies += [actual,rule['before'].replace(name+'(', 'reference_'+name+'(',1)]
+# Check the next-stage typed-pointer recipe against the same actual body.
+from generate_use_trap_native_rules import ORIGINAL as NATIVE_BEFORE, converted as native_after, generate as native_generate
+import json
+native_recipe=json.loads(native_generate())
+assert (ROOT/'tools/coccinelle/use-trap-native-fields.json').read_text()==native_generate()
+assert extract((ROOT/'src/item_use.c').read_text(),'trigger_object_trap_or_use_action')==native_after()
+assert apply(NATIVE_BEFORE,native_recipe)==(native_after(),True)
+assert apply(native_after(),native_recipe)==(native_after(),False)
+for guarded in [NATIVE_BEFORE.replace('ushort *local_1c;', 'ushort *local_1c; observe(&local_1c);'),
+                NATIVE_BEFORE.replace('(object + 6)', '(object + 4)'),
+                NATIVE_BEFORE+'\n'+NATIVE_BEFORE]:
+    assert apply(guarded,native_recipe)==(guarded,False)
+if '--native-reference' in sys.argv:
+    assert extract(Path(sys.argv[sys.argv.index('--native-reference')+1]).read_text(),'trigger_object_trap_or_use_action')==NATIVE_BEFORE
 flags=['-fsanitize=address','-fno-omit-frame-pointer'] if '--asan' in sys.argv else []
 with tempfile.TemporaryDirectory() as tmp:
     (Path(tmp)/'field_consumers.c').write_text('\n'.join(bodies))
