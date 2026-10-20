@@ -2012,3 +2012,52 @@ unrecorded aliases still require auditing and conversion or documented reasons.
 Header field/word catalogs refresh only these three function scopes; rule
 bodies for every unrelated function are verified unchanged. This avoids
 folding older catalog drift into this batch.
+
+## Spell placement and scheduler effect properties
+
+`generate_effect_property_rules.py` generates three exact-source recipes for
+`spawn_and_prime_spell_effect_object`, `spawn_random_variant_object_at_tile`
+and `scheduler_advance_effect`. Spawned/resolved object pointers use the common
+header type. Spell priming writes named `zpos` from the captured random height;
+the random variant writes `zpos = 0x6e`, preserving all heading and fine-position
+bits. The latter's old comment incorrectly called this a quality update and
+now identifies Z. Full original word/byte captures and narrowing remain in
+place. The source high nibble is a separate input format, not a proven object
+header. Existing arena checks and shared mobile extension accesses are retained
+without inferring an NPC goal/status layout.
+
+Scheduler advancement writes named `flags_res` and `enchanted`, retaining the
+original unsigned arithmetic in a separate `effect_flags` capture. This is a
+four-bit update: `(old_flags_res - elapsed - 1) & 15`, whose high bit supplies
+`enchanted`. It must not be simplified to a three-bit decrement with an
+unconditional enchantment clear. For example, flags zero and elapsed zero
+produce flags seven and enchanted one. The previous enchanted value does not
+enter the arithmetic. The full type and cleared-high-byte captures remain;
+other type/ID bits are preserved. Existing captured low link byte, catalog
+routing masks, height adjustment, callback order, signed delay test and full
+integer delay arithmetic remain unchanged. Queue writes still follow the live
+queue pointer after the delay callback. Function locations and APIs are stable.
+
+`effect_property_fields` runs by default and checks reproducible recipes,
+exact conversion/idempotence and rejection of escaping captures, inserted
+callbacks, duplicate definitions and excluded/quoted bodies. It compiles the
+actual original and converted functions and compares 6,291,456 cases across
+all 16-bit seeds, three functions, sixteen modes and callback mutation. Cases
+include aliased source/result records, negative and wide random returns,
+placement/arena failures, missing scheduler objects, height underflow,
+clearance failure, both catalog priority classes, large positive/negative
+elapsed values and delay returns that differ after signed-short conversion.
+Callbacks mutate object fields, source bytes, coordinates and queue contents,
+and rebind queue/player pointers. All eight mocked services are reached with
+and without mutation. Independent assertions verify complete position words,
+placement arguments, captured pre-encoding height, four-bit flag arithmetic,
+unchanged type bits, and exact low/high delay stores into the queue selected by
+the last callback. Full guarded records, source buffers, queues, globals and
+callback arguments/events/counts are compared. Use `--reference-dir /private/tmp`
+while the saved baseline files are available, and `--asan` for AddressSanitizer.
+
+Catalog updates are confined to the reviewed functions, including new scoped
+spell catalogs. Six byte views disappear; the inventory now lists 25 byte
+views, 458 packed accesses and eight raw audited accesses: 491 total. Remaining
+packed captures, other accesses and unrecorded aliases still require auditing
+and conversion or documented reasons before the overall goal is complete.

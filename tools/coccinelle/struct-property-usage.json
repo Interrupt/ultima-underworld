@@ -1,7 +1,7 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 31,
+    "byte_view": 25,
     "packed_word": 458,
     "raw_audited_object_access": 8
   },
@@ -3735,38 +3735,20 @@
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 550,
+      "line": 551,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
-      "code": "uVar7 = (ushort)(byte)((uw_object_hdr_t *)puVar2)->link_word;"
+      "code": "uVar7 = (ushort)(byte)puVar2->link_word;"
     },
     {
       "source": "src/scheduler.c",
       "function": "scheduler_advance_effect",
-      "line": 564,
+      "line": 565,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar5 = (uint)((uw_object_hdr_t *)puVar2)->type_flags;"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_advance_effect",
-      "line": 570,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags_low = (byte)(char)(uVar5 & 0xefff);"
-    },
-    {
-      "source": "src/scheduler.c",
-      "function": "scheduler_advance_effect",
-      "line": 571,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags_high ="
+      "code": "uVar5 = (uint)puVar2->type_flags;"
     },
     {
       "source": "src/spells.c",
@@ -3838,30 +3820,12 @@
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar2 = ((uw_object_hdr_t *)iVar4)->position_word;"
-    },
-    {
-      "source": "src/spells.c",
-      "function": "spawn_and_prime_spell_effect_object",
-      "line": 690,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (bVar3 ^ bVar6) & 0x7f ^ bVar3;"
-    },
-    {
-      "source": "src/spells.c",
-      "function": "spawn_and_prime_spell_effect_object",
-      "line": 691,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)((ushort)uVar2 >> 8);"
+      "code": "uVar2 = iVar4->position_word;"
     },
     {
       "source": "src/spells.c",
       "function": "complete_pending_player_command_target",
-      "line": 801,
+      "line": 800,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3870,7 +3834,7 @@
     {
       "source": "src/spells.c",
       "function": "complete_pending_player_command_target",
-      "line": 802,
+      "line": 801,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -3879,29 +3843,11 @@
     {
       "source": "src/spells.c",
       "function": "spawn_random_variant_object_at_tile",
-      "line": 839,
+      "line": 838,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
-      "code": "uVar6 = ((uw_object_hdr_t *)iVar4)->position_word & 0xffee;"
-    },
-    {
-      "source": "src/spells.c",
-      "function": "spawn_random_variant_object_at_tile",
-      "line": 840,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;"
-    },
-    {
-      "source": "src/spells.c",
-      "function": "spawn_random_variant_object_at_tile",
-      "line": 841,
-      "category": "byte_view",
-      "member": "position_word",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);"
+      "code": "uVar6 = iVar4->position_word & 0xffee;"
     },
     {
       "source": "src/tmap.c",
