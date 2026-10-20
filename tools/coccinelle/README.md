@@ -2155,3 +2155,52 @@ Four byte views disappear and three named packed-word addresses become
 explicit. The inventory now lists 17 byte views, 462 packed accesses and eight
 raw audited accesses: 487 total. Remaining accesses and unrecorded aliases
 still require auditing and conversion or documented reasons.
+
+## NPC tick animation, pitch, heading and phase fields
+
+`generate_npc_tick_animation_rules.py` generates `npc-tick-animation-fields.json`
+for the complete original `npc_ai_tick` body. Its player lookup (fixed mobile
+slot one) and saved current-NPC aliases use native mobile pointers. Speed and
+pitch checks use named fields, including the old raw word-at-byte-20 pitch
+test. The derived full heading now combines common-header `heading` with
+`npc_heading`. Normal and distant-NPC timing read/write named `tick_phase`,
+preserving every other movement bit and the original modulo-16 arithmetic.
+
+The shared animation label writes `npc_animation_frame` from the captured
+`uVar10`. Both incoming paths prove that the current low twelve goal/target
+bits still equal the original byte stores' source: the increment path has no
+intervening callback after its goal snapshot, while the thrown-weapon path
+captures the current word after the spawn callback. The original labels,
+complete goal captures and arithmetic remain, including the carry above bit
+15 when frame fifteen advances. Masking the named four-bit frame reproduces
+the old byte truncation. All three byte stores disappear together; no partial
+label rewrite is used. Extra callbacks, volatile/escaping captures and altered
+arithmetic cause the exact-source recipe to refuse conversion.
+
+The full movement and position-derived byte captures also remain even where
+native fields now supply their consumers. Collision profiles and placement
+snapshots are separate formats, and their byte manipulation is unchanged.
+Death, default AI, thrown weapon, spell, melee, music and placement callbacks
+stay in their original order. Pointer identity stays local where it was
+saved, and current-global reads still occur after the same callbacks.
+
+`npc_tick_animation_fields` runs by default. Its actual original/current
+functions execute 2,097,152 comparisons covering every 16-bit goal word,
+sixteen modes and callback mutation. Cases cover frame wrap, distant timing,
+skipped placement, three locomotion profiles, cache flags, default goals,
+death/free, thrown weapons, spells, melee and music transitions. Prefix
+callbacks mutate target bits and rebind the NPC; action callbacks can replace
+the full goal word and current object. All twenty-two services are reached
+with and without mutation. Independent assertions verify the entire goal word
+for increment/reset paths and the complete movement byte for both phase
+updates. Full guarded objects, monster tables, placement snapshots, profiles,
+tile buffers, globals and callback arguments/events/counts are compared.
+Use `--reference PATH` with the original `ai.c` and `--asan` for AddressSanitizer.
+The saved-alias regression also checks AST provenance, pointer identity and
+byte/word scaling. Header and saved-alias catalogs refresh only this function's
+scope, so its former byte/word pointer rules cannot mis-scale native pointers.
+
+The inventory now lists 14 byte views, 462 packed accesses and eight raw
+audited accesses: 484 total, three fewer. The converted raw pitch test was
+outside the old raw-offset inventory pattern. Other remaining accesses and
+unrecorded aliases still require auditing and conversion or documented reasons.

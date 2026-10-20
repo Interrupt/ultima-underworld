@@ -774,1142 +774,6 @@ R F(...) {
 ...>
 }
 
-@field_2_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-|
-- ((ushort *)player_rec)[0] & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-|
-- *(ushort *)player_rec & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-|
-- *(ushort *)(player_rec + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-|
-- CONCAT11(player_rec[1], *player_rec) & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-|
-- CONCAT11(player_rec[1], player_rec[0]) & 0x1ff
-+ ((uw_object_hdr_t *)player_rec)->object_id
-)
-...>
-}
-
-@field_2_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(ushort *)((char *)player_rec + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (((ushort *)player_rec)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (((ushort *)player_rec)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(ushort *)player_rec >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(ushort *)player_rec & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(ushort *)(player_rec + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(ushort *)(player_rec + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (CONCAT11(player_rec[1], *player_rec) >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (CONCAT11(player_rec[1], *player_rec) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (CONCAT11(player_rec[1], player_rec[0]) >> 9) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (CONCAT11(player_rec[1], player_rec[0]) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(byte *)((char *)player_rec + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(byte *)((char *)player_rec + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(byte *)(player_rec + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-|
-- (*(byte *)(player_rec + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)player_rec)->flags_res
-)
-...>
-}
-
-@field_2_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(ushort *)((char *)player_rec + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (((ushort *)player_rec)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (((ushort *)player_rec)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(ushort *)player_rec >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(ushort *)player_rec & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(ushort *)(player_rec + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(ushort *)(player_rec + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (CONCAT11(player_rec[1], *player_rec) >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (CONCAT11(player_rec[1], *player_rec) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (CONCAT11(player_rec[1], player_rec[0]) >> 12) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (CONCAT11(player_rec[1], player_rec[0]) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(byte *)((char *)player_rec + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(byte *)((char *)player_rec + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(byte *)(player_rec + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-|
-- (*(byte *)(player_rec + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)player_rec)->enchanted
-)
-...>
-}
-
-@field_2_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(ushort *)((char *)player_rec + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (((ushort *)player_rec)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (((ushort *)player_rec)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(ushort *)player_rec >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(ushort *)player_rec & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(ushort *)(player_rec + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(ushort *)(player_rec + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (CONCAT11(player_rec[1], *player_rec) >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (CONCAT11(player_rec[1], *player_rec) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (CONCAT11(player_rec[1], player_rec[0]) >> 13) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (CONCAT11(player_rec[1], player_rec[0]) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(byte *)((char *)player_rec + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(byte *)((char *)player_rec + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(byte *)(player_rec + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->doordir
-|
-- (*(byte *)(player_rec + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)player_rec)->doordir
-)
-...>
-}
-
-@field_2_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(ushort *)((char *)player_rec + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (((ushort *)player_rec)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (((ushort *)player_rec)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(ushort *)player_rec >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(ushort *)player_rec & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(ushort *)(player_rec + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(ushort *)(player_rec + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (CONCAT11(player_rec[1], *player_rec) >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (CONCAT11(player_rec[1], *player_rec) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (CONCAT11(player_rec[1], player_rec[0]) >> 14) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (CONCAT11(player_rec[1], player_rec[0]) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(byte *)((char *)player_rec + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(byte *)((char *)player_rec + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(byte *)(player_rec + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->invisible
-|
-- (*(byte *)(player_rec + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)player_rec)->invisible
-)
-...>
-}
-
-@field_2_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(ushort *)((char *)player_rec + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (((ushort *)player_rec)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (((ushort *)player_rec)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(ushort *)player_rec >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(ushort *)player_rec & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(ushort *)(player_rec + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(ushort *)(player_rec + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (CONCAT11(player_rec[1], *player_rec) >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (CONCAT11(player_rec[1], *player_rec) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (CONCAT11(player_rec[1], player_rec[0]) >> 15) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (CONCAT11(player_rec[1], player_rec[0]) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(byte *)((char *)player_rec + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(byte *)((char *)player_rec + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- *(byte *)((char *)player_rec + 0x1) >> 7
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(byte *)(player_rec + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- (*(byte *)(player_rec + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-|
-- *(byte *)(player_rec + 0x1) >> 7
-+ ((uw_object_hdr_t *)player_rec)->is_quant
-)
-...>
-}
-
-@field_2_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-|
-- ((ushort *)player_rec)[1] & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-|
-- *(ushort *)(player_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-|
-- *(byte *)((char *)player_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-|
-- player_rec[2] & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-|
-- *(byte *)(player_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)player_rec)->zpos
-)
-...>
-}
-
-@field_2_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->heading
-|
-- (*(ushort *)((char *)player_rec + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)player_rec)->heading
-|
-- (((ushort *)player_rec)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->heading
-|
-- (((ushort *)player_rec)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)player_rec)->heading
-|
-- (*(ushort *)(player_rec + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->heading
-|
-- (*(ushort *)(player_rec + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)player_rec)->heading
-)
-...>
-}
-
-@field_2_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(ushort *)((char *)player_rec + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (((ushort *)player_rec)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (((ushort *)player_rec)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(ushort *)(player_rec + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(ushort *)(player_rec + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(byte *)((char *)player_rec + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(byte *)((char *)player_rec + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(byte *)(player_rec + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->ypos
-|
-- (*(byte *)(player_rec + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)player_rec)->ypos
-)
-...>
-}
-
-@field_2_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(ushort *)((char *)player_rec + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (((ushort *)player_rec)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (((ushort *)player_rec)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(ushort *)(player_rec + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(ushort *)(player_rec + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(byte *)((char *)player_rec + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(byte *)((char *)player_rec + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- *(byte *)((char *)player_rec + 0x3) >> 5
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(byte *)(player_rec + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- (*(byte *)(player_rec + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)player_rec)->xpos
-|
-- *(byte *)(player_rec + 0x3) >> 5
-+ ((uw_object_hdr_t *)player_rec)->xpos
-)
-...>
-}
-
-@field_2_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-|
-- ((ushort *)player_rec)[2] & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-|
-- *(ushort *)(player_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-|
-- *(byte *)((char *)player_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-|
-- player_rec[4] & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-|
-- *(byte *)(player_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->quality
-)
-...>
-}
-
-@field_2_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->next
-|
-- (*(ushort *)((char *)player_rec + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->next
-|
-- (((ushort *)player_rec)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->next
-|
-- (((ushort *)player_rec)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->next
-|
-- (*(ushort *)(player_rec + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->next
-|
-- (*(ushort *)(player_rec + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->next
-)
-...>
-}
-
-@field_2_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-|
-- ((ushort *)player_rec)[3] & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-|
-- *(ushort *)(player_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-|
-- *(byte *)((char *)player_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-|
-- player_rec[6] & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-|
-- *(byte *)(player_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)player_rec)->owner
-)
-...>
-}
-
-@field_2_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)player_rec + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->link
-|
-- (*(ushort *)((char *)player_rec + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->link
-|
-- (((ushort *)player_rec)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->link
-|
-- (((ushort *)player_rec)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->link
-|
-- (*(ushort *)(player_rec + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)player_rec)->link
-|
-- (*(ushort *)(player_rec + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)player_rec)->link
-)
-...>
-}
-
-@field_3_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)puVar11)->object_id
-|
-- ((ushort *)puVar11)[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar11)->object_id
-|
-- *(ushort *)puVar11 & 0x1ff
-+ ((uw_object_hdr_t *)puVar11)->object_id
-|
-- puVar11[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar11)->object_id
-|
-- *puVar11 & 0x1ff
-+ ((uw_object_hdr_t *)puVar11)->object_id
-)
-...>
-}
-
-@field_3_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*(ushort *)((char *)puVar11 + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (((ushort *)puVar11)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (((ushort *)puVar11)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*(ushort *)puVar11 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*(ushort *)puVar11 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (puVar11[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (puVar11[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*puVar11 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*puVar11 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*(byte *)((char *)puVar11 + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-|
-- (*(byte *)((char *)puVar11 + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)puVar11)->flags_res
-)
-...>
-}
-
-@field_3_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*(ushort *)((char *)puVar11 + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (((ushort *)puVar11)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (((ushort *)puVar11)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*(ushort *)puVar11 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*(ushort *)puVar11 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (puVar11[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (puVar11[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*puVar11 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*puVar11 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*(byte *)((char *)puVar11 + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-|
-- (*(byte *)((char *)puVar11 + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)puVar11)->enchanted
-)
-...>
-}
-
-@field_3_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*(ushort *)((char *)puVar11 + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (((ushort *)puVar11)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (((ushort *)puVar11)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*(ushort *)puVar11 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*(ushort *)puVar11 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (puVar11[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (puVar11[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*puVar11 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*puVar11 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*(byte *)((char *)puVar11 + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->doordir
-|
-- (*(byte *)((char *)puVar11 + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)puVar11)->doordir
-)
-...>
-}
-
-@field_3_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*(ushort *)((char *)puVar11 + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (((ushort *)puVar11)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (((ushort *)puVar11)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*(ushort *)puVar11 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*(ushort *)puVar11 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (puVar11[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (puVar11[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*puVar11 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*puVar11 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*(byte *)((char *)puVar11 + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->invisible
-|
-- (*(byte *)((char *)puVar11 + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)puVar11)->invisible
-)
-...>
-}
-
-@field_3_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*(ushort *)((char *)puVar11 + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- *(ushort *)((char *)puVar11 + 0x0) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (((ushort *)puVar11)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (((ushort *)puVar11)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- ((ushort *)puVar11)[0] >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*(ushort *)puVar11 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*(ushort *)puVar11 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- *(ushort *)puVar11 >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (puVar11[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (puVar11[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- puVar11[0] >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*puVar11 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*puVar11 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- *puVar11 >> 15
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*(byte *)((char *)puVar11 + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- (*(byte *)((char *)puVar11 + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-|
-- *(byte *)((char *)puVar11 + 0x1) >> 7
-+ ((uw_object_hdr_t *)puVar11)->is_quant
-)
-...>
-}
-
-@field_3_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar11)->zpos
-|
-- ((ushort *)puVar11)[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar11)->zpos
-|
-- puVar11[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar11)->zpos
-|
-- *(byte *)((char *)puVar11 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar11)->zpos
-|
-- (byte)puVar11[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar11)->zpos
-)
-...>
-}
-
-@field_3_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->heading
-|
-- (*(ushort *)((char *)puVar11 + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar11)->heading
-|
-- (((ushort *)puVar11)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->heading
-|
-- (((ushort *)puVar11)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar11)->heading
-|
-- (puVar11[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->heading
-|
-- (puVar11[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar11)->heading
-)
-...>
-}
-
-@field_3_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (*(ushort *)((char *)puVar11 + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (((ushort *)puVar11)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (((ushort *)puVar11)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (puVar11[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (puVar11[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (*(byte *)((char *)puVar11 + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->ypos
-|
-- (*(byte *)((char *)puVar11 + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)puVar11)->ypos
-)
-...>
-}
-
-@field_3_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (*(ushort *)((char *)puVar11 + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- *(ushort *)((char *)puVar11 + 0x2) >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (((ushort *)puVar11)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (((ushort *)puVar11)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- ((ushort *)puVar11)[1] >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (puVar11[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (puVar11[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- puVar11[1] >> 13
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (*(byte *)((char *)puVar11 + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- (*(byte *)((char *)puVar11 + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)puVar11)->xpos
-|
-- *(byte *)((char *)puVar11 + 0x3) >> 5
-+ ((uw_object_hdr_t *)puVar11)->xpos
-)
-...>
-}
-
-@field_3_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->quality
-|
-- ((ushort *)puVar11)[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->quality
-|
-- puVar11[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->quality
-|
-- *(byte *)((char *)puVar11 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->quality
-|
-- (byte)puVar11[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->quality
-)
-...>
-}
-
-@field_3_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- (*(ushort *)((char *)puVar11 + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- *(ushort *)((char *)puVar11 + 0x4) >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- (((ushort *)puVar11)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- (((ushort *)puVar11)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- ((ushort *)puVar11)[2] >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- (puVar11[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- (puVar11[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-|
-- puVar11[2] >> 6
-+ ((uw_object_hdr_t *)puVar11)->next
-)
-...>
-}
-
-@field_3_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->owner
-|
-- ((ushort *)puVar11)[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->owner
-|
-- puVar11[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->owner
-|
-- *(byte *)((char *)puVar11 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->owner
-|
-- (byte)puVar11[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar11)->owner
-)
-...>
-}
-
-@field_3_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)puVar11 + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- (*(ushort *)((char *)puVar11 + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- *(ushort *)((char *)puVar11 + 0x6) >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- (((ushort *)puVar11)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- (((ushort *)puVar11)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- ((ushort *)puVar11)[3] >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- (puVar11[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- (puVar11[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-|
-- puVar11[3] >> 6
-+ ((uw_object_hdr_t *)puVar11)->link
-)
-...>
-}
-
 @field_4_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(roll_object_destroy_chance\)$";
@@ -14644,6 +13508,782 @@ R F(...) {
 |
 - (*(ushort *)(iVar2 + 0x6) & 0xffc0) >> 6
 + ((uw_object_hdr_t *)iVar2)->link
+)
+...>
+}
+
+@npc_tick_field_0_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)player_rec)->object_id
+|
+- ((ushort *)player_rec)[0] & 0x1ff
++ ((uw_object_hdr_t *)player_rec)->object_id
+|
+- *(ushort *)player_rec & 0x1ff
++ ((uw_object_hdr_t *)player_rec)->object_id
+)
+...>
+}
+
+@npc_tick_field_0_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (*(ushort *)((char *)player_rec + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (((ushort *)player_rec)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (((ushort *)player_rec)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (*(ushort *)player_rec >> 9) & 0x7
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (*(ushort *)player_rec & 0xe00) >> 9
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (*(byte *)((char *)player_rec + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)player_rec)->flags_res
+|
+- (*(byte *)((char *)player_rec + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)player_rec)->flags_res
+)
+...>
+}
+
+@npc_tick_field_0_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (*(ushort *)((char *)player_rec + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (((ushort *)player_rec)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (((ushort *)player_rec)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (*(ushort *)player_rec >> 12) & 0x1
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (*(ushort *)player_rec & 0x1000) >> 12
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (*(byte *)((char *)player_rec + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)player_rec)->enchanted
+|
+- (*(byte *)((char *)player_rec + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)player_rec)->enchanted
+)
+...>
+}
+
+@npc_tick_field_0_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (*(ushort *)((char *)player_rec + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (((ushort *)player_rec)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (((ushort *)player_rec)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (*(ushort *)player_rec >> 13) & 0x1
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (*(ushort *)player_rec & 0x2000) >> 13
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (*(byte *)((char *)player_rec + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)player_rec)->doordir
+|
+- (*(byte *)((char *)player_rec + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)player_rec)->doordir
+)
+...>
+}
+
+@npc_tick_field_0_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (*(ushort *)((char *)player_rec + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (((ushort *)player_rec)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (((ushort *)player_rec)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (*(ushort *)player_rec >> 14) & 0x1
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (*(ushort *)player_rec & 0x4000) >> 14
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (*(byte *)((char *)player_rec + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)player_rec)->invisible
+|
+- (*(byte *)((char *)player_rec + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)player_rec)->invisible
+)
+...>
+}
+
+@npc_tick_field_0_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (*(ushort *)((char *)player_rec + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (((ushort *)player_rec)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (((ushort *)player_rec)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (*(ushort *)player_rec >> 15) & 0x1
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (*(ushort *)player_rec & 0x8000) >> 15
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (*(byte *)((char *)player_rec + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- (*(byte *)((char *)player_rec + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)player_rec)->is_quant
+|
+- *(byte *)((char *)player_rec + 0x1) >> 7
++ ((uw_object_hdr_t *)player_rec)->is_quant
+)
+...>
+}
+
+@npc_tick_field_0_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)player_rec)->zpos
+|
+- ((ushort *)player_rec)[1] & 0x7f
++ ((uw_object_hdr_t *)player_rec)->zpos
+|
+- *(byte *)((char *)player_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)player_rec)->zpos
+)
+...>
+}
+
+@npc_tick_field_0_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)player_rec)->heading
+|
+- (*(ushort *)((char *)player_rec + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)player_rec)->heading
+|
+- (((ushort *)player_rec)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)player_rec)->heading
+|
+- (((ushort *)player_rec)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)player_rec)->heading
+)
+...>
+}
+
+@npc_tick_field_0_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)player_rec)->ypos
+|
+- (*(ushort *)((char *)player_rec + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)player_rec)->ypos
+|
+- (((ushort *)player_rec)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)player_rec)->ypos
+|
+- (((ushort *)player_rec)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)player_rec)->ypos
+|
+- (*(byte *)((char *)player_rec + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)player_rec)->ypos
+|
+- (*(byte *)((char *)player_rec + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)player_rec)->ypos
+)
+...>
+}
+
+@npc_tick_field_0_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- (*(ushort *)((char *)player_rec + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- (((ushort *)player_rec)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- (((ushort *)player_rec)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- (*(byte *)((char *)player_rec + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- (*(byte *)((char *)player_rec + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)player_rec)->xpos
+|
+- *(byte *)((char *)player_rec + 0x3) >> 5
++ ((uw_object_hdr_t *)player_rec)->xpos
+)
+...>
+}
+
+@npc_tick_field_0_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)player_rec)->quality
+|
+- ((ushort *)player_rec)[2] & 0x3f
++ ((uw_object_hdr_t *)player_rec)->quality
+|
+- *(byte *)((char *)player_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)player_rec)->quality
+)
+...>
+}
+
+@npc_tick_field_0_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)player_rec)->next
+|
+- (*(ushort *)((char *)player_rec + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)player_rec)->next
+|
+- (((ushort *)player_rec)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)player_rec)->next
+|
+- (((ushort *)player_rec)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)player_rec)->next
+)
+...>
+}
+
+@npc_tick_field_0_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)player_rec)->owner
+|
+- ((ushort *)player_rec)[3] & 0x3f
++ ((uw_object_hdr_t *)player_rec)->owner
+|
+- *(byte *)((char *)player_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)player_rec)->owner
+)
+...>
+}
+
+@npc_tick_field_0_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)player_rec + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)player_rec)->link
+|
+- (*(ushort *)((char *)player_rec + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)player_rec)->link
+|
+- (((ushort *)player_rec)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)player_rec)->link
+|
+- (((ushort *)player_rec)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)player_rec)->link
+)
+...>
+}
+
+@npc_tick_field_1_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)puVar11)->object_id
+|
+- ((ushort *)puVar11)[0] & 0x1ff
++ ((uw_object_hdr_t *)puVar11)->object_id
+|
+- *(ushort *)puVar11 & 0x1ff
++ ((uw_object_hdr_t *)puVar11)->object_id
+)
+...>
+}
+
+@npc_tick_field_1_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (*(ushort *)((char *)puVar11 + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (((ushort *)puVar11)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (((ushort *)puVar11)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (*(ushort *)puVar11 >> 9) & 0x7
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (*(ushort *)puVar11 & 0xe00) >> 9
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (*(byte *)((char *)puVar11 + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)puVar11)->flags_res
+|
+- (*(byte *)((char *)puVar11 + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)puVar11)->flags_res
+)
+...>
+}
+
+@npc_tick_field_1_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (*(ushort *)((char *)puVar11 + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (((ushort *)puVar11)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (((ushort *)puVar11)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (*(ushort *)puVar11 >> 12) & 0x1
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (*(ushort *)puVar11 & 0x1000) >> 12
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (*(byte *)((char *)puVar11 + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)puVar11)->enchanted
+|
+- (*(byte *)((char *)puVar11 + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)puVar11)->enchanted
+)
+...>
+}
+
+@npc_tick_field_1_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (*(ushort *)((char *)puVar11 + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (((ushort *)puVar11)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (((ushort *)puVar11)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (*(ushort *)puVar11 >> 13) & 0x1
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (*(ushort *)puVar11 & 0x2000) >> 13
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (*(byte *)((char *)puVar11 + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)puVar11)->doordir
+|
+- (*(byte *)((char *)puVar11 + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)puVar11)->doordir
+)
+...>
+}
+
+@npc_tick_field_1_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (*(ushort *)((char *)puVar11 + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (((ushort *)puVar11)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (((ushort *)puVar11)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (*(ushort *)puVar11 >> 14) & 0x1
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (*(ushort *)puVar11 & 0x4000) >> 14
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (*(byte *)((char *)puVar11 + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)puVar11)->invisible
+|
+- (*(byte *)((char *)puVar11 + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)puVar11)->invisible
+)
+...>
+}
+
+@npc_tick_field_1_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (*(ushort *)((char *)puVar11 + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (((ushort *)puVar11)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (((ushort *)puVar11)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (*(ushort *)puVar11 >> 15) & 0x1
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (*(ushort *)puVar11 & 0x8000) >> 15
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (*(byte *)((char *)puVar11 + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- (*(byte *)((char *)puVar11 + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)puVar11)->is_quant
+|
+- *(byte *)((char *)puVar11 + 0x1) >> 7
++ ((uw_object_hdr_t *)puVar11)->is_quant
+)
+...>
+}
+
+@npc_tick_field_1_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar11)->zpos
+|
+- ((ushort *)puVar11)[1] & 0x7f
++ ((uw_object_hdr_t *)puVar11)->zpos
+|
+- *(byte *)((char *)puVar11 + 0x2) & 0x7f
++ ((uw_object_hdr_t *)puVar11)->zpos
+)
+...>
+}
+
+@npc_tick_field_1_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar11)->heading
+|
+- (*(ushort *)((char *)puVar11 + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar11)->heading
+|
+- (((ushort *)puVar11)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)puVar11)->heading
+|
+- (((ushort *)puVar11)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)puVar11)->heading
+)
+...>
+}
+
+@npc_tick_field_1_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar11)->ypos
+|
+- (*(ushort *)((char *)puVar11 + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar11)->ypos
+|
+- (((ushort *)puVar11)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)puVar11)->ypos
+|
+- (((ushort *)puVar11)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)puVar11)->ypos
+|
+- (*(byte *)((char *)puVar11 + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)puVar11)->ypos
+|
+- (*(byte *)((char *)puVar11 + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)puVar11)->ypos
+)
+...>
+}
+
+@npc_tick_field_1_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- (*(ushort *)((char *)puVar11 + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- (((ushort *)puVar11)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- (((ushort *)puVar11)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- (*(byte *)((char *)puVar11 + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- (*(byte *)((char *)puVar11 + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)puVar11)->xpos
+|
+- *(byte *)((char *)puVar11 + 0x3) >> 5
++ ((uw_object_hdr_t *)puVar11)->xpos
+)
+...>
+}
+
+@npc_tick_field_1_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar11)->quality
+|
+- ((ushort *)puVar11)[2] & 0x3f
++ ((uw_object_hdr_t *)puVar11)->quality
+|
+- *(byte *)((char *)puVar11 + 0x4) & 0x3f
++ ((uw_object_hdr_t *)puVar11)->quality
+)
+...>
+}
+
+@npc_tick_field_1_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar11)->next
+|
+- (*(ushort *)((char *)puVar11 + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar11)->next
+|
+- (((ushort *)puVar11)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar11)->next
+|
+- (((ushort *)puVar11)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar11)->next
+)
+...>
+}
+
+@npc_tick_field_1_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar11)->owner
+|
+- ((ushort *)puVar11)[3] & 0x3f
++ ((uw_object_hdr_t *)puVar11)->owner
+|
+- *(byte *)((char *)puVar11 + 0x6) & 0x3f
++ ((uw_object_hdr_t *)puVar11)->owner
+)
+...>
+}
+
+@npc_tick_field_1_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)puVar11 + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar11)->link
+|
+- (*(ushort *)((char *)puVar11 + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar11)->link
+|
+- (((ushort *)puVar11)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)puVar11)->link
+|
+- (((ushort *)puVar11)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)puVar11)->link
 )
 ...>
 }

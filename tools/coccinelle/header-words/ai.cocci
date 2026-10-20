@@ -140,175 +140,6 @@ R F(...) {
 ...>
 }
 
-@word_2_0@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 0)
-+ ((uw_object_hdr_t *)player_rec)->type_flags
-|
-- ((ushort *)player_rec)[0]
-+ ((uw_object_hdr_t *)player_rec)->type_flags
-|
-- *(ushort *)player_rec
-+ ((uw_object_hdr_t *)player_rec)->type_flags
-|
-- *(ushort *)(player_rec + 0)
-+ ((uw_object_hdr_t *)player_rec)->type_flags
-)
-...>
-}
-
-@word_2_1@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 2)
-+ ((uw_object_hdr_t *)player_rec)->position_word
-|
-- ((ushort *)player_rec)[1]
-+ ((uw_object_hdr_t *)player_rec)->position_word
-|
-- *(ushort *)(player_rec + 2)
-+ ((uw_object_hdr_t *)player_rec)->position_word
-)
-...>
-}
-
-@word_2_2@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 4)
-+ ((uw_object_hdr_t *)player_rec)->chain_word
-|
-- ((ushort *)player_rec)[2]
-+ ((uw_object_hdr_t *)player_rec)->chain_word
-|
-- *(ushort *)(player_rec + 4)
-+ ((uw_object_hdr_t *)player_rec)->chain_word
-)
-...>
-}
-
-@word_2_3@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)player_rec + 6)
-+ ((uw_object_hdr_t *)player_rec)->link_word
-|
-- ((ushort *)player_rec)[3]
-+ ((uw_object_hdr_t *)player_rec)->link_word
-|
-- *(ushort *)(player_rec + 6)
-+ ((uw_object_hdr_t *)player_rec)->link_word
-)
-...>
-}
-
-@word_3_0@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 0)
-+ ((uw_object_hdr_t *)puVar11)->type_flags
-|
-- ((ushort *)puVar11)[0]
-+ ((uw_object_hdr_t *)puVar11)->type_flags
-|
-- *(ushort *)puVar11
-+ ((uw_object_hdr_t *)puVar11)->type_flags
-|
-- puVar11[0]
-+ ((uw_object_hdr_t *)puVar11)->type_flags
-|
-- *puVar11
-+ ((uw_object_hdr_t *)puVar11)->type_flags
-)
-...>
-}
-
-@word_3_1@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 2)
-+ ((uw_object_hdr_t *)puVar11)->position_word
-|
-- ((ushort *)puVar11)[1]
-+ ((uw_object_hdr_t *)puVar11)->position_word
-|
-- puVar11[1]
-+ ((uw_object_hdr_t *)puVar11)->position_word
-)
-...>
-}
-
-@word_3_2@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 4)
-+ ((uw_object_hdr_t *)puVar11)->chain_word
-|
-- ((ushort *)puVar11)[2]
-+ ((uw_object_hdr_t *)puVar11)->chain_word
-|
-- puVar11[2]
-+ ((uw_object_hdr_t *)puVar11)->chain_word
-)
-...>
-}
-
-@word_3_3@
-type R;
-identifier F =~ "^\(npc_ai_tick\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar11 + 6)
-+ ((uw_object_hdr_t *)puVar11)->link_word
-|
-- ((ushort *)puVar11)[3]
-+ ((uw_object_hdr_t *)puVar11)->link_word
-|
-- puVar11[3]
-+ ((uw_object_hdr_t *)puVar11)->link_word
-)
-...>
-}
-
 @word_4_0@
 type R;
 identifier F =~ "^\(roll_object_destroy_chance\)$";
@@ -2393,6 +2224,148 @@ R F(...) {
 |
 - *(ushort *)(iVar2 + 6)
 + ((uw_object_hdr_t *)iVar2)->link_word
+)
+...>
+}
+
+@npc_tick_word_0_0@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 0)
++ ((uw_object_hdr_t *)player_rec)->type_flags
+|
+- ((ushort *)player_rec)[0]
++ ((uw_object_hdr_t *)player_rec)->type_flags
+|
+- *(ushort *)player_rec
++ ((uw_object_hdr_t *)player_rec)->type_flags
+)
+...>
+}
+
+@npc_tick_word_0_1@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 2)
++ ((uw_object_hdr_t *)player_rec)->position_word
+|
+- ((ushort *)player_rec)[1]
++ ((uw_object_hdr_t *)player_rec)->position_word
+)
+...>
+}
+
+@npc_tick_word_0_2@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 4)
++ ((uw_object_hdr_t *)player_rec)->chain_word
+|
+- ((ushort *)player_rec)[2]
++ ((uw_object_hdr_t *)player_rec)->chain_word
+)
+...>
+}
+
+@npc_tick_word_0_3@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)player_rec + 6)
++ ((uw_object_hdr_t *)player_rec)->link_word
+|
+- ((ushort *)player_rec)[3]
++ ((uw_object_hdr_t *)player_rec)->link_word
+)
+...>
+}
+
+@npc_tick_word_1_0@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 0)
++ ((uw_object_hdr_t *)puVar11)->type_flags
+|
+- ((ushort *)puVar11)[0]
++ ((uw_object_hdr_t *)puVar11)->type_flags
+|
+- *(ushort *)puVar11
++ ((uw_object_hdr_t *)puVar11)->type_flags
+)
+...>
+}
+
+@npc_tick_word_1_1@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 2)
++ ((uw_object_hdr_t *)puVar11)->position_word
+|
+- ((ushort *)puVar11)[1]
++ ((uw_object_hdr_t *)puVar11)->position_word
+)
+...>
+}
+
+@npc_tick_word_1_2@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 4)
++ ((uw_object_hdr_t *)puVar11)->chain_word
+|
+- ((ushort *)puVar11)[2]
++ ((uw_object_hdr_t *)puVar11)->chain_word
+)
+...>
+}
+
+@npc_tick_word_1_3@
+type R;
+identifier F =~ "^\(npc_ai_tick\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar11 + 6)
++ ((uw_object_hdr_t *)puVar11)->link_word
+|
+- ((ushort *)puVar11)[3]
++ ((uw_object_hdr_t *)puVar11)->link_word
 )
 ...>
 }

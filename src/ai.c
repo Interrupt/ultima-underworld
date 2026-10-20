@@ -669,7 +669,7 @@ int npc_ai_tick()
      (get_object_record_by_slot_index(1) and tilemap_lookup() both return real pointers, and the two
      dereferences below and the object_list_unlink(iVar5+2,...) call both need the full address)... */
   int iVar5;
-  char *player_rec;
+  uw_mobile_object_t *player_rec;
   char *tile_pos;
   int iVar6;
   undefined4 uVar7;
@@ -679,28 +679,28 @@ int npc_ai_tick()
   short extraout_r1_01;
   uint uVar9;
   uint uVar10;
-  ushort *puVar11;
+  uw_mobile_object_t *puVar11;
 
   DAT_00101738 = encode_object_slot_index(DAT_0010190c);
   DAT_00101404 = &g_monster_type_props[(DAT_0010190c->hdr.object_id & 0x3f)];
   DAT_00101918 = DAT_0010190c->npc_xhome;
   DAT_001013f8 = DAT_0010190c->npc_yhome;
-  player_rec = get_object_record_by_slot_index(1);
+  player_rec = (uw_mobile_object_t *)get_object_record_by_slot_index(1);
   puVar11 = DAT_0010190c;
   if (((100 < ((((int)(char)DAT_00101918 - (int)DAT_00101938) * 0x10000 >> 0x10) *
                (((int)(char)DAT_00101918 - (int)DAT_00101938) * 0x10000 >> 0x10) +
               (((int)(char)DAT_001013f8 - (int)DAT_0010193c) * 0x10000 >> 0x10) *
               (((int)(char)DAT_001013f8 - (int)DAT_0010193c) * 0x10000 >> 0x10)) * 0x10000 >> 0x10)
       && (iVar6 = (int)(char)DAT_001013f8 -
-                  (int)(char)(((uw_mobile_object_t *)player_rec)->tile_y),
-                  iVar5 = (int)(char)DAT_00101918 - (int)(char)(byte)(((uw_mobile_object_t *)player_rec)->tile_x),
+                  (int)(char)(player_rec->tile_y),
+                  iVar5 = (int)(char)DAT_00101918 - (int)(char)(byte)(player_rec->tile_x),
                   100 < (iVar5 * iVar5 + iVar6 * iVar6) * 0x10000 >> 0x10)) &&
       ((DAT_0010190c->npc_goal) != 3)) {
     bVar3 = DAT_0010190c->movement_flags;
     /* Was `ordint_divmod(0x10,(bVar3&0xf)+8); bVar8 = extraout_r1;` -- the classic "call idivmod,
        then read its remainder back through the extraout_r1 register-leftover fiction" pattern
        already fixed elsewhere this session (itoa_radix, draw_chargen_field_options's sVar_rem)... */
-    bVar8 = ((bVar3 & 0xf) + 8) % 0x10;
+    bVar8 = (puVar11->tick_phase + 8) % 0x10;
     goto LAB_00033860;
   }
   if ((*(char *)&DAT_00101404->movement_flags & 0x80) == 0) {
@@ -741,7 +741,7 @@ int npc_ai_tick()
     DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0x7f;
   }
   if ((((DAT_0010190c->animation_flags & 0x40) == 0) ||
-       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((ushort *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
+       ((DAT_0010190c->speed) != 0)) || (DAT_0010190c->pitch != 16)) {
     build_object_placement_snapshot(DAT_0010190c,DAT_0010172c);
     bVar3 = DAT_0010190c->full_heading;
     /* Was `build_collision_height_field_for_object()` -- a dropped argument (K&R declared, relying
@@ -778,8 +778,8 @@ int npc_ai_tick()
   DAT_0010173c = DAT_0010190c->hdr.owner;
   DAT_00101458 = DAT_0010190c->full_heading;
   bVar3 = (byte)(DAT_0010190c->hdr.position_word >> 2);
-  DAT_001018fc = (bVar3 ^ DAT_0010190c->heading_flags) & 0x1f ^ bVar3;
-  DAT_00101434 = DAT_0010190c->motion_flags & 0x7f;
+  DAT_001018fc = (DAT_0010190c->hdr.heading << 5) | DAT_0010190c->npc_heading;
+  DAT_00101434 = DAT_0010190c->speed;
   DAT_00101730 = g_object_type_props[(DAT_0010190c->hdr.object_id)].height;
   uVar9 = (uint) DAT_0010190c->goal_word;
   if (((uVar9 & 0xf) == 0xb) || ((uVar9 & 0xf) == 3)) {
@@ -807,9 +807,8 @@ LAB_00033830:
     }
 LAB_00033810:
     uVar10 = (uVar9 & 0xf000) + 0x1000 ^ uVar9 & 0xfff;
-    DAT_0010190c->goal_word_low = (byte)(uVar9 & 0xfff);
 LAB_000337fc:
-    DAT_0010190c->goal_word_high = (byte)(uVar10 >> 8);
+    DAT_0010190c->npc_animation_frame = (uVar10 >> 12) & 0xf;
   }
   else if (((DAT_0010190c->animation_flags & 0x3f) == 0) || (3 < bVar3)) {
     if ((bVar3 != 0xd) || ((DAT_0010190c->npc_ai_flags & 0xc) == 0)) {
@@ -824,7 +823,6 @@ LAB_000337fc:
                               g_ranged_type_props[(iVar5) / 3].projectile_speed);
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xc0;
       uVar10 = DAT_0010190c->goal_word & 0xfff;
-      DAT_0010190c->goal_word_low = (byte)uVar10;
       goto LAB_000337fc;
     }
     if ((uVar9 & 0xf000) != 0x4000) goto LAB_00033810;
@@ -869,9 +867,9 @@ LAB_00033834:
   /* Was `ordint_divmod(...); bVar8 = extraout_r1_00;` -- same fabricated-
      remainder bug as the other ordint_divmod call above in this function,
      see that comment. Compute the remainder directly instead. */
-  bVar8 = ((DAT_0010190c->attack_pitch & 7) + (bVar3 & 0xf)) % 0x10;
+  bVar8 = ((DAT_0010190c->attack_pitch & 7) + puVar11->tick_phase) % 0x10;
 LAB_00033860:
-  ((uw_mobile_object_t *)puVar11)->movement_flags = (bVar3 ^ bVar8) & 0xf ^ bVar3;
+  puVar11->tick_phase = bVar8;
   return 1;
 }
 

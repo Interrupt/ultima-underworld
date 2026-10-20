@@ -1,7 +1,7 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 17,
+    "byte_view": 14,
     "packed_word": 462,
     "raw_audited_object_access": 8
   },
@@ -63,25 +63,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 810,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_low = (byte)(uVar9 & 0xfff);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_ai_tick",
-      "line": 812,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_high = (byte)(uVar10 >> 8);"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_ai_tick",
-      "line": 826,
+      "line": 825,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -90,16 +72,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 827,
-      "category": "byte_view",
-      "member": "goal_word",
-      "pointer": null,
-      "code": "DAT_0010190c->goal_word_low = (byte)uVar10;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "npc_ai_tick",
-      "line": 838,
+      "line": 836,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -108,7 +81,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 849,
+      "line": 847,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -117,7 +90,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 862,
+      "line": 860,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -126,7 +99,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_tick",
-      "line": 864,
+      "line": 862,
       "category": "packed_word",
       "member": "target_word",
       "pointer": null,
@@ -135,7 +108,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1166,
+      "line": 1164,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -144,7 +117,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1177,
+      "line": 1175,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -153,7 +126,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1194,
+      "line": 1192,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -162,7 +135,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1234,
+      "line": 1232,
       "category": "packed_word",
       "member": "tile_position",
       "pointer": null,
@@ -171,7 +144,7 @@
     {
       "source": "src/ai.c",
       "function": "sync_object_tile_position",
-      "line": 1288,
+      "line": 1286,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -180,7 +153,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1346,
+      "line": 1344,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -189,7 +162,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1352,
+      "line": 1350,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -198,7 +171,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1390,
+      "line": 1388,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -207,7 +180,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1390,
+      "line": 1388,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -216,7 +189,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1391,
+      "line": 1389,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -225,7 +198,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1391,
+      "line": 1389,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -234,7 +207,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1392,
+      "line": 1390,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -243,7 +216,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1392,
+      "line": 1390,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -252,7 +225,16 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1393,
+      "line": 1391,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "puVar9->link_word = header->link_word;"
+    },
+    {
+      "source": "src/ai.c",
+      "function": "settle_mobile_to_immobile",
+      "line": 1391,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -262,15 +244,6 @@
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
       "line": 1393,
-      "category": "packed_word",
-      "member": "link_word",
-      "pointer": null,
-      "code": "puVar9->link_word = header->link_word;"
-    },
-    {
-      "source": "src/ai.c",
-      "function": "settle_mobile_to_immobile",
-      "line": 1395,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -279,7 +252,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1404,
+      "line": 1402,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -288,7 +261,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1406,
+      "line": 1404,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -297,7 +270,7 @@
     {
       "source": "src/ai.c",
       "function": "settle_mobile_to_immobile",
-      "line": 1411,
+      "line": 1409,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -306,7 +279,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_treasure_drop",
-      "line": 1525,
+      "line": 1523,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -315,7 +288,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_special_item_drop",
-      "line": 1553,
+      "line": 1551,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -324,7 +297,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_equipment_drop",
-      "line": 1597,
+      "line": 1595,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -333,7 +306,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_equipment_drop",
-      "line": 1608,
+      "line": 1606,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -342,7 +315,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_misc_item_drop",
-      "line": 1659,
+      "line": 1657,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -351,7 +324,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_creature_misc_item_drop",
-      "line": 1662,
+      "line": 1660,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -360,7 +333,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1758,
+      "line": 1756,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -369,7 +342,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1758,
+      "line": 1756,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -378,7 +351,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1759,
+      "line": 1757,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -387,7 +360,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1763,
+      "line": 1761,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -396,7 +369,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1766,
+      "line": 1764,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -405,7 +378,7 @@
     {
       "source": "src/ai.c",
       "function": "drop_monster_loot",
-      "line": 1776,
+      "line": 1774,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -414,7 +387,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_react_to_nearby_player",
-      "line": 2732,
+      "line": 2730,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -423,7 +396,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_react_to_nearby_player",
-      "line": 2743,
+      "line": 2741,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -432,7 +405,7 @@
     {
       "source": "src/ai.c",
       "function": "detect_npc_wander_proximity",
-      "line": 2802,
+      "line": 2800,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -441,7 +414,7 @@
     {
       "source": "src/ai.c",
       "function": "compute_vertical_aim_offset",
-      "line": 2840,
+      "line": 2838,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -450,7 +423,7 @@
     {
       "source": "src/ai.c",
       "function": "compute_vertical_aim_offset",
-      "line": 2841,
+      "line": 2839,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -459,7 +432,7 @@
     {
       "source": "src/ai.c",
       "function": "setup_npc_ai_tick_state",
-      "line": 2898,
+      "line": 2896,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -468,7 +441,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 2961,
+      "line": 2959,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -477,7 +450,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3002,
+      "line": 3000,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -486,7 +459,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3021,
+      "line": 3019,
       "category": "raw_audited_object_access",
       "member": null,
       "pointer": "npc_rec",
@@ -495,7 +468,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3023,
+      "line": 3021,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -504,7 +477,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3025,
+      "line": 3023,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -513,7 +486,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3032,
+      "line": 3030,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -522,7 +495,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3131,
+      "line": 3129,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -531,7 +504,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3147,
+      "line": 3145,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -540,7 +513,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3166,
+      "line": 3164,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -549,7 +522,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_ai_default_tick",
-      "line": 3167,
+      "line": 3165,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -558,7 +531,7 @@
     {
       "source": "src/ai.c",
       "function": "initiate_npc_death",
-      "line": 3317,
+      "line": 3315,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -567,7 +540,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3659,
+      "line": 3657,
       "category": "packed_word",
       "member": "tile_word",
       "pointer": null,
@@ -576,7 +549,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3670,
+      "line": 3668,
       "category": "byte_view",
       "member": "position_word",
       "pointer": null,
@@ -585,7 +558,7 @@
     {
       "source": "src/ai.c",
       "function": "spawn_rest_interrupt_monster_callback",
-      "line": 3684,
+      "line": 3682,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -594,7 +567,7 @@
     {
       "source": "src/ai.c",
       "function": "alert_npc_to_noise_callback",
-      "line": 3833,
+      "line": 3831,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -603,7 +576,7 @@
     {
       "source": "src/ai.c",
       "function": "alert_npc_to_noise_callback",
-      "line": 3861,
+      "line": 3859,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -612,7 +585,7 @@
     {
       "source": "src/ai.c",
       "function": "emit_noise_alert",
-      "line": 3895,
+      "line": 3893,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -621,7 +594,7 @@
     {
       "source": "src/ai.c",
       "function": "resolve_unique_npc_special_behavior",
-      "line": 3926,
+      "line": 3924,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -630,7 +603,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4145,
+      "line": 4143,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -639,7 +612,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4148,
+      "line": 4146,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -648,7 +621,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_set_walk_target",
-      "line": 4148,
+      "line": 4146,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -657,7 +630,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4263,
+      "line": 4261,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -666,7 +639,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4291,
+      "line": 4289,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -675,7 +648,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4308,
+      "line": 4306,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -684,7 +657,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4323,
+      "line": 4321,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -693,7 +666,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_idle_behavior_tick",
-      "line": 4334,
+      "line": 4332,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -702,7 +675,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_notice_and_idle_tick",
-      "line": 4409,
+      "line": 4407,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -711,7 +684,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_notice_and_idle_tick",
-      "line": 4473,
+      "line": 4471,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -720,7 +693,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_wander_return_home_exact_tick",
-      "line": 4523,
+      "line": 4521,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -729,7 +702,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4558,
+      "line": 4556,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -738,7 +711,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4561,
+      "line": 4559,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -747,7 +720,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4564,
+      "line": 4562,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -756,7 +729,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4567,
+      "line": 4565,
       "category": "packed_word",
       "member": "goal_word",
       "pointer": null,
@@ -765,7 +738,7 @@
     {
       "source": "src/ai.c",
       "function": "npc_clear_special_goal",
-      "line": 4570,
+      "line": 4568,
       "category": "packed_word",
       "member": "status_word",
       "pointer": null,
@@ -774,7 +747,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5042,
+      "line": 5040,
       "category": "packed_word",
       "member": "size_weight",
       "pointer": null,
@@ -783,7 +756,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5053,
+      "line": 5051,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,
@@ -792,7 +765,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5078,
+      "line": 5076,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -801,7 +774,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5091,
+      "line": 5089,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -810,7 +783,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5106,
+      "line": 5104,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
@@ -819,7 +792,7 @@
     {
       "source": "src/ai.c",
       "function": "build_object_placement_snapshot",
-      "line": 5111,
+      "line": 5109,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
