@@ -2043,9 +2043,9 @@
           "roles": [
             {
               "name": "puVar2",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],
@@ -2089,23 +2089,23 @@
           "roles": [
             {
               "name": "puVar7",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "UW1 object struct member access",
-              "current_mobile_alias": false
-            },
-            {
-              "name": "puVar15",
-              "type": "ushort *",
-              "parameter": false,
-              "evidence": "UW1 object struct member access",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             },
             {
               "name": "puVar14",
-              "type": "ushort *",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "object accessor / proven object alias",
+              "evidence": "typed UW1 object pointer declaration",
+              "current_mobile_alias": false
+            },
+            {
+              "name": "puVar15",
+              "type": "uw_object_hdr_t *",
+              "parameter": false,
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],

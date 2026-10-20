@@ -2108,3 +2108,50 @@ Four byte views disappear and a named link-word address becomes explicit.
 The inventory now lists 21 byte views, 459 packed accesses and eight raw
 audited accesses: 488 total. Remaining captures, accesses and unrecorded
 aliases still require auditing and conversion or documented reasons.
+
+## Container open-state object-ID variants
+
+`generate_container_state_rules.py` generates exact-source recipes for
+`release_container_reference` and `open_backpack_container`. Both use native
+common-header pointers for resolved objects. Closing decrements named
+`object_id`; opening increments it. These operations depend on the original
+nibble guards: closing accepts only odd values 1, 3, 5, 7, 9 and 11, while
+opening accepts only even values 0, 2, 4, 6, 8 and 10. Thus neither operation
+borrows or carries into the higher ID bits, and the complete type word matches
+the original paired byte stores. Full type captures and guards remain in
+place; no reserved header flag meaning is inferred from these variants.
+
+The opening path uses named `link_word` addresses for resolving and weighing
+contents, and a named `chain_word` address for iteration. The equipped-slot
+cursor stays a saved word pointer even when callbacks rebind the global slot
+buffer. The container and content pointers stay local, while the final
+container is still resolved again after the first redraw. UI-list records,
+their widened native next/previous pointers, stored packed slot links, weights,
+image-save handles and widget mappings remain separate formats. They are not
+cast into UW object structures. Existing allocation, nested-list, invisible
+content, image capture/swap, redraw and indicator ordering is unchanged.
+Functions and public signatures remain in place.
+
+`container_state_fields` runs by default. It checks reproducible recipes,
+exact conversion/idempotence and rejection of changed bound/parity guards,
+volatile/escaping captures, inserted callbacks, excluded/quoted bodies and
+duplicate definitions. The actual original/current functions run 4,194,304
+comparisons across all 16-bit seeds, two functions, sixteen modes and callback
+mutation. Cases cover all header flag/ID values at the final write, class and
+status rejection, existing matching and nonmatching container views, nested
+versus equipment slots, allocation failure, first/reused image buffers, empty
+and invisible content chains, aliased initial/final objects and negative widget
+mappings. Callbacks rebind the slot buffer and current UI record, mutate the
+saved equipped cursor's contents and change pending object IDs. All sixteen
+mocked services are reached with and without mutation. Independent assertions
+verify the complete header word after guarded ID updates, resolver/weight
+addresses, indicator link stores and widget remapping. Full guarded objects,
+UI records/native links, both slot buffers, graphics/widget tables, image
+handles, globals and callback arguments/events/counts are compared. Use
+`--reference PATH` with the original `containers.c`, and `--asan` for
+AddressSanitizer.
+
+Four byte views disappear and three named packed-word addresses become
+explicit. The inventory now lists 17 byte views, 462 packed accesses and eight
+raw audited accesses: 487 total. Remaining accesses and unrecorded aliases
+still require auditing and conversion or documented reasons.

@@ -46,13 +46,12 @@ static char s_is_empty__0008790c[] = " is empty.\n";
 void release_container_reference(char *container_link)
 {
   ushort uVar1;
-  ushort *puVar2;
+  uw_object_hdr_t *puVar2;
 
-  puVar2 = (ushort *)get_object_record_by_slot_index(*(ushort *)(container_link + 8) >> 6);
-  uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
+  puVar2 = get_object_record_by_slot_index(*(ushort *)(container_link + 8) >> 6);
+  uVar1 = puVar2->type_flags;
   if (((uVar1 & 0xf) < 0xc) && ((uVar1 & 1) != 0)) {
-    ((uw_object_hdr_t *)puVar2)->type_flags_low = ((char)(uVar1 & 0xf) - 1U ^ (byte)uVar1) & 0xf ^ (byte)uVar1;
-    ((uw_object_hdr_t *)puVar2)->type_flags_high = (byte)(uVar1 >> 8);
+    puVar2->object_id -= 1;
   }
 }
 
@@ -322,7 +321,7 @@ void open_backpack_container(short container_slot)
   short sVar4;
   byte bVar5;
   undefined4 *puVar6;
-  ushort *puVar7;
+  uw_object_hdr_t *puVar7;
   undefined4 uVar8;
   undefined4 *puVar9;
   int iVar10;
@@ -332,13 +331,13 @@ void open_backpack_container(short container_slot)
   /* iVar10/iVar11 are reused elsewhere in this function as plain int loop counters (0xc..0x13 etc)
      -- real uses, left alone -- but the container-open sequence below also stored real 64-bit
      resolve_object_link() pointers into them... */
-  ushort *puVar14;
-  ushort *puVar15;
+  uw_object_hdr_t *puVar14;
+  uw_object_hdr_t *puVar15;
   
   iVar1 = (int)container_slot;
   puVar13 = (ushort *)(&g_equipped_items + iVar1 * 2);
-  puVar7 = (ushort *)resolve_object_link(puVar13);
-  uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;
+  puVar7 = resolve_object_link(puVar13);
+  uVar3 = puVar7->type_flags;
   if (((uVar3 & 0x1c0) == 0x80) && ((uVar3 & 0x30) == 0)) {
     if ((uVar3 & 0xf) == 0xf) {
       set_hud_status_value(6,1);
@@ -458,9 +457,9 @@ void open_backpack_container(short container_slot)
            (ushort*)(g_current_container_record+2)) & 0x3f ^
            (ushort*)(g_current_container_record+2)`... */
         g_current_container_link = uVar3;
-        puVar14 = (ushort *)resolve_object_link(&g_current_container_link);
-        puVar15 = (ushort *)resolve_object_link((ushort *)((char *)puVar14 + 6));
-        sum_container_weight((ushort *)((char *)puVar14 + 6),(short *)((char *)g_current_container_record + 10));
+        puVar14 = resolve_object_link(&g_current_container_link);
+        puVar15 = resolve_object_link(&puVar14->link_word);
+        sum_container_weight(&puVar14->link_word,(short *)((char *)g_current_container_record + 10));
         iVar10 = 0x14;
         do {
           uVar12 = encode_object_slot_index(puVar15);
@@ -469,10 +468,10 @@ void open_backpack_container(short container_slot)
                (&g_equipped_items)[iVar2 * 2] & 0x3f | (byte)((uVar12 & 0x3ff) << 6);
           (&DAT_00202951)[iVar2 * 2] = (char)((uVar12 << 0x16) >> 0x18);
           if (puVar15 != NULL) {
-            if (((uw_object_hdr_t *)puVar15)->invisible != 0) {
+            if (puVar15->invisible != 0) {
               iVar10 = (iVar2 + -1) * 0x10000 >> 0x10;
             }
-            puVar15 = (ushort *)resolve_object_link((ushort *)((char *)puVar15 + 4));
+            puVar15 = resolve_object_link(&puVar15->chain_word);
           }
           iVar10 = iVar10 + 1;
         } while (iVar10 * 0x10000 >> 0x10 < 0x1c);
@@ -483,11 +482,10 @@ void open_backpack_container(short container_slot)
           (&g_backpack_widget_to_slot)[iVar10] = (char)(iVar10 + 8);
         }
         redraw_inventory_widget_range(0xc,0x13);
-        puVar7 = (ushort *)resolve_object_link(&g_current_container_link);
-        uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;
+        puVar7 = resolve_object_link(&g_current_container_link);
+        uVar3 = puVar7->type_flags;
         if (((uVar3 & 0xf) < 0xc) && ((uVar3 & 1) == 0)) {
-          ((uw_object_hdr_t *)puVar7)->type_flags_low = ((char)(uVar3 & 0xf) + 1U ^ (byte)uVar3) & 0xf ^ (byte)uVar3;
-          ((uw_object_hdr_t *)puVar7)->type_flags_high = (byte)(uVar3 >> 8);
+          puVar7->object_id += 1;
         }
         refresh_container_view();
         /* The real "open container indicator" (widget 20, see DAT_00085c4c's own comment): point

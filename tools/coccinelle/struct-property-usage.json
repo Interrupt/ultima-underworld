@@ -1,8 +1,8 @@
 {
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
-    "byte_view": 21,
-    "packed_word": 459,
+    "byte_view": 17,
+    "packed_word": 462,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -1615,30 +1615,12 @@
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;"
-    },
-    {
-      "source": "src/containers.c",
-      "function": "release_container_reference",
-      "line": 54,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags_low = ((char)(uVar1 & 0xf) - 1U ^ (byte)uVar1) & 0xf ^ (byte)uVar1;"
-    },
-    {
-      "source": "src/containers.c",
-      "function": "release_container_reference",
-      "line": 55,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar2)->type_flags_high = (byte)(uVar1 >> 8);"
+      "code": "uVar1 = puVar2->type_flags;"
     },
     {
       "source": "src/containers.c",
       "function": "leave_nested_container_level",
-      "line": 183,
+      "line": 182,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1647,7 +1629,7 @@
     {
       "source": "src/containers.c",
       "function": "leave_nested_container_level",
-      "line": 183,
+      "line": 182,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1656,43 +1638,52 @@
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 341,
+      "line": 340,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;"
+      "code": "uVar3 = puVar7->type_flags;"
     },
     {
       "source": "src/containers.c",
       "function": "open_backpack_container",
-      "line": 487,
+      "line": 461,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "puVar15 = resolve_object_link(&puVar14->link_word);"
+    },
+    {
+      "source": "src/containers.c",
+      "function": "open_backpack_container",
+      "line": 462,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "sum_container_weight(&puVar14->link_word,(short *)((char *)g_current_container_record + 10));"
+    },
+    {
+      "source": "src/containers.c",
+      "function": "open_backpack_container",
+      "line": 474,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "puVar15 = resolve_object_link(&puVar15->chain_word);"
+    },
+    {
+      "source": "src/containers.c",
+      "function": "open_backpack_container",
+      "line": 486,
       "category": "packed_word",
       "member": "type_flags",
       "pointer": null,
-      "code": "uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;"
-    },
-    {
-      "source": "src/containers.c",
-      "function": "open_backpack_container",
-      "line": 489,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar7)->type_flags_low = ((char)(uVar3 & 0xf) + 1U ^ (byte)uVar3) & 0xf ^ (byte)uVar3;"
-    },
-    {
-      "source": "src/containers.c",
-      "function": "open_backpack_container",
-      "line": 490,
-      "category": "byte_view",
-      "member": "type_flags",
-      "pointer": null,
-      "code": "((uw_object_hdr_t *)puVar7)->type_flags_high = (byte)(uVar3 >> 8);"
+      "code": "uVar3 = puVar7->type_flags;"
     },
     {
       "source": "src/containers.c",
       "function": "sum_container_weight",
-      "line": 753,
+      "line": 751,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1701,7 +1692,7 @@
     {
       "source": "src/containers.c",
       "function": "sum_container_weight",
-      "line": 755,
+      "line": 753,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1710,7 +1701,7 @@
     {
       "source": "src/containers.c",
       "function": "discard_container_contents",
-      "line": 932,
+      "line": 930,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
