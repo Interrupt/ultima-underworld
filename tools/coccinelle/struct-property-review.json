@@ -2,12 +2,12 @@
   "scope": "Reviewed complete common-header transfers, explicitly listed live word-cursor addresses and full-width snapshots only. These exceptions do not approve other accesses in their containing functions.",
   "policy": "Retain the four ordered word assignments: they transfer every common-header bit, including reserved bits and links. Do not replace them with property writes or assume overlapping records permit a whole-struct assignment. Retain listed word addresses because link traversal APIs require addressable encoded words; bitfields cannot replace live cursors. Retain listed scalar snapshots at their original widths and values with reviewed complete-function context; narrowing or changing them would change preserved scalar values.",
   "summary": {
-    "inventory_accesses": 476,
+    "inventory_accesses": 479,
     "reviewed_transfer_blocks": 13,
     "justified_transfer_accesses": 104,
-    "justified_cursor_accesses": 9,
-    "justified_snapshot_accesses": 4,
-    "justified_accesses": 117,
+    "justified_cursor_accesses": 11,
+    "justified_snapshot_accesses": 5,
+    "justified_accesses": 120,
     "unreviewed_accesses": 359,
     "unreviewed_by_category": {
       "byte_view": 5,
@@ -268,6 +268,22 @@
       "reason": "Pass the current player contents-link word to the existing free-chain API after write_player_save_record may update the live player pointer.",
       "line": 950,
       "access_count": 1
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "statement": "contents = resolve_object_link(&object->link_word); /* confirmed via ARM disassembly, 0x52b54 */",
+      "reason": "Resolve the actual live contents word after the callback; the generic chain resolver consumes a word cursor, not an addressable bitfield.",
+      "line": 1059,
+      "access_count": 1
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "statement": "object = resolve_object_link(&object->chain_word); /* confirmed via ARM disassembly, 0x52b84 */",
+      "reason": "Resolve the actual next-link word after recursive callbacks may have changed it; preserve the current parent word address.",
+      "line": 1066,
+      "access_count": 1
     }
   ],
   "justified_snapshots": [
@@ -310,6 +326,16 @@
       "reviewed_body_sha256": "ab0d9e870b26d199b33d374c7d4a92036134c6a81b758b03044a369d866f172b",
       "reason": "Retain the full ushort position snapshot captured after tile lookup; its original heading bits are used for the position update.",
       "line": 1876,
+      "access_count": 1
+    },
+    {
+      "source": "src/objects.c",
+      "function": "object_exceeds_size_threshold",
+      "statement": "uVar1 = object->type_flags;",
+      "recipe": "tools/coccinelle/object-tree-native-object_exceeds_size_threshold.json",
+      "reviewed_body_sha256": "3512cad90bc333986880ffb4ffc3015eace84467ff4c5d4aff5c9b5ecda21693",
+      "reason": "Preserve the complete ushort flags capture at its original read site; the original class-table index is projected from that saved value without narrowing the scalar.",
+      "line": 1085,
       "access_count": 1
     }
   ],

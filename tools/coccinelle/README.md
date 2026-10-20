@@ -2879,3 +2879,54 @@ The inventory remains **476 accesses: 117 justified and 359 still unreviewed**.
 The converted raw settling accesses were outside the prior audited aliases;
 the newly recognized roles now cover them. Other properties, exceptions and
 unrecorded aliases still require auditing and conversion or justification.
+
+## Native object-tree traversal and size properties
+
+`generate_object_tree_native_rules.py` generates strict complete-function
+recipes for `walk_object_tree` and `object_exceeds_size_threshold`. The walker
+now keeps native common-header pointers for its current object and resolved
+contents. Quantity/contents/next tests use `is_quant`, `link` and `next`;
+resolver arguments name the complete contents/chain word addresses. The current
+pointer still follows the resolved next object. Every property read stays after
+its original callback or recursive return, so descendant callbacks can change
+a parent's next link before it is tested. Callback signatures, ordering,
+short-circuits, recursion and null handling are unchanged.
+
+The size helper now reads named quantity/link properties. The original word-6
+high-bit test becomes `link & 0x200`, and quantity arithmetic still subtracts
+one in the original signed `short`, adjusts its negative case and halves the
+same `int`. Header bit 13 uses the existing common-layout `doordir` view;
+the old "container-flagged" comment is corrected to identify the physical bit
+without inventing a new meaning. The complete flags snapshot and class-table
+projection remain in place at their original widths and values. External
+COMOBJ class-byte decoding and threshold arithmetic are unchanged.
+
+`test_object_tree_native_fields.py` verifies exact original/current bodies,
+generation, application, idempotence and observer/scope guards. Independent
+original/current call trees agree for 2,097,152 cases across every 16-bit seed,
+16 modes and both entry points. The callback invokes its corresponding real
+size helper and checks that result against a raw-byte oracle. Other callback
+modes exercise traversal without a size stop and injected nonzero results.
+Callbacks and resolvers mutate ancestor/current records and forward-only links;
+the same contents and sibling edge types execute with and without mutations.
+Tests include nested/shared descendants, parent-link changes during recursion,
+callback normalization, callback-handled null roots/results and live threshold
+changes. All record/guard bytes, return values, visit order/counts, resolver
+arguments and threshold state agree.
+
+The independent size oracle covers quantity zero, flagged high quantities,
+owner-bit separation, ID/flag words and threshold boundaries through the maximum
+computed size. The same fixture passes under AddressSanitizer. Clang AST
+inspection with the actual compilation command confirms an unchanged static
+callee sequence for traversal, no calls or record writes in the size helper,
+no volatile accesses, and unchanged scalar types. Full game build, unit and
+focused sanitizer suites check integration.
+
+The pointer audit reports 55 sources, 349 roles, no errors. Only these two
+functions' header-field/header-word catalog scopes change; both catalogs parse
+and every unrelated function's rules remain unchanged. The two live resolver
+word addresses and the full size-helper flags capture are justified explicitly.
+The conservative report now lists **479 accesses: 120 justified (104 transfer,
+11 cursor and five snapshot accesses), and 359 still unreviewed**. Newly named
+word accesses extend coverage; remaining properties, exceptions and unrecorded
+aliases still require auditing.

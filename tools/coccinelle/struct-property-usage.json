@@ -2,7 +2,7 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 5,
-    "packed_word": 463,
+    "packed_word": 466,
     "raw_audited_object_access": 8
   },
   "records": [
@@ -2840,6 +2840,33 @@
       "member": "link_word",
       "pointer": null,
       "code": "sum_container_weight(&object->link_word,local_8);"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "line": 1059,
+      "category": "packed_word",
+      "member": "link_word",
+      "pointer": null,
+      "code": "contents = resolve_object_link(&object->link_word); /* confirmed via ARM disassembly, 0x52b54 */"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "walk_object_tree",
+      "line": 1066,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "object = resolve_object_link(&object->chain_word); /* confirmed via ARM disassembly, 0x52b84 */"
+    },
+    {
+      "source": "src/objects.c",
+      "function": "object_exceeds_size_threshold",
+      "line": 1085,
+      "category": "packed_word",
+      "member": "type_flags",
+      "pointer": null,
+      "code": "uVar1 = object->type_flags;"
     },
     {
       "source": "src/objects.c",

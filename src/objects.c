@@ -1040,9 +1040,9 @@ void *get_scanned_object_class_effect_ptr()
    using their arguments */
 int walk_object_tree(void *object_ptr, int (*callback)())
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int iVar1;
-  char *pcVar2;
+  uw_object_hdr_t *contents;
 
   /* Dropped argument (both call sites below): callback is a callback (object_exceeds_size_threshold
      at every call site reached so far) that declares one parameter -- the object/link being tested,
@@ -1052,18 +1052,18 @@ int walk_object_tree(void *object_ptr, int (*callback)())
     if (iVar1 != 0) {
       return 1;
     }
-    if (((*(byte *)(object + 1) & 0x80) == 0) && ((*(ushort *)(object + 6) & 0xffc0) != 0)) {
+    if ((object->is_quant == 0) && (object->link != 0)) {
       /* Was `undefined4 uVar2` -- truncated resolve_object_link's real
          pointer return before forwarding it into the recursive call
          just below, same class as object itself above. */
-      pcVar2 = (char *)resolve_object_link((ushort *)(object + 6)); /* confirmed via ARM disassembly, 0x52b54 */
-      iVar1 = walk_object_tree(pcVar2,callback);
+      contents = resolve_object_link(&object->link_word); /* confirmed via ARM disassembly, 0x52b54 */
+      iVar1 = walk_object_tree(contents,callback);
       if (iVar1 != 0) {
         return 1;
       }
     }
-    if ((*(ushort *)(object + 4) & 0xffc0) == 0) break;
-    object = (char *)resolve_object_link((ushort *)(object + 4)); /* confirmed via ARM disassembly, 0x52b84 */
+    if (object->next == 0) break;
+    object = resolve_object_link(&object->chain_word); /* confirmed via ARM disassembly, 0x52b84 */
     iVar1 = ((int (*)(void *))callback)(object);
   }
   return 0;
@@ -1073,22 +1073,22 @@ int walk_object_tree(void *object_ptr, int (*callback)())
 
 // was FUN_00052bac -- checks whether object param_1's size/weight class exceeds the current
 // threshold in DAT_002046b0 (set by its caller, e.g. roll_object_destroy_chance, just before use):
-// container-flagged objects (0x2000) always report "exceeds" (1)...
+// objects with header bit 13 (`doordir` in the common layout) always report "exceeds" (1)...
 int object_exceeds_size_threshold(void *object_ptr)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   ushort uVar1;
   undefined4 uVar2;
   short sVar3;
   int iVar4;
   
-  uVar1 = *object;
-  if ((uVar1 & 0x2000) == 0) {
-    if (((uVar1 & 0x8000) == 0) || ((object[3] & 0x8000) != 0)) {
+  uVar1 = object->type_flags;
+  if (object->doordir == 0) {
+    if ((object->is_quant == 0) || ((object->link & 0x200) != 0)) {
       sVar3 = 0;
     }
     else {
-      sVar3 = (object[3] >> 6) - 1;
+      sVar3 = object->link - 1;
     }
     iVar4 = (int)sVar3;
     if (iVar4 < 0) {

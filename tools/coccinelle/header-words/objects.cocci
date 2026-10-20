@@ -987,89 +987,6 @@ R F(...) {
 ...>
 }
 
-@word_14_0@
-type R;
-identifier F =~ "^\(walk_object_tree\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pcVar2 + 0)
-+ ((uw_object_hdr_t *)pcVar2)->type_flags
-|
-- ((ushort *)pcVar2)[0]
-+ ((uw_object_hdr_t *)pcVar2)->type_flags
-|
-- *(ushort *)pcVar2
-+ ((uw_object_hdr_t *)pcVar2)->type_flags
-|
-- *(ushort *)(pcVar2 + 0)
-+ ((uw_object_hdr_t *)pcVar2)->type_flags
-)
-...>
-}
-
-@word_14_1@
-type R;
-identifier F =~ "^\(walk_object_tree\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pcVar2 + 2)
-+ ((uw_object_hdr_t *)pcVar2)->position_word
-|
-- ((ushort *)pcVar2)[1]
-+ ((uw_object_hdr_t *)pcVar2)->position_word
-|
-- *(ushort *)(pcVar2 + 2)
-+ ((uw_object_hdr_t *)pcVar2)->position_word
-)
-...>
-}
-
-@word_14_2@
-type R;
-identifier F =~ "^\(walk_object_tree\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pcVar2 + 4)
-+ ((uw_object_hdr_t *)pcVar2)->chain_word
-|
-- ((ushort *)pcVar2)[2]
-+ ((uw_object_hdr_t *)pcVar2)->chain_word
-|
-- *(ushort *)(pcVar2 + 4)
-+ ((uw_object_hdr_t *)pcVar2)->chain_word
-)
-...>
-}
-
-@word_14_3@
-type R;
-identifier F =~ "^\(walk_object_tree\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)pcVar2 + 6)
-+ ((uw_object_hdr_t *)pcVar2)->link_word
-|
-- ((ushort *)pcVar2)[3]
-+ ((uw_object_hdr_t *)pcVar2)->link_word
-|
-- *(ushort *)(pcVar2 + 6)
-+ ((uw_object_hdr_t *)pcVar2)->link_word
-)
-...>
-}
-
 @word_15_0@
 type R;
 identifier F =~ "^\(should_destroy_linked_object\)$";
@@ -3170,6 +3087,231 @@ R F(...) {
 @settle_native_word_4_3@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+)
+...>
+}
+
+@object_tree_native_word_0_0@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@object_tree_native_word_0_1@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@object_tree_native_word_0_2@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@object_tree_native_word_0_3@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@object_tree_native_word_1_0@
+type R;
+identifier F =~ "^\(walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)contents + 0)
++ ((uw_object_hdr_t *)contents)->type_flags
+|
+- ((ushort *)contents)[0]
++ ((uw_object_hdr_t *)contents)->type_flags
+|
+- *(ushort *)contents
++ ((uw_object_hdr_t *)contents)->type_flags
+)
+...>
+}
+
+@object_tree_native_word_1_1@
+type R;
+identifier F =~ "^\(walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)contents + 2)
++ ((uw_object_hdr_t *)contents)->position_word
+|
+- ((ushort *)contents)[1]
++ ((uw_object_hdr_t *)contents)->position_word
+)
+...>
+}
+
+@object_tree_native_word_1_2@
+type R;
+identifier F =~ "^\(walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)contents + 4)
++ ((uw_object_hdr_t *)contents)->chain_word
+|
+- ((ushort *)contents)[2]
++ ((uw_object_hdr_t *)contents)->chain_word
+)
+...>
+}
+
+@object_tree_native_word_1_3@
+type R;
+identifier F =~ "^\(walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)contents + 6)
++ ((uw_object_hdr_t *)contents)->link_word
+|
+- ((ushort *)contents)[3]
++ ((uw_object_hdr_t *)contents)->link_word
+)
+...>
+}
+
+@object_tree_native_word_2_0@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@object_tree_native_word_2_1@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@object_tree_native_word_2_2@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@object_tree_native_word_2_3@
+type R;
+identifier F =~ "^\(object_exceeds_size_threshold\|walk_object_tree\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
