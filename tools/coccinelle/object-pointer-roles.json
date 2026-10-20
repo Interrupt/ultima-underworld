@@ -2251,10 +2251,10 @@
           "function": "interact_default",
           "roles": [
             {
-              "name": "puVar3",
-              "type": "ushort *",
+              "name": "split_object",
+              "type": "uw_object_hdr_t *",
               "parameter": false,
-              "evidence": "object accessor / proven object alias",
+              "evidence": "typed UW1 object pointer declaration",
               "current_mobile_alias": false
             }
           ],

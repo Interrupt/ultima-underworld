@@ -570,7 +570,7 @@ R F(...) {
 ...>
 }
 
-@barter_click_word_0_0@
+@interaction_stack_word_0_0@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, uw_object_hdr_t;
@@ -578,25 +578,19 @@ typedef ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 0)
-+ ((uw_object_hdr_t *)puVar3)->type_flags
+- *(ushort *)((char *)split_object + 0)
++ ((uw_object_hdr_t *)split_object)->type_flags
 |
-- ((ushort *)puVar3)[0]
-+ ((uw_object_hdr_t *)puVar3)->type_flags
+- ((ushort *)split_object)[0]
++ ((uw_object_hdr_t *)split_object)->type_flags
 |
-- *(ushort *)puVar3
-+ ((uw_object_hdr_t *)puVar3)->type_flags
-|
-- puVar3[0]
-+ ((uw_object_hdr_t *)puVar3)->type_flags
-|
-- *puVar3
-+ ((uw_object_hdr_t *)puVar3)->type_flags
+- *(ushort *)split_object
++ ((uw_object_hdr_t *)split_object)->type_flags
 )
 ...>
 }
 
-@barter_click_word_0_1@
+@interaction_stack_word_0_1@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, uw_object_hdr_t;
@@ -604,19 +598,16 @@ typedef ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 2)
-+ ((uw_object_hdr_t *)puVar3)->position_word
+- *(ushort *)((char *)split_object + 2)
++ ((uw_object_hdr_t *)split_object)->position_word
 |
-- ((ushort *)puVar3)[1]
-+ ((uw_object_hdr_t *)puVar3)->position_word
-|
-- puVar3[1]
-+ ((uw_object_hdr_t *)puVar3)->position_word
+- ((ushort *)split_object)[1]
++ ((uw_object_hdr_t *)split_object)->position_word
 )
 ...>
 }
 
-@barter_click_word_0_2@
+@interaction_stack_word_0_2@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, uw_object_hdr_t;
@@ -624,19 +615,16 @@ typedef ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 4)
-+ ((uw_object_hdr_t *)puVar3)->chain_word
+- *(ushort *)((char *)split_object + 4)
++ ((uw_object_hdr_t *)split_object)->chain_word
 |
-- ((ushort *)puVar3)[2]
-+ ((uw_object_hdr_t *)puVar3)->chain_word
-|
-- puVar3[2]
-+ ((uw_object_hdr_t *)puVar3)->chain_word
+- ((ushort *)split_object)[2]
++ ((uw_object_hdr_t *)split_object)->chain_word
 )
 ...>
 }
 
-@barter_click_word_0_3@
+@interaction_stack_word_0_3@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, uw_object_hdr_t;
@@ -644,14 +632,11 @@ typedef ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 6)
-+ ((uw_object_hdr_t *)puVar3)->link_word
+- *(ushort *)((char *)split_object + 6)
++ ((uw_object_hdr_t *)split_object)->link_word
 |
-- ((ushort *)puVar3)[3]
-+ ((uw_object_hdr_t *)puVar3)->link_word
-|
-- puVar3[3]
-+ ((uw_object_hdr_t *)puVar3)->link_word
+- ((ushort *)split_object)[3]
++ ((uw_object_hdr_t *)split_object)->link_word
 )
 ...>
 }

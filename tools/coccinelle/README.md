@@ -2300,3 +2300,46 @@ this is newly counted code, not a new raw access. The inventory is now ten
 byte views, 463 packed accesses and nine raw audited accesses: 482 total.
 Other remaining accesses and unrecorded aliases still require auditing and
 conversion or documented reasons.
+
+## Default interaction stack rollback and live target fields
+
+`generate_interaction_stack_rules.py` generates `interaction-stack-fields.json`
+for `interact_default`. The split object has a native common-header pointer.
+Live global-target views use named `object_id`, `is_quant` and `link` for
+class, special-item and split-quantity gates. The public target pointer/API
+remains unchanged. Target views are not cached across range, sight, arena,
+split, insertion, carry, noise or pickup callbacks: each later access still
+uses whichever object those callbacks leave as `g_interact_target`.
+
+Carry rejection retains the full scaled `iVar1` sum, now from named quantity
+fields. A named `link` write reproduces the old ten-bit truncation while
+preserving owner, quality, next, type and position bits on the current target.
+Named `chain_word` addresses preserve the existing insertion/unlink APIs.
+The alias test stays after the carry callback, so rebinding the target to the
+split itself suppresses restoration just as before. Rebinding to a third
+object restores into that object. This path still unlinks without freeing
+the split; no additional cleanup or changed return behavior is introduced.
+Player-record bit updates, cursor state, labels and callback order are stable.
+
+`interaction_stack_fields` runs by default and checks reproducible recipes,
+exact conversion/idempotence and rejection of altered masks, alias gates,
+volatile/escaping captures, inserted callbacks, excluded/quoted bodies and
+duplicate definitions. Its actual original/current functions compare 2,097,152
+cases over all 16-bit seeds, sixteen modes and callback mutation. Cases cover
+class/ID routing, range/sight and arena rejection, special links, cancelled and
+aliased splits, carry failure and success, quantity overflow, target replacement
+and pickup effects. All sixteen services are reached with and without mutation.
+Independent assertions verify the complete restored header before unlinking,
+current cursor addresses, target/candidate identity gates, player nibble update
+before noise, and pickup/cursor ordering. Full guarded objects, player buffers,
+globals and callback arguments/events/counts are compared. Use `--reference PATH`
+with the original `interact.c`, and `--asan` for AddressSanitizer. Only this
+function's header catalogs are refreshed; unrelated rule bodies are preserved.
+
+The newly exposed raw quantity read is converted, returning the raw audited
+count to eight. Two required chain-word addresses become explicit packed
+entries. The inventory now lists ten byte views, 465 packed accesses and eight
+raw audited accesses: 483 total. The net increase of one reflects named API
+storage addresses, not added raw property manipulation. Other remaining
+accesses and unrecorded aliases still require auditing and conversion or
+documented reasons.

@@ -2,8 +2,8 @@
   "scope": "Named packed views and existing audited object-pointer roles in src/*.c; unrecorded aliases and other structures still require independent auditing.",
   "counts": {
     "byte_view": 10,
-    "packed_word": 463,
-    "raw_audited_object_access": 9
+    "packed_word": 465,
+    "raw_audited_object_access": 8
   },
   "records": [
     {
@@ -1782,16 +1782,25 @@
     {
       "source": "src/interact.c",
       "function": "interact_default",
-      "line": 93,
-      "category": "raw_audited_object_access",
-      "member": null,
-      "pointer": "puVar3",
-      "code": "iVar1 = (g_interact_target[3] & 0xffc0) + (puVar3[3] & 0xffc0);"
+      "line": 87,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "object_list_insert_head(&((uw_object_hdr_t *)g_interact_target)->chain_word,split_object);"
+    },
+    {
+      "source": "src/interact.c",
+      "function": "interact_default",
+      "line": 95,
+      "category": "packed_word",
+      "member": "chain_word",
+      "pointer": null,
+      "code": "object_list_unlink(&((uw_object_hdr_t *)g_interact_target)->chain_word,split_object);"
     },
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 554,
+      "line": 553,
       "category": "packed_word",
       "member": "chain_word",
       "pointer": null,
@@ -1800,7 +1809,7 @@
     {
       "source": "src/interact.c",
       "function": "purge_tagged_objects_from_chain",
-      "line": 562,
+      "line": 561,
       "category": "packed_word",
       "member": "link_word",
       "pointer": null,
@@ -1809,7 +1818,7 @@
     {
       "source": "src/interact.c",
       "function": "target_in_range",
-      "line": 715,
+      "line": 714,
       "category": "packed_word",
       "member": "position_word",
       "pointer": null,

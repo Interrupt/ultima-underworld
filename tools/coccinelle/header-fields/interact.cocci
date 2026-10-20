@@ -3890,7 +3890,7 @@ R F(...) {
 ...>
 }
 
-@barter_click_field_0_object_id disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -3898,25 +3898,19 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)puVar3)->object_id
+- *(ushort *)((char *)split_object + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)split_object)->object_id
 |
-- ((ushort *)puVar3)[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar3)->object_id
+- ((ushort *)split_object)[0] & 0x1ff
++ ((uw_object_hdr_t *)split_object)->object_id
 |
-- *(ushort *)puVar3 & 0x1ff
-+ ((uw_object_hdr_t *)puVar3)->object_id
-|
-- puVar3[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar3)->object_id
-|
-- *puVar3 & 0x1ff
-+ ((uw_object_hdr_t *)puVar3)->object_id
+- *(ushort *)split_object & 0x1ff
++ ((uw_object_hdr_t *)split_object)->object_id
 )
 ...>
 }
 
-@barter_click_field_0_flags_res disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_flags_res disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -3924,46 +3918,34 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(ushort *)((char *)split_object + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (*(ushort *)((char *)puVar3 + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(ushort *)((char *)split_object + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (((ushort *)puVar3)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (((ushort *)split_object)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (((ushort *)puVar3)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (((ushort *)split_object)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (*(ushort *)puVar3 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(ushort *)split_object >> 9) & 0x7
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (*(ushort *)puVar3 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(ushort *)split_object & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (puVar3[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(byte *)((char *)split_object + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)split_object)->flags_res
 |
-- (puVar3[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar3)->flags_res
-|
-- (*puVar3 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
-|
-- (*puVar3 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar3)->flags_res
-|
-- (*(byte *)((char *)puVar3 + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->flags_res
-|
-- (*(byte *)((char *)puVar3 + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)puVar3)->flags_res
+- (*(byte *)((char *)split_object + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)split_object)->flags_res
 )
 ...>
 }
 
-@barter_click_field_0_enchanted disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_enchanted disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -3971,46 +3953,34 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(ushort *)((char *)split_object + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (*(ushort *)((char *)puVar3 + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(ushort *)((char *)split_object + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (((ushort *)puVar3)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (((ushort *)split_object)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (((ushort *)puVar3)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (((ushort *)split_object)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (*(ushort *)puVar3 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(ushort *)split_object >> 12) & 0x1
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (*(ushort *)puVar3 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(ushort *)split_object & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (puVar3[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(byte *)((char *)split_object + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)split_object)->enchanted
 |
-- (puVar3[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar3)->enchanted
-|
-- (*puVar3 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
-|
-- (*puVar3 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar3)->enchanted
-|
-- (*(byte *)((char *)puVar3 + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->enchanted
-|
-- (*(byte *)((char *)puVar3 + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)puVar3)->enchanted
+- (*(byte *)((char *)split_object + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)split_object)->enchanted
 )
 ...>
 }
 
-@barter_click_field_0_doordir disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_doordir disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4018,46 +3988,34 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(ushort *)((char *)split_object + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (*(ushort *)((char *)puVar3 + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(ushort *)((char *)split_object + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (((ushort *)puVar3)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (((ushort *)split_object)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (((ushort *)puVar3)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (((ushort *)split_object)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (*(ushort *)puVar3 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(ushort *)split_object >> 13) & 0x1
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (*(ushort *)puVar3 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(ushort *)split_object & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (puVar3[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(byte *)((char *)split_object + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)split_object)->doordir
 |
-- (puVar3[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->doordir
-|
-- (*puVar3 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
-|
-- (*puVar3 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->doordir
-|
-- (*(byte *)((char *)puVar3 + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->doordir
-|
-- (*(byte *)((char *)puVar3 + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)puVar3)->doordir
+- (*(byte *)((char *)split_object + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)split_object)->doordir
 )
 ...>
 }
 
-@barter_click_field_0_invisible disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_invisible disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4065,46 +4023,34 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(ushort *)((char *)split_object + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (*(ushort *)((char *)puVar3 + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(ushort *)((char *)split_object + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (((ushort *)puVar3)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (((ushort *)split_object)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (((ushort *)puVar3)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (((ushort *)split_object)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (*(ushort *)puVar3 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(ushort *)split_object >> 14) & 0x1
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (*(ushort *)puVar3 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(ushort *)split_object & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (puVar3[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(byte *)((char *)split_object + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)split_object)->invisible
 |
-- (puVar3[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar3)->invisible
-|
-- (*puVar3 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
-|
-- (*puVar3 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar3)->invisible
-|
-- (*(byte *)((char *)puVar3 + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->invisible
-|
-- (*(byte *)((char *)puVar3 + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)puVar3)->invisible
+- (*(byte *)((char *)split_object + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)split_object)->invisible
 )
 ...>
 }
 
-@barter_click_field_0_is_quant disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_is_quant disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4112,64 +4058,37 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(ushort *)((char *)split_object + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- (*(ushort *)((char *)puVar3 + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(ushort *)((char *)split_object + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- *(ushort *)((char *)puVar3 + 0x0) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (((ushort *)split_object)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- (((ushort *)puVar3)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (((ushort *)split_object)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- (((ushort *)puVar3)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(ushort *)split_object >> 15) & 0x1
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- ((ushort *)puVar3)[0] >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(ushort *)split_object & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- (*(ushort *)puVar3 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(byte *)((char *)split_object + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- (*(ushort *)puVar3 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- (*(byte *)((char *)split_object + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)split_object)->is_quant
 |
-- *(ushort *)puVar3 >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (puVar3[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (puVar3[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- puVar3[0] >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (*puVar3 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (*puVar3 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- *puVar3 >> 15
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (*(byte *)((char *)puVar3 + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- (*(byte *)((char *)puVar3 + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)puVar3)->is_quant
-|
-- *(byte *)((char *)puVar3 + 0x1) >> 7
-+ ((uw_object_hdr_t *)puVar3)->is_quant
+- *(byte *)((char *)split_object + 0x1) >> 7
++ ((uw_object_hdr_t *)split_object)->is_quant
 )
 ...>
 }
 
-@barter_click_field_0_zpos disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_zpos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4177,25 +4096,19 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar3)->zpos
+- *(ushort *)((char *)split_object + 0x2) & 0x7f
++ ((uw_object_hdr_t *)split_object)->zpos
 |
-- ((ushort *)puVar3)[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar3)->zpos
+- ((ushort *)split_object)[1] & 0x7f
++ ((uw_object_hdr_t *)split_object)->zpos
 |
-- puVar3[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar3)->zpos
-|
-- *(byte *)((char *)puVar3 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar3)->zpos
-|
-- (byte)puVar3[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar3)->zpos
+- *(byte *)((char *)split_object + 0x2) & 0x7f
++ ((uw_object_hdr_t *)split_object)->zpos
 )
 ...>
 }
 
-@barter_click_field_0_heading disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_heading disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4203,28 +4116,22 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->heading
+- (*(ushort *)((char *)split_object + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)split_object)->heading
 |
-- (*(ushort *)((char *)puVar3 + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar3)->heading
+- (*(ushort *)((char *)split_object + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)split_object)->heading
 |
-- (((ushort *)puVar3)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->heading
+- (((ushort *)split_object)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)split_object)->heading
 |
-- (((ushort *)puVar3)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar3)->heading
-|
-- (puVar3[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->heading
-|
-- (puVar3[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar3)->heading
+- (((ushort *)split_object)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)split_object)->heading
 )
 ...>
 }
 
-@barter_click_field_0_ypos disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_ypos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4232,34 +4139,28 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (*(ushort *)((char *)split_object + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)split_object)->ypos
 |
-- (*(ushort *)((char *)puVar3 + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (*(ushort *)((char *)split_object + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)split_object)->ypos
 |
-- (((ushort *)puVar3)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (((ushort *)split_object)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)split_object)->ypos
 |
-- (((ushort *)puVar3)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (((ushort *)split_object)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)split_object)->ypos
 |
-- (puVar3[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (*(byte *)((char *)split_object + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)split_object)->ypos
 |
-- (puVar3[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar3)->ypos
-|
-- (*(byte *)((char *)puVar3 + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->ypos
-|
-- (*(byte *)((char *)puVar3 + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)puVar3)->ypos
+- (*(byte *)((char *)split_object + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)split_object)->ypos
 )
 ...>
 }
 
-@barter_click_field_0_xpos disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_xpos disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4267,46 +4168,31 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (*(ushort *)((char *)split_object + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- (*(ushort *)((char *)puVar3 + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (*(ushort *)((char *)split_object + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- *(ushort *)((char *)puVar3 + 0x2) >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (((ushort *)split_object)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- (((ushort *)puVar3)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (((ushort *)split_object)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- (((ushort *)puVar3)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (*(byte *)((char *)split_object + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- ((ushort *)puVar3)[1] >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- (*(byte *)((char *)split_object + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)split_object)->xpos
 |
-- (puVar3[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->xpos
-|
-- (puVar3[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
-|
-- puVar3[1] >> 13
-+ ((uw_object_hdr_t *)puVar3)->xpos
-|
-- (*(byte *)((char *)puVar3 + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)puVar3)->xpos
-|
-- (*(byte *)((char *)puVar3 + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)puVar3)->xpos
-|
-- *(byte *)((char *)puVar3 + 0x3) >> 5
-+ ((uw_object_hdr_t *)puVar3)->xpos
+- *(byte *)((char *)split_object + 0x3) >> 5
++ ((uw_object_hdr_t *)split_object)->xpos
 )
 ...>
 }
 
-@barter_click_field_0_quality disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_quality disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4314,25 +4200,19 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->quality
+- *(ushort *)((char *)split_object + 0x4) & 0x3f
++ ((uw_object_hdr_t *)split_object)->quality
 |
-- ((ushort *)puVar3)[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->quality
+- ((ushort *)split_object)[2] & 0x3f
++ ((uw_object_hdr_t *)split_object)->quality
 |
-- puVar3[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->quality
-|
-- *(byte *)((char *)puVar3 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->quality
-|
-- (byte)puVar3[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->quality
+- *(byte *)((char *)split_object + 0x4) & 0x3f
++ ((uw_object_hdr_t *)split_object)->quality
 )
 ...>
 }
 
-@barter_click_field_0_next disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_next disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4340,37 +4220,22 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->next
+- (*(ushort *)((char *)split_object + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_object)->next
 |
-- (*(ushort *)((char *)puVar3 + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
+- (*(ushort *)((char *)split_object + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_object)->next
 |
-- *(ushort *)((char *)puVar3 + 0x4) >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
+- (((ushort *)split_object)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_object)->next
 |
-- (((ushort *)puVar3)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->next
-|
-- (((ushort *)puVar3)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
-|
-- ((ushort *)puVar3)[2] >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
-|
-- (puVar3[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->next
-|
-- (puVar3[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
-|
-- puVar3[2] >> 6
-+ ((uw_object_hdr_t *)puVar3)->next
+- (((ushort *)split_object)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_object)->next
 )
 ...>
 }
 
-@barter_click_field_0_owner disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_owner disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4378,25 +4243,19 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar3 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->owner
+- *(ushort *)((char *)split_object + 0x6) & 0x3f
++ ((uw_object_hdr_t *)split_object)->owner
 |
-- ((ushort *)puVar3)[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->owner
+- ((ushort *)split_object)[3] & 0x3f
++ ((uw_object_hdr_t *)split_object)->owner
 |
-- puVar3[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->owner
-|
-- *(byte *)((char *)puVar3 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->owner
-|
-- (byte)puVar3[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar3)->owner
+- *(byte *)((char *)split_object + 0x6) & 0x3f
++ ((uw_object_hdr_t *)split_object)->owner
 )
 ...>
 }
 
-@barter_click_field_0_link disable drop_cast, is_zero, isnt_zero@
+@interaction_stack_field_0_link disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(interact_default\)$";
 typedef ushort, byte, uw_object_hdr_t;
@@ -4404,32 +4263,17 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar3 + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->link
+- (*(ushort *)((char *)split_object + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_object)->link
 |
-- (*(ushort *)((char *)puVar3 + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
+- (*(ushort *)((char *)split_object + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_object)->link
 |
-- *(ushort *)((char *)puVar3 + 0x6) >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
+- (((ushort *)split_object)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_object)->link
 |
-- (((ushort *)puVar3)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->link
-|
-- (((ushort *)puVar3)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
-|
-- ((ushort *)puVar3)[3] >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
-|
-- (puVar3[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar3)->link
-|
-- (puVar3[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
-|
-- puVar3[3] >> 6
-+ ((uw_object_hdr_t *)puVar3)->link
+- (((ushort *)split_object)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_object)->link
 )
 ...>
 }
