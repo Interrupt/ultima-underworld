@@ -3051,6 +3051,38 @@ void uw_editor_selftest(void)
     g_selftest_checks += 4;
   }
 
+  /* deleting the head of a tile with several objects leaves its siblings; a class-7 object (a decal, which the game keeps in its scheduler)
+     deletes cleanly; and with a free list that is empty the editor refuses to place instead of letting the game despawn objects */
+  {
+    int px = tx, py = ty;
+    op_place(0xc2, px, py, 1, 1);
+    op_place(0xc3, px, py, 6, 6);   /* now the head of the tile's chain, with the first behind it */
+    int before_count = tile_object_count(px, py);
+    select_object_on_tile(px, py, object_at(tile_head(px, py)));
+    snapshot_take(&before);
+    op_delete();
+    if (tile_object_count(px, py) != before_count - 1) { fprintf(stderr, "[editor] selftest FAILED: deleting a tile head took its siblings (%d to %d)\n", before_count, tile_object_count(px, py)); abort(); }
+    uw_editor_validate();
+    uw_editor_undo();
+    selftest_expect(&before, "undoing the delete of a tile head");
+    op_place(0x1c0, px, py, 3, 3);   /* class 7: blood */
+    select_object_on_tile(px, py, object_at(tile_head(px, py)));
+    snapshot_take(&before);
+    op_delete();
+    uw_editor_validate();
+    uw_editor_undo();
+    selftest_expect(&before, "undoing the delete of a class 7 object");
+    char *saved_free = DAT_0020469c;
+    DAT_0020469c = DAT_002046bc - 2;   /* no free static slot */
+    snapshot_take(&before);
+    op_place(0xc2, px, py, 2, 2);
+    int refused = g_status && strstr(g_status, "no free") != NULL;
+    snapshot_take(&after);
+    DAT_0020469c = saved_free;
+    if (!refused || memcmp(&before, &after, sizeof before) != 0) { fprintf(stderr, "[editor] selftest FAILED: placing with a full free list\n"); abort(); }
+    g_selftest_checks += 5;
+  }
+
   /* leave the level as the test found it: undo everything */
   while (g_undo_count) uw_editor_undo();
   fprintf(stderr, "[editor] selftest: ok, %d checks\n", g_selftest_checks);
