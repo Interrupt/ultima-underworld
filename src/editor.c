@@ -17,6 +17,7 @@
 #include "headers/interact.h"
 #include "headers/automap.h"
 #include "headers/objects.h"
+#include "headers/3d.h"
 #include "headers/ai.h"
 #include "headers/traps.h"
 
@@ -24,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <time.h>
 
 extern short DAT_00201b64;   /* game mode; 0 == in-game 3D dungeon view */
@@ -553,12 +555,13 @@ static int tile_is_open(int tx, int ty)
   return t && t->tile_type != 0;
 }
 
-/* Put an object at the head of a tile's chain, standing on the floor. Mobiles also record the tile. */
-static void put_on_tile(uw_object_hdr_t *o, int tx, int ty)
+/* Put an object at the head of a tile's chain, standing on the floor, at a sub-tile position (negative: keep its own). Mobiles also record the tile. */
+static void put_on_tile(uw_object_hdr_t *o, int tx, int ty, int sub_x, int sub_y)
 {
   const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
   object_list_insert_head(tile_link(tx, ty), o);
   o->zpos = (unsigned)t->floor_height * 8;
+  if (sub_x >= 0) { o->xpos = (unsigned)sub_x & 7; o->ypos = (unsigned)sub_y & 7; }
   if (is_mobile(o) && encode_object_slot_index(o) < 0x100) {
     ((uw_mobile_object_t *)o)->tile_x = (unsigned)tx;
     ((uw_mobile_object_t *)o)->tile_y = (unsigned)ty;
@@ -585,9 +588,7 @@ static void op_place(int id, int tx, int ty, int sub_x, int sub_y)
     memset((char *)o + sizeof(uw_object_hdr_t), 0, sizeof(uw_mobile_object_t) - sizeof(uw_object_hdr_t));
     ((uw_mobile_object_t *)o)->npc_hp = g_monster_type_props[id & 0x3f].max_hp;
   }
-  o->xpos = (unsigned)sub_x & 7;
-  o->ypos = (unsigned)sub_y & 7;
-  put_on_tile(o, tx, ty);
+  put_on_tile(o, tx, ty, sub_x, sub_y);
   select_object_on_tile(tx, ty, o);
   g_status = "placed";
   uw_editor_validate();
@@ -622,7 +623,7 @@ static void op_pick_up(int copy)
   g_status = copy ? "click a tile to copy it" : "click a tile to move it";
 }
 
-static void op_put_down(int tx, int ty)
+static void op_put_down(int tx, int ty, int sub_x, int sub_y)
 {
   uw_object_hdr_t *src = object_at(g_held_slot);
   if (!src) { g_held_slot = 0; return; }
@@ -637,7 +638,7 @@ static void op_put_down(int tx, int ty)
     memcpy(copy, src, mobile ? sizeof(uw_mobile_object_t) : sizeof(uw_object_hdr_t));
     copy->next = 0;
     if (!copy->is_quant) copy->link = 0;   /* a shallow copy: the contents stay with the original */
-    put_on_tile(copy, tx, ty);
+    put_on_tile(copy, tx, ty, sub_x, sub_y);
     select_object_on_tile(tx, ty, copy);
     g_status = "copied";
   }
@@ -645,7 +646,7 @@ static void op_put_down(int tx, int ty)
     ushort *link = find_link(g_held_slot);   /* the selection may have moved on since it was picked up */
     if (!link) { g_status = "lost the object"; g_held_slot = 0; return; }
     object_list_unlink(link, src);
-    put_on_tile(src, tx, ty);
+    put_on_tile(src, tx, ty, sub_x, sub_y);
     select_object_on_tile(tx, ty, src);
     g_status = "moved";
   }
@@ -683,20 +684,77 @@ static void button_pressed(int i)
   }
 }
 
-/* Pick the object under a point of the 3D pane with the game's own per-pixel pick buffer, which is in scene
-   coordinates, and select it with its tile (or put the held object down on that tile). */
+/* Where a point of the 3D view looks at the floor. The point is in scene coordinates; the ray inverts the
+   projection the renderer uses (x = cx + scale * eye_x / eye_z, y = cy - 0.9 * scale * eye_y / eye_z, see
+   raster_textured_span), turns it by the camera's facing and pitch, and walks it over the tiles in steps of 1/32
+   tile until it goes below a floor (the hit, refined by bisection) or into a solid tile or out of the map. The
+   floors are taken as flat at their tile's height. World units are 1/256 of a tile, and a floor height step is 64. */
+static int floor_under_view_point(int scene_x, int scene_y, int *hit_x, int *hit_y)
+{
+  const double cx = UW_FULLSCREEN_PROJ_CX, cy = uw_fullscreen_proj_cy(), scale = UW_FULLSCREEN_PROJ_SCALE;
+  double rx = (scene_x + 0.5 - cx) / scale, ry = -(scene_y + 0.5 - cy) / (scale * 0.9);
+  short sn, cs;
+  angle_to_screen_delta((ushort)DAT_0023bf00, &sn, &cs);
+  double fx = sn / 32768.0, fy = cs / 32768.0;                  /* the facing, on the ground */
+  double pitch = -DAT_0023beb4 / 256.0 * (M_PI / 180.0);         /* up is positive */
+  double cp = cos(pitch), sp = sin(pitch);
+  /* forward, right and up in the world */
+  double dx = fx * cp + fy * rx - fx * sp * ry, dy = fy * cp - fx * rx - fy * sp * ry, dz = sp + cp * ry;
+  double px = DAT_0023be90, py = DAT_0023be92, pz = DAT_0023be94;
+  const double step = 8.0;
+  double len = sqrt(dx * dx + dy * dy + dz * dz);
+  dx = dx / len * step; dy = dy / len * step; dz = dz / len * step;
+  for (int i = 0; i < 1600; i++) {
+    double nx = px + dx, ny = py + dy, nz = pz + dz;
+    int tx = (int)floor(nx / 256.0), ty = (int)floor(ny / 256.0);
+    if (tx < 0 || tx > 63 || ty < 0 || ty > 63 || nz > 1100) return 0;
+    const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
+    if (!t || t->tile_type == 0) return 0;   /* a wall was hit first */
+    if (nz <= t->floor_height * 64.0) {
+      double lo = 0.0, hi = 1.0;   /* the crossing between this step's start and end */
+      for (int k = 0; k < 8; k++) {
+        double m = (lo + hi) / 2;
+        double mx = px + dx * m, my = py + dy * m, mz = pz + dz * m;
+        int mtx = (int)floor(mx / 256.0), mty = (int)floor(my / 256.0);
+        const uw_tile_t *mt = mtx >= 0 && mtx < 64 && mty >= 0 && mty < 64 ? (const uw_tile_t *)tilemap_lookup((short)mtx, (short)mty) : NULL;
+        if (mt && mt->tile_type != 0 && mz <= mt->floor_height * 64.0) hi = m; else lo = m;
+      }
+      *hit_x = (int)floor(px + dx * hi);
+      *hit_y = (int)floor(py + dy * hi);
+      return 1;
+    }
+    px = nx; py = ny; pz = nz;
+  }
+  return 0;
+}
+
+/* A click in the 3D pane. Holding an object (Move, Copy) or an armed palette brush puts it on the floor under the
+   click, at that spot. Otherwise it selects the object under the click, found with the game's own per-pixel pick
+   buffer, or else the floor tile. */
 static void pick_in_view(int px, int py)
 {
   int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0;
   int sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
-  g_mouse_x = (short)(sx0 + (px - R_VIEW.x0) * sw / w);
-  g_mouse_y = (short)((py - R_VIEW.y0) * ED_H / h);
+  int scene_x = sx0 + (px - R_VIEW.x0) * sw / w, scene_y = (py - R_VIEW.y0) * ED_H / h;
+  int hx = 0, hy = 0;
+  int on_floor = floor_under_view_point(scene_x, scene_y, &hx, &hy);
+  int tx = hx >> 8, ty = hy >> 8, sub_x = (hx & 255) >> 5, sub_y = (hy & 255) >> 5;
+  if (g_held_slot || g_brush_armed) {
+    if (!on_floor) { g_status = "no floor there"; return; }
+    if (g_held_slot) op_put_down(tx, ty, sub_x, sub_y);
+    else op_place(g_palette_brush, tx, ty, sub_x, sub_y);
+    return;
+  }
+  g_mouse_x = (short)scene_x;
+  g_mouse_y = (short)scene_y;
   set_pending_update_flags(2);   /* the pick re-renders the view only when it is marked stale; the editor freezes redraws */
   uw_object_hdr_t *o = (uw_object_hdr_t *)pick_object_under_cursor(2);
-  if (!o) { g_status = "nothing there"; return; }
-  int tile = (int)(((intptr_t)DAT_002020b0 - (intptr_t)tilemap_lookup(0, 0)) / 4);
-  if (g_held_slot) op_put_down(tile & 63, tile >> 6);
-  else select_object_on_tile(tile & 63, tile >> 6, o);
+  if (o) {
+    int tile = (int)(((intptr_t)DAT_002020b0 - (intptr_t)tilemap_lookup(0, 0)) / 4);
+    select_object_on_tile(tile & 63, tile >> 6, o);
+  }
+  else if (on_floor) select_tile(tx, ty);
+  else g_status = "nothing there";
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -709,7 +767,7 @@ void uw_editor_click(int x, int y, int button)
   else if (in_rect(&R_MAP, x, y)) {
     if (map_tile_at(x, y, &tx, &ty)) {
       if (button == SDL_BUTTON_RIGHT) select_tile(tx, ty);   /* a right click always selects */
-      else if (g_held_slot) op_put_down(tx, ty);
+      else if (g_held_slot) op_put_down(tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else if (g_brush_armed) op_place(g_palette_brush, tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else select_tile(tx, ty);
     }

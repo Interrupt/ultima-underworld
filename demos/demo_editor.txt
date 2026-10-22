@@ -79,6 +79,16 @@ WAIT 20
 EDITOR validate
 SDLCLICK 372 320
 WAIT 5
+# 3D picking: arm an icon and click the floor in the 3D pane to place there, then click the floor to select its tile
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 148 230
+WAIT 20
+EDITOR validate
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 100 190
+WAIT 20
 SDLCLICK 140 160
 WAIT 10
 SDLKEYDOWN e
