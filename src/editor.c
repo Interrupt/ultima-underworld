@@ -16,6 +16,8 @@
 #include "headers/input.h"
 #include "headers/interact.h"
 #include "headers/automap.h"
+#include "headers/objects.h"
+#include "headers/traps.h"
 
 #include <SDL.h>
 #include <stdio.h>
@@ -57,6 +59,10 @@ static unsigned short g_screen[ED_W * ED_H];
 /* What is selected: a tile (clicked on the map) and an object on it or in a container (from the strip). */
 static int g_sel_tx = -1, g_sel_ty = -1;
 static int g_sel_slot;            /* object slot index, 0 == none */
+static ushort *g_sel_link;        /* the link field that holds the selected object: its tile's, the previous
+                                     object's chain word, or a container's contents word */
+static int g_held_slot;           /* Move or Copy in progress: the object picked up, 0 == none ("Mv:" box) */
+static int g_held_copy;           /* the held object is copied, not moved, when it is put down */
 static int g_palette_brush = 0xc0;   /* the object id the palette has picked to place */
 static int g_group = 6;           /* the selected object group (decor, as in the screenshot) */
 static int g_group_scroll = 3;    /* first group shown in the group bar (the default group is in view) */
@@ -345,7 +351,8 @@ static void draw_object_editor(void)
   frame(94, 166, 112, 188, COL_FRAME);
   /* "Mv:" (the screenshot's label, dimmed there with nothing in the box): probably the object a Move in progress
      holds; not wired yet, so the box stays empty. */
-  text("Mv:", 96, 160, RGB(120, 60, 16));
+  text("Mv:", 96, 160, g_held_slot ? COL_ORANGE : RGB(120, 60, 16));
+  if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 169);
   if (o) {
     fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 6 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 6 + 4, COL_ORANGE);
     snprintf(line, sizeof line, "%d", o->zpos);
@@ -381,8 +388,8 @@ static void draw_info_bar(void)
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
   text(line, 2, 193, COL_TEXT);
   snprintf(line, sizeof line, "Map= Lvl %d %d,%d", DAT_00201b68 + 1, x >> 8, y >> 8);
-  text(line, 150, 193, COL_TEXT);
-  if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));
+  if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));   /* replaces the map position while it shows */
+  else text(line, 150, 193, COL_TEXT);
   {
     time_t now = time(NULL);
     strftime(line, sizeof line, "%a %d %H:%M", localtime(&now));
@@ -433,11 +440,197 @@ static int map_tile_at(int px, int py, int *tx, int *ty)
   return *tx >= 0 && *tx < 64 && *ty >= 0 && *ty < 64;
 }
 
+static ushort *tile_link(int tx, int ty)
+{
+  return (ushort *)((char *)tilemap_lookup((short)tx, (short)ty) + 2);   /* the tile's second word: its first object */
+}
+
 static void select_tile(int tx, int ty)
 {
   g_sel_tx = tx;
   g_sel_ty = ty;
   g_sel_slot = tile_head(tx, ty);
+  g_sel_link = tile_link(tx, ty);
+}
+
+/* Select an object known to be on a tile's chain, remembering the link field that holds it. */
+static void select_object_on_tile(int tx, int ty, const uw_object_hdr_t *o)
+{
+  select_tile(tx, ty);
+  for (int n = 0; n < 1024 && g_sel_slot; n++) {
+    uw_object_hdr_t *c = object_at(g_sel_slot);
+    if (!c) break;
+    if (c == o) return;
+    g_sel_link = &c->chain_word;
+    g_sel_slot = c->next;
+  }
+  g_sel_slot = 0;
+}
+
+/* ---- object operations ---- */
+
+/* The editor edits a live level, so every operation leaves the object lists consistent: validate walks every
+   tile's chain (and the containers on them) and counts objects reachable twice, chains that never end, and
+   mobiles whose tile word names another tile. It returns the number of problems and reports them on stderr. */
+#define VALIDATE_MAX_OBJECTS 1024
+
+static int validate_chain(int slot, int tx, int ty, unsigned char *seen, int depth, int *problems)
+{
+  int count = 0;
+  for (int n = 0; slot && n < VALIDATE_MAX_OBJECTS; n++) {
+    const uw_object_hdr_t *o = object_at(slot);
+    if (!o) { fprintf(stderr, "[editor] validate: slot %d does not resolve\n", slot); (*problems)++; break; }
+    if (seen[slot]++) { fprintf(stderr, "[editor] validate: slot %d reachable twice\n", slot); (*problems)++; break; }
+    count++;
+    if (depth == 0 && slot < 0x100 && is_mobile(o)) {
+      const uw_mobile_object_t *m = (const uw_mobile_object_t *)o;
+      if (m->tile_x != tx || m->tile_y != ty) {
+        fprintf(stderr, "[editor] validate: mobile %d is linked on (%d,%d) but its tile word says (%d,%d)\n", slot, tx, ty, m->tile_x, m->tile_y);
+        (*problems)++;
+      }
+    }
+    if ((o->object_id & 0x1f0) == 0x80 && !o->is_quant && o->link && depth < 8)
+      count += validate_chain(o->link, tx, ty, seen, depth + 1, problems);
+    slot = o->next;
+    if (n == VALIDATE_MAX_OBJECTS - 1 && slot) { fprintf(stderr, "[editor] validate: a chain does not end\n"); (*problems)++; }
+  }
+  return count;
+}
+
+int uw_editor_validate(void)
+{
+  static unsigned char seen[0x400];
+  int problems = 0, objects = 0;
+  memset(seen, 0, sizeof seen);
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) objects += validate_chain(tile_head(tx, ty), tx, ty, seen, 0, &problems);
+  fprintf(stderr, "[editor] validate: %d objects reachable, %d problems\n", objects, problems);
+  return problems;
+}
+
+/* The link field that holds an object, found by searching every tile's chain and the containers on them. */
+static ushort *find_link_in(ushort *link, int slot, int depth)
+{
+  for (int n = 0; n < VALIDATE_MAX_OBJECTS; n++) {
+    uw_object_hdr_t *c = resolve_object_link(link);
+    if (!c) return NULL;
+    if (encode_object_slot_index(c) == slot) return link;
+    if ((c->object_id & 0x1f0) == 0x80 && !c->is_quant && c->link && depth < 8) {
+      ushort *in = find_link_in(&c->link_word, slot, depth + 1);
+      if (in) return in;
+    }
+    link = &c->chain_word;
+  }
+  return NULL;
+}
+
+static ushort *find_link(int slot)
+{
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) {
+      ushort *l = find_link_in(tile_link(tx, ty), slot, 0);
+      if (l) return l;
+    }
+  return NULL;
+}
+
+/* The object the player is (never edited: it lives in slot 1 and is only moved by the game). */
+static int is_player(const uw_object_hdr_t *o)
+{
+  return o == (const uw_object_hdr_t *)g_player_object;
+}
+
+static int tile_is_open(int tx, int ty)
+{
+  const uw_tile_t *t = tx >= 0 && tx < 64 && ty >= 0 && ty < 64 ? (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty) : NULL;
+  return t && t->tile_type != 0;
+}
+
+/* Put an object at the head of a tile's chain, standing on the floor. Mobiles also record the tile. */
+static void put_on_tile(uw_object_hdr_t *o, int tx, int ty)
+{
+  const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
+  object_list_insert_head(tile_link(tx, ty), o);
+  o->zpos = (unsigned)t->floor_height * 8;
+  if (is_mobile(o) && encode_object_slot_index(o) < 0x100) {
+    ((uw_mobile_object_t *)o)->tile_x = (unsigned)tx;
+    ((uw_mobile_object_t *)o)->tile_y = (unsigned)ty;
+  }
+}
+
+static void op_delete(void)
+{
+  uw_object_hdr_t *o = object_at(g_sel_slot);
+  if (!o || !g_sel_link) { g_status = "nothing selected"; return; }
+  if (is_player(o)) { g_status = "that is you"; return; }
+  if (g_held_slot == g_sel_slot) g_held_slot = 0;
+  if ((o->object_id & 0x1c0) == 0x180)
+    free_trap_class_object(g_sel_link, o);   /* traps clean up their chain markers */
+  else
+    discard_misplaced_object(g_sel_link, (ushort *)o, 1);   /* the game's own delete: drops a trigger's timer, frees contents */
+  int tx = g_sel_tx, ty = g_sel_ty;
+  select_tile(tx, ty);
+  g_status = "deleted";
+  uw_editor_validate();
+}
+
+/* Move or Copy picks the selected object up; the next map click (or a click on an object in the 3D pane) puts it
+   on that tile. The same button again puts it back. */
+static void op_pick_up(int copy)
+{
+  uw_object_hdr_t *o = object_at(g_sel_slot);
+  if (g_held_slot && g_held_slot == g_sel_slot && g_held_copy == copy) { g_held_slot = 0; g_status = "cancelled"; return; }
+  if (!o || !g_sel_link) { g_status = "nothing selected"; return; }
+  if (is_player(o)) { g_status = "that is you"; return; }
+  g_held_slot = g_sel_slot;
+  g_held_copy = copy;
+  g_status = copy ? "click a tile to copy it" : "click a tile to move it";
+}
+
+static void op_put_down(int tx, int ty)
+{
+  uw_object_hdr_t *src = object_at(g_held_slot);
+  if (!src) { g_held_slot = 0; return; }
+  if (!tile_is_open(tx, ty)) { g_status = "that tile is solid"; return; }
+  if (g_held_copy) {
+    /* a copy takes a slot of its own; check the free list first, because allocating from an empty one makes the
+       game delete objects far from the player */
+    int mobile = g_held_slot < 0x100;
+    if (mobile ? !(DAT_002046a8 >= DAT_002046a4) : !(DAT_0020469c >= DAT_002046bc)) { g_status = "no free object slots"; return; }
+    uw_object_hdr_t *copy = alloc_object_slot(mobile ? 1 : 0);
+    if (!copy) { g_status = "no free object slots"; return; }
+    memcpy(copy, src, mobile ? sizeof(uw_mobile_object_t) : sizeof(uw_object_hdr_t));
+    copy->next = 0;
+    if (!copy->is_quant) copy->link = 0;   /* a shallow copy: the contents stay with the original */
+    put_on_tile(copy, tx, ty);
+    select_object_on_tile(tx, ty, copy);
+    g_status = "copied";
+  }
+  else {
+    ushort *link = find_link(g_held_slot);   /* the selection may have moved on since it was picked up */
+    if (!link) { g_status = "lost the object"; g_held_slot = 0; return; }
+    object_list_unlink(link, src);
+    put_on_tile(src, tx, ty);
+    select_object_on_tile(tx, ty, src);
+    g_status = "moved";
+  }
+  g_held_slot = 0;
+  uw_editor_validate();
+}
+
+/* Show: bring the camera next to the selected object's tile, looking at it. */
+static void op_show(void)
+{
+  if (g_sel_tx < 0) return;
+  int cx = g_sel_tx * 256 + 128, cy = g_sel_ty * 256 + 128;
+  short sn, cs;
+  angle_to_screen_delta((ushort)DAT_0023bf00, &sn, &cs);
+  int bx = cx - ((sn * 300) >> 15), by = cy - ((cs * 300) >> 15);
+  if (tile_is_open(bx >> 8, by >> 8)) { cx = bx; cy = by; }
+  if (!tile_is_open(cx >> 8, cy >> 8)) return;
+  DAT_0023be90 = (short)cx;
+  DAT_0023be92 = (short)cy;
+  set_pending_update_flags(2);
 }
 
 static void button_pressed(int i)
@@ -445,31 +638,30 @@ static void button_pressed(int i)
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   g_status = NULL;
   switch (i) {
-    case 0: g_sel_slot = tile_head(g_sel_tx, g_sel_ty); break;   /* Head */
-    case 1: if (o && o->next) g_sel_slot = o->next; break;       /* Next */
-    case 2: if (o && !o->is_quant && o->link) g_sel_slot = o->link; break;   /* Link: into a container */
-    default: g_status = "not yet"; break;                       /* Show, Move, Copy, Delete */
+    case 0: g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); break;   /* Head */
+    case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next */
+    case 2: if (o && !o->is_quant && o->link) { g_sel_link = &((uw_object_hdr_t *)o)->link_word; g_sel_slot = o->link; } break;   /* Link: into a container */
+    case 3: op_show(); break;
+    case 4: op_pick_up(0); break;
+    case 5: op_pick_up(1); break;
+    default: op_delete(); break;
   }
 }
 
 /* Pick the object under a point of the 3D pane with the game's own per-pixel pick buffer, which is in scene
-   coordinates, and select it with its tile. */
+   coordinates, and select it with its tile (or put the held object down on that tile). */
 static void pick_in_view(int px, int py)
 {
   int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0;
   int sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
   g_mouse_x = (short)(sx0 + (px - R_VIEW.x0) * sw / w);
   g_mouse_y = (short)((py - R_VIEW.y0) * ED_H / h);
+  set_pending_update_flags(2);   /* the pick re-renders the view only when it is marked stale; the editor freezes redraws */
   uw_object_hdr_t *o = (uw_object_hdr_t *)pick_object_under_cursor(2);
   if (!o) { g_status = "nothing there"; return; }
   int tile = (int)(((intptr_t)DAT_002020b0 - (intptr_t)tilemap_lookup(0, 0)) / 4);
-  select_tile(tile & 63, tile >> 6);
-  for (int slot = tile_head(g_sel_tx, g_sel_ty); slot; ) {
-    uw_object_hdr_t *c = object_at(slot);
-    if (!c) break;
-    if (c == o) { g_sel_slot = slot; break; }
-    slot = c->next;
-  }
+  if (g_held_slot) op_put_down(tile & 63, tile >> 6);
+  else select_object_on_tile(tile & 63, tile >> 6, o);
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -481,7 +673,7 @@ void uw_editor_click(int x, int y, int button)
     pick_in_view(x, y);
   }
   else if (in_rect(&R_MAP, x, y)) {
-    if (map_tile_at(x, y, &tx, &ty)) select_tile(tx, ty);
+    if (map_tile_at(x, y, &tx, &ty)) { if (g_held_slot) op_put_down(tx, ty); else select_tile(tx, ty); }
   }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;

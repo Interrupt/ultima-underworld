@@ -27,12 +27,42 @@ ENTER
 WAIT 30
 DELAY 1
 SETPLAYERPOS 17.500 6.500 768 180 0
-WAIT 10
+WAIT 120
 SPAWNOBJ 0x157
+WAIT 5
+SPAWNOBJ 0x44
 WAIT 5
 # the level editor (editor.c): on, pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
 EDITOR on
+WAIT 60
+# Move, Copy and Delete (the map's clicks pick tiles; EDITOR validate checks the object lists after each)
+SDLCLICK 502 124
+WAIT 30
+EDITOR validate
+SDLCLICK 260 354
+WAIT 10
+SDLCLICK 514 106
 WAIT 20
+EDITOR validate
+SDLCLICK 260 336
+WAIT 10
+SDLCLICK 490 106
+WAIT 20
+EDITOR validate
+SDLCLICK 502 124
+WAIT 20
+SDLCLICK 260 282
+WAIT 10
+SDLCLICK 260 354
+WAIT 10
+SDLCLICK 514 118
+WAIT 20
+EDITOR validate
+SDLCLICK 260 372
+WAIT 20
+EDITOR validate
+SDLCLICK 260 318
+WAIT 10
 SDLCLICK 140 160
 WAIT 10
 SDLKEYDOWN e

@@ -952,8 +952,9 @@ static void demo_exec_line(char *p, Uint32 now) {
     }
 
     if (strncasecmp(p, "EDITOR ", 7) == 0) {
-        /* EDITOR on|off -- the level editor (editor.c). */
-        uw_editor_set(strncasecmp(p + 7, "on", 2) == 0);
+        /* EDITOR on|off|validate -- the level editor (editor.c); validate checks the object lists. */
+        if (strncasecmp(p + 7, "validate", 8) == 0) uw_editor_validate();
+        else uw_editor_set(strncasecmp(p + 7, "on", 2) == 0);
         g_demo_next_tick = now;
         return;
     }
