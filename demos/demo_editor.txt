@@ -177,6 +177,42 @@ WAIT 20
 SDLCLICK 330 130
 WAIT 10
 EDITOR validate
+# fill mode: the paint target and spread rule, a hover (the preview), a click to fill, a Shift-drag rectangle, through doors; then undo
+SDLCLICK 330 290
+WAIT 10
+SDLCLICK 20 306
+WAIT 5
+SDLCLICK 180 342
+WAIT 5
+SDLMOVE 502 126
+WAIT 10
+SDLCLICK 502 126
+WAIT 30
+SDLCLICK 20 360
+WAIT 5
+SDLKEYDOWN shift
+WAIT 5
+SDLDOWN 490 110
+WAIT 5
+SDLMOVE 530 150
+WAIT 5
+SDLUP 530 150
+WAIT 30
+SDLKEYUP shift
+WAIT 5
+SDLCLICK 20 342
+WAIT 5
+SDLCLICK 502 126
+WAIT 30
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
 # undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
 EDITOR selftest
 WAIT 10

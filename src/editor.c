@@ -80,10 +80,14 @@ static int g_brush_armed;         /* map clicks place the brush object (a right 
 static int g_group = 6;           /* the selected object group (decor, as in the screenshot) */
 static int g_group_scroll = 3;    /* first group shown in the group bar (the default group is in view) */
 static int g_palette_scroll;      /* first row of the group's objects shown in the palette */
+/* The mode column's eight buttons, top to bottom. */
+enum { M_TILE, M_TEXTURE, M_OBJECT, M_VIEW, M_FIND, M_CUTCOPY, M_PASTE, M_FILL, MODE_COUNT };
+static const char *const g_mode_names[MODE_COUNT] = { "Tile", "Texture", "Object", "View", "Find", "Cut/Copy", "Paste", "Fill" };
 static int g_mode = 2;            /* the mode column's selected button: object mode (M_OBJECT) is the one the screenshot shows */
 static const char *g_status;      /* a transient message on the info bar */
 static void draw_menu(void);
 static void draw_mode(void);
+static void draw_fill_overlay(void);
 static int menu_open(void);
 
 int uw_editor_active(void) { return g_active; }
@@ -725,6 +729,7 @@ int uw_editor_compose(unsigned short *display)
   draw_map_pane();
   draw_palette_pane();
   draw_mode();
+  draw_fill_overlay();
   draw_info_bar();
   draw_menu();
   g_uw_framebuffer = saved;
@@ -1906,6 +1911,176 @@ static int texture_mode_click(int x, int y, int button)
   return 0;
 }
 
+/* ---- fill tool ---- */
+
+/* Click a seed tile and the active brush floods outward through the connected tiles that match it: it paints the floor texture, the wall texture,
+   both or the tile type (from the texture painter's slots and the tile brush), spreading over tiles with the same floor texture, wall texture,
+   height or type, or over any connected open tile. A tile with the door bit stops it unless "through doors" is on (a stopped door tile is not
+   painted). Diagonal and slope tiles are painted but do not spread further, so a fill cannot leak round a corner. Shift-drag fills inside a rectangle. */
+enum { FT_FLOOR_TEX, FT_WALL_TEX, FT_BOTH_TEX, FT_TYPE, FILL_TARGETS };
+enum { FS_FLOOR_TEX, FS_WALL_TEX, FS_HEIGHT, FS_TYPE, FS_OPEN, FILL_SPREADS };
+static int g_fill_target = FT_FLOOR_TEX, g_fill_spread = FS_FLOOR_TEX, g_fill_doors;
+static unsigned char g_fill_mask[64 * 64];   /* the tiles a fill would paint (the preview) or just painted (the flash) */
+static unsigned g_fill_flash_until;
+static int g_fill_hover_x = -1, g_fill_hover_y = -1;
+static int g_fill_rect;                      /* dragging a rectangle: its first corner is in g_stroke_x0/y0 */
+static const char *const g_fill_target_names[FILL_TARGETS] = { "Floor tex", "Wall tex", "Both tex", "Tile type" };
+static const char *const g_fill_spread_names[FILL_SPREADS] = { "Same floor", "Same wall", "Same height", "Same type", "Any open" };
+
+static int fill_matches(const uw_tile_t *seed, const uw_tile_t *t)
+{
+  switch (g_fill_spread) {
+    case FS_FLOOR_TEX: return t->floor_tex == seed->floor_tex;
+    case FS_WALL_TEX: return t->wall_tex == seed->wall_tex;
+    case FS_HEIGHT: return t->floor_height == seed->floor_height;
+    case FS_TYPE: return t->tile_type == seed->tile_type;
+    default: return t->tile_type != 0;
+  }
+}
+
+/* The tiles a fill from a seed would paint, in g_fill_mask (limited to a rectangle if given); returns how many. */
+static int fill_collect(int sx, int sy, const int *rect)
+{
+  static int queue[64 * 64];
+  int head = 0, tail = 0, count = 0;
+  const uw_tile_t *seed = tile_at(sx, sy);
+  memset(g_fill_mask, 0, sizeof g_fill_mask);
+  if (!seed || (seed->door_bit && !g_fill_doors)) return 0;
+  int solid_ok = g_fill_spread == FS_WALL_TEX || g_fill_spread == FS_TYPE;
+  g_fill_mask[sy * 64 + sx] = 1;
+  queue[tail++] = sy * 64 + sx;
+  count = 1;
+  while (head < tail) {
+    int cur = queue[head++], cx = cur & 63, cy = cur >> 6;
+    const uw_tile_t *c = tile_at(cx, cy);
+    if (c->tile_type >= 2 && c->tile_type <= 9) continue;   /* diagonals and slopes are painted but do not spread */
+    static const int dx[4] = { 1, -1, 0, 0 }, dy[4] = { 0, 0, 1, -1 };
+    for (int k = 0; k < 4; k++) {
+      int nx = cx + dx[k], ny = cy + dy[k];
+      const uw_tile_t *n = tile_at(nx, ny);
+      if (!n || g_fill_mask[ny * 64 + nx]) continue;
+      if (rect && (nx < rect[0] || nx > rect[2] || ny < rect[1] || ny > rect[3])) continue;
+      if (n->tile_type == 0 && !solid_ok) continue;
+      if (n->door_bit && !g_fill_doors) continue;
+      if (!fill_matches(seed, n)) continue;
+      g_fill_mask[ny * 64 + nx] = 1;
+      queue[tail++] = ny * 64 + nx;
+      count++;
+    }
+  }
+  return count;
+}
+
+static void fill_apply(int sx, int sy, const int *rect)
+{
+  int n = fill_collect(sx, sy, rect);
+  if (!n) { g_status = "nothing to fill"; return; }
+  checkpoint();
+  int x0 = 63, y0 = 63, x1 = 0, y1 = 0;
+  for (int i = 0; i < 64 * 64; i++) {
+    if (!g_fill_mask[i]) continue;
+    uw_tile_t *t = tile_at(i & 63, i >> 6);
+    if (g_fill_target == FT_FLOOR_TEX || g_fill_target == FT_BOTH_TEX) t->floor_tex = (unsigned)g_tex_slot[1];
+    if (g_fill_target == FT_WALL_TEX || g_fill_target == FT_BOTH_TEX) t->wall_tex = (unsigned)g_tex_slot[0];
+    if (g_fill_target == FT_TYPE) t->tile_type = (unsigned)g_brush_type;
+    if ((i & 63) < x0) x0 = i & 63;
+    if ((i & 63) > x1) x1 = i & 63;
+    if ((i >> 6) < y0) y0 = i >> 6;
+    if ((i >> 6) > y1) y1 = i >> 6;
+  }
+  if (g_fill_target == FT_TYPE) tiles_changed(x0, y0, x1, y1);
+  else textures_changed();
+  g_fill_flash_until = SDL_GetTicks() + 700;   /* the filled tiles flash on the map */
+  static char msg[32];
+  snprintf(msg, sizeof msg, "filled %d tiles", n);
+  g_status = msg;
+}
+
+static void fill_mode_press(int tx, int ty)
+{
+  if (!tile_at(tx, ty)) return;
+  select_tile(tx, ty);
+  if (key_shift()) { g_fill_rect = 1; g_stroke_x0 = g_stroke_x1 = tx; g_stroke_y0 = g_stroke_y1 = ty; return; }
+  fill_apply(tx, ty, NULL);
+}
+
+static void fill_mode_release(void)
+{
+  if (!g_fill_rect) return;
+  g_fill_rect = 0;
+  int rect[4] = { g_stroke_x0 < g_stroke_x1 ? g_stroke_x0 : g_stroke_x1, g_stroke_y0 < g_stroke_y1 ? g_stroke_y0 : g_stroke_y1,
+                  g_stroke_x0 < g_stroke_x1 ? g_stroke_x1 : g_stroke_x0, g_stroke_y0 < g_stroke_y1 ? g_stroke_y1 : g_stroke_y0 };
+  fill_apply(g_stroke_x0, g_stroke_y0, rect);
+}
+
+static void fill_mode_hover(int tx, int ty)
+{
+  if (g_fill_rect) { g_stroke_x1 = tx; g_stroke_y1 = ty; }
+  if (tx == g_fill_hover_x && ty == g_fill_hover_y) return;
+  g_fill_hover_x = tx; g_fill_hover_y = ty;
+  if (!g_fill_rect) fill_collect(tx, ty, NULL);   /* the preview */
+}
+
+/* the filled or about-to-be-filled tiles, outlined on the map */
+static void draw_fill_overlay(void)
+{
+  int camx, camy, camz;
+  unsigned now = SDL_GetTicks();
+  int flash = now < g_fill_flash_until;
+  if (g_mode != M_FILL && !flash) return;
+  camera(&camx, &camy, &camz);
+  for (int i = 0; i < 64 * 64; i++) {
+    if (!g_fill_mask[i]) continue;
+    int sx, sy;
+    map_tile_origin(i & 63, i >> 6, camx >> 8, camy >> 8, &sx, &sy);
+    if (sx + MAP_TILE <= R_MAP.x0 || sx >= R_MAP.x1 || sy + MAP_TILE <= R_MAP.y0 || sy >= R_MAP.y1) continue;
+    for (int d = 1; d < MAP_TILE - 1; d++)   /* a diagonal cross, so the tile's own colour still shows */
+      if (sx + d >= R_MAP.x0 && sx + d < R_MAP.x1 && sy + d >= R_MAP.y0 && sy + d < R_MAP.y1) put(sx + d, sy + d, flash ? RGB(255, 255, 255) : RGB(255, 255, 0));
+  }
+}
+
+static void radio(int x, int y, const char *label, int on, unsigned short c)
+{
+  frame(x, y, x + 5, y + 5, c);
+  if (on) fill(x + 1, y + 1, x + 4, y + 4, COL_TEXT);
+  text(label, x + 8, y - 1, c);
+}
+
+static void draw_fill_mode(void)
+{
+  char line[48];
+  frame(0, 126, 150, 190, COL_FRAME);
+  text("Paint", 4, 128, COL_TEXT);
+  for (int i = 0; i < FILL_TARGETS; i++) radio(4, 137 + i * 8, g_fill_target_names[i], g_fill_target == i, COL_ORANGE);
+  text("Spread over", 76, 128, COL_TEXT);
+  for (int i = 0; i < FILL_SPREADS; i++) radio(76, 137 + i * 8, g_fill_spread_names[i], g_fill_spread == i, COL_BLUE);
+  checkbox(4, 176, "Through doors", g_fill_doors, COL_ORANGE);
+  /* the active brush: the texture slots and the tile type, from the texture painter and the tile mode */
+  frame(R_TEX_PAL.x0, R_TEX_PAL.y0, R_TEX_PAL.x1, R_TEX_PAL.y1, COL_FRAME);
+  text("Floor slot", R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 6, COL_ORANGE);
+  draw_slot_texture(1, g_tex_slot[1], R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 14, 32);
+  text("Wall slot", R_TEX_PAL.x0 + 50, R_TEX_PAL.y0 + 6, COL_ORANGE);
+  draw_slot_texture(0, g_tex_slot[0], R_TEX_PAL.x0 + 50, R_TEX_PAL.y0 + 14, 32);
+  text("Tile type", R_TEX_PAL.x0 + 94, R_TEX_PAL.y0 + 6, COL_ORANGE);
+  sprite_2x("buttons", 33 + g_brush_type, R_TEX_PAL.x0 + 94, R_TEX_PAL.y0 + 14);
+  text("click: fill   Shift-drag: rectangle", R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 52, COL_FRAME);
+  if (g_fill_hover_x >= 0 && !g_fill_rect) {
+    int n = 0;
+    for (int i = 0; i < 64 * 64; i++) n += g_fill_mask[i];
+    snprintf(line, sizeof line, "%d tiles", n);
+    text(line, 100, 180, COL_TEXT);
+  }
+}
+
+static int fill_mode_click(int x, int y, int button)
+{
+  (void)button;
+  if (x >= 4 && x < 72 && y >= 137 && y < 137 + FILL_TARGETS * 8) { g_fill_target = (y - 137) / 8; return 1; }
+  if (x >= 76 && x < 148 && y >= 137 && y < 137 + FILL_SPREADS * 8) { g_fill_spread = (y - 137) / 8; g_fill_hover_x = -1; return 1; }
+  if (x >= 4 && x < 80 && y >= 176 && y < 184) { g_fill_doors = !g_fill_doors; g_fill_hover_x = -1; return 1; }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -2161,6 +2336,39 @@ void uw_editor_selftest(void)
     uw_editor_undo();
     selftest_expect(&before, "undoing a texture stroke");
     g_selftest_checks += 3;
+  }
+
+  /* the fill tool: a flood over connected matching tiles (stopping at doors), a rectangle fill, and undo */
+  {
+    g_fill_target = FT_FLOOR_TEX; g_fill_spread = FS_OPEN; g_fill_doors = 0;
+    g_tex_slot[1] = (tile_at(tx, ty)->floor_tex + 1) % (FLOOR_SLOTS - 1);
+    int all = fill_collect(tx, ty, NULL);
+    if (all < 2) { fprintf(stderr, "[editor] selftest FAILED: the fill found only %d tile(s)\n", all); abort(); }
+    /* a door tile next to the seed stops the fill and is not painted; with doors allowed it is */
+    int nx = tile_is_open(tx + 1, ty) ? tx + 1 : tx - 1;
+    uw_tile_t *door = tile_at(nx, ty);
+    unsigned old_door = door->door_bit;
+    door->door_bit = 1;
+    int with_door_off = fill_collect(tx, ty, NULL);
+    if (g_fill_mask[ty * 64 + nx] || with_door_off >= all) { fprintf(stderr, "[editor] selftest FAILED: the fill went through a door\n"); abort(); }
+    door->door_bit = old_door;
+    g_fill_doors = 1;
+    int all_through = fill_collect(tx, ty, NULL);   /* doors allowed: the whole connected area */
+    door->door_bit = 1;
+    if (fill_collect(tx, ty, NULL) != all_through || !g_fill_mask[ty * 64 + nx]) { fprintf(stderr, "[editor] selftest FAILED: through doors did not reach the door\n"); abort(); }
+    g_fill_doors = 0;
+    door->door_bit = old_door;
+    snapshot_take(&before);
+    fill_apply(tx, ty, NULL);
+    for (int i = 0; i < 64 * 64; i++)
+      if (g_fill_mask[i] && tile_at(i & 63, i >> 6)->floor_tex != (unsigned)g_tex_slot[1]) { fprintf(stderr, "[editor] selftest FAILED: a filled tile was not painted\n"); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a fill");
+    int rect[4] = { tx, ty, tx + 1 < 64 ? tx + 1 : tx, ty + 1 };
+    int in_rect_n = fill_collect(tx, ty, rect);
+    if (in_rect_n < 1 || in_rect_n > 4) { fprintf(stderr, "[editor] selftest FAILED: a rectangle fill painted %d tiles\n", in_rect_n); abort(); }
+    g_fill_spread = FS_FLOOR_TEX;
+    g_selftest_checks += 4;
   }
 
   /* leave the level as the test found it: undo everything */
@@ -2594,8 +2802,6 @@ static void edit_click(int x, int y, int button)
 
 /* The mode column's eight buttons, top to bottom. Each mode has its own panels: what the bottom half of the screen shows, and what
    a click there does. The 3D view, the map and the mode column are shared. */
-enum { M_TILE, M_TEXTURE, M_OBJECT, M_VIEW, M_FIND, M_CUTCOPY, M_PASTE, M_FILL, MODE_COUNT };
-static const char *const g_mode_names[MODE_COUNT] = { "Tile", "Texture", "Object", "View", "Find", "Cut/Copy", "Paste", "Fill" };
 
 /* Object mode: the group bar and palette, the selected object's editor and its buttons. Returns nonzero if the click was theirs. */
 static int object_mode_click(int x, int y, int button)
@@ -2671,6 +2877,7 @@ static void draw_mode(void)
     case M_OBJECT: draw_object_mode(); break;
     case M_TILE: draw_tile_mode(); break;
     case M_TEXTURE: draw_texture_mode(); break;
+    case M_FILL: draw_fill_mode(); break;
     default: draw_mode_placeholder(); break;
   }
 }
@@ -2681,12 +2888,23 @@ static int mode_click(int x, int y, int button)
     case M_OBJECT: return object_mode_click(x, y, button);
     case M_TILE: return tile_mode_click(x, y, button);
     case M_TEXTURE: return texture_mode_click(x, y, button);
+    case M_FILL: return fill_mode_click(x, y, button);
     default: return 0;
   }
 }
 
 void uw_editor_mouse_motion(int x, int y)
 {
+  if (g_mode == M_FILL) {   /* the preview of the fill under the pointer */
+    int fx = -1, fy = -1;
+    if (in_rect(&R_MAP, x, y)) map_tile_at(x, y, &fx, &fy);
+    else if (in_rect(&R_VIEW, x, y)) {
+      ed_hit_t hit;
+      int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) { fx = hit.tx; fy = hit.ty; }
+    }
+    if (fx >= 0 && tile_at(fx, fy)) fill_mode_hover(fx, fy);
+  }
   if (g_stroke || g_tex_stroke) {   /* painting: the tile under the pointer, on the map or on the 3D view */
     int tx = -1, ty = -1, kind = -1;
     if (in_rect(&R_MAP, x, y)) map_tile_at(x, y, &tx, &ty);
@@ -2711,6 +2929,7 @@ void uw_editor_mouse_up(int x, int y, int button)
   if (button == SDL_BUTTON_RIGHT) g_map_dragging = 0;
   if (button == SDL_BUTTON_LEFT && g_stroke) tile_mode_release();
   if (button == SDL_BUTTON_LEFT && g_tex_stroke) texture_mode_release();
+  if (button == SDL_BUTTON_LEFT && g_fill_rect) fill_mode_release();
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -2719,7 +2938,12 @@ void uw_editor_click(int x, int y, int button)
   int tx, ty;
   g_status = NULL;
   if (in_rect(&R_VIEW, x, y)) {
-    if (g_mode == M_TEXTURE) {   /* paint the floor or the wall face under the click */
+    if (g_mode == M_FILL) {   /* fill from the floor or wall under the click */
+      ed_hit_t hit;
+      int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) fill_mode_press(hit.tx, hit.ty);
+    }
+    else if (g_mode == M_TEXTURE) {   /* paint the floor or the wall face under the click */
       ed_hit_t hit;
       int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
       if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) texture_mode_press(hit.tx, hit.ty, hit.kind);
@@ -2742,6 +2966,9 @@ void uw_editor_click(int x, int y, int button)
     }
     else if (g_mode == M_TEXTURE) {
       if (map_tile_at(x, y, &tx, &ty)) texture_mode_press(tx, ty, -1);
+    }
+    else if (g_mode == M_FILL) {
+      if (map_tile_at(x, y, &tx, &ty)) fill_mode_press(tx, ty);
     }
     else if (map_tile_at(x, y, &tx, &ty)) {
       if (apply_target(tx, ty)) ;
