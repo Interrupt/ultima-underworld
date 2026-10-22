@@ -65,6 +65,7 @@ static int g_sel_slot;            /* object slot index, 0 == none */
 static ushort *g_sel_link;        /* the link field that holds the selected object: its tile's, the previous
                                      object's chain word, or a container's contents word */
 static int g_held_slot;           /* Move or Copy in progress: the object picked up, 0 == none ("Mv:" box) */
+static int g_tab = -1;            /* the picked-object editor tab shown instead of the position view: 0 Class, 1 Comm, 2 Item */
 static int g_held_copy;           /* the held object is copied, not moved, when it is put down */
 static int g_palette_brush = 0xc0;   /* the object id the palette has picked to place */
 static int g_brush_armed;         /* map clicks place the brush object (a right click still selects) */
@@ -289,17 +290,16 @@ static void clamp_scrolls(void)
   if (g_palette_scroll < 0) g_palette_scroll = 0;
 }
 
-/* a small triangle: dir 0 left, 1 right, 2 up, 3 down */
+/* a small triangle pointing left, right, up or down (dir 0 to 3) */
 static void arrow(int x, int y, int dir, unsigned short c)
 {
   for (int i = 0; i < 4; i++)
     for (int j = -i; j <= i; j++) {
-      int a = 3 - i;
       switch (dir) {
-        case 0: put(x + a, y + 3 + j, c); break;
-        case 1: put(x + 3 - a, y + 3 + j, c); break;
-        case 2: put(x + 3 + j, y + a, c); break;
-        default: put(x + 3 + j, y + 3 - a, c); break;
+        case 0: put(x + i, y + 3 + j, c); break;
+        case 1: put(x + 3 - i, y + 3 + j, c); break;
+        case 2: put(x + 3 + j, y + i, c); break;
+        default: put(x + 3 + j, y + 3 - i, c); break;
       }
     }
 }
@@ -333,6 +333,105 @@ static void draw_object_palette(void)
   arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y1 - 8, 3, g_palette_scroll < palette_rows() - PAL_ROWS ? COL_TEXT : COL_FRAME);
 }
 
+/* The tab pages of the picked-object editor: a row of "- value +" per field. They edit the object in place. */
+typedef struct { const char *name; int min, max; } ed_field_t;
+enum { TAB_CLASS, TAB_COMM, TAB_ITEM };
+static const ed_field_t g_class_fields[] = { { "Type", 0, 0x1ff } };
+static const ed_field_t g_comm_fields[] = { { "HP", 0, 255 }, { "Goal", 0, 15 }, { "Target", 0, 255 }, { "Level", 0, 15 }, { "Attit", 0, 3 }, { "Talked", 0, 1 } };
+static const ed_field_t g_item_fields[] = { { "Qual", 0, 63 }, { "Owner", 0, 63 }, { "Ench", 0, 1 }, { "Invis", 0, 1 }, { "Door", 0, 1 } };
+
+static const ed_field_t *tab_fields(int tab, int *count)
+{
+  switch (tab) {
+    case TAB_CLASS: *count = (int)(sizeof g_class_fields / sizeof *g_class_fields); return g_class_fields;
+    case TAB_COMM: *count = (int)(sizeof g_comm_fields / sizeof *g_comm_fields); return g_comm_fields;
+    default: *count = (int)(sizeof g_item_fields / sizeof *g_item_fields); return g_item_fields;
+  }
+}
+
+static int slot_is_mobile(const uw_object_hdr_t *o)
+{
+  return is_mobile(o) && encode_object_slot_index(o) < 0x100;
+}
+
+/* A field's value for the selected object; *shown is 0 when the object has no such field (a static's mobile fields). */
+static int field_get(int tab, int row, const uw_object_hdr_t *o, int *shown)
+{
+  const uw_mobile_object_t *m = (const uw_mobile_object_t *)o;
+  *shown = 1;
+  if (tab == TAB_CLASS) return o->object_id;
+  if (tab == TAB_COMM) {
+    if (!slot_is_mobile(o)) { *shown = 0; return 0; }
+    switch (row) {
+      case 0: return m->npc_hp;
+      case 1: return m->npc_goal;
+      case 2: return m->npc_gtarg;
+      case 3: return m->npc_level;
+      case 4: return m->npc_attitude;
+      default: return m->npc_talkedto;
+    }
+  }
+  switch (row) {
+    case 0: return o->quality;
+    case 1: if (o->is_quant) { *shown = 0; return 0; } return o->owner;   /* a quantity takes the owner's place */
+    case 2: return o->enchanted;
+    case 3: return o->invisible;
+    default: return o->doordir;
+  }
+}
+
+static void field_set(int tab, int row, uw_object_hdr_t *o, int v)
+{
+  uw_mobile_object_t *m = (uw_mobile_object_t *)o;
+  if (tab == TAB_CLASS) {
+    /* a type stays on its side of the static / mobile boundary, and a container with contents stays a container */
+    int old = o->object_id;
+    if (((v & 0x1c0) == 0x40) != ((old & 0x1c0) == 0x40)) { g_status = "static and mobile differ"; return; }
+    if (((v & 0x1f0) == 0x80) != ((old & 0x1f0) == 0x80) && !o->is_quant && o->link) { g_status = "it holds things"; return; }
+    o->object_id = (unsigned)v;
+  }
+  else if (tab == TAB_COMM) {
+    switch (row) {
+      case 0: m->npc_hp = (byte)v; break;
+      case 1: m->npc_goal = (unsigned)v; break;
+      case 2: m->npc_gtarg = (unsigned)v; break;
+      case 3: m->npc_level = (unsigned)v; break;
+      case 4: m->npc_attitude = (unsigned)v; break;
+      default: m->npc_talkedto = (unsigned)v; break;
+    }
+  }
+  else {
+    switch (row) {
+      case 0: o->quality = (unsigned)v; break;
+      case 1: o->owner = (unsigned)v; break;
+      case 2: o->enchanted = (unsigned)v; break;
+      case 3: o->invisible = (unsigned)v; break;
+      default: o->doordir = (unsigned)v; break;
+    }
+  }
+  set_pending_update_flags(2);
+}
+
+static void draw_field_page(const uw_object_hdr_t *o)
+{
+  int count, shown;
+  const ed_field_t *f = tab_fields(g_tab, &count);
+  char line[16];
+  for (int i = 0; i < count; i++) {
+    int y = 129 + i * 8;
+    int v = o ? field_get(g_tab, i, o, &shown) : 0;
+    if (!o) shown = 0;
+    text(f[i].name, 4, y, shown ? COL_ORANGE : RGB(120, 60, 16));
+    if (!shown) continue;
+    arrow(38, y + 1, 0, COL_BLUE);
+    arrow(77, y + 1, 1, COL_BLUE);
+    snprintf(line, sizeof line, "%d", v);
+    text(line, 48, y, COL_TEXT);
+  }
+  if (g_tab == TAB_CLASS && o) text(slot_is_mobile(o) ? "mobile" : "static", 4, 140, COL_FRAME);
+  if (g_tab == TAB_COMM && o && !slot_is_mobile(o)) text("not mobile", 4, 130, RGB(120, 60, 16));
+}
+
 /* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "Mv:" box,
    the Head/Next/Link/Show/Move/Copy/Delete buttons and the Class/Comm/Item tabs. */
 static const char *const g_editor_buttons[7] = { "Head", "Next", "Link", "Show", "Move", "Copy", "Delete" };
@@ -345,12 +444,35 @@ static void draw_object_editor(void)
   static const char *const tabs[3] = { "Class", "Comm", "Item" };
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   char line[16];
-  /* 8x8 grid of 6px cells with the object's position marked */
-  for (int i = 0; i <= 8; i++) {
-    for (int k = 0; k <= 48; k++) { put(3 + i * 6, 128 + k, COL_PINK); put(3 + k, 128 + i * 6, COL_PINK); }
+  if (g_tab >= 0) {
+    frame(3, 128, 85, 177, COL_ORANGE);
+    draw_field_page(o);
   }
-  frame(53, 128, 85, 144, COL_ORANGE);
-  frame(53, 146, 85, 178, COL_ORANGE);
+  else {
+    /* 8x8 grid of 6px cells with the object's position marked */
+    for (int i = 0; i <= 8; i++) {
+      for (int k = 0; k <= 48; k++) { put(3 + i * 6, 128 + k, COL_PINK); put(3 + k, 128 + i * 6, COL_PINK); }
+    }
+    frame(53, 128, 85, 144, COL_ORANGE);
+    frame(53, 146, 85, 178, COL_ORANGE);
+    if (o) {
+      fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 6 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 6 + 4, COL_ORANGE);
+      const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)g_sel_tx, (short)g_sel_ty);
+      int off = t ? o->zpos - t->floor_height * 8 : 0;
+      snprintf(line, sizeof line, "%d", o->zpos);
+      text(line, 56, 130, COL_BLUE);
+      snprintf(line, sizeof line, "%+d", off);
+      text(line, 56, 137, COL_BLUE);
+      arrow(77, 130, 2, COL_BLUE);
+      arrow(77, 137, 3, COL_BLUE);
+      /* the heading rose: eight rays from the centre, the object's heading marked */
+      for (int d = 0; d < 8; d++) {
+        static const int dx[8] = { 0, 1, 1, 1, 0, -1, -1, -1 }, dy[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+        for (int r = 3; r <= 12; r++) put(69 + dx[d] * r, 162 + dy[d] * r, COL_ORANGE);
+        if (d == o->heading) fill(69 + dx[d] * 13 - 1, 162 + dy[d] * 13 - 1, 69 + dx[d] * 13 + 1, 162 + dy[d] * 13 + 1, COL_BLUE);
+      }
+    }
+  }
   frame(86, 134, 105, 150, COL_GREEN);
   frame(94, 166, 112, 188, COL_FRAME);
   /* "Mv:" (the screenshot's label, dimmed there with nothing in the box): probably the object a Move in progress
@@ -358,16 +480,6 @@ static void draw_object_editor(void)
   text("Mv:", 96, 160, g_held_slot ? COL_ORANGE : RGB(120, 60, 16));
   if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 169);
   if (o) {
-    fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 6 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 6 + 4, COL_ORANGE);
-    snprintf(line, sizeof line, "%d", o->zpos);
-    text(line, 56, 130, COL_BLUE);
-    text("+0", 56, 137, COL_BLUE);
-    /* the heading rose: eight rays from the centre, the object's heading marked */
-    for (int d = 0; d < 8; d++) {
-      static const int dx[8] = { 0, 1, 1, 1, 0, -1, -1, -1 }, dy[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-      for (int r = 3; r <= 12; r++) put(69 + dx[d] * r, 162 + dy[d] * r, COL_ORANGE);
-      if (d == o->heading) fill(69 + dx[d] * 13 - 1, 162 + dy[d] * 13 - 1, 69 + dx[d] * 13 + 1, 162 + dy[d] * 13 + 1, COL_BLUE);
-    }
     sprite("objects", o->object_id, 88, 135);
   }
   for (int i = 0; i < 7; i++) {
@@ -378,8 +490,10 @@ static void draw_object_editor(void)
   }
   for (int i = 0; i < 3; i++) {
     int x = 3 + i * 31;
-    frame(x, 177, x + 30, 190, i < 2 ? COL_BLUE : COL_GREEN);
-    text(tabs[i], x + 3, 179, i < 2 ? COL_BLUE : COL_GREEN);
+    unsigned short c = i < 2 ? COL_BLUE : COL_GREEN;
+    if (i == g_tab) fill(x + 1, 178, x + 29, 189, RGB(24, 24, 88));
+    frame(x, 177, x + 30, 190, c);
+    text(tabs[i], x + 3, 179, c);
   }
 }
 
@@ -757,6 +871,48 @@ static void pick_in_view(int px, int py)
   else g_status = "nothing there";
 }
 
+static int clamp_int(int v, int lo, int hi)
+{
+  return v < lo ? lo : v > hi ? hi : v;
+}
+
+/* A click in the picked-object editor's left block: a field page's - and + (right click steps by 8), or the position
+   view's grid, height spinner and heading rose. */
+static void edit_click(int x, int y, int button)
+{
+  uw_object_hdr_t *o = object_at(g_sel_slot);
+  int step = button == SDL_BUTTON_RIGHT ? 8 : 1;
+  if (!o) return;
+  if (g_tab >= 0) {
+    int count, shown, row = (y - 129) / 8;
+    const ed_field_t *f = tab_fields(g_tab, &count);
+    if (y < 129 || row >= count) return;
+    int v = field_get(g_tab, row, o, &shown);
+    if (!shown) return;
+    int delta = x < 46 ? -step : x >= 72 ? step : 0;
+    if (delta) field_set(g_tab, row, o, clamp_int(v + delta, f[row].min, f[row].max));
+  }
+  else if (x < 51 && y < 177) {
+    o->xpos = (unsigned)clamp_int((x - 3) / 6, 0, 7);
+    o->ypos = (unsigned)clamp_int(7 - (y - 128) / 6, 0, 7);
+    set_pending_update_flags(2);
+  }
+  else if (x >= 53 && y < 145) {
+    if (x >= 76) { o->zpos = (unsigned)clamp_int((int)o->zpos + (y < 136 ? step : -step), 0, 127); set_pending_update_flags(2); }
+  }
+  else if (x >= 53 && y >= 146) {
+    int dx = x - 69, dy = y - 162;
+    if (dx * dx + dy * dy < 9) return;
+    int h = (int)lround(atan2((double)dx, (double)-dy) / (M_PI / 4)) & 7;
+    o->heading = (unsigned)h;
+    if (slot_is_mobile(o)) {
+      ((uw_mobile_object_t *)o)->full_heading = (unsigned char)(h * 32);
+      ((uw_mobile_object_t *)o)->npc_heading = (unsigned)(h * 4);
+    }
+    set_pending_update_flags(2);
+  }
+}
+
 void uw_editor_click(int x, int y, int button)
 {
   int tx, ty;
@@ -801,6 +957,13 @@ void uw_editor_click(int x, int y, int button)
         g_status = g_brush_armed ? "left click a tile to place" : NULL;
       }
     }
+  }
+  else if (y >= 177 && y < 190 && x >= 3 && x < 96) {
+    int i = (x - 3) / 31;
+    if (i < 3) g_tab = g_tab == i ? -1 : i;   /* a tab replaces the position view; again goes back */
+  }
+  else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
+    edit_click(x, y, button);
   }
   else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + 7 * BUTTON_H) {
     button_pressed((y - BUTTON_Y) / BUTTON_H);

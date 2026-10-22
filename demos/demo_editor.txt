@@ -35,8 +35,43 @@ WAIT 5
 # the level editor (editor.c): on, pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
 EDITOR on
 WAIT 60
+# Edit the picked object: the position grid, height spinner (right click steps by 8), heading rose, then the
+# Item, Comm and Class tabs' fields
+SDLCLICK 502 118
+WAIT 30
+SDLCLICK 60 280
+WAIT 5
+SDLCLICK 156 264
+WAIT 5
+SDLCLICK 156 264
+WAIT 5
+SDLRCLICK 156 276
+WAIT 5
+SDLCLICK 150 300
+WAIT 5
+SDLCLICK 160 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLRCLICK 154 266
+WAIT 5
+SDLCLICK 96 266
+WAIT 5
+SDLCLICK 98 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLRCLICK 96 282
+WAIT 5
+SDLCLICK 36 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLCLICK 36 366
+WAIT 5
+EDITOR validate
 # Move, Copy and Delete (the map's clicks pick tiles; EDITOR validate checks the object lists after each)
-SDLCLICK 502 124
+SDLCLICK 502 118
 WAIT 30
 EDITOR validate
 SDLCLICK 260 354
@@ -49,7 +84,7 @@ WAIT 10
 SDLCLICK 490 106
 WAIT 20
 EDITOR validate
-SDLCLICK 502 124
+SDLCLICK 502 118
 WAIT 20
 SDLCLICK 260 282
 WAIT 10
