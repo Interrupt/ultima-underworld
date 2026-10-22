@@ -180,7 +180,7 @@ EDITOR
 WAIT 20
 EDITOR
 WAIT 20
-# the bottom orange button plays from the selected tile (the player's own, here)
+# the bottom orange button plays from the camera: it flies through a wall first (Far Sight style), then back out
 SDLCLICK 320 364
 WAIT 60
 EDITOR validate

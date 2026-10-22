@@ -19,6 +19,7 @@
 #include "headers/objects.h"
 #include "headers/3d.h"
 #include "headers/ai.h"
+#include "headers/player.h"
 #include "headers/debug_ui.h"
 #include "headers/saveload.h"
 #include "headers/file_io.h"
@@ -59,6 +60,7 @@ static const ed_rect_t R_INFO = { 0, 192, 320, 200 };
 #define COL_INFO_BG RGB(8, 8, 56)
 
 static int g_active;
+static int g_prev_farsight;               /* g_debug_farsight before the editor turned it on */
 static int g_entered_fullscreen;        /* the editor turned fullscreen on, so it turns it off again */
 static unsigned short g_screen[ED_W * ED_H];
 
@@ -829,20 +831,24 @@ void uw_editor_export(void)
   fprintf(stderr, "[editor] export level %d to LEV_EDIT.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
 }
 
-/* Play from the selected tile: save the level, leave the editor and drop the player on that tile. (A new game with a
-   fresh character is not done: this is the current game and character.) */
+/* Play from here: save the level, leave the editor and drop the player where the camera is, facing the way it faces.
+   (The current game and character, not a new one.) */
 void uw_editor_play(void)
 {
   if (!g_active) return;
-  if (g_sel_tx < 0 || !tile_is_open(g_sel_tx, g_sel_ty)) { g_status = "select an open tile first"; return; }
-  int tx = g_sel_tx, ty = g_sel_ty;
+  int x, y, z;
+  camera(&x, &y, &z);
+  int tx = x >> 8, ty = y >> 8;
+  if (!tile_is_open(tx, ty)) { g_status = "move the camera over open floor"; return; }
+  double floor_z = ((const uw_tile_t *)tilemap_lookup((short)tx, (short)ty))->floor_height * 64.0;
+  double yaw = (ushort)DAT_0023bf00 * (360.0 / 65536.0), pitch = DAT_0023beb4 / 256.0;
   uw_editor_save();
   if (g_status && strcmp(g_status, "level saved") != 0) return;   /* it said why it could not */
   uw_editor_set(0);
-  set_player_tile_position((uint)tx, (uint)ty, 1);
+  demo_set_player_pos(x / 256.0, y / 256.0, floor_z, yaw, pitch);
   full_dungeon_redraw();
   set_pending_update_flags(0x7ffe);
-  fprintf(stderr, "[editor] playing from tile (%d,%d) of level %d\n", tx, ty, DAT_00201b68);
+  fprintf(stderr, "[editor] playing from (%.2f,%.2f) of level %d\n", x / 256.0, y / 256.0, DAT_00201b68);
 }
 
 /* Show: bring the camera next to the selected object's tile, looking at it. */
@@ -1083,20 +1089,19 @@ void uw_editor_wheel(int x, int y, int dy)
 
 /* The free camera, with the game's own keys: W or up runs forward, S walks forward slowly, X or down goes back, A or left
    and D or right turn, Z and C sidestep (the game's mouselook swaps the two pairs, but the editor has no mouselook), and
-   Q and E change height. It stays out of solid tiles so the visibility pass always starts from an open one. */
+   Q and E change height. */
 #define FLY_RUN 14
 #define FLY_WALK 5
 #define FLY_TURN 0x180
 #define FLY_LIFT 6
 
+/* Like the game's Far Sight (move_custom_view_target), the camera flies through walls and only stays on the map. Inside
+   a wall the view draws nothing (the visibility pass starts from the camera's tile), as in Far Sight. */
 static void try_move(int dx, int dy)
 {
   int nx = DAT_0023be90 + dx, ny = DAT_0023be92 + dy;
-  const uw_tile_t *t = nx < 0 || ny < 0 || (nx >> 8) > 63 || (ny >> 8) > 63 ? NULL
-                     : (const uw_tile_t *)tilemap_lookup((short)(nx >> 8), (short)(ny >> 8));
-  if (!t || t->tile_type == 0) return;
-  DAT_0023be90 = (short)nx;
-  DAT_0023be92 = (short)ny;
+  DAT_0023be90 = (short)(nx < 0x180 ? 0x180 : nx > 0x3d80 ? 0x3d80 : nx);
+  DAT_0023be92 = (short)(ny < 0x180 ? 0x180 : ny > 0x3d80 ? 0x3d80 : ny);
 }
 
 void uw_editor_tick(void)
@@ -1139,6 +1144,11 @@ void uw_editor_set(int on)
                             + (((const uw_mobile_object_t *)g_player_object)->heading_flags & 0x1f) * 0x100);
     DAT_0023bf02 = DAT_0023bf04 = 0;
     DAT_0023b82c = 0;
+    /* Far Sight's mode: the view is lit at the Far Sight light level whatever the player carries (the effects refresh
+       applies it, the same debug flag the FARSIGHT demo command holds) */
+    g_prev_farsight = g_debug_farsight;
+    g_debug_farsight = 1;
+    refresh_player_equipment_effects();
     g_map_pan_x = g_map_pan_y = 0;
     select_tile(x >> 8, y >> 8);
     g_entered_fullscreen = !g_view_fullscreen;
@@ -1146,6 +1156,8 @@ void uw_editor_set(int on)
   }
   else {
     DAT_0023b82c = (char *)g_player_object;
+    g_debug_farsight = g_prev_farsight;
+    refresh_player_equipment_effects();
     if (g_entered_fullscreen && g_view_fullscreen) uw_toggle_fullscreen_view(0);
   }
   if (g_view_fullscreen) {
