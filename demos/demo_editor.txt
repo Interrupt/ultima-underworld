@@ -159,6 +159,19 @@ SDLCLICK 630 306
 WAIT 5
 SDLCLICK 260 318
 WAIT 10
+# right-drag pans the map (a right click does not select); the starburst saves
+SDLRDOWN 500 100
+WAIT 5
+SDLMOVE 440 140
+WAIT 5
+SDLMOVE 400 160
+WAIT 5
+SDLRUP 400 160
+WAIT 20
+SDLRCLICK 502 118
+WAIT 10
+SDLCLICK 320 30
+WAIT 30
 # save the level into the working save (not export: that would write into the shared DATA directory)
 EDITOR save
 WAIT 30
@@ -167,5 +180,9 @@ EDITOR
 WAIT 20
 EDITOR
 WAIT 20
+# the bottom orange button plays from the selected tile (the player's own, here)
+SDLCLICK 320 364
+WAIT 60
+EDITOR validate
 EDITOR off
 WAIT 10

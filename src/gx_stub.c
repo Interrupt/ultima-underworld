@@ -606,6 +606,8 @@ void uw_pump_events(void) {
                 if (uw_editor_active() && !dbgui_visible()) {
                     /* The editor owns the mouse; plain motion still goes to the game so the cursor follows. */
                     if (ev.type == SDL_MOUSEBUTTONDOWN) uw_editor_click(landscape_x, landscape_y, ev.button.button);
+                    else if (ev.type == SDL_MOUSEBUTTONUP) uw_editor_mouse_up(landscape_x, landscape_y, ev.button.button);
+                    else uw_editor_mouse_motion(landscape_x, landscape_y);
                     if (ev.type != SDL_MOUSEMOTION) return;
                 }
                 if (dbgui_visible() && !(dbgui_console_active() && ev.button.which == UW_SYNTH_MOUSE)) {

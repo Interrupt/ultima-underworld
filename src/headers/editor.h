@@ -13,6 +13,13 @@ void uw_editor_toggle(int unused);
 
 /* Per-frame input: the free camera's keys. */
 void uw_editor_tick(void);
+/* The mouse moved or a button was released (a right drag pans the map pane). */
+void uw_editor_mouse_motion(int x, int y);
+void uw_editor_mouse_up(int x, int y, int button);
+
+/* Play from the selected tile: saves the level, leaves the editor and drops the player there. */
+void uw_editor_play(void);
+
 /* A mouse button pressed at a screen point (the 320x200 editor screen). */
 void uw_editor_click(int x, int y, int button);
 

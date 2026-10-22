@@ -192,47 +192,63 @@ static unsigned short tile_colour(const uw_tile_t *t)
   return RGB(0, shade, 0);
 }
 
+/* The map pane can be panned (right drag): the pan is in screen pixels, added to the layout that puts the camera's tile at
+   (MAP_ORIGIN_X, MAP_ORIGIN_Y) in the pane (a tile's left edge and the top of its row). */
+static int g_map_pan_x, g_map_pan_y;
+static int g_map_dragging, g_map_drag_x, g_map_drag_y;   /* a right drag in progress */
+#define MAP_ORIGIN_X 248
+#define MAP_ORIGIN_Y 50
+
+static void map_tile_origin(int tx, int ty, int cam_tx, int cam_ty, int *sx, int *sy)
+{
+  *sx = MAP_ORIGIN_X + (tx - cam_tx) * MAP_TILE + g_map_pan_x;
+  *sy = MAP_ORIGIN_Y - (ty - cam_ty) * MAP_TILE + g_map_pan_y;   /* tile y grows upwards on screen, as in the automap */
+}
+
 static void draw_map_pane(void)
 {
-  int w = R_MAP.x1 - R_MAP.x0, h = R_MAP.y1 - R_MAP.y0;
   int camx, camy, camz;
   camera(&camx, &camy, &camz);
   int cx = camx >> 8, cy = camy >> 8;
-  int tiles_w = w / MAP_TILE + 1, tiles_h = h / MAP_TILE + 1;
-  int left = cx - tiles_w / 2, bottom = cy - tiles_h / 2;   /* tile y grows upwards on screen, as in the automap */
   fill(R_MAP.x0, R_MAP.y0, R_MAP.x1, R_MAP.y1, COL_BLACK);
-  for (int j = 0; j < tiles_h; j++)
-    for (int i = 0; i < tiles_w; i++) {
-      int tx = left + i, ty = bottom + j;
-      int sx = R_MAP.x0 + i * MAP_TILE, sy = R_MAP.y1 - (j + 1) * MAP_TILE;
-      if (tx < 0 || tx > 63 || ty < 0 || ty > 63) continue;
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) {
+      int sx, sy;
+      map_tile_origin(tx, ty, cx, cy, &sx, &sy);
+      if (sx + MAP_TILE <= R_MAP.x0 || sx >= R_MAP.x1 || sy + MAP_TILE <= R_MAP.y0 || sy >= R_MAP.y1) continue;
       const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
       unsigned short c = t ? tile_colour(t) : COL_BLACK;
       for (int y = 0; y < MAP_TILE; y++)
         for (int x = 0; x < MAP_TILE; x++)
           if (sx + x >= R_MAP.x0 && sx + x < R_MAP.x1 && sy + y >= R_MAP.y0 && sy + y < R_MAP.y1) put(sx + x, sy + y, c);
     }
-  /* objects: a dot on each tile that has any, red for critters */
-  for (int j = 0; j < tiles_h; j++)
-    for (int i = 0; i < tiles_w; i++) {
-      int tx = left + i, ty = bottom + j, slot = tile_head(tx, ty);
+  /* objects: a dot for each, red for critters */
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) {
+      int sx, sy, slot = tile_head(tx, ty);
+      map_tile_origin(tx, ty, cx, cy, &sx, &sy);
+      if (!slot || sx + MAP_TILE <= R_MAP.x0 || sx >= R_MAP.x1 || sy + MAP_TILE <= R_MAP.y0 || sy >= R_MAP.y1) continue;
       for (int n = 0; slot && n < 64; n++) {
         const uw_object_hdr_t *o = object_at(slot);
         if (!o) break;
-        int sx = R_MAP.x0 + i * MAP_TILE + o->xpos * MAP_TILE / 8, sy = R_MAP.y1 - (j + 1) * MAP_TILE + (7 - o->ypos) * MAP_TILE / 8;
-        if (sx >= R_MAP.x0 && sx < R_MAP.x1 - 1 && sy >= R_MAP.y0 && sy < R_MAP.y1 - 1)
-          fill(sx, sy, sx + 2, sy + 2, is_mobile(o) ? RGB(255, 60, 60) : RGB(255, 255, 80));
+        int dx = sx + o->xpos * MAP_TILE / 8, dy = sy + (7 - o->ypos) * MAP_TILE / 8;
+        if (dx >= R_MAP.x0 && dx < R_MAP.x1 - 1 && dy >= R_MAP.y0 && dy < R_MAP.y1 - 1)
+          fill(dx, dy, dx + 2, dy + 2, is_mobile(o) ? RGB(255, 60, 60) : RGB(255, 255, 80));
         slot = o->next;
       }
     }
   if (g_sel_tx >= 0) {
-    int sx = R_MAP.x0 + (g_sel_tx - left) * MAP_TILE, sy = R_MAP.y1 - (g_sel_ty - bottom + 1) * MAP_TILE;
-    frame(sx, sy, sx + MAP_TILE, sy + MAP_TILE, RGB(255, 255, 0));
+    int sx, sy;
+    map_tile_origin(g_sel_tx, g_sel_ty, cx, cy, &sx, &sy);
+    for (int x = sx; x < sx + MAP_TILE; x++) { if (x >= R_MAP.x0 && x < R_MAP.x1) { if (sy >= R_MAP.y0 && sy < R_MAP.y1) put(x, sy, RGB(255, 255, 0)); if (sy + MAP_TILE - 1 >= R_MAP.y0 && sy + MAP_TILE - 1 < R_MAP.y1) put(x, sy + MAP_TILE - 1, RGB(255, 255, 0)); } }
+    for (int y = sy; y < sy + MAP_TILE; y++) { if (y >= R_MAP.y0 && y < R_MAP.y1) { if (sx >= R_MAP.x0 && sx < R_MAP.x1) put(sx, y, RGB(255, 255, 0)); if (sx + MAP_TILE - 1 >= R_MAP.x0 && sx + MAP_TILE - 1 < R_MAP.x1) put(sx + MAP_TILE - 1, y, RGB(255, 255, 0)); } }
   }
-  /* the camera: a dot in its tile */
+  /* the camera: a dot at its position in its tile */
   {
-    int sx = R_MAP.x0 + (cx - left) * MAP_TILE + MAP_TILE / 2, sy = R_MAP.y1 - (cy - bottom) * MAP_TILE - MAP_TILE / 2;
-    fill(sx - 1, sy - 1, sx + 1, sy + 1, RGB(255, 255, 255));
+    int sx, sy;
+    map_tile_origin(cx, cy, cx, cy, &sx, &sy);
+    int dx = sx + (camx & 255) * MAP_TILE / 256, dy = sy + (255 - (camy & 255)) * MAP_TILE / 256;
+    if (dx - 1 >= R_MAP.x0 && dx + 1 <= R_MAP.x1 && dy - 1 >= R_MAP.y0 && dy + 1 <= R_MAP.y1) fill(dx - 1, dy - 1, dx + 1, dy + 1, RGB(255, 255, 255));
   }
 }
 
@@ -560,18 +576,18 @@ static int in_rect(const ed_rect_t *r, int x, int y)
 /* The map pane's tile under a screen point; the same mapping draw_map_pane uses. */
 static int g_map_click_sub_x = 4, g_map_click_sub_y = 4;   /* set by map_tile_at */
 
+/* The tile under a point of the map pane (the inverse of map_tile_origin), and where in it, in eighths. */
 static int map_tile_at(int px, int py, int *tx, int *ty)
 {
   int camx, camy, camz;
   camera(&camx, &camy, &camz);
-  int w = R_MAP.x1 - R_MAP.x0, h = R_MAP.y1 - R_MAP.y0;
-  int tiles_w = w / MAP_TILE + 1, tiles_h = h / MAP_TILE + 1;
-  int left = (camx >> 8) - tiles_w / 2, bottom = (camy >> 8) - tiles_h / 2;
-  *tx = left + (px - R_MAP.x0) / MAP_TILE;
-  *ty = bottom + (R_MAP.y1 - 1 - py) / MAP_TILE;
-  /* where in the tile the point is, in the object's eighths (y grows up the screen) */
-  g_map_click_sub_x = (px - R_MAP.x0) % MAP_TILE * 8 / MAP_TILE;
-  g_map_click_sub_y = 7 - (R_MAP.y1 - 1 - py) % MAP_TILE * 8 / MAP_TILE;
+  int cx = camx >> 8, cy = camy >> 8;
+  int u = px - MAP_ORIGIN_X - g_map_pan_x, v = py - g_map_pan_y;
+  int col = (int)floor(u / (double)MAP_TILE), row = (int)floor((MAP_ORIGIN_Y + MAP_TILE - 1 - v) / (double)MAP_TILE);
+  *tx = cx + col;
+  *ty = cy + row;
+  g_map_click_sub_x = (u - col * MAP_TILE) * 8 / MAP_TILE;
+  g_map_click_sub_y = 7 - (v - (MAP_ORIGIN_Y - row * MAP_TILE)) * 8 / MAP_TILE;
   return *tx >= 0 && *tx < 64 && *ty >= 0 && *ty < 64;
 }
 
@@ -813,6 +829,22 @@ void uw_editor_export(void)
   fprintf(stderr, "[editor] export level %d to LEV_EDIT.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
 }
 
+/* Play from the selected tile: save the level, leave the editor and drop the player on that tile. (A new game with a
+   fresh character is not done: this is the current game and character.) */
+void uw_editor_play(void)
+{
+  if (!g_active) return;
+  if (g_sel_tx < 0 || !tile_is_open(g_sel_tx, g_sel_ty)) { g_status = "select an open tile first"; return; }
+  int tx = g_sel_tx, ty = g_sel_ty;
+  uw_editor_save();
+  if (g_status && strcmp(g_status, "level saved") != 0) return;   /* it said why it could not */
+  uw_editor_set(0);
+  set_player_tile_position((uint)tx, (uint)ty, 1);
+  full_dungeon_redraw();
+  set_pending_update_flags(0x7ffe);
+  fprintf(stderr, "[editor] playing from tile (%d,%d) of level %d\n", tx, ty, DAT_00201b68);
+}
+
 /* Show: bring the camera next to the selected object's tile, looking at it. */
 static void op_show(void)
 {
@@ -825,6 +857,7 @@ static void op_show(void)
   if (!tile_is_open(cx >> 8, cy >> 8)) return;
   DAT_0023be90 = (short)cx;
   DAT_0023be92 = (short)cy;
+  g_map_pan_x = g_map_pan_y = 0;   /* the map follows the camera again */
   set_pending_update_flags(2);
 }
 
@@ -958,6 +991,21 @@ static void edit_click(int x, int y, int button)
   }
 }
 
+void uw_editor_mouse_motion(int x, int y)
+{
+  if (!g_map_dragging) return;
+  g_map_pan_x += x - g_map_drag_x;
+  g_map_pan_y += y - g_map_drag_y;
+  g_map_drag_x = x;
+  g_map_drag_y = y;
+}
+
+void uw_editor_mouse_up(int x, int y, int button)
+{
+  (void)x; (void)y;
+  if (button == SDL_BUTTON_RIGHT) g_map_dragging = 0;
+}
+
 void uw_editor_click(int x, int y, int button)
 {
   int tx, ty;
@@ -966,15 +1014,22 @@ void uw_editor_click(int x, int y, int button)
     pick_in_view(x, y);
   }
   else if (in_rect(&R_MAP, x, y)) {
-    if (map_tile_at(x, y, &tx, &ty)) {
-      if (button == SDL_BUTTON_RIGHT) select_tile(tx, ty);   /* a right click always selects */
-      else if (g_held_slot) op_put_down(tx, ty, g_map_click_sub_x, g_map_click_sub_y);
+    if (button == SDL_BUTTON_RIGHT) {
+      g_map_dragging = 1;   /* a right drag pans the map; a right click does nothing else */
+      g_map_drag_x = x;
+      g_map_drag_y = y;
+    }
+    else if (map_tile_at(x, y, &tx, &ty)) {
+      if (g_held_slot) op_put_down(tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else if (g_brush_armed) op_place(g_palette_brush, tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else select_tile(tx, ty);
     }
   }
   else if (in_rect(&R_PALETTE, x, y) && y >= 175 && x >= 156 && x < 172) {
-    uw_editor_save();   /* the orange button below the modes (a guess; see editor-research) */
+    uw_editor_play();   /* the orange button below the modes: play from the selected tile */
+  }
+  else if (in_rect(&R_PALETTE, x, y) && y < 25) {
+    uw_editor_save();   /* the starburst at the top, for now */
   }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;
@@ -1026,9 +1081,11 @@ void uw_editor_wheel(int x, int y, int dy)
   clamp_scrolls();
 }
 
-/* The free camera: arrows turn and move, A/D strafe, Q/E change height. It stays out of solid tiles so the
-   visibility pass always starts from an open one. */
-#define FLY_SPEED 14
+/* The free camera, with the game's own keys: W or up runs forward, S walks forward slowly, X or down goes back, A or left
+   and D or right turn, Z and C sidestep (the game's mouselook swaps the two pairs, but the editor has no mouselook), and
+   Q and E change height. It stays out of solid tiles so the visibility pass always starts from an open one. */
+#define FLY_RUN 14
+#define FLY_WALK 5
 #define FLY_TURN 0x180
 #define FLY_LIFT 6
 
@@ -1046,16 +1103,22 @@ void uw_editor_tick(void)
 {
   if (!g_active || DAT_00201b64 != 0 || DAT_0023b82c != 0 || dbgui_visible()) return;   /* typing in the console is not flying */
 #define KEY(sc) uw_scancode_held(sc)
-  int fwd = (KEY(SDL_SCANCODE_UP) || KEY(SDL_SCANCODE_W)) - (KEY(SDL_SCANCODE_DOWN) || KEY(SDL_SCANCODE_S));
-  int strafe = KEY(SDL_SCANCODE_D) - KEY(SDL_SCANCODE_A);
-  int turn = KEY(SDL_SCANCODE_RIGHT) - KEY(SDL_SCANCODE_LEFT);
+  int run = KEY(SDL_SCANCODE_W) || KEY(SDL_SCANCODE_UP), walk = KEY(SDL_SCANCODE_S);
+  int back = KEY(SDL_SCANCODE_X) || KEY(SDL_SCANCODE_DOWN);
+  int turn = (KEY(SDL_SCANCODE_D) || KEY(SDL_SCANCODE_RIGHT)) - (KEY(SDL_SCANCODE_A) || KEY(SDL_SCANCODE_LEFT));
+  int strafe = KEY(SDL_SCANCODE_C) - KEY(SDL_SCANCODE_Z);
   int lift = KEY(SDL_SCANCODE_E) - KEY(SDL_SCANCODE_Q);
+#undef KEY
+  int speed = run ? FLY_RUN : walk ? FLY_WALK : 0;   /* units of 1/256 tile per frame */
+  int fwd = run || walk ? 1 : back ? -1 : 0;
+  if (back && !run && !walk) speed = FLY_WALK * 2;
   if (!fwd && !strafe && !turn && !lift) return;
   short sn, cs;
   DAT_0023bf00 = (ushort)(DAT_0023bf00 + turn * FLY_TURN);
   angle_to_screen_delta((ushort)DAT_0023bf00, &sn, &cs);
-  /* sine and cosine are 1.15 fixed point; the facing's sine points along +x and its cosine along +y */
-  try_move(((sn * fwd) >> 15) * FLY_SPEED + ((cs * strafe) >> 15) * FLY_SPEED, ((cs * fwd) >> 15) * FLY_SPEED - ((sn * strafe) >> 15) * FLY_SPEED);
+  /* sine and cosine are 1.15 fixed point; the facing is (sine, cosine) in (x, y), and its right is (cosine, -sine) */
+  int step = fwd * speed, side = strafe * FLY_WALK;
+  try_move((sn * step + cs * side) / 32768, (cs * step - sn * side) / 32768);
   DAT_0023be94 = (short)(DAT_0023be94 + lift * FLY_LIFT);
   set_pending_update_flags(2);
 }
@@ -1076,6 +1139,7 @@ void uw_editor_set(int on)
                             + (((const uw_mobile_object_t *)g_player_object)->heading_flags & 0x1f) * 0x100);
     DAT_0023bf02 = DAT_0023bf04 = 0;
     DAT_0023b82c = 0;
+    g_map_pan_x = g_map_pan_y = 0;
     select_tile(x >> 8, y >> 8);
     g_entered_fullscreen = !g_view_fullscreen;
     if (g_entered_fullscreen) uw_toggle_fullscreen_view(0);
