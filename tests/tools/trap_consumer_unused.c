@@ -4,7 +4,7 @@ char *get_message_string(ushort id)
 int message_scroll_print_wrapped(char *text)
 { assert(!"Unexpected message_scroll_print_wrapped"); return 0; }
 void debug_print(char *format, ...) { assert(!"Unexpected debug_print"); return; }
-ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot) { assert(!"Unexpected find_equipped_item_by_category"); return 0; }
+uw_unaligned_word_t *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot) { assert(!"Unexpected find_equipped_item_by_category"); return 0; }
 void set_pending_update_flags(ushort flags) { assert(!"Unexpected set_pending_update_flags"); return; }
 void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y) { assert(!"Unexpected spawn_trap_hazard_object"); return; }
 uw_object_hdr_t *find_object_in_chain(ushort **link_cursor, int recurse,

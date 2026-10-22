@@ -27,7 +27,7 @@ int apply_typed_damage_to_object(uw_unaligned_word_t *obj, uw_unaligned_word_t *
 }
 long ce_rand(void) { event(4); return scenario == 7 ? 0 : 1; }
 uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *obj) { event(5); memcpy(arena + 64, obj, 8); return (uw_object_hdr_t *)(arena + 64); }
-ushort *settle_mobile_to_immobile(uw_unaligned_word_t *obj) { event(6); if (scenario == 2) return NULL; memcpy(arena + 128, obj, 8); return (ushort *)(arena + 128); }
+uw_unaligned_word_t *settle_mobile_to_immobile(uw_unaligned_word_t *obj) { event(6); if (scenario == 2) return NULL; memcpy(arena + 128, obj, 8); return (ushort *)(arena + 128); }
 uw_object_hdr_t *settle_dropped_object(void *obj, short x, short y, int mode) {
     (void)x; (void)y; (void)mode; event(7);
     if (scenario == 3) return NULL;

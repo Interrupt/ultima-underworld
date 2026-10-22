@@ -120,6 +120,6 @@ int object_tick_is_due(short period, int phase); // was FUN_0003495c
 void tick_mobile_objects(char elapsed); // was FUN_000349bc
 void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot); // was FUN_00054a00
 int sync_object_tile_position(uw_unaligned_word_t *object, void *position); // was FUN_00054f6c
-ushort *settle_mobile_to_immobile(uw_unaligned_word_t *object); // was FUN_0005596c
+uw_unaligned_word_t *settle_mobile_to_immobile(uw_unaligned_word_t *object); // was FUN_0005596c
 
 #endif

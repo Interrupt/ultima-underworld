@@ -41,7 +41,7 @@ uw_object_hdr_t *spawn_object_near_player(void)
     if (mutation) { projectile()->hdr.type_flags ^= 0x5555; ammo()->type_flags ^= 0xaaaa; }
     return mode == 1 ? NULL : &projectile()->hdr;
 }
-ushort *extract_ammo_and_refresh(int category, int subcategory, int selector, short slot)
+uw_unaligned_word_t *extract_ammo_and_refresh(int category, int subcategory, int selector, short slot)
 {
     assert(category == 0 && subcategory == 1 && selector == g_ranged_type_props[weapon].ammo_damage_selector);
     assert(slot == (mode == 4 ? 0 : 42)); observe(4); ++extracts;

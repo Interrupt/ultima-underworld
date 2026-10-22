@@ -1,7 +1,7 @@
 #include "src/headers/uw.h"
 extern ushort arena[0x4000];
 extern byte original_goblin[27], page_header[2];
-extern ushort *goblin;
+extern uw_unaligned_word_t *goblin;
 extern char *DAT_002046b8, *DAT_002046c4, *g_despawn_creature_record;
 extern uw_monster_type_props_t g_monster_type_props[64];
 extern uw_object_type_props_t g_object_type_props[512];

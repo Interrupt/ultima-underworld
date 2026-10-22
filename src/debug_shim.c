@@ -53,7 +53,7 @@ static void dbgui_inspector_back(void) { g_dbgui_inspect_obj = 0; g_dbgui_inspec
    check_object_combination uses) on the door's link chain; the door is locked while that lock's
    type-word bit 0x200 is set (a matching key sets it, check_object_combination, and a count-0
    "is it locked" probe only returns 0 for it). */
-static ushort *dbgui_door_lock_object(ushort *door)
+static uw_unaligned_word_t *dbgui_door_lock_object(uw_unaligned_word_t *door)
 {
   ushort *chain = door + 3;
   if ((*door & 0x8000) != 0 || (*chain & 0xffc0) == 0) return 0;

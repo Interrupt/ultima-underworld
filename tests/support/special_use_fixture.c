@@ -87,7 +87,7 @@ void complete_use_item_fill_flask(ushort *target, int clicked, int confirmed) { 
 UNUSED_VOID(complete_use_item_repair_object)
 #undef UNUSED_VOID
 #undef UNUSED_RESULT
-ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot)
+uw_unaligned_word_t *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot)
 { TEST_FAIL_MESSAGE("Unexpected equipment search"); return NULL; }
 
 ushort *special_use_object(unsigned slot)

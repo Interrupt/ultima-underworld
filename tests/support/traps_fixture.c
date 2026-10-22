@@ -5,7 +5,7 @@
 char *get_message_string(ushort id);
 int message_scroll_print_wrapped(char *text);
 void debug_print(char *format, ...);
-ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot);
+uw_unaligned_word_t *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot);
 void set_pending_update_flags(ushort flags);
 void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot_index);
@@ -73,7 +73,7 @@ int message_scroll_print_wrapped(char *text)
 
 void debug_print(char *format, ...) { (void)format; }
 
-ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot) { (void)category; (void)subcategory; (void)quality; (void)full_scan; (void)out_slot; TEST_FAIL_MESSAGE("Unexpected find_equipped_item_by_category in text trap"); return 0; }
+uw_unaligned_word_t *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot) { (void)category; (void)subcategory; (void)quality; (void)full_scan; (void)out_slot; TEST_FAIL_MESSAGE("Unexpected find_equipped_item_by_category in text trap"); return 0; }
 
 void set_pending_update_flags(ushort flags) { (void)flags; TEST_FAIL_MESSAGE("Unexpected set_pending_update_flags in text trap"); }
 
