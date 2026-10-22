@@ -134,6 +134,49 @@ WAIT 5
 EDITOR undo
 WAIT 5
 EDITOR validate
+# texture mode: pick a slot, change the ceiling, paint a tile on the map, eyedrop with Ctrl, a floor slot, then the global texture lists
+# (a texture with no slot is given a free one, if there is one); undo it all
+SDLCLICK 330 98
+WAIT 10
+SDLCLICK 372 276
+WAIT 10
+SDLCLICK 232 328
+WAIT 20
+SDLCLICK 232 328
+WAIT 20
+SDLCLICK 502 126
+WAIT 20
+SDLKEYDOWN ctrl
+WAIT 5
+SDLCLICK 502 118
+WAIT 10
+SDLKEYUP ctrl
+WAIT 5
+SDLCLICK 442 250
+WAIT 10
+SDLCLICK 410 276
+WAIT 10
+SDLCLICK 502 126
+WAIT 20
+SDLCLICK 512 250
+WAIT 10
+SDLCLICK 440 276
+WAIT 30
+SDLCLICK 330 130
+WAIT 10
+SDLCLICK 330 98
+WAIT 10
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
 # undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
 EDITOR selftest
 WAIT 10

@@ -278,7 +278,7 @@ Build the safety layer first, then a usable inspect-and-tweak object editor, the
 
 - What the starburst, eye and two lettered icons really did.
 - Tile type enum values, floor height bit width, and the floor-height-to-zpos scale.
-- Exact texture slot counts and where the ceiling texture is stored.
+- ~~Exact texture slot counts and where the ceiling texture is stored.~~ Answered: 48 wall slots into W64.TR's 210 textures, 10 floor slots into F32.TR's 52 (low-resolution copies in W16.TR / F16.TR), and the ceiling is the last floor slot (9); changing it changes the ceiling in the 3D view.
 - Whether the owner field matches an individual NPC or a faction.
 - Which quality/owner bits hold a trigger's target tile.
 - Which caches must be invalidated after tile geometry changes.
@@ -306,5 +306,6 @@ Updated as work lands; the phases above say what each item is, this says what ex
 - **Mode column:** wired. Each of the eight buttons selects a mode with its own bottom panels (`M_TILE`, `M_TEXTURE`, `M_OBJECT`, `M_VIEW`, `M_FIND`, `M_CUTCOPY`, `M_PASTE`, `M_FILL`); only object mode has panels so far, the rest show a placeholder until their items land.
 - **Picking walls and floors:** done with the same ray cast as the floor (no renderer change): `view_ray_hit` reports the floor, a face of a solid tile (west, east, south, north; the tile whose wall texture it is) or the ceiling, with the hit point. A click on a floor or wall selects that tile. Floors are taken as flat at their tile's height, so slopes are approximate. `EDITOR selftest` checks a wall face, the floor and the ceiling.
 - **Tile and terrain mode:** built. A palette of the ten tile types (BUTTONS.GR swatches 33 to 42), a brush of type, height and flags with a scope (Type / Height / Flags toggles), freehand strokes on the map or the 3D floor and walls, Shift-drag rectangles, Ctrl-click eyedropper, Raise / Lower for the selected tile, a side view of the row's floor heights, one undo step per stroke, and consistency checks after each stroke (objects on a solid tile, objects below a raised floor, door flag without a door object or the reverse, a diagonal with no open side, a slope whose ends are level - a heuristic - and the camera inside a wall); Fix lifts objects to the floor and moves objects off solid tiles. The renderer builds a tile's geometry from the tile word each frame, so a redraw is the only cache to refresh (plus the NPC path cache). Auto-slope between heights is not built.
-- **Not built yet:** the Eye view modes and editor markers, mode-button wiring, texture / fill tools, Find, cut / copy.
+- **Texture painter:** built. Wall / Floor slot palettes with usage counts, W tex / F tex lists of the global textures (a texture with no slot is given a free one, or the slot that already shows it is picked), slot editing that asks first when tiles use the slot, the ceiling picker (floor slot 9), painting on the map or in 3D with the Wall and Floor tabs (a floor click paints floors, a wall click walls), Ctrl-click eyedrop, and undo that reloads the textures. Not built: hover highlight, select all tiles using a slot, compact unused slots.
+- **Not built yet:** the Eye view modes and editor markers, mode-button wiring, fill tool, Find, cut / copy.
 - **Dropped for now (by request):** the map view cone and zoom, and the viewport struct.

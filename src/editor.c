@@ -893,7 +893,10 @@ static void undo_redo(int redo)
     (*to_n)--;
   }
   snapshot_take(&to[(*to_n)++]);
+  int tex_before = memcmp(DAT_0023ae58_backing, from[*from_n - 1].texture_walls, sizeof DAT_0023ae58_backing) != 0 ||
+                   memcmp(DAT_0023adb8_backing, from[*from_n - 1].texture_floors, sizeof DAT_0023adb8_backing) != 0;
   snapshot_restore(&from[--(*from_n)]);
+  if (tex_before) { load_terrain_texture_props((char *)DAT_0023ae58_backing, (char *)DAT_0023adb8_backing); load_dungeon_texture_arenas(); }
   g_dirty = 1;
   /* the selected object may no longer exist: keep the tile, drop the object */
   if (g_sel_tx >= 0) { g_sel_slot = 0; g_sel_link = NULL; }
@@ -1640,6 +1643,269 @@ static int tile_mode_click(int x, int y, int button)
   return 0;
 }
 
+/* ---- texture painter mode ---- */
+
+/* Each tile has a floor texture slot (floor_tex, 0 to 9) and a wall texture slot (wall_tex, 0 to 47); the level's texture map says which global
+   texture each slot shows (48 wall slots into W64.TR's 210 textures, 10 floor slots into F32.TR's 52). The ceiling is the last floor slot (9). Painting
+   a tile changes only that tile; editing a slot changes every tile that uses it, so it asks first. */
+#define WALL_SLOTS 48
+#define FLOOR_SLOTS 10
+#define CEILING_SLOT 9
+#define GLOBAL_WALLS 210
+#define GLOBAL_FLOORS 52
+enum { TT_WALL_SLOTS, TT_FLOOR_SLOTS, TT_WALL_TEXTURES, TT_FLOOR_TEXTURES };
+static int g_tex_tab = TT_WALL_SLOTS;
+static int g_tex_slot[2];                    /* the active slot: [0] wall, [1] floor */
+static int g_tex_page;                       /* the first row shown in the palette */
+static int g_tex_confirm;                    /* a slot edit waiting for a second click, because tiles use the slot */
+static const ed_rect_t R_TEX_PAL = { 174, 119, 320, 190 };
+#define TEX_COLS 8
+#define TEX_CELL_W 17
+#define TEX_CELL_H 22
+#define TEX_ROWS 2
+
+static short *tex_list(int floor) { return floor ? (short *)DAT_0023adb8_backing : (short *)DAT_0023ae58_backing; }
+static int tex_slots(int floor) { return floor ? FLOOR_SLOTS : WALL_SLOTS; }
+
+/* How many tiles use a slot. */
+static int tex_usage(int floor, int slot)
+{
+  int n = 0;
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) {
+      const uw_tile_t *t = tile_at(tx, ty);
+      if (t && (floor ? (int)t->floor_tex : (int)t->wall_tex) == slot) n++;
+    }
+  return n;
+}
+
+/* A thumbnail (16x16) of a texture, taken from the low resolution files, cached the first time. */
+static const unsigned char *tex_thumb(int floor, int id)
+{
+  static unsigned char cache[2][GLOBAL_WALLS][256];
+  static unsigned char have[2][GLOBAL_WALLS];
+  int count = floor ? GLOBAL_FLOORS : GLOBAL_WALLS;
+  if (id < 0 || id >= count) return NULL;
+  if (!have[floor][id]) {
+    static char walls[] = "\\DATA\\W16.TR", floors[] = "\\DATA\\F16.TR";
+    int h = uw_file_open_read(floor ? floors : walls);
+    unsigned int off = 0;
+    if (h == -1) return NULL;
+    uw_file_seek(h, 4 + 4 * id, 0);
+    if (uw_file_read(h, &off, 4) == 4 && uw_file_seek(h, (int)off, 0) == (int)off) uw_file_read(h, cache[floor][id], 256);
+    uw_file_close(h);
+    have[floor][id] = 1;
+  }
+  return cache[floor][id];
+}
+
+static void draw_thumb(const unsigned char *pixels, int x, int y, int size, int step)
+{
+  if (!pixels) return;
+  for (int j = 0; j < size; j++)
+    for (int i = 0; i < size; i++) put(x + i, y + j, (unsigned short)(&g_palette_rgb565)[pixels[(j * step) * (size * step) + i * step]]);
+}
+
+/* The texture a slot shows now, from the arena the game draws from: 64x64 for a wall slot, 32x32 for a floor slot. */
+static void draw_slot_texture(int floor, int slot, int x, int y, int size)
+{
+  const unsigned char *a = (const unsigned char *)(floor ? DAT_0023ae34 : DAT_0023ae38);
+  if (!a) return;
+  int native = floor ? 32 : 64, step = native / size;
+  a += (floor ? 0x400 : 0x1000) * slot;
+  for (int j = 0; j < size; j++)
+    for (int i = 0; i < size; i++) put(x + i, y + j, (unsigned short)(&g_palette_rgb565)[a[(j * step) * native + i * step]]);
+}
+
+/* After the texture lists change (a slot edit, the ceiling, an undo): the textures the game draws from are loaded again. */
+static void textures_changed(void)
+{
+  load_terrain_texture_props((char *)DAT_0023ae58_backing, (char *)DAT_0023adb8_backing);
+  load_dungeon_texture_arenas();
+  set_pending_update_flags(0x7ffe);
+  full_dungeon_redraw();
+  dirty_rect_union(0, 200, 0, 0x140);
+}
+
+/* Paint a tile's floor or wall slot. Returns nonzero if it changed. */
+static int paint_texture(int tx, int ty, int floor)
+{
+  uw_tile_t *t = tile_at(tx, ty);
+  if (!t) return 0;
+  int slot = g_tex_slot[floor], before = floor ? (int)t->floor_tex : (int)t->wall_tex;
+  if (floor) t->floor_tex = (unsigned)slot; else t->wall_tex = (unsigned)slot;
+  return slot != before;
+}
+
+static int g_tex_stroke;   /* painting freehand: 1 floor, 2 wall */
+
+static void texture_mode_press(int tx, int ty, int hit_kind)
+{
+  const uw_tile_t *t = tile_at(tx, ty);
+  if (!t) return;
+  int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
+  select_tile(tx, ty);
+  if (hit_kind == HIT_FLOOR && !floor_tab) { g_status = "pick the Floor tab to paint floors"; return; }
+  if (hit_kind == HIT_WALL && floor_tab) { g_status = "pick the Wall tab to paint walls"; return; }
+  if (key_ctrl()) {   /* eyedropper: the tile's slot becomes the active one */
+    g_tex_slot[floor_tab] = floor_tab ? t->floor_tex : t->wall_tex;
+    g_status = "slot picked";
+    return;
+  }
+  checkpoint();
+  g_tex_stroke = floor_tab ? 1 : 2;
+  paint_texture(tx, ty, floor_tab);
+  textures_changed();
+}
+
+static void texture_mode_drag(int tx, int ty, int hit_kind)
+{
+  if (!g_tex_stroke || !tile_at(tx, ty)) return;
+  if (hit_kind == HIT_FLOOR && g_tex_stroke == 2) return;
+  if (hit_kind == HIT_WALL && g_tex_stroke == 1) return;
+  if (paint_texture(tx, ty, g_tex_stroke == 1)) { set_pending_update_flags(0x7ffe); full_dungeon_redraw(); dirty_rect_union(0, 200, 0, 0x140); }
+}
+
+static void texture_mode_release(void) { g_tex_stroke = 0; }
+
+/* Change what a slot shows (or the ceiling). A slot that tiles use asks first. */
+static void tex_edit_slot(int floor, int slot, int new_id)
+{
+  int count = floor ? GLOBAL_FLOORS : GLOBAL_WALLS;
+  short *list = tex_list(floor);
+  if (new_id < 0 || new_id >= count || list[slot] == new_id) return;
+  int used = tex_usage(floor, slot);
+  if (floor && slot == CEILING_SLOT) used = 0;   /* the ceiling is not on any tile */
+  if (used > 0 && !g_tex_confirm) {
+    static char msg[48];
+    snprintf(msg, sizeof msg, "%d tiles use it: click again", used);
+    g_status = msg;
+    g_tex_confirm = 1;
+    return;
+  }
+  g_tex_confirm = 0;
+  checkpoint();
+  list[slot] = (short)new_id;
+  textures_changed();
+}
+
+/* A global texture picked from the lists: a slot that already shows it becomes the active slot; otherwise a free slot (no tile uses it) is given it. */
+static void tex_pick_global(int floor, int id)
+{
+  short *list = tex_list(floor);
+  for (int i = 0; i < tex_slots(floor); i++)
+    if (list[i] == id && !(floor && i == CEILING_SLOT)) { g_tex_slot[floor] = i; g_status = "already a slot"; g_tex_tab = floor ? TT_FLOOR_SLOTS : TT_WALL_SLOTS; return; }
+  for (int i = 0; i < tex_slots(floor) - (floor ? 1 : 0); i++)
+    if (tex_usage(floor, i) == 0) {
+      checkpoint();
+      list[i] = (short)id;
+      g_tex_slot[floor] = i;
+      textures_changed();
+      g_status = "given a free slot";
+      g_tex_tab = floor ? TT_FLOOR_SLOTS : TT_WALL_SLOTS;
+      return;
+    }
+  g_status = "no free slot";
+}
+
+static int tex_cells(void)
+{
+  switch (g_tex_tab) {
+    case TT_WALL_SLOTS: return WALL_SLOTS;
+    case TT_FLOOR_SLOTS: return FLOOR_SLOTS - 1;   /* the last floor slot is the ceiling, not a floor */
+    case TT_WALL_TEXTURES: return GLOBAL_WALLS;
+    default: return GLOBAL_FLOORS;
+  }
+}
+
+static void draw_texture_mode(void)
+{
+  static const char *const tabs[4] = { "Wall", "Floor", "W tex", "F tex" };
+  char line[64];
+  int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
+  frame(R_TEX_PAL.x0, R_TEX_PAL.y0, R_TEX_PAL.x1, R_TEX_PAL.y1, COL_FRAME);
+  for (int i = 0; i < 4; i++) {
+    int x = R_TEX_PAL.x0 + 2 + i * 35;
+    if (i == g_tex_tab) fill(x + 1, R_TEX_PAL.y0 + 2, x + 33, R_TEX_PAL.y0 + 11, RGB(24, 24, 88));
+    frame(x, R_TEX_PAL.y0 + 1, x + 34, R_TEX_PAL.y0 + 12, i < 2 ? COL_ORANGE : COL_BLUE);
+    text(tabs[i], x + 3, R_TEX_PAL.y0 + 3, i < 2 ? COL_ORANGE : COL_BLUE);
+  }
+  int cells = tex_cells(), rows = (cells + TEX_COLS - 1) / TEX_COLS;
+  if (g_tex_page > rows - TEX_ROWS) g_tex_page = rows - TEX_ROWS;
+  if (g_tex_page < 0) g_tex_page = 0;
+  for (int i = 0; i < TEX_COLS * TEX_ROWS; i++) {
+    int n = g_tex_page * TEX_COLS + i, x = R_TEX_PAL.x0 + 4 + (i % TEX_COLS) * TEX_CELL_W, y = R_TEX_PAL.y0 + 15 + (i / TEX_COLS) * TEX_CELL_H;
+    if (n >= cells) break;
+    if (g_tex_tab == TT_WALL_SLOTS || g_tex_tab == TT_FLOOR_SLOTS) {
+      draw_slot_texture(floor_tab, n, x, y, 16);
+      snprintf(line, sizeof line, "%d", tex_usage(floor_tab, n));
+      text(line, x, y + 16, tex_usage(floor_tab, n) ? COL_TEXT : RGB(120, 60, 16));   /* usage: empty slots stand out */
+      if (n == g_tex_slot[floor_tab]) frame(x - 1, y - 1, x + 16, y + 17, COL_BLUE);
+    }
+    else {
+      draw_thumb(tex_thumb(floor_tab, n), x, y, 16, 1);
+      snprintf(line, sizeof line, "%d", n);
+      text(line, x, y + 16, COL_FRAME);
+    }
+  }
+  if (rows > TEX_ROWS) {
+    arrow(R_TEX_PAL.x1 - 8, R_TEX_PAL.y0 + 16, 2, g_tex_page > 0 ? COL_TEXT : COL_FRAME);
+    arrow(R_TEX_PAL.x1 - 8, R_TEX_PAL.y1 - 8, 3, g_tex_page < rows - TEX_ROWS ? COL_TEXT : COL_FRAME);
+  }
+  /* panel: the active slot, its texture, the ceiling, the selected tile */
+  frame(0, 126, 150, 190, COL_FRAME);
+  int slot = g_tex_slot[floor_tab];
+  short *list = tex_list(floor_tab);
+  snprintf(line, sizeof line, "%s slot %d: texture %d", floor_tab ? "Floor" : "Wall", slot, list[slot]);
+  text(line, 4, 128, COL_TEXT);
+  draw_slot_texture(floor_tab, slot, 4, 138, 32);
+  snprintf(line, sizeof line, "%d tiles", tex_usage(floor_tab, slot));
+  text(line, 42, 138, COL_ORANGE);
+  text("texture", 42, 148, COL_ORANGE);
+  arrow_small(78, 148, 0, COL_BLUE); arrow_small(92, 148, 1, COL_BLUE);
+  snprintf(line, sizeof line, "Ceiling: %d", tex_list(1)[CEILING_SLOT]);
+  text(line, 42, 160, COL_ORANGE);
+  arrow_small(100, 160, 0, COL_BLUE); arrow_small(114, 160, 1, COL_BLUE);
+  const uw_tile_t *t = tile_at(g_sel_tx, g_sel_ty);
+  if (t) {
+    snprintf(line, sizeof line, "Tile %d,%d: fl %d wl %d", g_sel_tx, g_sel_ty, t->floor_tex, t->wall_tex);
+    text(line, 4, 180, COL_FRAME);
+  }
+}
+
+static int texture_mode_click(int x, int y, int button)
+{
+  int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
+  int step = button == SDL_BUTTON_RIGHT ? 8 : 1;
+  if (in_rect(&R_TEX_PAL, x, y)) {
+    if (y < R_TEX_PAL.y0 + 13) {
+      int i = (x - R_TEX_PAL.x0 - 2) / 35;
+      if (i >= 0 && i < 4) { g_tex_tab = i; g_tex_page = 0; g_tex_confirm = 0; }
+      return 1;
+    }
+    int cells = tex_cells(), rows = (cells + TEX_COLS - 1) / TEX_COLS;
+    if (x >= R_TEX_PAL.x1 - 9) { g_tex_page += y < (R_TEX_PAL.y0 + R_TEX_PAL.y1) / 2 ? -1 : 1; if (g_tex_page > rows - TEX_ROWS) g_tex_page = rows - TEX_ROWS; if (g_tex_page < 0) g_tex_page = 0; return 1; }
+    int col = (x - R_TEX_PAL.x0 - 4) / TEX_CELL_W, row = (y - R_TEX_PAL.y0 - 15) / TEX_CELL_H;
+    int n = (g_tex_page + row) * TEX_COLS + col;
+    if (col >= 0 && col < TEX_COLS && row >= 0 && row < TEX_ROWS && n < cells) {
+      if (g_tex_tab == TT_WALL_SLOTS || g_tex_tab == TT_FLOOR_SLOTS) { g_tex_slot[floor_tab] = n; g_tex_confirm = 0; }
+      else tex_pick_global(floor_tab, n);
+    }
+    return 1;
+  }
+  if (y >= 148 && y < 156 && x >= 76 && x < 100) {   /* the active slot's texture */
+    int slot = g_tex_slot[floor_tab];
+    tex_edit_slot(floor_tab, slot, tex_list(floor_tab)[slot] + (x < 90 ? -step : step));
+    return 1;
+  }
+  if (y >= 160 && y < 168 && x >= 98 && x < 124) {   /* the ceiling */
+    int id = tex_list(1)[CEILING_SLOT] + (x < 112 ? -step : step);
+    if (id >= 0 && id < GLOBAL_FLOORS) { checkpoint(); tex_list(1)[CEILING_SLOT] = (short)id; textures_changed(); }
+    return 1;
+  }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -1857,6 +2123,43 @@ void uw_editor_selftest(void)
     uw_editor_undo();
     selftest_expect(&before, "undoing a rectangle stroke");
     g_brush_scope = SC_TYPE | SC_HEIGHT;
+    g_selftest_checks += 3;
+  }
+
+  /* textures: painting a tile, editing a slot (which asks first when tiles use it), the ceiling and a global texture with no slot, each undone with the
+     loaded textures coming back too */
+  {
+    short *walls = tex_list(0);
+    static unsigned char arena_before[WALL_SLOTS * 0x1000];
+    int slot = 5, old_id = walls[slot], new_id = (old_id + 7) % GLOBAL_WALLS;
+    memcpy(arena_before, DAT_0023ae38, sizeof arena_before);
+    snapshot_take(&before);
+    g_tex_confirm = 0;
+    int used = tex_usage(0, slot);
+    tex_edit_slot(0, slot, new_id);
+    if (used > 0) {
+      if (walls[slot] != old_id) { fprintf(stderr, "[editor] selftest FAILED: a slot in use changed without asking\n"); abort(); }
+      tex_edit_slot(0, slot, new_id);   /* the second click confirms */
+    }
+    if (walls[slot] != new_id || memcmp(arena_before + slot * 0x1000, DAT_0023ae38 + slot * 0x1000, 0x1000) == 0) {
+      fprintf(stderr, "[editor] selftest FAILED: the slot edit did not load the texture\n");
+      abort();
+    }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a slot edit");
+    if (memcmp(arena_before, DAT_0023ae38, sizeof arena_before) != 0) { fprintf(stderr, "[editor] selftest FAILED: the old texture did not come back\n"); abort(); }
+    int ceiling = tex_list(1)[CEILING_SLOT];
+    checkpoint();
+    tex_list(1)[CEILING_SLOT] = (short)((ceiling + 3) % GLOBAL_FLOORS);
+    textures_changed();
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a ceiling change");
+    g_tex_slot[0] = 3;
+    checkpoint();
+    paint_texture(tx, ty, 0);
+    if (tile_at(tx, ty)->wall_tex != 3) { fprintf(stderr, "[editor] selftest FAILED: the tile was not painted\n"); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a texture stroke");
     g_selftest_checks += 3;
   }
 
@@ -2367,6 +2670,7 @@ static void draw_mode(void)
   switch (g_mode) {
     case M_OBJECT: draw_object_mode(); break;
     case M_TILE: draw_tile_mode(); break;
+    case M_TEXTURE: draw_texture_mode(); break;
     default: draw_mode_placeholder(); break;
   }
 }
@@ -2376,21 +2680,23 @@ static int mode_click(int x, int y, int button)
   switch (g_mode) {
     case M_OBJECT: return object_mode_click(x, y, button);
     case M_TILE: return tile_mode_click(x, y, button);
+    case M_TEXTURE: return texture_mode_click(x, y, button);
     default: return 0;
   }
 }
 
 void uw_editor_mouse_motion(int x, int y)
 {
-  if (g_stroke) {   /* painting: the tile under the pointer, on the map or on the 3D view */
-    int tx = -1, ty = -1;
+  if (g_stroke || g_tex_stroke) {   /* painting: the tile under the pointer, on the map or on the 3D view */
+    int tx = -1, ty = -1, kind = -1;
     if (in_rect(&R_MAP, x, y)) map_tile_at(x, y, &tx, &ty);
     else if (in_rect(&R_VIEW, x, y)) {
       ed_hit_t hit;
       int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
-      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) { tx = hit.tx; ty = hit.ty; }
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) { tx = hit.tx; ty = hit.ty; kind = hit.kind; }
     }
-    if (tx >= 0) tile_mode_drag(tx, ty);
+    if (tx >= 0 && g_stroke) tile_mode_drag(tx, ty);
+    if (tx >= 0 && g_tex_stroke) texture_mode_drag(tx, ty, kind);
   }
   if (!g_map_dragging) return;
   g_map_pan_x += x - g_map_drag_x;
@@ -2404,6 +2710,7 @@ void uw_editor_mouse_up(int x, int y, int button)
   (void)x; (void)y;
   if (button == SDL_BUTTON_RIGHT) g_map_dragging = 0;
   if (button == SDL_BUTTON_LEFT && g_stroke) tile_mode_release();
+  if (button == SDL_BUTTON_LEFT && g_tex_stroke) texture_mode_release();
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -2412,7 +2719,12 @@ void uw_editor_click(int x, int y, int button)
   int tx, ty;
   g_status = NULL;
   if (in_rect(&R_VIEW, x, y)) {
-    if (g_mode == M_TILE) {   /* paint the floor or wall under the click */
+    if (g_mode == M_TEXTURE) {   /* paint the floor or the wall face under the click */
+      ed_hit_t hit;
+      int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) texture_mode_press(hit.tx, hit.ty, hit.kind);
+    }
+    else if (g_mode == M_TILE) {   /* paint the floor or wall under the click */
       ed_hit_t hit;
       int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
       if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) tile_mode_press(hit.tx, hit.ty);
@@ -2427,6 +2739,9 @@ void uw_editor_click(int x, int y, int button)
     }
     else if (g_mode == M_TILE) {
       if (map_tile_at(x, y, &tx, &ty)) tile_mode_press(tx, ty);
+    }
+    else if (g_mode == M_TEXTURE) {
+      if (map_tile_at(x, y, &tx, &ty)) texture_mode_press(tx, ty, -1);
     }
     else if (map_tile_at(x, y, &tx, &ty)) {
       if (apply_target(tx, ty)) ;
