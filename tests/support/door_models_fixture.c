@@ -174,3 +174,9 @@ int uw_dos_model_face_colour(int dos_index, int part)
     (void)dos_index; (void)part;
     return -1;
 }
+
+int uw_dos_model_face_shade(int dos_index, int part)
+{
+    (void)dos_index; (void)part;
+    return -1;
+}

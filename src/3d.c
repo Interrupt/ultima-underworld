@@ -41,6 +41,7 @@ void update_fullbright_palette_mask()
 }
 char DAT_0023b830;
 undefined2 DAT_000da47c;
+int g_face_shade_rows;
 /* build_trig_tables builds these as 361-entry (0..360 degrees) sin / cos tables (float bit
    patterns); every reader indexes `(&DAT_000d99xx)[angle]`. Were lone `undefined4` scalars, so
    build_trig_tables's `[0..360]` writes smashed ~1.4 KB of adjacent globals. */

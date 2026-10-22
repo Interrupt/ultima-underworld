@@ -20,6 +20,9 @@ extern void * DAT_000c4838_backing[4096];
 #define DAT_000c4838 DAT_000c4838_backing[0]
 extern int DAT_000c8c98;
 extern undefined2 DAT_000da47c;
+/* HACK: not original behaviour -- extra rows of darkening for the triangle being rasterised: the shade level
+   of a DOS model face (models_dos.c), 0 for everything else. Read by shade_span_pixel. */
+extern int g_face_shade_rows;
 extern undefined4 DAT_000db438;
 extern undefined4 DAT_000db43c;
 extern undefined4 DAT_000db440;

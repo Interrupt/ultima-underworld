@@ -53,6 +53,11 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz);
  * non-planar face each carry their parent face's colour. */
 int uw_dos_model_face_colour(int dos_index, int part);
 
+/* The shade level the DOS bytecode gives part `part` of model `dos_index` (0x00bc's flat level, or the
+   average of the face's vertex shades from 0x00d4), or -1 if it gives none. Like the colour, it is
+   out of band because the .E script has nowhere to put it. */
+int uw_dos_model_face_shade(int dos_index, int part);
+
 /* Releases the cached copy of UW.EXE. Call after model loading; a later
  * uw_dos_model_script would simply read it again. */
 void uw_dos_models_release(void);

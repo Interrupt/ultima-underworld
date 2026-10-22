@@ -324,6 +324,7 @@ void render_visible_tile_list()
           local_34 = ordfloat_sub(proj_cy,uVar11);
           local_30 = ordfloat_mul(uVar5,0x3a2ec33e);
           DAT_000da47c = (undefined2)piVar14[0x1d];
+          g_face_shade_rows = piVar14[0x1f];
           raster_triangle(0x140,g_uw_framebuffer,local_60_arr,piVar14[0x1e],
                        piVar14[0x1b],piVar14[0x1c] * piVar14[0x1b],
                        ((unsigned)local_94 < UW_MAX_VIS_TILES)
@@ -409,6 +410,9 @@ void walk_visible_tiles()
      emits, but a frame where it emits nothing... */
   g_geom_arena.vert_count = 0;
   g_geom_arena.rec_count = 0;
+  /* HACK: not original behaviour -- tex[2] carries a DOS model face's shade rows (emit_catalog_object); only
+     models set it, so clear whatever an earlier frame left in the other records. */
+  for (int _r = 0; _r < UW_ARENA_MAX_RECORDS; _r++) g_geom_arena.records[_r].tex[2] = 0;
   if (0x2000 < (int)uVar6) {
     uVar6 = uVar6 - 0x4000;
   }

@@ -1133,6 +1133,10 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
          up, i.e. 4 or more, so they could never qualify even if they reached
          here. */
       int _dos_colour = uw_dos_model_face_colour((int)catalog_u, row_base / 0x18);
+      /* The DOS bytecode also gives each face a shade level (0 brightest); the renderer darkens the face by that
+         many light-table rows. 0 for the .E models, as for every other record. */
+      { int _dos_shade = uw_dos_model_face_shade((int)catalog_u, row_base / 0x18);
+        *(int *)(_face_rec + 0x54) = _dos_shade > 0 ? _dos_shade : 0; }
       if (_dos_colour >= 0 && _dos_colour < (int)(catalog_flags & 7)) {
         uVar10 = 0;
         *(char *)(_face_rec + 0x50) = (&DAT_00086c09)[iVar1 + _dos_colour];
