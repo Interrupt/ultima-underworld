@@ -1230,9 +1230,114 @@ static void button_pressed(int i);
 static void op_replace(void);
 static int apply_target(int tx, int ty);
 
+/* What a point of the 3D view looks at: the floor of a tile, a face of a solid tile (its wall), the ceiling, or nothing. */
+enum { HIT_NONE, HIT_FLOOR, HIT_WALL, HIT_CEILING };
+enum { FACE_WEST, FACE_EAST, FACE_SOUTH, FACE_NORTH };   /* the side of the solid tile that was hit, named by where it faces */
+typedef struct { int kind, tx, ty, face, x, y, z; } ed_hit_t;
+#define CEILING_Z 1024   /* the level's ceiling, in 1/256 tiles */
+
+static int view_ray_hit(int scene_x, int scene_y, ed_hit_t *hit)
+{
+  const double cx = UW_FULLSCREEN_PROJ_CX, cy = uw_fullscreen_proj_cy(), scale = UW_FULLSCREEN_PROJ_SCALE;
+  double rx = (scene_x + 0.5 - cx) / scale, ry = -(scene_y + 0.5 - cy) / (scale * 0.9);
+  short sn, cs;
+  angle_to_screen_delta((ushort)DAT_0023bf00, &sn, &cs);
+  double fx = sn / 32768.0, fy = cs / 32768.0;                  /* the facing, on the ground */
+  double pitch = -DAT_0023beb4 / 256.0 * (M_PI / 180.0);         /* up is positive */
+  double cp = cos(pitch), sp = sin(pitch);
+  /* forward, right and up in the world */
+  double dx = fx * cp + fy * rx - fx * sp * ry, dy = fy * cp - fx * rx - fy * sp * ry, dz = sp + cp * ry;
+  double px = DAT_0023be90, py = DAT_0023be92, pz = DAT_0023be94;
+  const double step = 8.0;
+  double len = sqrt(dx * dx + dy * dy + dz * dz);
+  memset(hit, 0, sizeof *hit);
+  dx = dx / len * step; dy = dy / len * step; dz = dz / len * step;
+  for (int i = 0; i < 1600; i++) {
+    double nx = px + dx, ny = py + dy, nz = pz + dz;
+    int tx = (int)floor(nx / 256.0), ty = (int)floor(ny / 256.0);
+    int solid = 0, below = 0;
+    if (tx < 0 || tx > 63 || ty < 0 || ty > 63) return 0;
+    const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
+    if (!t) return 0;
+    solid = t->tile_type == 0;
+    below = !solid && nz <= t->floor_height * 64.0;
+    if (solid || below || nz >= CEILING_Z) {
+      double lo = 0.0, hi = 1.0;   /* the crossing between this step's start and end */
+      for (int k = 0; k < 8; k++) {
+        double m = (lo + hi) / 2;
+        double mx = px + dx * m, my = py + dy * m, mz = pz + dz * m;
+        int mtx = (int)floor(mx / 256.0), mty = (int)floor(my / 256.0);
+        const uw_tile_t *mt = mtx >= 0 && mtx < 64 && mty >= 0 && mty < 64 ? (const uw_tile_t *)tilemap_lookup((short)mtx, (short)mty) : NULL;
+        int hit_here = !mt || mt->tile_type == 0 || mz <= mt->floor_height * 64.0 || mz >= CEILING_Z;
+        if (hit_here) hi = m; else lo = m;
+      }
+      hit->x = (int)floor(px + dx * hi); hit->y = (int)floor(py + dy * hi); hit->z = (int)floor(pz + dz * hi);
+      if (solid) {
+        /* the face is the side the ray came in by: the axis whose tile changed between the last open point and the solid one */
+        int ltx = (int)floor((px + dx * lo) / 256.0), lty = (int)floor((py + dy * lo) / 256.0);
+        hit->kind = HIT_WALL; hit->tx = tx; hit->ty = ty;
+        if (ltx != tx) hit->face = ltx < tx ? FACE_WEST : FACE_EAST;
+        else hit->face = lty < ty ? FACE_SOUTH : FACE_NORTH;
+      }
+      else if (below) { hit->kind = HIT_FLOOR; hit->tx = hit->x >> 8; hit->ty = hit->y >> 8; }
+      else { hit->kind = HIT_CEILING; hit->tx = hit->x >> 8; hit->ty = hit->y >> 8; }
+      return 1;
+    }
+    px = nx; py = ny; pz = nz;
+  }
+  return 0;
+}
+
+/* Where a point of the 3D view looks at the floor (the placing and moving of objects), if it does. */
+static int floor_under_view_point(int scene_x, int scene_y, int *hit_x, int *hit_y)
+{
+  ed_hit_t h;
+  if (!view_ray_hit(scene_x, scene_y, &h) || h.kind != HIT_FLOOR) return 0;
+  *hit_x = h.x;
+  *hit_y = h.y;
+  return 1;
+}
+
+static int g_selftest_checks;
+
+/* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
+   steeply down it must hit the floor of its own tile, and looking up the ceiling. */
+static void selftest_picking(void)
+{
+  int fx = -1, fy = -1;
+  for (int ty = 1; ty < 63 && fx < 0; ty++)
+    for (int tx = 1; tx < 62; tx++)
+      if (tile_is_open(tx, ty) && !tile_is_open(tx + 1, ty) && tile_is_open(tx - 1, ty)) { fx = tx; fy = ty; break; }
+  if (fx < 0) { fprintf(stderr, "[editor] selftest: no tile to test the picking from\n"); return; }
+  short saved_x = DAT_0023be90, saved_y = DAT_0023be92, saved_z = DAT_0023be94, saved_pitch = DAT_0023beb4;
+  ushort saved_facing = (ushort)DAT_0023bf00;
+  const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)fx, (short)fy);
+  ed_hit_t h;
+  DAT_0023be90 = (short)(fx * 256 + 128);
+  DAT_0023be92 = (short)(fy * 256 + 128);
+  DAT_0023be94 = (short)(t->floor_height * 64 + 176);
+  DAT_0023bf00 = 0x4000;   /* facing east */
+  DAT_0023beb4 = 0;
+  if (!view_ray_hit(160, (int)uw_fullscreen_proj_cy(), &h) || h.kind != HIT_WALL || h.tx != fx + 1 || h.ty != fy || h.face != FACE_WEST) {
+    fprintf(stderr, "[editor] selftest FAILED: looking east from (%d,%d) hit kind %d tile (%d,%d) face %d\n", fx, fy, h.kind, h.tx, h.ty, h.face);
+    abort();
+  }
+  DAT_0023beb4 = 80 * 256;   /* steeply down */
+  if (!view_ray_hit(160, (int)uw_fullscreen_proj_cy(), &h) || h.kind != HIT_FLOOR || h.tx != fx || h.ty != fy) {
+    fprintf(stderr, "[editor] selftest FAILED: looking down from (%d,%d) hit kind %d tile (%d,%d)\n", fx, fy, h.kind, h.tx, h.ty);
+    abort();
+  }
+  DAT_0023beb4 = -80 * 256;   /* up */
+  if (!view_ray_hit(160, (int)uw_fullscreen_proj_cy(), &h) || h.kind != HIT_CEILING) {
+    fprintf(stderr, "[editor] selftest FAILED: looking up hit kind %d\n", h.kind);
+    abort();
+  }
+  DAT_0023be90 = saved_x; DAT_0023be92 = saved_y; DAT_0023be94 = saved_z; DAT_0023beb4 = saved_pitch; DAT_0023bf00 = saved_facing;
+  g_selftest_checks += 3;
+}
+
 /* Self-check: run each kind of edit on the camera's tile, undo it, and compare the level with how it was, byte for byte;
    then redo it and compare again. Aborts (so a regression run fails) on any difference. */
-static int g_selftest_checks;
 
 static void selftest_expect(const ed_snapshot_t *a, const char *what)
 {
@@ -1382,6 +1487,8 @@ void uw_editor_selftest(void)
     if (page_get(TAB_COMM, 2, o, &shown, &lo, &hi) != w0) { fprintf(stderr, "[editor] selftest FAILED: could not restore the type data\n"); abort(); }
     g_selftest_checks++;
   }
+
+  selftest_picking();
 
   /* leave the level as the test found it: undo everything */
   while (g_undo_count) uw_editor_undo();
@@ -1719,45 +1826,6 @@ static void button_pressed(int i)
    raster_textured_span), turns it by the camera's facing and pitch, and walks it over the tiles in steps of 1/32
    tile until it goes below a floor (the hit, refined by bisection) or into a solid tile or out of the map. The
    floors are taken as flat at their tile's height. World units are 1/256 of a tile, and a floor height step is 64. */
-static int floor_under_view_point(int scene_x, int scene_y, int *hit_x, int *hit_y)
-{
-  const double cx = UW_FULLSCREEN_PROJ_CX, cy = uw_fullscreen_proj_cy(), scale = UW_FULLSCREEN_PROJ_SCALE;
-  double rx = (scene_x + 0.5 - cx) / scale, ry = -(scene_y + 0.5 - cy) / (scale * 0.9);
-  short sn, cs;
-  angle_to_screen_delta((ushort)DAT_0023bf00, &sn, &cs);
-  double fx = sn / 32768.0, fy = cs / 32768.0;                  /* the facing, on the ground */
-  double pitch = -DAT_0023beb4 / 256.0 * (M_PI / 180.0);         /* up is positive */
-  double cp = cos(pitch), sp = sin(pitch);
-  /* forward, right and up in the world */
-  double dx = fx * cp + fy * rx - fx * sp * ry, dy = fy * cp - fx * rx - fy * sp * ry, dz = sp + cp * ry;
-  double px = DAT_0023be90, py = DAT_0023be92, pz = DAT_0023be94;
-  const double step = 8.0;
-  double len = sqrt(dx * dx + dy * dy + dz * dz);
-  dx = dx / len * step; dy = dy / len * step; dz = dz / len * step;
-  for (int i = 0; i < 1600; i++) {
-    double nx = px + dx, ny = py + dy, nz = pz + dz;
-    int tx = (int)floor(nx / 256.0), ty = (int)floor(ny / 256.0);
-    if (tx < 0 || tx > 63 || ty < 0 || ty > 63 || nz > 1100) return 0;
-    const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty);
-    if (!t || t->tile_type == 0) return 0;   /* a wall was hit first */
-    if (nz <= t->floor_height * 64.0) {
-      double lo = 0.0, hi = 1.0;   /* the crossing between this step's start and end */
-      for (int k = 0; k < 8; k++) {
-        double m = (lo + hi) / 2;
-        double mx = px + dx * m, my = py + dy * m, mz = pz + dz * m;
-        int mtx = (int)floor(mx / 256.0), mty = (int)floor(my / 256.0);
-        const uw_tile_t *mt = mtx >= 0 && mtx < 64 && mty >= 0 && mty < 64 ? (const uw_tile_t *)tilemap_lookup((short)mtx, (short)mty) : NULL;
-        if (mt && mt->tile_type != 0 && mz <= mt->floor_height * 64.0) hi = m; else lo = m;
-      }
-      *hit_x = (int)floor(px + dx * hi);
-      *hit_y = (int)floor(py + dy * hi);
-      return 1;
-    }
-    px = nx; py = ny; pz = nz;
-  }
-  return 0;
-}
-
 /* A click in the 3D pane. Holding an object (Move, Copy) or an armed palette brush puts it on the floor under the
    click, at that spot. Otherwise it selects the object under the click, found with the game's own per-pixel pick
    buffer, or else the floor tile. */
@@ -1784,8 +1852,11 @@ static void pick_in_view(int px, int py)
     int tile = (int)(((intptr_t)DAT_002020b0 - (intptr_t)tilemap_lookup(0, 0)) / 4);
     select_object_on_tile(tile & 63, tile >> 6, o);
   }
-  else if (on_floor) select_tile(tx, ty);
-  else g_status = "nothing there";
+  else {
+    ed_hit_t hit;
+    if (view_ray_hit(scene_x, scene_y, &hit) && hit.kind != HIT_CEILING) select_tile(hit.tx, hit.ty);   /* a floor or a wall: its tile */
+    else g_status = "nothing there";
+  }
 }
 
 static int clamp_int(int v, int lo, int hi)
