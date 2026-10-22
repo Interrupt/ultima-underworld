@@ -952,11 +952,14 @@ static void demo_exec_line(char *p, Uint32 now) {
     }
 
     if (strcasecmp(p, "EDITOR") == 0 || strncasecmp(p, "EDITOR ", 7) == 0) {
-        /* EDITOR [on|off|validate|save] -- the level editor (editor.c); bare EDITOR toggles it (the console
+        /* EDITOR [on|off|validate|save|undo|redo|selftest] -- the level editor (editor.c); bare EDITOR toggles it (the console
            command). validate checks the object lists; save writes the level into the master DATA\\LEV.ARK. */
         const char *arg = p[6] ? p + 7 : "";
         if (strncasecmp(arg, "validate", 8) == 0) uw_editor_validate();
         else if (strncasecmp(arg, "save", 4) == 0) uw_editor_save();
+        else if (strncasecmp(arg, "undo", 4) == 0) uw_editor_undo();
+        else if (strncasecmp(arg, "redo", 4) == 0) uw_editor_redo();
+        else if (strncasecmp(arg, "selftest", 8) == 0) uw_editor_selftest();
         else if (strncasecmp(arg, "on", 2) == 0) uw_editor_set(1);
         else if (strncasecmp(arg, "off", 3) == 0) uw_editor_set(0);
         else uw_editor_toggle(0);
@@ -1236,7 +1239,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "  LIGHTLEVEL <0-7>\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
-                    "  EDITOR [on|off|validate|save]  (no argument toggles the level editor)\n"
+                    "  EDITOR [on|off|validate|save|undo|redo|selftest]  (no argument toggles the level editor)\n"
                     "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"
                     "  ESC back to panel | ` close\n");
         g_demo_next_tick = now;

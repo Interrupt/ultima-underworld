@@ -27,6 +27,13 @@ void uw_editor_click(int x, int y, int button);
    at the top of the mode palette). The first save makes a one-time copy, LEV.ARK.BAK. Entering the editor reloads the
    level from the archive. */
 void uw_editor_save(void);
+/* Undo and redo the last edit (Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z, and EDITOR undo / redo): each step restores the level arena, the
+   scheduler table and the texture map byte for byte. The status bar shows * after the level number while there are unsaved edits. */
+void uw_editor_undo(void);
+void uw_editor_redo(void);
+/* Self-check of the editor's edits: each is undone and the level compared byte for byte (aborts on a difference). */
+void uw_editor_selftest(void);
+
 /* Walks every tile chain and checks the object lists are consistent; returns the number of problems (0 == good). */
 int uw_editor_validate(void);
 

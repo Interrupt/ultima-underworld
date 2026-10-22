@@ -434,6 +434,13 @@ void uw_pump_events(void) {
                     uw_editor_save();   /* Ctrl+S saves the level being edited */
                     return;
                 }
+                if (ev.type == SDL_KEYDOWN && (ev.key.keysym.mod & KMOD_CTRL) && uw_editor_active() &&
+                    (ev.key.keysym.sym == SDLK_z || ev.key.keysym.sym == SDLK_y)) {
+                    /* Ctrl+Z undoes, Ctrl+Y or Ctrl+Shift+Z redoes */
+                    if (ev.key.keysym.sym == SDLK_y || (ev.key.keysym.mod & KMOD_SHIFT)) uw_editor_redo();
+                    else uw_editor_undo();
+                    return;
+                }
                 if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_F9) {
                     uw_editor_toggle(0);   /* the level editor, see editor.c */
                     return;

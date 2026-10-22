@@ -282,3 +282,10 @@ Build the safety layer first, then a usable inspect-and-tweak object editor, the
 - Whether the owner field matches an individual NPC or a faction.
 - Which quality/owner bits hold a trigger's target tile.
 - Which caches must be invalidated after tile geometry changes.
+
+## Build status
+
+Updated as work lands; the phases above say what each item is, this says what exists.
+
+- **Built:** F9 / `--editor` / `editor` entry, the 320x200 screen, Far Sight camera (flies through walls, game keys), object selection and picking (objects by pick buffer, floor by ray cast), Head / Next / Link, Move / Copy / Delete / Show with the Mv slot, object placement from the group palette, the selected-object editor (position, height, heading, Item / Comm / Class field pages), the map pane (pan, dots), the master-archive workflow (reload on entry, Save into `DATA\lev.ark` with a one-time `.BAK`, Play copies it to `SAVE0`), VALIDATE, and undo / redo (Ctrl+Z, Ctrl+Y; 64 steps of arena + scheduler table + texture map, with a byte-for-byte self-check, `EDITOR selftest`) and the unsaved marker.
+- **Not built yet:** the Escape menu, Revert and Change level, type-level Comm / Class pages, Back, Replace with brush, trap Set Target, editor markers, map view cone and zoom, mode-button wiring, the tile-index pick buffer, tile / texture / fill tools, Find, cut / copy, the viewport struct.

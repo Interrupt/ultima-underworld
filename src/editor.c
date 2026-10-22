@@ -23,6 +23,7 @@
 #include "headers/debug_ui.h"
 #include "headers/saveload.h"
 #include "headers/level.h"
+#include "headers/scheduler.h"
 #include "headers/file_io.h"
 #include "headers/traps.h"
 
@@ -71,6 +72,7 @@ static int g_sel_slot;            /* object slot index, 0 == none */
 static ushort *g_sel_link;        /* the link field that holds the selected object: its tile's, the previous
                                      object's chain word, or a container's contents word */
 static int g_held_slot;           /* Move or Copy in progress: the object picked up, 0 == none ("Mv:" box) */
+static int g_dirty;               /* the level has edits that are not saved in the master archive */
 static int g_tab = -1;            /* the picked-object editor tab shown instead of the position view: 0 Class, 1 Comm, 2 Item */
 static int g_held_copy;           /* the held object is copied, not moved, when it is put down */
 static int g_palette_brush = 0xc0;   /* the object id the palette has picked to place */
@@ -527,7 +529,7 @@ static void draw_info_bar(void)
   fill(R_INFO.x0, R_INFO.y0, R_INFO.x1, R_INFO.y1, COL_INFO_BG);
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
   text(line, 2, 193, COL_TEXT);
-  snprintf(line, sizeof line, "Map= Lvl %d %d,%d", DAT_00201b68, x >> 8, y >> 8);
+  snprintf(line, sizeof line, "Map= Lvl %d%s %d,%d", DAT_00201b68, g_dirty ? "*" : "", x >> 8, y >> 8);
   if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));   /* replaces the map position while it shows */
   else text(line, 150, 193, COL_TEXT);
   {
@@ -620,6 +622,93 @@ static void select_object_on_tile(int tx, int ty, const uw_object_hdr_t *o)
   }
   g_sel_slot = 0;
 }
+
+/* ---- undo ---- */
+
+/* Everything an edit can change is in the level arena (the tile map, the object tables and both free lists, the active
+   mobile list), the scheduler table and the level's texture map, so an undo step is a copy of those, taken before
+   each edit. Nothing needs a per-operation inverse. */
+#define UNDO_DEPTH 64
+#define ARENA_BYTES 0x7c08
+#define SCHEDULER_BYTES 0x180
+
+typedef struct {
+  unsigned char arena[ARENA_BYTES];
+  unsigned char scheduler[SCHEDULER_BYTES];
+  unsigned char scheduler_count;
+  unsigned char texture_walls[sizeof DAT_0023ae58_backing], texture_floors[sizeof DAT_0023adb8_backing], texture_misc[sizeof DAT_0023b840_backing];
+  long a8, c8, f9c;   /* the free list and active-mobile list ends, as offsets from the arena */
+} ed_snapshot_t;
+
+static ed_snapshot_t g_undo[UNDO_DEPTH], g_redo[UNDO_DEPTH];
+static int g_undo_count, g_redo_count;
+
+static void snapshot_take(ed_snapshot_t *s)
+{
+  char *arena = DAT_002029cc;
+  /* the list ends are written into the arena's tail the way a level save does it, then the arena is copied whole */
+  *(short *)(arena + 0x7c00) = (short)(DAT_002046c8 - DAT_002046c0);
+  *(short *)(arena + 0x7c02) = (short)((DAT_002046a8 - DAT_002046a4) >> 1);
+  *(short *)(arena + 0x7c04) = (short)((DAT_0020469c - DAT_002046bc) >> 1);
+  *(short *)(arena + 0x7c06) = 0x7577;
+  memcpy(s->arena, arena, ARENA_BYTES);
+  memcpy(s->scheduler, g_scheduler_table, SCHEDULER_BYTES);
+  s->scheduler_count = g_scheduler_count;
+  memcpy(s->texture_walls, DAT_0023ae58_backing, sizeof s->texture_walls);
+  memcpy(s->texture_floors, DAT_0023adb8_backing, sizeof s->texture_floors);
+  memcpy(s->texture_misc, DAT_0023b840_backing, sizeof s->texture_misc);
+  s->a8 = DAT_002046a8 - arena; s->c8 = (char *)DAT_002046c8 - arena; s->f9c = DAT_0020469c - arena;
+}
+
+static void snapshot_restore(const ed_snapshot_t *s)
+{
+  char *arena = DAT_002029cc;
+  memcpy(arena, s->arena, ARENA_BYTES);
+  DAT_002046a8 = arena + s->a8;
+  DAT_002046c8 = (byte *)(arena + s->c8);
+  DAT_0020469c = arena + s->f9c;
+  memcpy(g_scheduler_table, s->scheduler, SCHEDULER_BYTES);
+  g_scheduler_count = s->scheduler_count;
+  memcpy(DAT_0023ae58_backing, s->texture_walls, sizeof s->texture_walls);
+  memcpy(DAT_0023adb8_backing, s->texture_floors, sizeof s->texture_floors);
+  memcpy(DAT_0023b840_backing, s->texture_misc, sizeof s->texture_misc);
+}
+
+/* Call before an edit: remember the level as it is. A new edit forgets what could have been redone. */
+static void checkpoint(void)
+{
+  if (g_undo_count == UNDO_DEPTH) {
+    memmove(&g_undo[0], &g_undo[1], sizeof g_undo[0] * (UNDO_DEPTH - 1));
+    g_undo_count--;
+  }
+  snapshot_take(&g_undo[g_undo_count++]);
+  g_redo_count = 0;
+  g_dirty = 1;
+}
+
+static void undo_redo(int redo)
+{
+  ed_snapshot_t *from = redo ? g_redo : g_undo, *to = redo ? g_undo : g_redo;
+  int *from_n = redo ? &g_redo_count : &g_undo_count, *to_n = redo ? &g_undo_count : &g_redo_count;
+  if (g_held_slot) g_held_slot = 0;
+  if (*from_n == 0) { g_status = redo ? "nothing to redo" : "nothing to undo"; return; }
+  if (*to_n == UNDO_DEPTH) {
+    memmove(&to[0], &to[1], sizeof to[0] * (UNDO_DEPTH - 1));
+    (*to_n)--;
+  }
+  snapshot_take(&to[(*to_n)++]);
+  snapshot_restore(&from[--(*from_n)]);
+  g_dirty = 1;
+  /* the selected object may no longer exist: keep the tile, drop the object */
+  if (g_sel_tx >= 0) { g_sel_slot = 0; g_sel_link = NULL; }
+  set_pending_update_flags(0x7ffe);
+  full_dungeon_redraw();
+  dirty_rect_union(0, 200, 0, 0x140);   /* the editor screen shows the status and the object lists too */
+  g_status = redo ? "redone" : "undone";
+}
+
+void uw_editor_undo(void) { if (g_active) undo_redo(0); }
+void uw_editor_redo(void) { if (g_active) undo_redo(1); }
 
 /* ---- object operations ---- */
 
@@ -726,6 +815,7 @@ static void op_place(int id, int tx, int ty, int sub_x, int sub_y)
   int mobile = (id & 0x1c0) == 0x40;
   if (!tile_is_open(tx, ty)) { g_status = "that tile is solid"; return; }
   if (!have_free_slot(mobile)) { g_status = "no free object slots"; return; }
+  checkpoint();
   uw_object_hdr_t *o = spawn_new_object((uint)id, mobile ? 1 : 0);
   if (!o) { g_status = "no free object slots"; return; }
   if (mobile) {
@@ -745,6 +835,7 @@ static void op_delete(void)
   if (!o || !g_sel_link) { g_status = "nothing selected"; return; }
   if (is_player(o)) { g_status = "that is you"; return; }
   if (g_held_slot == g_sel_slot) g_held_slot = 0;
+  checkpoint();
   if ((o->object_id & 0x1c0) == 0x180)
     free_trap_class_object(g_sel_link, o);   /* traps clean up their chain markers */
   else
@@ -778,6 +869,7 @@ static void op_put_down(int tx, int ty, int sub_x, int sub_y)
        game delete objects far from the player */
     int mobile = g_held_slot < 0x100;
     if (!have_free_slot(mobile)) { g_status = "no free object slots"; return; }
+    checkpoint();
     uw_object_hdr_t *copy = alloc_object_slot(mobile ? 1 : 0);
     if (!copy) { g_status = "no free object slots"; return; }
     memcpy(copy, src, mobile ? sizeof(uw_mobile_object_t) : sizeof(uw_object_hdr_t));
@@ -790,6 +882,7 @@ static void op_put_down(int tx, int ty, int sub_x, int sub_y)
   else {
     ushort *link = find_link(g_held_slot);   /* the selection may have moved on since it was picked up */
     if (!link) { g_status = "lost the object"; g_held_slot = 0; return; }
+    checkpoint();
     object_list_unlink(link, src);
     put_on_tile(src, tx, ty, sub_x, sub_y);
     select_object_on_tile(tx, ty, src);
@@ -817,6 +910,8 @@ static int reload_level_from_master(void)
   g_sel_slot = 0;
   g_sel_link = NULL;
   g_held_slot = 0;
+  g_undo_count = g_redo_count = 0;
+  g_dirty = 0;
   full_dungeon_redraw();
   set_pending_update_flags(0x7ffe);
   fprintf(stderr, "[editor] level %d reloaded from LEV.ARK\n", DAT_00201b68);
@@ -840,9 +935,104 @@ void uw_editor_save(void)
   if (g_held_slot) { g_status = "put the object down first"; return; }
   if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
   int ok = save_to_master();
-  if (ok) g_status = "level saved";
+  if (ok) { g_status = "level saved"; g_dirty = 0; }
   else if (!g_status) g_status = "save failed";
   fprintf(stderr, "[editor] save level %d to LEV.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
+}
+
+/* Self-check: run each kind of edit on the camera's tile, undo it, and compare the level with how it was, byte for byte;
+   then redo it and compare again. Aborts (so a regression run fails) on any difference. */
+static int g_selftest_checks;
+
+static void selftest_expect(const ed_snapshot_t *a, const char *what)
+{
+  static ed_snapshot_t now;
+  snapshot_take(&now);
+  g_selftest_checks++;
+  if (memcmp(a, &now, sizeof now) != 0) {
+    fprintf(stderr, "[editor] selftest FAILED: %s\n", what);
+    abort();
+  }
+  if (uw_editor_validate() != 0) {
+    fprintf(stderr, "[editor] selftest FAILED: object lists damaged after %s\n", what);
+    abort();
+  }
+}
+
+void uw_editor_selftest(void)
+{
+  static ed_snapshot_t before, after;
+  int x, y, z;
+  if (!g_active) return;
+  camera(&x, &y, &z);
+  int tx = x >> 8, ty = y >> 8;
+  if (!tile_is_open(tx, ty)) { fprintf(stderr, "[editor] selftest: the camera is not over open floor\n"); return; }
+  int other_x = tile_is_open(tx + 1, ty) ? tx + 1 : tx - 1;
+  g_selftest_checks = 0;
+  g_undo_count = g_redo_count = 0;
+
+  /* place a static object, and a critter */
+  static const int ids[2] = { 0xc2, 0x44 };
+  for (int k = 0; k < 2; k++) {
+    snapshot_take(&before);
+    op_place(ids[k], tx, ty, 3, 5);
+    snapshot_take(&after);
+    if (memcmp(&before, &after, sizeof before) == 0) { fprintf(stderr, "[editor] selftest FAILED: placing 0x%x changed nothing\n", ids[k]); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a placement");
+    uw_editor_redo();
+    selftest_expect(&after, "redoing a placement");
+    uw_editor_undo();
+  }
+
+  /* edit the fields of a placed object */
+  op_place(0xc2, tx, ty, 3, 5);
+  snapshot_take(&before);
+  {
+    uw_object_hdr_t *o = object_at(g_sel_slot);
+    checkpoint();
+    field_set(TAB_ITEM, 0, o, 33);
+    checkpoint();
+    o->zpos = o->zpos + 1;
+    checkpoint();
+    o->heading = 5;
+  }
+  uw_editor_undo(); uw_editor_undo(); uw_editor_undo();
+  selftest_expect(&before, "undoing three field edits");
+  uw_editor_redo(); uw_editor_redo(); uw_editor_redo();
+  uw_editor_undo(); uw_editor_undo(); uw_editor_undo();
+  selftest_expect(&before, "redoing and undoing three field edits");
+
+  /* copy it to the next tile, then delete the copy, then move the original */
+  select_object_on_tile(tx, ty, object_at(tile_head(tx, ty)));
+  snapshot_take(&before);
+  op_pick_up(1);
+  op_put_down(other_x, ty, 2, 2);
+  snapshot_take(&after);
+  uw_editor_undo();
+  selftest_expect(&before, "undoing a copy");
+  uw_editor_redo();
+  selftest_expect(&after, "redoing a copy");
+  select_object_on_tile(other_x, ty, object_at(tile_head(other_x, ty)));
+  snapshot_take(&before);
+  op_delete();
+  snapshot_take(&after);
+  if (memcmp(&before, &after, sizeof before) == 0) { fprintf(stderr, "[editor] selftest FAILED: the delete changed nothing\n"); abort(); }
+  uw_editor_undo();
+  selftest_expect(&before, "undoing a delete");
+  uw_editor_redo();
+  selftest_expect(&after, "redoing a delete");
+  uw_editor_undo();
+  select_object_on_tile(tx, ty, object_at(tile_head(tx, ty)));
+  snapshot_take(&before);
+  op_pick_up(0);
+  op_put_down(other_x, ty, 6, 6);
+  uw_editor_undo();
+  selftest_expect(&before, "undoing a move");
+
+  /* leave the level as the test found it: undo everything */
+  while (g_undo_count) uw_editor_undo();
+  fprintf(stderr, "[editor] selftest: ok, %d checks\n", g_selftest_checks);
 }
 
 /* Play from here: save the level into the master archive, copy that over the save slot's archive, leave the editor and drop
@@ -990,20 +1180,22 @@ static void edit_click(int x, int y, int button)
     int v = field_get(g_tab, row, o, &shown);
     if (!shown) return;
     int delta = x < 46 ? -step : x >= 72 ? step : 0;
-    if (delta) field_set(g_tab, row, o, clamp_int(v + delta, f[row].min, f[row].max));
+    if (delta) { checkpoint(); field_set(g_tab, row, o, clamp_int(v + delta, f[row].min, f[row].max)); }
   }
   else if (x < 51 && y < 177) {
+    checkpoint();
     o->xpos = (unsigned)clamp_int((x - 3) / 6, 0, 7);
     o->ypos = (unsigned)clamp_int(7 - (y - 128) / 6, 0, 7);
     set_pending_update_flags(2);
   }
   else if (x >= 53 && y < 145) {
-    if (x >= 76) { o->zpos = (unsigned)clamp_int((int)o->zpos + (y < 136 ? step : -step), 0, 127); set_pending_update_flags(2); }
+    if (x >= 76) { checkpoint(); o->zpos = (unsigned)clamp_int((int)o->zpos + (y < 136 ? step : -step), 0, 127); set_pending_update_flags(2); }
   }
   else if (x >= 53 && y >= 146) {
     int dx = x - 69, dy = y - 162;
     if (dx * dx + dy * dy < 9) return;
     int h = (int)lround(atan2((double)dx, (double)-dy) / (M_PI / 4)) & 7;
+    checkpoint();
     o->heading = (unsigned)h;
     if (slot_is_mobile(o)) {
       ((uw_mobile_object_t *)o)->full_heading = (unsigned char)(h * 32);

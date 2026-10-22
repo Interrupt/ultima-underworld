@@ -72,6 +72,9 @@ WAIT 5
 SDLCLICK 36 366
 WAIT 5
 EDITOR validate
+# undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
+EDITOR selftest
+WAIT 10
 # Move, Copy and Delete (the map's clicks pick tiles; EDITOR validate checks the object lists after each)
 SDLCLICK 502 118
 WAIT 30
