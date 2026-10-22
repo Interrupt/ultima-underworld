@@ -63,6 +63,12 @@ static const char *g_status;      /* a transient message on the info bar */
 
 int uw_editor_active(void) { return g_active; }
 
+/* The plain 3D view of a running game: there is a player and the view follows it. */
+static int in_dungeon(void)
+{
+  return DAT_00201b64 == 0 && g_player_object != NULL && DAT_0023b82c == (char *)g_player_object;
+}
+
 /* ---- drawing primitives (into g_screen) ---- */
 
 static void put(int x, int y, unsigned short c)
@@ -332,7 +338,7 @@ static void draw_info_bar(void)
 int uw_editor_compose(unsigned short *display)
 {
   static int started;
-  if (g_opts.editor && !started && DAT_00201b64 == 0) { started = 1; uw_editor_set(1); }
+  if (g_opts.editor && !started && in_dungeon()) { started = 1; uw_editor_set(1); }
   if (!g_active || DAT_00201b64 != 0) return 0;
   void *saved = g_uw_framebuffer;
   g_uw_framebuffer = g_screen;
@@ -481,7 +487,7 @@ void uw_editor_tick(void)
 void uw_editor_set(int on)
 {
   if (on == g_active) return;
-  if (on && DAT_00201b64 != 0) return;
+  if (on && !in_dungeon()) return;
   g_active = on;
   if (on) {
     /* detach the view from the player: Far Sight's free camera (DAT_0023b82c == 0), seeded at the player */
