@@ -721,10 +721,8 @@ static const char *const g_editor_buttons[BUTTON_COUNT] = { "Head", "Next", "Lin
 #define SHOWN_BUTTONS 7
 /* The buttons the screenshot has, as indices into g_editor_buttons. */
 static const int g_shown_button[SHOWN_BUTTONS] = { 0, 1, 2, 4, 5, 6, 8 };
-/* HACK: not original behaviour -- Back and Replace (the screenshot has no buttons for them) are small text buttons in the free space between the icon box and "Mv:". */
-#define EXTRA_X 86
-#define BACK_Y 152
-#define REPLACE_Y 159
+/* HACK: not original behaviour -- Back (out of a container, to the object that holds it) and Replace (the selected object becomes the palette's)
+   have no buttons in the screenshot, so they are keys: Backspace and Ctrl+R (see uw_editor_command). */
 
 /* The height spinner's up and down arrows, one 8x15 picture at (75, 129) copied from the screenshot. */
 static void draw_spinner_arrows(void)
@@ -792,8 +790,6 @@ static void draw_object_editor(void)
   if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 172);
   if (g_type_view) sprite("objects", g_palette_brush, 88, 136);
   else if (o) sprite("objects", o->object_id, 88, 136);
-  text("Back", EXTRA_X, BACK_Y, COL_ORANGE);
-  text("Repl", EXTRA_X, REPLACE_Y, COL_ORANGE);
   for (int i = 0; i < SHOWN_BUTTONS; i++) {
     int y = BUTTON_Y + i * BUTTON_H;
     unsigned short c = i == SHOWN_BUTTONS - 1 ? COL_RED : COL_ORANGE;
@@ -841,6 +837,7 @@ int uw_editor_compose(unsigned short *display)
   select_active_font(s_font5x6p_sys_0008430c);
   fill(0, 0, ED_W, ED_H, COL_BLACK);
   fill(1, 126, 151, 191, COL_PANEL);
+  frame(1, 126, 151, 191, RGB(52, 52, 52));   /* the panel's light 1px outline */
   draw_view_pane();
   draw_map_pane();
   draw_palette_pane();
@@ -3455,6 +3452,12 @@ static void button_pressed(int i)
   }
 }
 
+void uw_editor_command(int back)
+{
+  if (!g_active || g_mode != M_OBJECT || g_tab >= 0) return;
+  button_pressed(back ? 3 : 7);
+}
+
 /* Where a point of the 3D view looks at the floor. The point is in scene coordinates; the ray inverts the
    projection the renderer uses (x = cx + scale * eye_x / eye_z, y = cy - 0.9 * scale * eye_y / eye_z, see
    raster_textured_span), turns it by the camera's facing and pitch, and walks it over the tiles in steps of 1/32
@@ -3595,9 +3598,6 @@ static int object_mode_click(int x, int y, int button)
   else if (y >= 177 && y < 189 && x >= 2 && x < 93 && x != 64) {
     int i = x < 33 ? 0 : x < 64 ? 1 : 2;
     if (i < 3) { g_tab = g_tab == i ? -1 : i; g_tab_scroll = 0; }   /* a tab replaces the position view; again goes back */
-  }
-  else if (x >= EXTRA_X && x < 112 && y >= BACK_Y && y < REPLACE_Y + 6 && g_tab < 0) {
-    button_pressed(y < REPLACE_Y ? 3 : 7);
   }
   else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
     edit_click(x, y, button);

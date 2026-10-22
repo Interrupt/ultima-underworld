@@ -961,6 +961,8 @@ static void demo_exec_line(char *p, Uint32 now) {
         else if (strncasecmp(arg, "escape", 6) == 0) uw_editor_escape();
         else if (strncasecmp(arg, "level ", 6) == 0) uw_editor_page_level(atoi(arg + 6) - (int)DAT_00201b68);
         else if (strncasecmp(arg, "redo", 4) == 0) uw_editor_redo();
+        else if (strncasecmp(arg, "back", 4) == 0) uw_editor_command(1);
+        else if (strncasecmp(arg, "replace", 7) == 0) uw_editor_command(0);
         else if (strncasecmp(arg, "selftest", 8) == 0) uw_editor_selftest();
         else if (strncasecmp(arg, "on", 2) == 0) uw_editor_set(1);
         else if (strncasecmp(arg, "off", 3) == 0) uw_editor_set(0);

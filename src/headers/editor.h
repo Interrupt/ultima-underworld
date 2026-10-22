@@ -38,6 +38,7 @@ void uw_editor_page_level(int delta);
    scheduler table and the texture map byte for byte. The status bar shows * after the level number while there are unsaved edits. */
 void uw_editor_undo(void);
 void uw_editor_redo(void);
+void uw_editor_command(int back);   /* object mode: Back (nonzero) or Replace, which have no buttons */
 /* Self-check of the editor's edits: each is undone and the level compared byte for byte (aborts on a difference). */
 void uw_editor_selftest(void);
 
