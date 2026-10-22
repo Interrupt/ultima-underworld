@@ -108,12 +108,12 @@ setup_isolated_data_dir() {
   for ro in CRIT CUTS DATA3D SOUND gx.dll UU.exe; do
     ln -s "$(pwd)/data/$ro" "$d/$ro"
   done
-  # DATA is a real directory of links, with its own copy of LEV.ARK: the level editor writes the master archive, and a run
-  # must never write into the repo's data/ directory.
+  # DATA is a real directory of links, with its own copies of the files the level editor writes (LEV.ARK, COMOBJ.DAT,
+  # OBJECTS.DAT): a run must never write into the repo's data/ directory.
   mkdir -p "$d/DATA"
   for f in "$(pwd)"/data/DATA/*; do
     case "$(basename "$f")" in
-      LEV.ARK) cp "$f" "$d/DATA/LEV.ARK" ;;
+      LEV.ARK|COMOBJ.DAT|OBJECTS.DAT) cp "$f" "$d/DATA/$(basename "$f")" ;;   # the files the editor writes
       *) ln -s "$f" "$d/DATA/$(basename "$f")" ;;
     esac
   done

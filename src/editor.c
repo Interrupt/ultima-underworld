@@ -330,6 +330,18 @@ static void arrow(int x, int y, int dir, unsigned short c)
     }
 }
 
+/* a smaller triangle (3 wide, 5 high) for the field pages, whose rows are only 7 pixels apart */
+static void arrow_small(int x, int y, int dir, unsigned short c)
+{
+  for (int i = 0; i < 3; i++)
+    for (int j = -i; j <= i; j++) {
+      switch (dir) {
+        case 0: put(x + i, y + 2 + j, c); break;
+        default: put(x + 2 - i, y + 2 + j, c); break;
+      }
+    }
+}
+
 static void draw_strip_pane(void)
 {
   frame(R_STRIP.x0, R_STRIP.y0, R_STRIP.x1, R_STRIP.y1, COL_FRAME);
@@ -359,20 +371,90 @@ static void draw_object_palette(void)
   arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y1 - 8, 3, g_palette_scroll < palette_rows() - PAL_ROWS ? COL_TEXT : COL_FRAME);
 }
 
-/* The tab pages of the picked-object editor: a row of "- value +" per field. They edit the object in place. */
-typedef struct { const char *name; int min, max; } ed_field_t;
+/* The tab pages of the picked-object editor: a row of "- value +" per field, seven visible, scrolling when there are more.
+     Item   this object's own fields (an item's quality, owner and flags; a creature's hit points, goal, attitude...)
+     Comm   the object's type, from COMOBJ.DAT: height, radius, weight, value, ... (game-wide)
+     Class  the object's type, from OBJECTS.DAT: a weapon's damage, armour values, a creature's stats, ... (game-wide)
+   Comm and Class edit every object of that type, so their pages are framed red and the status bar says so; they are
+   written back to the data files when the level is saved. */
+/* An instance field: which part of the object it is, and its range. */
+enum { K_QUAL, K_OWNER, K_ZPOS, K_ENCH, K_INVIS, K_DOOR, K_HP, K_GOAL, K_TARGET, K_LEVEL, K_ATTIT, K_TALKED, K_SET_TARGET };
+typedef struct { const char *name; int kind, max; } ed_field_t;
 enum { TAB_CLASS, TAB_COMM, TAB_ITEM };
-static const ed_field_t g_class_fields[] = { { "Type", 0, 0x1ff } };
-static const ed_field_t g_comm_fields[] = { { "HP", 0, 255 }, { "Goal", 0, 15 }, { "Target", 0, 255 }, { "Level", 0, 15 }, { "Attit", 0, 3 }, { "Talked", 0, 1 } };
-static const ed_field_t g_item_fields[] = { { "Qual", 0, 63 }, { "Owner", 0, 63 }, { "Ench", 0, 1 }, { "Invis", 0, 1 }, { "Door", 0, 1 } };
+#define PAGE_ROWS 7
+#define PAGE_ROW_H 7
+static const ed_field_t g_crit_fields[] = { { "HP", K_HP, 255 }, { "Goal", K_GOAL, 15 }, { "Target", K_TARGET, 255 }, { "Level", K_LEVEL, 15 }, { "Attit", K_ATTIT, 3 }, { "Talked", K_TALKED, 1 } };
+static const ed_field_t g_item_fields[] = { { "Qual", K_QUAL, 63 }, { "Owner", K_OWNER, 63 }, { "Ench", K_ENCH, 1 }, { "Invis", K_INVIS, 1 }, { "Door", K_DOOR, 1 } };
+/* Traps (0x180-0x1BF) pack their parameters into the quality, owner and height fields; what they mean comes from the game's own trap
+   dispatch (traps.c). Types not listed have the generic page. Triggers (0x1C0-0x1FF) keep a target tile in quality and owner; that is
+   the plan's guess, not confirmed. */
+static const ed_field_t g_trap_damage[] = { { "Damage", K_QUAL, 63 }, { "Sign", K_OWNER, 1 } };                          /* 0x180 */
+static const ed_field_t g_trap_teleport[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Level", K_ZPOS, 127 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x181 */
+static const ed_field_t g_trap_spawn[] = { { "Chance", K_QUAL, 63 } };                                                   /* 0x187 */
+static const ed_field_t g_trap_door[] = { { "Action", K_QUAL, 3 } };                                                     /* 0x188: 1 close, 2 open, 3 toggle */
+static const ed_field_t g_trap_remove[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x18B */
+static const ed_field_t g_trap_generic[] = { { "Qual", K_QUAL, 63 }, { "Owner", K_OWNER, 63 }, { "Height", K_ZPOS, 127 } };
+static const ed_field_t g_trigger_fields[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Height", K_ZPOS, 127 }, { "Set Target", K_SET_TARGET, 0 } };
 
-static const ed_field_t *tab_fields(int tab, int *count)
+/* A field in a table of fixed-size records: where it is in the record, and which bits of it. */
+typedef struct { const char *name; unsigned char off, bytes, shift, bits; } ed_fdesc_t;
+static const ed_fdesc_t fd_comobj[] = {   /* a COMOBJ.DAT record as the game holds it (13 bytes) */
+  { "Height", 0, 1, 0, 8 }, { "Radius", 1, 2, 0, 3 }, { "Weight", 1, 2, 4, 12 }, { "Value", 5, 2, 0, 16 },
+  { "QType", 11, 1, 0, 4 }, { "Look", 11, 1, 4, 1 }, { "Owner", 8, 1, 7, 1 },
+};
+static const ed_fdesc_t fd_melee[] = { { "Slash", 0, 1, 0, 8 }, { "Bash", 1, 1, 0, 8 }, { "Stab", 2, 1, 0, 8 }, { "MinChg", 3, 1, 0, 8 },
+  { "ChgSpd", 4, 1, 0, 8 }, { "MaxChg", 5, 1, 0, 8 }, { "Skill", 6, 1, 0, 8 }, { "Durab", 7, 1, 0, 8 } };
+static const ed_fdesc_t fd_ranged[] = { { "Damage", 0, 1, 0, 8 }, { "Speed", 1, 1, 0, 8 }, { "Ammo", 2, 1, 0, 8 } };
+static const ed_fdesc_t fd_armor[] = { { "Protect", 0, 1, 0, 8 }, { "Durab", 1, 1, 0, 8 }, { "Slot", 3, 1, 0, 8 } };
+static const ed_fdesc_t fd_monster[] = { { "Armor1", 0, 1, 0, 8 }, { "Armor2", 1, 1, 0, 8 }, { "Armor3", 2, 1, 0, 8 }, { "Armor4", 3, 1, 0, 8 },
+  { "HP", 4, 1, 0, 8 }, { "Str", 5, 1, 0, 8 }, { "Dex", 6, 1, 0, 8 }, { "Int", 7, 1, 0, 8 }, { "Magic", 11, 1, 0, 8 }, { "Speed", 12, 1, 0, 8 },
+  { "TrdLvl", 13, 1, 0, 8 }, { "TrdPat", 14, 1, 0, 8 }, { "Poison", 15, 1, 0, 8 }, { "Defense", 18, 1, 0, 8 }, { "XP", 40, 2, 0, 16 } };
+static const ed_fdesc_t fd_container[] = { { "Capacity", 0, 1, 0, 8 }, { "Accepts", 1, 2, 0, 16 } };
+static const ed_fdesc_t fd_light[] = { { "Decay", 0, 1, 0, 8 }, { "Bright", 1, 1, 0, 8 } };
+
+/* The OBJECTS.DAT class tables, by object id; file offsets are the order OBJECTS.DAT is read in (a 2 byte header, then these). */
+typedef struct { const ed_fdesc_t *fields; int count; unsigned char *base; int recsize, first_id, records, file_offset; } ed_table_t;
+#define TABLE(f, base, size, first, n, off) { f, (int)(sizeof f / sizeof *f), (unsigned char *)(base), size, first, n, off }
+static ed_table_t g_class_tables[6];
+static void class_tables_init(void)
 {
-  switch (tab) {
-    case TAB_CLASS: *count = (int)(sizeof g_class_fields / sizeof *g_class_fields); return g_class_fields;
-    case TAB_COMM: *count = (int)(sizeof g_comm_fields / sizeof *g_comm_fields); return g_comm_fields;
-    default: *count = (int)(sizeof g_item_fields / sizeof *g_item_fields); return g_item_fields;
-  }
+  static int done;
+  if (done) return;
+  done = 1;
+  ed_table_t t[6] = {
+    TABLE(fd_melee, g_melee_type_props, 8, 0x00, 16, 2),
+    TABLE(fd_ranged, g_ranged_type_props, 3, 0x10, 16, 130),
+    TABLE(fd_armor, g_armor_type_props, 4, 0x20, 32, 178),
+    TABLE(fd_monster, g_monster_type_props, 48, 0x40, 64, 306),
+    TABLE(fd_container, g_container_type_props, 3, 0x80, 16, 3378),
+    TABLE(fd_light, g_light_type_props, 2, 0x90, 16, 3426),
+  };
+  memcpy(g_class_tables, t, sizeof t);
+}
+
+static const ed_table_t *class_table_for(int id)
+{
+  class_tables_init();
+  for (int i = 0; i < 6; i++)
+    if (id >= g_class_tables[i].first_id && id < g_class_tables[i].first_id + g_class_tables[i].records) return &g_class_tables[i];
+  return NULL;
+}
+
+static int fdesc_max(const ed_fdesc_t *f) { return (1 << f->bits) - 1; }
+
+static int fdesc_get(const unsigned char *rec, const ed_fdesc_t *f)
+{
+  unsigned v = 0;
+  for (int i = f->bytes - 1; i >= 0; i--) v = (v << 8) | rec[f->off + i];
+  return (int)((v >> f->shift) & ((1u << f->bits) - 1));
+}
+
+static void fdesc_set(unsigned char *rec, const ed_fdesc_t *f, int value)
+{
+  unsigned v = 0, mask = ((1u << f->bits) - 1) << f->shift;
+  for (int i = f->bytes - 1; i >= 0; i--) v = (v << 8) | rec[f->off + i];
+  v = (v & ~mask) | (((unsigned)value << f->shift) & mask);
+  for (int i = 0; i < f->bytes; i++) rec[f->off + i] = (unsigned char)(v >> (8 * i));
 }
 
 static int slot_is_mobile(const uw_object_hdr_t *o)
@@ -380,90 +462,175 @@ static int slot_is_mobile(const uw_object_hdr_t *o)
   return is_mobile(o) && encode_object_slot_index(o) < 0x100;
 }
 
-/* A field's value for the selected object; *shown is 0 when the object has no such field (a static's mobile fields). */
-static int field_get(int tab, int row, const uw_object_hdr_t *o, int *shown)
+static int g_types_dirty;   /* type tables were edited since they were last written to COMOBJ.DAT / OBJECTS.DAT */
+static int g_tab_scroll;    /* the first row shown on a page with more than seven */
+
+/* The Item page's fields for an object: a creature's, a trap's or trigger's, or an item's. */
+static const ed_field_t *item_fields(const uw_object_hdr_t *o, int *count)
 {
-  const uw_mobile_object_t *m = (const uw_mobile_object_t *)o;
-  *shown = 1;
-  if (tab == TAB_CLASS) return o->object_id;
-  if (tab == TAB_COMM) {
-    if (!slot_is_mobile(o)) { *shown = 0; return 0; }
-    switch (row) {
-      case 0: return m->npc_hp;
-      case 1: return m->npc_goal;
-      case 2: return m->npc_gtarg;
-      case 3: return m->npc_level;
-      case 4: return m->npc_attitude;
-      default: return m->npc_talkedto;
+  int id = o->object_id;
+  if (slot_is_mobile(o)) { *count = (int)(sizeof g_crit_fields / sizeof *g_crit_fields); return g_crit_fields; }
+  if ((id & 0x1c0) == 0x1c0) { *count = (int)(sizeof g_trigger_fields / sizeof *g_trigger_fields); return g_trigger_fields; }
+  if ((id & 0x1c0) == 0x180) {
+    switch (id & 0x3f) {
+      case 0: *count = (int)(sizeof g_trap_damage / sizeof *g_trap_damage); return g_trap_damage;
+      case 1: *count = (int)(sizeof g_trap_teleport / sizeof *g_trap_teleport); return g_trap_teleport;
+      case 7: *count = (int)(sizeof g_trap_spawn / sizeof *g_trap_spawn); return g_trap_spawn;
+      case 8: *count = (int)(sizeof g_trap_door / sizeof *g_trap_door); return g_trap_door;
+      case 0xb: *count = (int)(sizeof g_trap_remove / sizeof *g_trap_remove); return g_trap_remove;
+      default: *count = (int)(sizeof g_trap_generic / sizeof *g_trap_generic); return g_trap_generic;
     }
   }
-  switch (row) {
-    case 0: return o->quality;
-    case 1: if (o->is_quant) { *shown = 0; return 0; } return o->owner;   /* a quantity takes the owner's place */
-    case 2: return o->enchanted;
-    case 3: return o->invisible;
-    default: return o->doordir;
+  *count = (int)(sizeof g_item_fields / sizeof *g_item_fields);
+  return g_item_fields;
+}
+
+/* Type view: a right click on a palette icon shows that type's Comm and Class pages with no object selected, so tuning a type never
+   needs a temporary instance. */
+static int g_type_view;
+static uw_object_hdr_t g_type_dummy;   /* stands in for an object of the viewed type */
+static int g_target_mode;   /* the next click on a tile sets the selected trap's or trigger's target to it */
+
+/* A page's fields for the selected object: how many, and for each its name, value and range. */
+static int page_count(int tab, const uw_object_hdr_t *o)
+{
+  if (tab == TAB_ITEM) { int n; item_fields(o, &n); return n; }
+  if (tab == TAB_COMM) return (int)(sizeof fd_comobj / sizeof *fd_comobj);
+  const ed_table_t *t = class_table_for(o->object_id);
+  return 1 + (t ? t->count : 0);   /* row 0 is the type's own id */
+}
+
+static const char *page_name(int tab, int row, const uw_object_hdr_t *o)
+{
+  if (tab == TAB_ITEM) { int n; return item_fields(o, &n)[row].name; }
+  if (tab == TAB_COMM) return fd_comobj[row].name;
+  if (row == 0) return "Type";
+  return class_table_for(o->object_id)->fields[row - 1].name;
+}
+
+static unsigned char *type_record(int tab, const uw_object_hdr_t *o, const ed_fdesc_t **f, int row)
+{
+  if (tab == TAB_COMM) { *f = &fd_comobj[row]; return (unsigned char *)&g_object_type_props[o->object_id]; }
+  const ed_table_t *t = class_table_for(o->object_id);
+  *f = &t->fields[row - 1];
+  return t->base + (o->object_id - t->first_id) * t->recsize;
+}
+
+static int kind_get(int kind, const uw_object_hdr_t *o, int *shown)
+{
+  const uw_mobile_object_t *m = (const uw_mobile_object_t *)o;
+  switch (kind) {
+    case K_QUAL: return o->quality;
+    case K_OWNER: if (o->is_quant) { *shown = 0; return 0; } return o->owner;   /* a quantity takes the owner's place */
+    case K_ZPOS: return o->zpos;
+    case K_ENCH: return o->enchanted;
+    case K_INVIS: return o->invisible;
+    case K_DOOR: return o->doordir;
+    case K_HP: return m->npc_hp;
+    case K_GOAL: return m->npc_goal;
+    case K_TARGET: return m->npc_gtarg;
+    case K_LEVEL: return m->npc_level;
+    case K_ATTIT: return m->npc_attitude;
+    case K_TALKED: return m->npc_talkedto;
+    default: return 0;
   }
 }
 
-static void field_set(int tab, int row, uw_object_hdr_t *o, int v)
+static void kind_set(int kind, uw_object_hdr_t *o, int v)
 {
   uw_mobile_object_t *m = (uw_mobile_object_t *)o;
-  if (tab == TAB_CLASS) {
-    /* a type stays on its side of the static / mobile boundary, and a container with contents stays a container */
-    int old = o->object_id;
-    if (((v & 0x1c0) == 0x40) != ((old & 0x1c0) == 0x40)) { g_status = "static and mobile differ"; return; }
-    if (((v & 0x1f0) == 0x80) != ((old & 0x1f0) == 0x80) && !o->is_quant && o->link) { g_status = "it holds things"; return; }
-    o->object_id = (unsigned)v;
+  switch (kind) {
+    case K_QUAL: o->quality = (unsigned)v; break;
+    case K_OWNER: o->owner = (unsigned)v; break;
+    case K_ZPOS: o->zpos = (unsigned)v; break;
+    case K_ENCH: o->enchanted = (unsigned)v; break;
+    case K_INVIS: o->invisible = (unsigned)v; break;
+    case K_DOOR: o->doordir = (unsigned)v; break;
+    case K_HP: m->npc_hp = (byte)v; break;
+    case K_GOAL: m->npc_goal = (unsigned)v; break;
+    case K_TARGET: m->npc_gtarg = (unsigned)v; break;
+    case K_LEVEL: m->npc_level = (unsigned)v; break;
+    case K_ATTIT: m->npc_attitude = (unsigned)v; break;
+    case K_TALKED: m->npc_talkedto = (unsigned)v; break;
+    default: break;
   }
-  else if (tab == TAB_COMM) {
-    switch (row) {
-      case 0: m->npc_hp = (byte)v; break;
-      case 1: m->npc_goal = (unsigned)v; break;
-      case 2: m->npc_gtarg = (unsigned)v; break;
-      case 3: m->npc_level = (unsigned)v; break;
-      case 4: m->npc_attitude = (unsigned)v; break;
-      default: m->npc_talkedto = (unsigned)v; break;
-    }
+}
+
+static int page_get(int tab, int row, const uw_object_hdr_t *o, int *shown, int *lo, int *hi)
+{
+  *shown = 1; *lo = 0;
+  if (tab == TAB_ITEM) {
+    int n;
+    const ed_field_t *f = item_fields(o, &n);
+    *hi = f[row].max;
+    return kind_get(f[row].kind, o, shown);
+  }
+  if (tab == TAB_CLASS && row == 0) { *hi = 0; return o->object_id; }   /* shown, not edited: Replace changes it */
+  const ed_fdesc_t *f;
+  unsigned char *rec = type_record(tab, o, &f, row);
+  *hi = fdesc_max(f);
+  return fdesc_get(rec, f);
+}
+
+static void remember_type_edit(int tab, int id, int row);
+
+static void page_set(int tab, int row, uw_object_hdr_t *o, int v)
+{
+  if (tab == TAB_ITEM) {
+    int n;
+    kind_set(item_fields(o, &n)[row].kind, o, v);
   }
   else {
-    switch (row) {
-      case 0: o->quality = (unsigned)v; break;
-      case 1: o->owner = (unsigned)v; break;
-      case 2: o->enchanted = (unsigned)v; break;
-      case 3: o->invisible = (unsigned)v; break;
-      default: o->doordir = (unsigned)v; break;
-    }
+    static char note[48];
+    const ed_fdesc_t *f;
+    unsigned char *rec = type_record(tab, o, &f, row);
+    fdesc_set(rec, f, v);
+    g_types_dirty = 1;
+    remember_type_edit(tab, o->object_id, row);
+    snprintf(note, sizeof note, "changes every object 0x%x", o->object_id);
+    g_status = note;
   }
   set_pending_update_flags(2);
 }
 
 static void draw_field_page(const uw_object_hdr_t *o)
 {
-  int count, shown;
-  const ed_field_t *f = tab_fields(g_tab, &count);
   char line[16];
-  for (int i = 0; i < count; i++) {
-    int y = 129 + i * 8;
-    int v = o ? field_get(g_tab, i, o, &shown) : 0;
-    if (!o) shown = 0;
-    text(f[i].name, 4, y, shown ? COL_ORANGE : RGB(120, 60, 16));
+  if (!o) return;
+  int count = page_count(g_tab, o);
+  if (g_tab_scroll > count - PAGE_ROWS) g_tab_scroll = count - PAGE_ROWS;
+  if (g_tab_scroll < 0) g_tab_scroll = 0;
+  for (int i = 0; i < PAGE_ROWS && g_tab_scroll + i < count; i++) {
+    int row = g_tab_scroll + i, y = 129 + i * PAGE_ROW_H, shown, lo, hi;
+    int v = page_get(g_tab, row, o, &shown, &lo, &hi);
+    if (g_tab == TAB_ITEM) {
+      int n;
+      if (item_fields(o, &n)[row].kind == K_SET_TARGET) {   /* a button, not a value */
+        text(page_name(g_tab, row, o), 4, y, g_target_mode ? COL_TEXT : COL_ORANGE);
+        if (g_target_mode) text("click a tile", 40, y, COL_TEXT);
+        continue;
+      }
+    }
+    text(page_name(g_tab, row, o), 4, y, shown ? COL_ORANGE : RGB(120, 60, 16));
     if (!shown) continue;
-    arrow(38, y + 1, 0, COL_BLUE);
-    arrow(77, y + 1, 1, COL_BLUE);
+    if (hi > lo) { arrow_small(38, y, 0, COL_BLUE); arrow_small(70, y, 1, COL_BLUE); }
     snprintf(line, sizeof line, "%d", v);
-    text(line, 48, y, COL_TEXT);
+    text(line, 46, y, COL_TEXT);
   }
-  if (g_tab == TAB_CLASS && o) text(slot_is_mobile(o) ? "mobile" : "static", 4, 140, COL_FRAME);
-  if (g_tab == TAB_COMM && o && !slot_is_mobile(o)) text("not mobile", 4, 130, RGB(120, 60, 16));
+  if (count > PAGE_ROWS) {   /* scroll arrows at the right edge */
+    arrow(78, 129, 2, g_tab_scroll > 0 ? COL_TEXT : COL_FRAME);
+    arrow(78, 166, 3, g_tab_scroll < count - PAGE_ROWS ? COL_TEXT : COL_FRAME);
+  }
+  if (g_tab == TAB_CLASS && !class_table_for(o->object_id)) text("no class table", 4, 138, COL_FRAME);
 }
 
 /* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "Mv:" box,
    the Head/Next/Link/Show/Move/Copy/Delete buttons and the Class/Comm/Item tabs. */
-static const char *const g_editor_buttons[7] = { "Head", "Next", "Link", "Show", "Move", "Copy", "Delete" };
+#define BUTTON_COUNT 9
+static const char *const g_editor_buttons[BUTTON_COUNT] = { "Head", "Next", "Link", "Back", "Show", "Move", "Copy", "Replace", "Delete" };
 #define BUTTON_X 113
 #define BUTTON_Y 128
-#define BUTTON_H 9
+#define BUTTON_H 7
 
 static void draw_object_editor(void)
 {
@@ -471,8 +638,10 @@ static void draw_object_editor(void)
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   char line[16];
   if (g_tab >= 0) {
-    frame(3, 128, 85, 177, COL_ORANGE);
-    draw_field_page(o);
+    const uw_object_hdr_t *po = o;
+    if (g_type_view) { g_type_dummy.object_id = (unsigned)g_palette_brush; po = g_tab == TAB_ITEM ? NULL : &g_type_dummy; }
+    frame(3, 128, 85, 177, g_tab == TAB_ITEM ? COL_ORANGE : RGB(232, 64, 64));   /* red: a type page, edits every object of the type */
+    draw_field_page(po);
   }
   else {
     /* 8x8 grid of 6px cells with the object's position marked */
@@ -505,14 +674,13 @@ static void draw_object_editor(void)
      holds; not wired yet, so the box stays empty. */
   text("Mv:", 96, 160, g_held_slot ? COL_ORANGE : RGB(120, 60, 16));
   if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 169);
-  if (o) {
-    sprite("objects", o->object_id, 88, 135);
-  }
-  for (int i = 0; i < 7; i++) {
+  if (g_type_view) sprite("objects", g_palette_brush, 88, 135);
+  else if (o) sprite("objects", o->object_id, 88, 135);
+  for (int i = 0; i < BUTTON_COUNT; i++) {
     int y = BUTTON_Y + i * BUTTON_H;
-    unsigned short c = i == 6 ? RGB(232, 64, 64) : COL_ORANGE;
-    frame(BUTTON_X, y, 150, y + BUTTON_H, c);
-    text(g_editor_buttons[i], 116, y + 1, c);
+    unsigned short c = i == BUTTON_COUNT - 1 ? RGB(232, 64, 64) : COL_ORANGE;
+    frame(BUTTON_X, y, 150, y + BUTTON_H + 1, c);
+    text(g_editor_buttons[i], 116, y, c);
   }
   for (int i = 0; i < 3; i++) {
     int x = 3 + i * 31;
@@ -604,8 +772,16 @@ static ushort *tile_link(int tx, int ty)
   return (ushort *)((char *)tilemap_lookup((short)tx, (short)ty) + 2);   /* the tile's second word: its first object */
 }
 
+#define BACK_DEPTH 8
+static int g_back_slot[BACK_DEPTH];
+static ushort *g_back_link[BACK_DEPTH];
+static int g_back_depth;
+
 static void select_tile(int tx, int ty)
 {
+  g_target_mode = 0;   /* a fresh selection ends a Set Target */
+  g_type_view = 0;
+  g_back_depth = 0;   /* a fresh selection starts at the top again */
   g_sel_tx = tx;
   g_sel_ty = ty;
   g_sel_slot = tile_head(tx, ty);
@@ -641,6 +817,10 @@ typedef struct {
   unsigned char scheduler_count;
   unsigned char texture_walls[sizeof DAT_0023ae58_backing], texture_floors[sizeof DAT_0023adb8_backing], texture_misc[sizeof DAT_0023b840_backing];
   long a8, c8, f9c;   /* the free list and active-mobile list ends, as offsets from the arena */
+  /* the type tables the Comm and Class pages edit */
+  unsigned char types_comobj[sizeof g_object_type_props], types_melee[sizeof g_melee_type_props], types_ranged[sizeof g_ranged_type_props],
+                types_armor[sizeof g_armor_type_props], types_monster[sizeof g_monster_type_props],
+                types_container[sizeof g_container_type_props], types_light[sizeof g_light_type_props];
 } ed_snapshot_t;
 
 static ed_snapshot_t g_undo[UNDO_DEPTH], g_redo[UNDO_DEPTH];
@@ -660,6 +840,13 @@ static void snapshot_take(ed_snapshot_t *s)
   memcpy(s->texture_walls, DAT_0023ae58_backing, sizeof s->texture_walls);
   memcpy(s->texture_floors, DAT_0023adb8_backing, sizeof s->texture_floors);
   memcpy(s->texture_misc, DAT_0023b840_backing, sizeof s->texture_misc);
+  memcpy(s->types_comobj, g_object_type_props, sizeof g_object_type_props);
+  memcpy(s->types_melee, g_melee_type_props, sizeof g_melee_type_props);
+  memcpy(s->types_ranged, g_ranged_type_props, sizeof g_ranged_type_props);
+  memcpy(s->types_armor, g_armor_type_props, sizeof g_armor_type_props);
+  memcpy(s->types_monster, g_monster_type_props, sizeof g_monster_type_props);
+  memcpy(s->types_container, g_container_type_props, sizeof g_container_type_props);
+  memcpy(s->types_light, g_light_type_props, sizeof g_light_type_props);
   s->a8 = DAT_002046a8 - arena; s->c8 = (char *)DAT_002046c8 - arena; s->f9c = DAT_0020469c - arena;
 }
 
@@ -675,6 +862,13 @@ static void snapshot_restore(const ed_snapshot_t *s)
   memcpy(DAT_0023ae58_backing, s->texture_walls, sizeof s->texture_walls);
   memcpy(DAT_0023adb8_backing, s->texture_floors, sizeof s->texture_floors);
   memcpy(DAT_0023b840_backing, s->texture_misc, sizeof s->texture_misc);
+  memcpy(g_object_type_props, s->types_comobj, sizeof g_object_type_props);
+  memcpy(g_melee_type_props, s->types_melee, sizeof g_melee_type_props);
+  memcpy(g_ranged_type_props, s->types_ranged, sizeof g_ranged_type_props);
+  memcpy(g_armor_type_props, s->types_armor, sizeof g_armor_type_props);
+  memcpy(g_monster_type_props, s->types_monster, sizeof g_monster_type_props);
+  memcpy(g_container_type_props, s->types_container, sizeof g_container_type_props);
+  memcpy(g_light_type_props, s->types_light, sizeof g_light_type_props);
 }
 
 /* Call before an edit: remember the level as it is. A new edit forgets what could have been redone. */
@@ -895,6 +1089,79 @@ static void op_put_down(int tx, int ty, int sub_x, int sub_y)
   uw_editor_validate();
 }
 
+/* ---- the type tables on disk ---- */
+
+/* Write bytes into a data file at an offset, keeping the rest; the first time, the original is copied to NAME.BAK. */
+static int patch_data_file(char *path, char *backup, long offset, const unsigned char *data, long length)
+{
+  int h = uw_file_open_read(path);
+  if (h == -1) return 0;
+  unsigned int size = uw_file_size(h, NULL);
+  unsigned char *buf = malloc(size > (unsigned long)(offset + length) ? size : (unsigned long)(offset + length));
+  if (!buf) { uw_file_close(h); return 0; }
+  int ok = uw_file_read(h, buf, size) == (int)size;
+  uw_file_close(h);
+  if (!ok) { free(buf); return 0; }
+  memcpy(buf + offset, data, (size_t)length);
+  int have = uw_file_open_read(backup);
+  if (have != -1) uw_file_close(have);
+  else if (!uw_file_copy(path, backup)) { free(buf); return 0; }
+  h = uw_file_open_write(path, 1);
+  ok = h != -1 && uw_file_write(h, buf, size) == (int)size;
+  if (h != -1) uw_file_close(h);
+  free(buf);
+  return ok;
+}
+
+/* The game changes some type records while it runs (collision.c raises a height), so saving writes only the fields the editor edited,
+   never whole records or tables: each edit is remembered here and the field's bytes are patched into the file on Save. */
+typedef struct { int tab, id, row; } ed_type_edit_t;
+static ed_type_edit_t g_type_edits[256];
+static int g_type_edit_count;
+
+static void remember_type_edit(int tab, int id, int row)
+{
+  for (int i = 0; i < g_type_edit_count; i++)
+    if (g_type_edits[i].tab == tab && g_type_edits[i].id == id && g_type_edits[i].row == row) return;
+  if (g_type_edit_count < (int)(sizeof g_type_edits / sizeof *g_type_edits))
+    g_type_edits[g_type_edit_count++] = (ed_type_edit_t){ tab, id, row };
+}
+
+/* COMOBJ.DAT holds 512 records of 11 bytes after a 2 byte header; the game keeps them as 13 byte records with two alignment gaps
+   (after the flags byte, and at the end), so a field's place in the file is one earlier from the value on. */
+static int save_type_tables(void)
+{
+  static char comobj[] = "\\DATA\\COMOBJ.DAT", comobj_bak[] = "\\DATA\\COMOBJ.DAT.BAK";
+  static char objects[] = "\\DATA\\OBJECTS.DAT", objects_bak[] = "\\DATA\\OBJECTS.DAT.BAK";
+  class_tables_init();
+  for (int i = 0; i < g_type_edit_count; i++) {
+    const ed_type_edit_t *e = &g_type_edits[i];
+    if (e->tab == TAB_COMM) {
+      const ed_fdesc_t *f = &fd_comobj[e->row];
+      const unsigned char *rec = (const unsigned char *)&g_object_type_props[e->id];
+      int disk = f->off <= 3 ? f->off : f->off - 1;
+      if (!patch_data_file(comobj, comobj_bak, 2 + e->id * 11 + disk, rec + f->off, f->bytes)) return 0;
+    }
+    else {
+      const ed_table_t *t = class_table_for(e->id);
+      const ed_fdesc_t *f = &t->fields[e->row - 1];
+      const unsigned char *rec = t->base + (e->id - t->first_id) * t->recsize;
+      if (!patch_data_file(objects, objects_bak, t->file_offset + (e->id - t->first_id) * t->recsize + f->off, rec + f->off, f->bytes)) return 0;
+    }
+  }
+  g_type_edit_count = 0;
+  g_types_dirty = 0;
+  return 1;
+}
+
+/* Back to what is on disk (Revert, Discard, and entering the editor drop edits to the types too). */
+static void reload_type_tables(void)
+{
+  load_object_catalog_data();
+  g_type_edit_count = 0;
+  g_types_dirty = 0;
+}
+
 /* The editor works on the master level archive, DATA\\LEV.ARK, not on a save slot. Entering the editor reloads the level
    being edited from it (so play-session state is thrown away), and Save writes the level back into it. The first save
    makes a one-time copy of the pristine archive as LEV.ARK.BAK. */
@@ -908,6 +1175,7 @@ static int reload_level_from_master(void)
 {
   int tx = ((const uw_mobile_object_t *)g_player_object)->tile_x, ty = ((const uw_mobile_object_t *)g_player_object)->tile_y;
   if (!load_level_from_archive((int)DAT_00201b68, g_master_ark)) return 0;
+  reload_type_tables();
   set_player_tile_position((uint)tx, (uint)ty, 1);
   g_sel_tx = g_sel_ty = -1;
   g_sel_slot = 0;
@@ -929,6 +1197,7 @@ static int save_to_master(void)
   int have = uw_file_open_read(g_master_backup);
   if (have != -1) uw_file_close(have);
   else if (!uw_file_copy(g_master_ark, g_master_backup)) { g_status = "could not back up LEV.ARK"; return 0; }
+  if (g_types_dirty && !save_type_tables()) { g_status = "could not write the type tables"; return 0; }
   return commit_level_to_archive((int)DAT_00201b68, g_master_ark, 0);
 }
 
@@ -942,6 +1211,25 @@ void uw_editor_save(void)
   else if (!g_status) g_status = "save failed";
   fprintf(stderr, "[editor] save level %d to LEV.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
 }
+
+/* Set Target: the clicked tile becomes the selected trap's or trigger's target (quality is its x, owner its y). */
+static int apply_target(int tx, int ty)
+{
+  uw_object_hdr_t *o = object_at(g_sel_slot);
+  if (!g_target_mode) return 0;
+  g_target_mode = 0;
+  if (!o) { g_status = "nothing selected"; return 1; }
+  checkpoint();
+  o->quality = (unsigned)tx & 63;
+  o->owner = (unsigned)ty & 63;
+  g_status = "target set";
+  set_pending_update_flags(2);
+  return 1;
+}
+
+static void button_pressed(int i);
+static void op_replace(void);
+static int apply_target(int tx, int ty);
 
 /* Self-check: run each kind of edit on the camera's tile, undo it, and compare the level with how it was, byte for byte;
    then redo it and compare again. Aborts (so a regression run fails) on any difference. */
@@ -994,7 +1282,7 @@ void uw_editor_selftest(void)
   {
     uw_object_hdr_t *o = object_at(g_sel_slot);
     checkpoint();
-    field_set(TAB_ITEM, 0, o, 33);
+    page_set(TAB_ITEM, 0, o, 33);
     checkpoint();
     o->zpos = o->zpos + 1;
     checkpoint();
@@ -1032,6 +1320,69 @@ void uw_editor_selftest(void)
   op_put_down(other_x, ty, 6, 6);
   uw_editor_undo();
   selftest_expect(&before, "undoing a move");
+
+  /* replace with the brush, and put things into a container (then step in and back out with Link and Back) */
+  select_object_on_tile(tx, ty, object_at(tile_head(tx, ty)));
+  g_palette_brush = 0xc3;
+  snapshot_take(&before);
+  op_replace();
+  uw_editor_undo();
+  selftest_expect(&before, "undoing a replace");
+  op_place(0x80, other_x, ty, 4, 4);          /* a container */
+  int box_slot = g_sel_slot;
+  select_object_on_tile(tx, ty, object_at(tile_head(tx, ty)));
+  snapshot_take(&before);
+  op_pick_up(1);
+  select_object_on_tile(other_x, ty, object_at(box_slot));
+  button_pressed(2);                           /* Link with an object held: copy it into the container */
+  snapshot_take(&after);
+  if (g_back_depth != 1 || !object_at(g_sel_slot)) { fprintf(stderr, "[editor] selftest FAILED: not inside the container\n"); abort(); }
+  button_pressed(3);                           /* Back out of it */
+  if (g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Back did not return to the container\n"); abort(); }
+  uw_editor_undo();
+  selftest_expect(&before, "undoing a copy into a container (the container's placement is kept)");
+  uw_editor_redo();
+  selftest_expect(&after, "redoing a copy into a container");
+  button_pressed(2); button_pressed(3);        /* in and out of the contents with nothing held */
+  selftest_expect(&after, "Link and Back change nothing");
+
+  /* a trap's page (a teleport trap: tile and level) and Set Target on it */
+  op_place(0x181, tx, ty, 1, 1);
+  {
+    uw_object_hdr_t *trap = object_at(g_sel_slot);
+    snapshot_take(&before);
+    g_target_mode = 1;
+    if (!apply_target(other_x, ty)) { fprintf(stderr, "[editor] selftest FAILED: Set Target did nothing\n"); abort(); }
+    if (trap->quality != (unsigned)other_x || trap->owner != (unsigned)ty) { fprintf(stderr, "[editor] selftest FAILED: the target is not on the trap\n"); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing Set Target");
+    int n; const ed_field_t *tf = item_fields(trap, &n);
+    if (n != 4 || tf[0].kind != K_QUAL || tf[3].kind != K_SET_TARGET) { fprintf(stderr, "[editor] selftest FAILED: the teleport trap page\n"); abort(); }
+    g_selftest_checks++;
+  }
+
+  /* a type edit (the Comm page): undoable like the rest, and written to COMOBJ.DAT and read back */
+  select_object_on_tile(tx, ty, object_at(tile_head(tx, ty)));
+  {
+    uw_object_hdr_t *o = object_at(g_sel_slot);
+    int shown, lo, hi, w0 = page_get(TAB_COMM, 2, o, &shown, &lo, &hi);
+    snapshot_take(&before);
+    checkpoint();
+    page_set(TAB_COMM, 2, o, w0 + 1);
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a type edit");
+    checkpoint();
+    page_set(TAB_COMM, 2, o, w0 + 1);
+    if (!save_type_tables()) { fprintf(stderr, "[editor] selftest FAILED: could not write the type tables\n"); abort(); }
+    reload_type_tables();
+    g_selftest_checks++;
+    if (page_get(TAB_COMM, 2, o, &shown, &lo, &hi) != w0 + 1) { fprintf(stderr, "[editor] selftest FAILED: the type edit was not on disk\n"); abort(); }
+    page_set(TAB_COMM, 2, o, w0);   /* and put the file back */
+    save_type_tables();
+    reload_type_tables();
+    if (page_get(TAB_COMM, 2, o, &shown, &lo, &hi) != w0) { fprintf(stderr, "[editor] selftest FAILED: could not restore the type data\n"); abort(); }
+    g_selftest_checks++;
+  }
 
   /* leave the level as the test found it: undo everything */
   while (g_undo_count) uw_editor_undo();
@@ -1260,17 +1611,106 @@ static void op_show(void)
   set_pending_update_flags(2);
 }
 
+/* With an object held (Move or Copy), Link on a selected container puts the held object into it (at the head of its contents). A creature
+   cannot go into a container, nor a container into itself or into something it holds. */
+static int contains_slot(const uw_object_hdr_t *o, int slot, int depth)
+{
+  if (!o || o->is_quant || !o->link || depth > 8) return 0;
+  for (int s = o->link, n = 0; s && n < 1024; n++) {
+    const uw_object_hdr_t *c = object_at(s);
+    if (!c) break;
+    if (s == slot || contains_slot(c, slot, depth + 1)) return 1;
+    s = c->next;
+  }
+  return 0;
+}
+
+static void op_put_into(int container_slot)
+{
+  uw_object_hdr_t *box = object_at(container_slot), *src = object_at(g_held_slot);
+  if (!box || !src) return;
+  if ((box->object_id & 0x1f0) != 0x80 || box->is_quant) { g_status = "that is not a container"; return; }
+  if (is_mobile(src) || slot_is_mobile(src)) { g_status = "a creature cannot go in a container"; return; }
+  if (g_held_slot == container_slot || contains_slot(src, container_slot, 0)) { g_status = "not into itself"; return; }
+  uw_object_hdr_t *placed = src;
+  if (g_held_copy) {
+    if (!have_free_slot(0)) { g_status = "no free object slots"; return; }
+    checkpoint();
+    placed = alloc_object_slot(0);
+    if (!placed) { g_status = "no free object slots"; return; }
+    memcpy(placed, src, sizeof(uw_object_hdr_t));
+    placed->next = 0;
+    if (!placed->is_quant) placed->link = 0;   /* shallow, as for a copy onto a tile */
+  }
+  else {
+    ushort *link = find_link(g_held_slot);
+    if (!link) { g_status = "lost the object"; g_held_slot = 0; return; }
+    checkpoint();
+    object_list_unlink(link, src);
+  }
+  object_list_insert_head(&box->link_word, placed);
+  g_held_slot = 0;
+  g_back_slot[0] = container_slot; g_back_link[0] = g_sel_link; g_back_depth = 1;
+  g_sel_link = &box->link_word;
+  g_sel_slot = encode_object_slot_index(placed);
+  g_status = g_held_copy ? "copied into it" : "moved into it";
+  uw_editor_validate();
+}
+
+/* Link steps into a container's contents (or a trigger's trap): remember where it came from, so Back can return. */
+static void op_back(void)
+{
+  if (g_back_depth == 0) { g_status = "already at the top"; return; }
+  g_back_depth--;
+  g_sel_slot = g_back_slot[g_back_depth];
+  g_sel_link = g_back_link[g_back_depth];
+}
+
+/* Replace with brush: change the selected object's type to the palette's brush. It never crosses between the static and the
+   mobile objects (a creature needs a 27-byte slot), and a container holding things stays a container. */
+static void op_replace(void)
+{
+  uw_object_hdr_t *o = object_at(g_sel_slot);
+  int id = g_palette_brush;
+  if (!o) { g_status = "nothing selected"; return; }
+  if (is_player(o)) { g_status = "that is you"; return; }
+  if (id == o->object_id) { g_status = "already that type"; return; }
+  if (((id & 0x1c0) == 0x40) != ((o->object_id & 0x1c0) == 0x40) || (encode_object_slot_index(o) < 0x100) != ((id & 0x1c0) == 0x40)) {
+    g_status = "static and mobile differ";
+    return;
+  }
+  int quant = (g_object_type_props[id].flags & 0xc0) == 0 || (g_object_type_props[id].flags & 0xc0) == 0x80;
+  if (!o->is_quant && o->link && (quant || ((id & 0x1f0) != 0x80 && (o->object_id & 0x1f0) == 0x80))) { g_status = "it holds things"; return; }
+  checkpoint();
+  o->object_id = (unsigned)id;
+  if (quant && !o->is_quant) { o->is_quant = 1; o->link = 1; }
+  else if (!quant && o->is_quant) { o->is_quant = 0; o->link = 0; }
+  if (slot_is_mobile(o)) ((uw_mobile_object_t *)o)->npc_hp = g_monster_type_props[id & 0x3f].max_hp;
+  set_pending_update_flags(2);
+  g_status = "replaced";
+}
+
 static void button_pressed(int i)
 {
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   g_status = NULL;
   switch (i) {
-    case 0: g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); break;   /* Head */
+    case 0: g_back_depth = 0; g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); break;   /* Head */
     case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next */
-    case 2: if (o && !o->is_quant && o->link) { g_sel_link = &((uw_object_hdr_t *)o)->link_word; g_sel_slot = o->link; } break;   /* Link: into a container */
-    case 3: op_show(); break;
-    case 4: op_pick_up(0); break;
-    case 5: op_pick_up(1); break;
+    case 2:   /* Link: into a container, remembering where from (or put the held object into the selected container) */
+      if (g_held_slot && o) { op_put_into(g_sel_slot); break; }
+      if (o && !o->is_quant && o->link && g_back_depth < BACK_DEPTH) {
+        g_back_slot[g_back_depth] = g_sel_slot;
+        g_back_link[g_back_depth++] = g_sel_link;
+        g_sel_link = &((uw_object_hdr_t *)o)->link_word;
+        g_sel_slot = o->link;
+      }
+      break;
+    case 3: op_back(); break;
+    case 4: op_show(); break;
+    case 5: op_pick_up(0); break;
+    case 6: op_pick_up(1); break;
+    case 7: op_replace(); break;
     default: op_delete(); break;
   }
 }
@@ -1330,6 +1770,7 @@ static void pick_in_view(int px, int py)
   int hx = 0, hy = 0;
   int on_floor = floor_under_view_point(scene_x, scene_y, &hx, &hy);
   int tx = hx >> 8, ty = hy >> 8, sub_x = (hx & 255) >> 5, sub_y = (hy & 255) >> 5;
+  if (g_target_mode && on_floor) { apply_target(tx, ty); return; }
   if (g_held_slot || g_brush_armed) {
     if (!on_floor) { g_status = "no floor there"; return; }
     if (g_held_slot) op_put_down(tx, ty, sub_x, sub_y);
@@ -1359,15 +1800,29 @@ static void edit_click(int x, int y, int button)
 {
   uw_object_hdr_t *o = object_at(g_sel_slot);
   int step = button == SDL_BUTTON_RIGHT ? 8 : 1;
+  if (g_type_view && g_tab != TAB_ITEM && g_tab >= 0) { g_type_dummy.object_id = (unsigned)g_palette_brush; o = &g_type_dummy; }
   if (!o) return;
   if (g_tab >= 0) {
-    int count, shown, row = (y - 129) / 8;
-    const ed_field_t *f = tab_fields(g_tab, &count);
-    if (y < 129 || row >= count) return;
-    int v = field_get(g_tab, row, o, &shown);
-    if (!shown) return;
-    int delta = x < 46 ? -step : x >= 72 ? step : 0;
-    if (delta) { checkpoint(); field_set(g_tab, row, o, clamp_int(v + delta, f[row].min, f[row].max)); }
+    int count = page_count(g_tab, o), shown, lo, hi;
+    if (y < 129) return;
+    if (x >= 79 && count > PAGE_ROWS) {   /* the scroll arrows */
+      g_tab_scroll += y < 150 ? -1 : 1;
+      return;
+    }
+    int row = g_tab_scroll + (y - 129) / PAGE_ROW_H;
+    if (row >= count) return;
+    if (g_tab == TAB_ITEM) {
+      int n;
+      if (item_fields(o, &n)[row].kind == K_SET_TARGET) { g_target_mode = !g_target_mode; g_status = g_target_mode ? "click the target tile" : NULL; return; }
+    }
+    int v = page_get(g_tab, row, o, &shown, &lo, &hi);
+    if (!shown || hi <= lo) return;
+    int delta = x < 44 ? -step : x >= 66 && x < 78 ? step : 0;
+    if (delta) {
+      if (g_tab != TAB_ITEM) step = button == SDL_BUTTON_RIGHT ? (hi > 255 ? 64 : 8) : 1, delta = delta < 0 ? -step : step;
+      checkpoint();
+      page_set(g_tab, row, o, clamp_int(v + delta, lo, hi));
+    }
   }
   else if (x < 51 && y < 177) {
     checkpoint();
@@ -1422,7 +1877,8 @@ void uw_editor_click(int x, int y, int button)
       g_map_drag_y = y;
     }
     else if (map_tile_at(x, y, &tx, &ty)) {
-      if (g_held_slot) op_put_down(tx, ty, g_map_click_sub_x, g_map_click_sub_y);
+      if (apply_target(tx, ty)) ;
+      else if (g_held_slot) op_put_down(tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else if (g_brush_armed) op_place(g_palette_brush, tx, ty, g_map_click_sub_x, g_map_click_sub_y);
       else select_tile(tx, ty);
     }
@@ -1454,7 +1910,14 @@ void uw_editor_click(int x, int y, int button)
     else {
       int col = (x - R_OBJPAL.x0 - 2) / PAL_CELL_W, row = (y - R_OBJPAL.y0 - 1) / PAL_CELL_H;
       int n = (g_palette_scroll + row) * PAL_COLS + col;
-      if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
+      if (button == SDL_BUTTON_RIGHT && col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
+        g_palette_brush = g_groups[g_group].first + n;   /* type view: its Comm and Class pages, no object needed */
+        g_type_view = 1;
+        if (g_tab < 0 || g_tab == TAB_ITEM) g_tab = TAB_COMM;
+        g_tab_scroll = 0;
+        g_status = "type pages: edits every object of it";
+      }
+      else if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
         int id = g_groups[g_group].first + n;
         /* the picked icon is armed for placing; picking the armed one again puts the brush away */
         g_brush_armed = !(g_brush_armed && id == g_palette_brush);
@@ -1465,12 +1928,12 @@ void uw_editor_click(int x, int y, int button)
   }
   else if (y >= 177 && y < 190 && x >= 3 && x < 96) {
     int i = (x - 3) / 31;
-    if (i < 3) g_tab = g_tab == i ? -1 : i;   /* a tab replaces the position view; again goes back */
+    if (i < 3) { g_tab = g_tab == i ? -1 : i; g_tab_scroll = 0; }   /* a tab replaces the position view; again goes back */
   }
   else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
     edit_click(x, y, button);
   }
-  else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + 7 * BUTTON_H) {
+  else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + BUTTON_COUNT * BUTTON_H) {
     button_pressed((y - BUTTON_Y) / BUTTON_H);
   }
 }

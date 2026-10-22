@@ -75,6 +75,23 @@ EDITOR validate
 # undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
 EDITOR selftest
 WAIT 10
+# type view: right click a palette icon for its Comm and Class pages (an edit changes every object of the type); undo it
+SDLRCLICK 440 320
+WAIT 10
+SDLCLICK 142 266
+WAIT 10
+SDLCLICK 36 366
+WAIT 10
+SDLCLICK 142 280
+WAIT 10
+SDLCLICK 98 366
+WAIT 10
+EDITOR undo
+WAIT 10
+EDITOR undo
+WAIT 10
+SDLCLICK 36 366
+WAIT 10
 # Move, Copy and Delete (the map's clicks pick tiles; EDITOR validate checks the object lists after each)
 SDLCLICK 502 118
 WAIT 30
