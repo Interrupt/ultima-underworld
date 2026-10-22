@@ -64,9 +64,27 @@ jobs:
         if: matrix.name == 'linux-x86_64'
         run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
       - name: Build
-        run: zig build ${{ matrix.args }}
+        run: zig build -Dwerror=true ${{ matrix.args }}
       - uses: actions/upload-artifact@v4
         with:
           name: uw_dbg-${{ matrix.name }}
           path: zig-out/bin/
           if-no-files-found: error
+
+  # Launch the cross-built Windows executable on a real Windows runner. It needs no game data to
+  # print its help, so this proves the binary starts (SDL2 is linked statically).
+  windows-smoke:
+    name: Run (windows-x86_64)
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: uw_dbg-windows-x86_64
+          path: bin
+      - name: Print help
+        shell: pwsh
+        run: |
+          $out = & .\bin\uw_dbg.exe --help
+          if ($LASTEXITCODE -ne 0) { throw "uw_dbg.exe --help exited with $LASTEXITCODE" }
+          $out | Select-Object -First 5
