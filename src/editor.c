@@ -55,12 +55,18 @@ static const ed_rect_t R_INFO = { 0, 192, 320, 200 };
 
 #define COL_BLACK 0
 #define COL_FRAME RGB(150, 150, 150)
-#define COL_ORANGE RGB(224, 120, 24)
-#define COL_PINK RGB(236, 168, 176)
-#define COL_BLUE RGB(40, 56, 216)
-#define COL_GREEN RGB(96, 140, 72)
+#define COL_ORANGE RGB(255, 142, 27)
+#define COL_PINK RGB(255, 186, 186)
+#define COL_BLUE RGB(60, 60, 255)
+#define COL_GREEN RGB(182, 203, 154)
+#define COL_DIM_ORANGE RGB(166, 81, 0)   /* the object editor's button frames */
+#define COL_YELLOW RGB(243, 223, 121)
+#define COL_OLIVE RGB(80, 89, 0)
+#define COL_RED RGB(255, 57, 76)
+#define COL_PANEL RGB(36, 36, 36)   /* the lower left panel's ground */
+#define COL_INFO_TEXT RGB(231, 178, 158)
 #define COL_TEXT RGB(232, 224, 160)
-#define COL_INFO_BG RGB(8, 8, 56)
+#define COL_INFO_BG RGB(0, 0, 24)
 
 static int g_active;
 static int g_prev_farsight;               /* g_debug_farsight before the editor turned it on */
@@ -704,13 +710,43 @@ static void draw_field_page(const uw_object_hdr_t *o)
   if (g_tab == TAB_CLASS && !class_table_for(o->object_id)) text("no class table", 4, 138, COL_FRAME);
 }
 
-/* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "Mv:" box,
-   the Head/Next/Link/Show/Move/Copy/Delete buttons and the Class/Comm/Item tabs. */
+/* The picked object's editor, laid out pixel for pixel from the screenshot of the original: the sub-tile position grid (8 columns of 6
+   by 8 rows of 5), the height spinner, the heading rose, the icon box, the "Mv:" box, the Head/Next/Link/Show/Move/Copy/Delete buttons
+   (9 high, text at x 121) and the Class/Comm/Item tabs. */
 #define BUTTON_COUNT 9
 static const char *const g_editor_buttons[BUTTON_COUNT] = { "Head", "Next", "Link", "Back", "Show", "Move", "Copy", "Replace", "Delete" };
 #define BUTTON_X 113
-#define BUTTON_Y 128
-#define BUTTON_H 7
+#define BUTTON_Y 127
+#define BUTTON_H 9
+#define SHOWN_BUTTONS 7
+/* The buttons the screenshot has, as indices into g_editor_buttons. */
+static const int g_shown_button[SHOWN_BUTTONS] = { 0, 1, 2, 4, 5, 6, 8 };
+/* HACK: not original behaviour -- Back and Replace (the screenshot has no buttons for them) are small text buttons in the free space between the icon box and "Mv:". */
+#define EXTRA_X 86
+#define BACK_Y 152
+#define REPLACE_Y 159
+
+/* The height spinner's up and down arrows, one 8x15 picture at (75, 129) copied from the screenshot. */
+static void draw_spinner_arrows(void)
+{
+  static const char *const rows[15] = { "aaabcaaa", "aabdbcaa", "aabdbeaa", "abfdfbca", "abdddbea", "bfdddfbg", "bdbhbdbe", "abbbcbaa",
+                                       "aabdbeaa", "abbdbbaa", "bdbhbdbe", "bfdddfbg", "abdddbea", "abfdfbca", "aabdbeaa" };
+  for (int y = 0; y < 15; y++)
+    for (int x = 0; x < 8; x++) {
+      unsigned short c;
+      switch (rows[y][x]) {
+        case 'b': c = RGB(0, 0, 4); break;
+        case 'c': c = RGB(151, 89, 36); break;
+        case 'd': c = RGB(186, 186, 207); break;
+        case 'e': c = RGB(178, 97, 56); break;
+        case 'f': c = RGB(101, 101, 125); break;
+        case 'g': c = RGB(150, 89, 36); break;
+        case 'h': c = RGB(142, 142, 170); break;
+        default: continue;
+      }
+      put(75 + x, 129 + y, c);
+    }
+}
 
 static void draw_object_editor(void)
 {
@@ -720,54 +756,57 @@ static void draw_object_editor(void)
   if (g_tab >= 0) {
     const uw_object_hdr_t *po = o;
     if (g_type_view) { g_type_dummy.object_id = (unsigned)g_palette_brush; po = g_tab == TAB_ITEM ? NULL : &g_type_dummy; }
-    frame(3, 128, 85, 177, g_tab == TAB_ITEM ? COL_ORANGE : RGB(232, 64, 64));   /* red: a type page, edits every object of the type */
+    frame(3, 128, 85, 177, g_tab == TAB_ITEM ? COL_ORANGE : COL_RED);   /* red: a type page, edits every object of the type */
     draw_field_page(po);
   }
   else {
-    /* 8x8 grid of 6px cells with the object's position marked */
+    /* 8x8 grid of 6x5 cells with the object's position marked */
     for (int i = 0; i <= 8; i++) {
-      for (int k = 0; k <= 48; k++) { put(3 + i * 6, 128 + k, COL_PINK); put(3 + k, 128 + i * 6, COL_PINK); }
+      for (int k = 0; k <= 40; k++) put(3 + i * 6, 128 + k, COL_PINK);
+      for (int k = 0; k <= 48; k++) put(3 + k, 128 + i * 5, COL_PINK);
     }
-    frame(53, 128, 85, 144, COL_ORANGE);
-    frame(53, 146, 85, 178, COL_ORANGE);
+    frame(53, 128, 84, 145, COL_DIM_ORANGE);
+    frame(53, 146, 84, 174, COL_ORANGE);
     if (o) {
-      fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 6 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 6 + 4, COL_ORANGE);
+      fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 5 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 5 + 4, COL_YELLOW);
       const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)g_sel_tx, (short)g_sel_ty);
       int off = t ? o->zpos - t->floor_height * 8 : 0;
       snprintf(line, sizeof line, "%d", o->zpos);
-      text(line, 56, 130, COL_BLUE);
+      text(line, 55, 130, COL_BLUE);
       snprintf(line, sizeof line, "%+d", off);
-      text(line, 56, 137, COL_BLUE);
-      arrow(77, 130, 2, COL_BLUE);
-      arrow(77, 137, 3, COL_BLUE);
-      /* the heading rose: eight rays from the centre, the object's heading marked */
+      text(line, 55, 138, COL_BLUE);
+      draw_spinner_arrows();
+      /* the heading rose: a grey square with eight rays from its centre, the object's heading drawn white */
+      fill(61, 153, 75, 167, RGB(89, 89, 109));
       for (int d = 0; d < 8; d++) {
         static const int dx[8] = { 0, 1, 1, 1, 0, -1, -1, -1 }, dy[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-        for (int r = 3; r <= 12; r++) put(69 + dx[d] * r, 162 + dy[d] * r, COL_ORANGE);
-        if (d == o->heading) fill(69 + dx[d] * 13 - 1, 162 + dy[d] * 13 - 1, 69 + dx[d] * 13 + 1, 162 + dy[d] * 13 + 1, COL_BLUE);
+        for (int r = 1; r <= 7; r++) put(68 + dx[d] * r, 160 + dy[d] * r, d == o->heading ? RGB(255, 255, 255) : COL_YELLOW);
       }
     }
   }
-  frame(86, 134, 105, 150, COL_GREEN);
-  frame(94, 166, 112, 188, COL_FRAME);
+  frame(86, 134, 104, 152, COL_GREEN);
+  frame(94, 171, 112, 189, RGB(125, 125, 125));
   /* "Mv:" (the screenshot's label, dimmed there with nothing in the box): probably the object a Move in progress
      holds; not wired yet, so the box stays empty. */
-  text("Mv:", 96, 160, g_held_slot ? COL_ORANGE : RGB(120, 60, 16));
-  if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 169);
-  if (g_type_view) sprite("objects", g_palette_brush, 88, 135);
-  else if (o) sprite("objects", o->object_id, 88, 135);
-  for (int i = 0; i < BUTTON_COUNT; i++) {
+  text("Mv:", 97, 165, g_held_slot ? COL_ORANGE : RGB(97, 32, 0));
+  if (object_at(g_held_slot)) sprite("objects", object_at(g_held_slot)->object_id, 95, 172);
+  if (g_type_view) sprite("objects", g_palette_brush, 88, 136);
+  else if (o) sprite("objects", o->object_id, 88, 136);
+  text("Back", EXTRA_X, BACK_Y, COL_ORANGE);
+  text("Repl", EXTRA_X, REPLACE_Y, COL_ORANGE);
+  for (int i = 0; i < SHOWN_BUTTONS; i++) {
     int y = BUTTON_Y + i * BUTTON_H;
-    unsigned short c = i == BUTTON_COUNT - 1 ? RGB(232, 64, 64) : COL_ORANGE;
-    frame(BUTTON_X, y, 150, y + BUTTON_H + 1, c);
-    text(g_editor_buttons[i], 116, y, c);
+    unsigned short c = i == SHOWN_BUTTONS - 1 ? COL_RED : COL_ORANGE;
+    frame(BUTTON_X, y, BUTTON_X + 36, y + BUTTON_H + 1, COL_DIM_ORANGE);
+    text(g_editor_buttons[g_shown_button[i]], i == SHOWN_BUTTONS - 1 ? 115 : 121, y + 2, c);
   }
+  /* Class and Comm share a divider at x 33; Item is dim olive */
+  static const int tab_x0[3] = { 2, 33, 65 }, tab_x1[3] = { 34, 64, 93 }, tab_text[3] = { 8, 38, 71 };
   for (int i = 0; i < 3; i++) {
-    int x = 3 + i * 31;
-    unsigned short c = i < 2 ? COL_BLUE : COL_GREEN;
-    if (i == g_tab) fill(x + 1, 178, x + 29, 189, RGB(24, 24, 88));
-    frame(x, 177, x + 30, 190, c);
-    text(tabs[i], x + 3, 179, c);
+    unsigned short c = i < 2 ? COL_BLUE : COL_OLIVE;
+    if (i == g_tab) fill(tab_x0[i] + 1, 178, tab_x1[i] - 2, 186, RGB(24, 24, 88));
+    frame(tab_x0[i], 177, tab_x1[i], 188, c);
+    text(tabs[i], tab_text[i], 180, c);
   }
 }
 
@@ -778,14 +817,15 @@ static void draw_info_bar(void)
   camera(&x, &y, &z);
   fill(R_INFO.x0, R_INFO.y0, R_INFO.x1, R_INFO.y1, COL_INFO_BG);
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
-  text(line, 2, 193, COL_TEXT);
+  if (!g_status) text(line, 80, 194, COL_INFO_TEXT);
   snprintf(line, sizeof line, "Map= Lvl %d%s%s %d,%d", DAT_00201b68, g_dirty ? "*" : "", g_view_mode ? (g_view_mode == 1 ? " [trig]" : " [mark]") : "", x >> 8, y >> 8);
-  if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));   /* replaces the map position while it shows */
-  else text(line, 150, 193, COL_TEXT);
+  if (g_status) text(g_status, 80, 194, RGB(255, 140, 140));   /* replaces the map position while it shows */
+  else text(line, 160, 194, COL_INFO_TEXT);
   {
     time_t now = time(NULL);
-    strftime(line, sizeof line, "%a %d %H:%M", localtime(&now));
-    text(line, 262, 193, COL_TEXT);
+    strftime(line, sizeof line, "%a %b %d, %I:%M%p", localtime(&now));
+    for (char *c = line; *c; c++) if (*c == 'A' || *c == 'P') if (c[1] == 'M' && !c[2]) c[0] = c[0] == 'A' ? 'a' : 'p', c[1] = 'm';
+    text(line, 238, 194, COL_INFO_TEXT);
   }
 }
 
@@ -800,6 +840,7 @@ int uw_editor_compose(unsigned short *display)
   g_uw_framebuffer = g_screen;
   select_active_font(s_font5x6p_sys_0008430c);
   fill(0, 0, ED_W, ED_H, COL_BLACK);
+  fill(1, 126, 151, 191, COL_PANEL);
   draw_view_pane();
   draw_map_pane();
   draw_palette_pane();
@@ -3487,17 +3528,17 @@ static void edit_click(int x, int y, int button)
       page_set(g_tab, row, o, clamp_int(v + delta, lo, hi));
     }
   }
-  else if (x < 51 && y < 177) {
+  else if (x < 52 && y < 169) {
     checkpoint();
     o->xpos = (unsigned)clamp_int((x - 3) / 6, 0, 7);
-    o->ypos = (unsigned)clamp_int(7 - (y - 128) / 6, 0, 7);
+    o->ypos = (unsigned)clamp_int(7 - (y - 128) / 5, 0, 7);
     set_pending_update_flags(2);
   }
   else if (x >= 53 && y < 145) {
     if (x >= 76) { checkpoint(); o->zpos = (unsigned)clamp_int((int)o->zpos + (y < 136 ? step : -step), 0, 127); set_pending_update_flags(2); }
   }
   else if (x >= 53 && y >= 146) {
-    int dx = x - 69, dy = y - 162;
+    int dx = x - 68, dy = y - 160;
     if (dx * dx + dy * dy < 9) return;
     int h = (int)lround(atan2((double)dx, (double)-dy) / (M_PI / 4)) & 7;
     checkpoint();
@@ -3551,15 +3592,18 @@ static int object_mode_click(int x, int y, int button)
       }
     }
   }
-  else if (y >= 177 && y < 190 && x >= 3 && x < 96) {
-    int i = (x - 3) / 31;
+  else if (y >= 177 && y < 189 && x >= 2 && x < 93 && x != 64) {
+    int i = x < 33 ? 0 : x < 64 ? 1 : 2;
     if (i < 3) { g_tab = g_tab == i ? -1 : i; g_tab_scroll = 0; }   /* a tab replaces the position view; again goes back */
+  }
+  else if (x >= EXTRA_X && x < 112 && y >= BACK_Y && y < REPLACE_Y + 6 && g_tab < 0) {
+    button_pressed(y < REPLACE_Y ? 3 : 7);
   }
   else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
     edit_click(x, y, button);
   }
-  else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + BUTTON_COUNT * BUTTON_H) {
-    button_pressed((y - BUTTON_Y) / BUTTON_H);
+  else if (x >= BUTTON_X && x < BUTTON_X + 36 && y >= BUTTON_Y && y < BUTTON_Y + SHOWN_BUTTONS * BUTTON_H) {
+    button_pressed(g_shown_button[(y - BUTTON_Y) / BUTTON_H]);
   }
   else return 0;
   return 1;
