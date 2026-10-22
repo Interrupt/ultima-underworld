@@ -1,5 +1,8 @@
 # Underworld editor plan
 
+> Superseded: the current plan is [editor-master-plan.md](editor-master-plan.md), which merges this one with the later
+> plan docs. This file is kept for its original reasoning.
+
 Goal: recreate the original UW1 level editor (see the surviving screenshot of
 its object-edit mode: 3D view top-left, top-down tile map top-right, a mode
 palette down the middle, a selected-object editor bottom-left and an object
