@@ -26,6 +26,8 @@ jobs:
       matrix:
         include:
           - { name: linux, os: ubuntu-latest }
+          # ARM Linux has unsigned plain char; this catches code that assumes it is signed (see -fsigned-char).
+          - { name: linux-arm64, os: ubuntu-24.04-arm }
           - { name: macos-arm, os: macos-latest }
     steps:
       - uses: actions/checkout@v4
