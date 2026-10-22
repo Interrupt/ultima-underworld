@@ -277,12 +277,16 @@ Build the safety layer first, then a usable inspect-and-tweak object editor, the
 
 ### Open questions
 
-- What the starburst, eye and two lettered icons really did.
-- Tile type enum values, floor height bit width, and the floor-height-to-zpos scale.
+Each is resolved or documented here.
+
+- **What the starburst, eye and two lettered icons really did.** Documented, not recoverable (the original editor's code is gone). What they do here: the starburst saves; the eye opens the view modes; the first lettered icon (the cut / copy toggle) is Cut / Copy mode and the second (PAS) is Paste mode; the magnifier is Find; the grid is tile mode; the swatch icon is the texture painter; the black blob is the fill tool; the orange button is Play. BUTTONS.GR also holds the toggle's other states (frames 11 to 13) and the DONE / CANCEL / OK / FLOOR / WALL / LOAD / COPY / DEL buttons (frames 18 to 25), unused so far.
+- **Tile type enum values, floor height bit width, and the floor-height-to-zpos scale.** Resolved. Tile types: 0 solid, 1 open, 2 to 5 diagonals, 6 to 9 slopes (checked against the level data and the swatches). The floor height is 4 bits (0 to 15); an object's zpos is the floor height times 8 (world units of 1/256 tile: times 64), so a floor-standing object has zpos = floor height * 8.
 - ~~Exact texture slot counts and where the ceiling texture is stored.~~ Answered: 48 wall slots into W64.TR's 210 textures, 10 floor slots into F32.TR's 52 (low-resolution copies in W16.TR / F16.TR), and the ceiling is the last floor slot (9); changing it changes the ceiling in the 3D view.
-- Whether the owner field matches an individual NPC or a faction.
-- Which quality/owner bits hold a trigger's target tile.
-- Which caches must be invalidated after tile geometry changes.
+- **Whether the owner field matches an individual NPC or a faction.** Not settled. The editor treats it as the whoami of a creature (the "owners missing" check) because that is what the game's pick-up anger code appears to compare; if it is a faction the check will over-report. The field is editable either way.
+- **Which quality/owner bits hold a trigger's target tile.** Confirmed for two traps from the game's own dispatch (a teleport trap and a delete-object trap take the tile as quality = x and owner = y; the teleport trap's height is its level). Not confirmed for triggers: Set Target writes quality and owner there as the plan guessed, and the Find checks that rely on it say so.
+- **Which caches must be invalidated after tile geometry changes.** Resolved by trying it: the renderer builds a tile's geometry from the tile word each frame, so a redraw (`full_dungeon_redraw` and the pending-update flags) plus the NPC path cache reset is enough; after a texture change the textures are loaded again (`load_terrain_texture_props`, `load_dungeon_texture_arenas`).
+- **Whether L is bound in the game.** Resolved: it is (a movement command), so the editor opens with F9, `--editor` or the `editor` console command.
+- **Trap and trigger id ranges.** Corrected from the game's own names: traps 0x180-0x19F, triggers 0x1A0-0x1BF, decals and effects 0x1C0-0x1FF.
 
 ## View modes (the Eye button)
 
@@ -313,5 +317,5 @@ Updated as work lands; the phases above say what each item is, this says what ex
 - **Find:** built. `find_object_in_world` (the game's own find-next: tile chains in row order, into containers, cursor left on the tile found) is named in the function database, documented and unit-tested (`object_core`); Find collects every match with the same scan. Criteria: exact type, palette category, owner, whoami, what links to the selected object, what targets the selected tile, invisible / enchanted; validation searches: traps nothing links to, triggers with no trap (or a solid target tile), named creatures with no conversation, owners no creature in the level is. Prev / Next fly the camera to an open tile beside the match, facing it (an object in a container is selected through its containers, with Back to return); All fills the results list; a click on a result goes to it. Tile searches (texture slot, type, height, doors) are not built.
 - **Cut, copy and paste:** built (tiles only: type, height, door and no-magic flags, both texture slots). Cut / Copy mode: drag a rectangle on the map, Copy or Cut (cut copies, then makes the region solid); Paste mode: a preview outline follows the pointer and a click puts the clipboard's top left there, with an undo step first and the tile checks run on the destination; a picture of the clipboard shows in the palette area. Bringing objects along is not built.
 - **View modes (the Eye button):** built. Preview / Triggers / Markers, kept while the editor is closed and reopened, with a [trig] or [mark] tag in the status bar. The 3D pass draws an object as an editor sprite (an object's own icon if the game has one, else a coloured diamond: a trap red, a trigger blue, anything else yellow) by giving the billboard path a sprite frame in the range 0x6000 + object id, so the sprite is in the pick buffer and can be clicked. The plan's id ranges were corrected from the game's own names: traps are 0x180-0x19F, triggers 0x1A0-0x1BF, and 0x1C0-0x1FF are decals and effects.
-- **Remaining:** none of the goal's items; open questions below.
+- **Remaining:** none of the goal's items. Not built, by choice or by request: auto-slope between heights, hover highlight / select-all / compact for the texture painter, objects in cut / copy, tile searches in Find, and (dropped by request) the map view cone and zoom and the viewport struct.
 - **Dropped for now (by request):** the map view cone and zoom, and the viewport struct.
