@@ -11,8 +11,8 @@ extern undefined2 DAT_00189578;
    visibility.c (load_floor_texture_arenas) -- extern'd here so both
    translation units see the same storage. */
 extern ushort DAT_0023adc0;
-extern char *DAT_0023ae34;
-extern char *DAT_0023ae30;
+extern byte *DAT_0023ae34;
+extern byte *DAT_0023ae30;
 extern undefined1 DAT_002049e0_backing[0x40000];
 #define DAT_002049e0 DAT_002049e0_backing[0]
 extern short DAT_00086b28;
@@ -45,7 +45,7 @@ extern undefined DAT_0023b4dc;
 
 int reset_texture_id_lists();
 bool load_level_texture_ids(byte *archive, int level_number);
-void load_texture_arena(char *path, short *id_list, short *out_count, char *arena);
+void load_texture_arena(char *path, ushort *id_list, ushort *out_count, byte *arena);
 void load_terrain_texture_props(char *wall_texture_ids, char *floor_texture_ids);
 void draw_command_list_rewind();
 void free_frame_geometry_buffers();

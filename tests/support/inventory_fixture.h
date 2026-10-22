@@ -25,7 +25,7 @@ extern ushort *g_interact_target;
 extern char *g_selected_object, *DAT_00202098, *DAT_002020b0;
 extern short DAT_000858c4, DAT_002020ac;
 extern code *DAT_002020b8;
-extern undefined1 DAT_000878ec_backing[64];
+extern char DAT_000878ec_backing[64];
 extern char s_UNNAMED_00084f24[];
 extern char s_on_what__000878e0[];
 extern void (*const PTR_FUN_000858c8_table[5])(void);

@@ -25,7 +25,7 @@ static void test_hostile_npc_notices_nearby_player_and_chases(void)
 static void test_line_walk_records_waypoints_without_corrupting_ai_globals(void)
 {
     byte profile[8] = {0};
-    DAT_00101438 = (char *)profile;
+    DAT_00101438 = profile;
     TEST_ASSERT_EQUAL_INT(1, try_direct_line_walk(10, 10, 10, 13));
     TEST_ASSERT_EQUAL_UINT8(4, DAT_0010142c);
     for (int step = 0; step < 4; step++) {
@@ -39,7 +39,7 @@ static void test_line_walk_records_waypoints_without_corrupting_ai_globals(void)
 static void test_repeated_walking_preserves_npc_position_and_ai_pointers(void)
 {
     byte profile[8] = {0};
-    DAT_00101438 = (char *)profile;
+    DAT_00101438 = profile;
     npc_set_goal(5, 1);
     for (int tick = 0; tick < 128; tick++) {
         npc_walk_toward_tile(10, 13, 0);

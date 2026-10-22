@@ -60,10 +60,10 @@ char *DAT_00086df8;
 uw_object_type_props_t g_object_type_props[512];
 uw_monster_type_props_t g_monster_type_props[64];
 short DAT_00201b68, DAT_00201c74;
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 char *DAT_00248410;
 ushort DAT_001007c4;
-undefined s_scroll_newline_0008522c_backing[8192] = "\n";
+char s_scroll_newline_0008522c_backing[8192] = "\n";
 int g_blit_transparent_mode;
 int g_text_use_palette_color;
 byte *g_draw_color_index_unused;
@@ -75,7 +75,8 @@ static ushort player[32];
 ushort *conv_npc;
 
 /* STRINGS.PAK decoder state (same layout the introduction suite uses). */
-undefined1 DAT_0023c698_backing[1024], DAT_00101968_backing[260];
+char DAT_0023c698_backing[1024];
+char DAT_00101968_backing[260];
 undefined4 DAT_0024bf98;
 unsigned short *DAT_0024cfb8;
 char *DAT_0024cfa8;
@@ -311,7 +312,7 @@ uw_object_hdr_t *resolve_object_link(ushort *link)
 }
 void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (ushort *)object_;
+    uw_unaligned_word_t *object = (uw_unaligned_word_t *)object_;
     int slot = encode_object_slot_index(object_);
     while (*head >> 6 && *head >> 6 != slot) head = babl_items[*head >> 6] + 2;
     TEST_ASSERT_EQUAL_INT_MESSAGE(slot, *head >> 6, "Unlinked object is not in the list");
@@ -320,7 +321,7 @@ void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 }
 void object_list_insert_head(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (ushort *)object_;
+    uw_unaligned_word_t *object = (uw_unaligned_word_t *)object_;
     object[2] = (object[2] & 0x3f) | (*head & ~0x3f);
     *head = (*head & 0x3f) | (encode_object_slot_index(object_) << 6);
 }
@@ -333,7 +334,7 @@ int drop_object_near_target(void *owner, void *object, short radius, uint flags)
     return 1;
 }
 void free_object_slot(uw_object_hdr_t *object) { memset(object, 0, 8); }
-void spawn_creature_death_loot(ushort *object) { ((byte *)object)[14] |= 0x10; }
+void spawn_creature_death_loot(uw_unaligned_word_t *object) { ((byte *)object)[14] |= 0x10; }
 void npc_set_goal_for_object(uw_mobile_object_t *object, int goal, int target)
 {
     ushort *packed = (ushort *)((byte *)object + 11);

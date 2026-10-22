@@ -68,14 +68,14 @@ uint read_realtime_clock_units(void)
     return sleep_fixture.clock;
 }
 uw_object_hdr_t *get_equipped_item_at_slot(short slot)
-{ return slot == 5 && sleep_fixture.torch[0] ? sleep_fixture.torch : NULL; }
+{ return slot == 5 && sleep_fixture.torch[0] ? (uw_object_hdr_t *)sleep_fixture.torch : NULL; }
 void redraw_backpack_slot_widget(short slot)
 { TEST_ASSERT_EQUAL_INT(5, slot); sleep_fixture.light_slot_redraws++; }
 void set_ambient_bias_without_light(char strength) { sleep_fixture.light_updates++; }
 void active_mobile_list_remove(char slot) {}
 void enter_free_camera_mode(int slot) { TEST_FAIL_MESSAGE("Unexpected free camera"); }
 void scheduler_remove_entry(short slot) { TEST_FAIL_MESSAGE("Unexpected scheduled-object removal"); }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected damage during healthy sleep"); return 0; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected damage during healthy sleep"); return 0; }
 void apply_rest_status_effects(void) { TEST_FAIL_MESSAGE("Unexpected forced rest"); }
 void free_trap_class_object(void *link_field, void *trap_object) { (void)link_field; (void)trap_object; TEST_FAIL_MESSAGE("Unexpected trap deletion"); }
 int resolve_object_variant_or_special_link(void *object, void *out_class, void *out_value, void *out_flag)
@@ -91,7 +91,7 @@ uw_object_hdr_t *alloc_object_slot(int mobile)
 }
 #define UNUSED_VOID(name) void name(void) { TEST_FAIL_MESSAGE("Unexpected " #name); }
 #define UNUSED_RESULT(name) undefined4 name(void) { TEST_FAIL_MESSAGE("Unexpected " #name); return 0; }
-void spawn_trap_hazard_object(ushort *trap_record, short tile_x, short tile_y) { (void)trap_record; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected spawn_trap_hazard_object"); }
+void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y) { (void)trap_record; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected spawn_trap_hazard_object"); }
 int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int unused_a, int unused_b) { (void)object_slot; (void)damage_delta; (void)unused_a; (void)unused_b; TEST_FAIL_MESSAGE("Unexpected apply_poison_or_damage_trap_effect"); return 0; }
 int teleport_object_to_level_tile(void *object, int tile_x, int tile_y, short level_number) { (void)object; (void)tile_x; (void)tile_y; (void)level_number; TEST_FAIL_MESSAGE("Unexpected teleport_object_to_level_tile"); return 0; }
 int dispatch_quest_event_code(void *trap_record, int tile_x, int tile_y) { (void)trap_record; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected dispatch_quest_event_code"); return 0; }
@@ -99,7 +99,7 @@ int apply_area_terrain_effect(short tile_x, int tile_y, short wall_texture, shor
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object, short radius, int skip_roll) { (void)tile_x; (void)tile_y; (void)height; (void)object; (void)radius; (void)skip_roll; TEST_FAIL_MESSAGE("Unexpected place_object_in_world"); return 0; }
 uint scheduler_add_entry(uint object_link, int delay, byte animation_offset, byte tile_x, byte tile_y) { (void)object_link; (void)delay; (void)animation_offset; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected scheduler_add_entry"); return 0; }
 void open_door_object(void *door) { (void)door; TEST_FAIL_MESSAGE("Unexpected open_door_object"); }
-void close_door_object(void *actor, ushort *door) { (void)actor; (void)door; TEST_FAIL_MESSAGE("Unexpected close_door_object"); }
+void close_door_object(void *actor, uw_unaligned_word_t *door) { (void)actor; (void)door; TEST_FAIL_MESSAGE("Unexpected close_door_object"); }
 void toggle_door_object(char *actor, void *door) { (void)actor; (void)door; TEST_FAIL_MESSAGE("Unexpected toggle_door_object"); }
 void print_message_with_proximity_qualifier(char *message, short x1, short y1, short z1, short x2, short y2, short z2, short limit) { (void)message; (void)x1; (void)y1; (void)z1; (void)x2; (void)y2; (void)z2; (void)limit; TEST_FAIL_MESSAGE("Unexpected print_message_with_proximity_qualifier"); }
 uint resolve_skill_gated_unlock_or_use(void *object, void *key_item, void *lock_link, ushort key_id) { (void)object; (void)key_item; (void)lock_link; (void)key_id; TEST_FAIL_MESSAGE("Unexpected resolve_skill_gated_unlock_or_use"); return 0; }
@@ -140,7 +140,7 @@ void sleep_fixture_reset(void)
     ((ushort *)g_player_object)[11] = (18 << 10) | (5 << 4);
     DAT_002020a0 = DAT_0023c3dc = 18;
     DAT_002020a4 = DAT_0023c3d8 = 5;
-    object_list_insert_head((char *)tilemap_lookup(18, 5) + 2, g_player_object);
+    object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 5)), &g_player_object->hdr);
     ((byte *)g_player_object)[8] = 10;
     DAT_00086df8[0x39] = 100;
     DAT_00086df8[0x3a] = 8;
@@ -183,7 +183,7 @@ ushort *sleep_fixture_spawn_trap(int blocked)
     npc[11] = (18 << 10) | (4 << 4);
     /* Background processing marks the template before testing the area.
        A second marked NPC blocks the spawn, without making rest unsafe. */
-    object_list_insert_head((char *)tilemap_lookup(18, 4) + 2, spawn);
+    object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 4)), (uw_object_hdr_t *)spawn);
     if (blocked) {
         ushort *other = special_use_npc(3, 19, 4, 1, 0);
         ((byte *)other)[14] |= 1;

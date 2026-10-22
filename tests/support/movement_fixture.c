@@ -46,7 +46,7 @@ void object_list_unlink(ushort *link_field, uw_object_hdr_t *object) { (void)lin
 void object_list_insert_head(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Unexpected tile change"); }
 void set_locomotion_state(ushort state, int flags) { (void)state; (void)flags; }
 int roll_skill_check(int skill, int difficulty) { (void)skill; (void)difficulty; TEST_FAIL_MESSAGE("Unexpected fall damage"); return 0; }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected damage"); return 0; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected damage"); return 0; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; TEST_FAIL_MESSAGE("Unexpected landing sound"); return 0; }
 
 short movement_fixture_read_short(int offset)
@@ -111,8 +111,9 @@ ushort DAT_002020a0, DAT_002020a4;
 
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
 {
-    if (slot == 1) return movement_fixture.player;
-    if (slot == 300) return movement_fixture.door;
+    /* player/door point at raw records in the arena; view them as headers. */
+    if (slot == 1) return (uw_object_hdr_t *)movement_fixture.player;
+    if (slot == 300) return (uw_object_hdr_t *)movement_fixture.door;
     return NULL;
 }
 char *DAT_002046c4 = (char *)movement_fixture.object_arena + 0x5b00;
@@ -123,7 +124,7 @@ int encode_object_slot_index(const uw_object_hdr_t *object)
     movement_fixture.door_contacts++;
     return 300;
 }
-int sync_object_tile_position(ushort *object, void *snapshot)
+int sync_object_tile_position(uw_unaligned_word_t *object, void *snapshot)
 {
     TEST_ASSERT_EQUAL_PTR(movement_fixture.door, object);
     memcpy(movement_fixture.last_obstacle_snapshot, snapshot, sizeof(movement_fixture.last_obstacle_snapshot));
@@ -132,7 +133,7 @@ int sync_object_tile_position(ushort *object, void *snapshot)
 }
 uint resolve_skill_gated_unlock_or_use(void *object, void *key_item, void *lock_link, ushort key_id)
 { TEST_FAIL_MESSAGE("Unexpected unlock trigger"); return 0; }
-ushort *use_object_on_target(ushort *actor, ushort *used_object, int flag)
+ushort *use_object_on_target(uw_unaligned_word_t *actor, uw_unaligned_word_t *used_object, int flag)
 { TEST_FAIL_MESSAGE("Unexpected use trigger"); return 0; }
 void angle_to_screen_delta(uint heading, void *dx_, void *dy_)
 { short *dx = (short *)dx_; short *dy = (short *)dy_;

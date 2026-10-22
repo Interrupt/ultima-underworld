@@ -4,9 +4,9 @@
 
 /* Real script, LPF page loading, RLE decoding and viewer loop. Stub only the
    display/audio/input services; one click dismisses the static window image. */
-undefined1 DAT_00085448_backing[11] = "\\CSXXX.nXX";
-undefined1 DAT_0023c698_backing[1024];
-undefined1 DAT_00101968_backing[260];
+char DAT_00085448_backing[11] = "\\CSXXX.nXX";
+char DAT_0023c698_backing[1024];
+char DAT_00101968_backing[260];
 uintptr_t DAT_00101a70;
 ushort DAT_00101a6c, DAT_000853f8, DAT_000853fc, DAT_00085400;
 byte image[64000];
@@ -395,8 +395,9 @@ void populate_debug_panel(void) {}
 /* Screen-transition fixtures keep the real background files and palette
    data; unrelated character choices and dungeon rendering are stubbed. */
 char *DAT_001005c4, *DAT_001005c8, *DAT_000fb858;
-undefined1 DAT_000fb860_backing[32], DAT_000fb8f0_backing[1680];
-undefined1 DAT_0023cca8_backing[1024];
+undefined1 DAT_000fb860_backing[32];
+char DAT_000fb8f0_backing[1680];
+char DAT_0023cca8_backing[1024];
 int DAT_00201c98;
 char s_chrbtns_00084ef8[] = "chrbtns";
 char s__DATA_skills_dat_00084ee4[] = "\\DATA\\skills.dat";
@@ -462,7 +463,7 @@ void enter_pause_menu_state(short state)
     for (unsigned i = 0; i < 64000; i++) framebuffer[i] = 0x001f;
     dirty_rect_union(0, 200, 0, 320);
 }
-void get_mouse_position(ushort *out_x, ushort *out_y) { (void)out_x; (void)out_y; TEST_FAIL_MESSAGE("Menu regression uses the keyboard"); }
+void get_mouse_position(short *out_x, short *out_y) { (void)out_x; (void)out_y; TEST_FAIL_MESSAGE("Menu regression uses the keyboard"); }
 void handle_pause_menu_region_click(int region, short click_y) { (void)region; (void)click_y; TEST_FAIL_MESSAGE("Menu regression uses the keyboard"); }
 void handle_pause_menu_dpad_navigation(short key_code) { (void)key_code; TEST_FAIL_MESSAGE("Menu regression closes without taking an action"); }
 void close_ui_panel_return_to_game(void) { DAT_000868d8 = 0; DAT_002046f8 = 1; }
@@ -470,8 +471,8 @@ int g_text_input_active;
 undefined4 g_scroll_control_codes_enabled;
 short DAT_0025070c;
 undefined *DAT_00250704;
-undefined s_dash_000879a4_backing[8192] = "-";
-undefined s_scroll_prompt_arrow_000879a8_backing[8192] = ">";
+char s_dash_000879a4_backing[8192] = "-";
+char s_scroll_prompt_arrow_000879a8_backing[8192] = ">";
 short prompt_panel[16], prompt_font[8];
 void select_msg_scroll_mode_normal(void) {}
 int message_scroll_print_wrapped(char *text)

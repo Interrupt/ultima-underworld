@@ -381,12 +381,12 @@ long GetLastError()
     return 0;
 }
 
-long FindResourceW(long module, long resource_id, long resource_type)
+intptr_t FindResourceW(intptr_t module, intptr_t resource_id, intptr_t resource_type)
 {
     return 0;
 }
 
-long LoadResource(long resource)
+intptr_t LoadResource(intptr_t resource)
 {
     return 0;
 }
@@ -476,7 +476,7 @@ long GetSystemMetrics(long index)
     return 0;
 }
 
-long DeleteObject(long object)
+intptr_t DeleteObject(intptr_t object)
 {
     return 0;
 }
@@ -626,7 +626,8 @@ char *ce_strcat(char *dest, char *src)
 char *ce_strchr(const char *s, int c)
 {
     if (s == 0) return 0;
-    return strchr(s, c);
+    /* Same contract as C strchr: const in, non-const out (C23 glibc declares a const-preserving overload). */
+    return (char *)strchr(s, c);
 }
 
 int ce_strcmp(const char *a, const char *b)

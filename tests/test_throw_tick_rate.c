@@ -1,8 +1,8 @@
 #include "throw_fixture.h"
 #include "src/headers/options.h"
 int physics_subtick_units(void);
-void build_object_placement_snapshot(ushort *object, byte *snapshot);
-int sync_object_tile_position(ushort *object, void *position);
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot);
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position);
 void tick_physics_objects(int elapsed_units);
 
 /* How often does a thrown item actually run physics (mobile_object_tick)?

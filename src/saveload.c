@@ -17,7 +17,7 @@ static undefined DAT_000b78b8_backing[8192];
 /* Sizing pass: DAT_000b98b8 and DAT_000b98b9's real ARM addresses are exactly 1 byte apart
    (0xb98b8/0xb98b9), and every real use confirms they're one combined buffer, not two independent
    ones... */
-static undefined1 DAT_000b98b8_backing[1024];
+static char DAT_000b98b8_backing[1024];
 #define DAT_000b98b8 DAT_000b98b8_backing[0]
 /* Archive name followed by NUL and the temporary-file name. */
 #define DAT_000b98b9 DAT_000b98b8_backing[1]
@@ -28,7 +28,7 @@ static undefined1 DAT_000b58b8_backing[8448];
 #define DAT_000b58b8 DAT_000b58b8_backing[0]
 char s__SAVE0_lev_ark_000842fc[] = "\\SAVE0\\lev.ark";
 // was DAT_002028c8
-char *g_save_record_buffer;
+byte *g_save_record_buffer;
 short DAT_002046f0;
 /* Was zero-initialized (C default, no initializer) -- confirmed via Ghidra headless memory dump
    (0x868dc) that the real binary's own .data has this at 7, not 0. */
@@ -51,7 +51,7 @@ static char s_I__00087074[] = "I- ";
    memory dump of the original binary at 0x87038 shows the real bytes are `5c 30 00` -- the string
    "\0" (a literal backslash+'0' control code, not an escape byte)... */
 // was DAT_00087038
-static undefined s_scroll_color_reset_00087038_backing[8192] = "\\0";
+static char s_scroll_color_reset_00087038_backing[8192] = "\\0";
 #define s_scroll_color_reset_00087038 s_scroll_color_reset_00087038_backing[0]
 /* Was `"\\6_Save_Game_Descriptions"` -- underscores standing in for whitespace, matching Ghidra's
    own auto-generated symbol name for this string rather than its real recovered bytes... */
@@ -66,7 +66,7 @@ static char s__not_used_yet__00087020[] = "<not used yet>";
    '1'..'4'... */
 /* Sizing-audit pass: confirmed 5-char content ("\desc"), no
    indexing. Sized to 16; down from 8192. */
-static undefined DAT_00087030_backing[16] = "\\desc";
+static char DAT_00087030_backing[16] = "\\desc";
 #define DAT_00087030 DAT_00087030_backing[0]
 static char s__PLAYER_DAT_00087088[] = "\\PLAYER.DAT";
 /* Was `"Please_enter_a_Save_Game_file_an"` -- a garbled placeholder that just echoed this string's
@@ -77,14 +77,14 @@ static char s__SAVE0_desc_00087078[] = "\\SAVE0\\desc";
 /* Sizing-audit pass: a directory-scan path suffix, appended once before a FindFirstFile-style scan.
    Real content confirmed via direct Ghidra memory export of UU.exe: "\". Sized to 32 for headroom;
    down from 8192. */
-static undefined DAT_00087084_backing[32] = "\\";
+static char DAT_00087084_backing[32] = "\\";
 #define DAT_00087084 DAT_00087084_backing[0]
 /* Was zero-initialized -- see DAT_000857a0's comment above. ensure_save_directory_exists appends
    this to a directory path before scanning it with the FindFirstFileW/181
    FindFirstFile/FindNextFile-shaped ordinals... */
 /* Sizing-audit pass: confirmed 4-char content ("\*.*"), no indexing.
    Sized to 16; down from 8192. */
-static undefined DAT_000870c8_backing[16] = "\\*.*";
+static char DAT_000870c8_backing[16] = "\\*.*";
 #define DAT_000870c8 DAT_000870c8_backing[0]
 
 
@@ -98,7 +98,7 @@ void draw_save_load_slot_list()
   int iVar1;
   undefined1 auStack_c4 [8];
   char *local_bc [4];
-  undefined1 auStack_ac [160];
+  char auStack_ac [160];
   
   redraw_pause_menu_icon(2);
   DAT_002046f0 = 0xffff;
@@ -153,7 +153,7 @@ int journey_onward_load_slot_menu()
   char *pcVar9;
   uint uVar10;
   undefined4 auStack_201d0 [32766];
-  short local_1d8 [4];
+  ushort local_1d8 [4];
   /* Was `undefined4 local_1d0 [4]`, storing real char* pointers into
      4-byte slots (see draw_menu_item_list's param_3!=0 branch, which reads this
      array as an 8-byte-stride char** table). Widened to match. */
@@ -347,8 +347,8 @@ int load_game_from_slot(char slot_digit)
   char acStack_650 [32];
   char acStack_630 [264];
   char acStack_528 [264];
-  undefined1 auStack_420 [520];
-  undefined1 auStack_218 [520];
+  char auStack_420 [520];
+  char auStack_218 [520];
   
   pcVar6 = &DAT_000857a0;
     wptr_50330 = acStack_85df0;
@@ -453,8 +453,8 @@ int save_game_to_slot(char slot_digit, char *description)
   char *pcVar8;
   char local_638 [264];
   char local_530 [264];
-  undefined1 auStack_428 [520];
-  undefined1 auStack_220 [520];
+  char auStack_428 [520];
+  char auStack_220 [520];
   
   save_last_attacker_record();
   pcVar8 = &DAT_0023cca8;
@@ -949,7 +949,7 @@ int commit_level_to_save_slot(int level_number)
      field (it immediately calls resolve_object_link on it)... */
   free_player_inventory_chain((char *)g_player_object + 6);
   if (-1 < DAT_00202080) {
-    object_list_unlink(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
+    object_list_unlink((uw_link_word_t *)(DAT_002029cc + DAT_00202080 * 4 + 2),&g_player_object->hdr);
   }
   DAT_00202080 = 0xffff;
   uVar1 = g_player_object->hdr.type_flags;
@@ -981,8 +981,8 @@ void handle_save_load_menu_action(short action, int slot)
 {
   int iVar1;
   int iVar2;
-  short local_b4 [4];
-  undefined1 auStack_ac [160];
+  ushort local_b4 [4];
+  char auStack_ac [160];
 
   probe_save_slots(auStack_ac,local_b4);
   if (action == 0) {
@@ -1043,8 +1043,8 @@ int ensure_save_directory_exists(char *path)
   bool bVar9;
   bool bVar10;
   char acStack_348 [264];
-  int local_240 [10];
-  undefined1 auStack_218 [520];
+  uint local_240 [10];
+  char auStack_218 [520];
 
   bVar9 = true;
   pcVar8 = acStack_348;
@@ -1199,7 +1199,7 @@ int load_player_save_record(char *slot_dir)
   
   uVar4 = 1;
   if ((slot_dir != 0) && (-1 < DAT_00202080)) {
-    object_list_unlink(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
+    object_list_unlink((uw_link_word_t *)(DAT_002029cc + DAT_00202080 * 4 + 2),&g_player_object->hdr);
   }
   close_panels_before_level_change();
   if ((g_save_record_buffer == 0) && (g_save_record_buffer = ce_malloc(0x4000), g_save_record_buffer == 0)) {
@@ -1236,7 +1236,7 @@ LAB_00044730:
     g_save_record_buffer = 0;
   }
   if ((slot_dir != 0) && (-1 < DAT_00202080)) {
-    object_list_insert_head(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
+    object_list_insert_head((uw_link_word_t *)(DAT_002029cc + DAT_00202080 * 4 + 2),&g_player_object->hdr);
   }
   return uVar4;
 }

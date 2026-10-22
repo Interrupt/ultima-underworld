@@ -99,7 +99,7 @@ char *decode_gr_entry_bitmap(char *frame)
     TEST_ASSERT_EQUAL_PTR(raw_frame, frame);
     return &decoded_pixel;
 }
-void bitmap_blit_to_framebuffer(ushort x, ushort y, char *bitmap, short height, short width, short a, short b, byte transparent)
+void bitmap_blit_to_framebuffer(ushort x, ushort y, void *bitmap, short height, short width, short a, short b, byte transparent)
 {
     TEST_ASSERT_EQUAL_PTR(&decoded_pixel, bitmap);
     weapon_draws++;
@@ -113,7 +113,7 @@ void weapon_ready_fixture_start_unloaded(void)
     DAT_000870e4 = initial_frame;
 }
 int poll_keyboard_char_input(void *buttons_) { short *buttons = (short *)buttons_; *buttons = 2; return 2; }
-void get_mouse_position(ushort *x, ushort *y) { *x = *y = 0; }
+void get_mouse_position(short *x, short *y) { *x = *y = 0; }
 int hit_test_inventory_widget(short x, short y) { return 0; }
 int erase_cursor_icon(void) { return 0; }
 void handle_backpack_slot_click(short slot) { TEST_FAIL_MESSAGE("Unexpected slot drop"); }

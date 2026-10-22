@@ -45,7 +45,7 @@ int g_uw_debug_pick_diag = 0;
    tick_anim_record or by the general debug panel, whichever runs
    first in a given frame), then flippable live via the panel. */
 int g_uw_3d_objects_enabled = -1;
-static undefined1 *DAT_000db45c;
+static char *DAT_000db45c;
 static int DAT_000db458;
 // was DAT_000d91d0 -- running point count while parse_e_model_file reads a .E model's POINTS block
 // (bounded at 600, see the "Too many points" error); indexes both the point-scratch arrays and the
@@ -115,14 +115,14 @@ static int DAT_000db4e0;
    32 words of data that nothing can reach. Its real contents, read out of the original at
    0x00084678 should they ever be needed, are the 16 saturated authoring colours listed in that
    comment followed by a 16-step grey ramp from 0xffffff down to 0xa5a5a5. */
-static undefined4 g_model_known_ext_colors;
+static int g_model_known_ext_colors;
 static char s_unexpected_EOF___no_END_statemen_000846f8[] = "unexpected EOF - no END statement\n";
 static char s________c_0008471c[] = "%*[^}]%c";
 static char s___d__00084728[] = "(%d)\n";
 /* Sizing-audit pass: a bare NKDbgPrintfW debug-message format string (no args), surrounded entirely
    by short (<40 char) literal strings in this same table. Real content confirmed via direct Ghidra
    memory export of UU.exe (tests/fixtures/static_strings.json): "%d ". */
-static undefined DAT_00084730_backing[64] = "%d ";
+static char DAT_00084730_backing[64] = "%d ";
 #define DAT_00084730 DAT_00084730_backing[0]
 static char s_anim__d___d__c__d__d___00084734[] = "anim %d (%d,%c,%d,%d): ";
 static char s__d__1s__d__d__1s_0008474c[] = "%d,%1s,%d,%d,%1s";
@@ -140,13 +140,13 @@ static char s_branch_0008480c[] = "branch ";
 /* Sizing-audit pass: an NKDbgPrintfW debug-message format string (one %-arg, local_22c), sibling of
    the "branch"/"leaf" literals right around it. Real content confirmed via direct Ghidra memory
    export of UU.exe: "%d\n". Sized to 64 for headroom; down from 8192. */
-static undefined DAT_00084814_backing[64] = "%d\n";
+static char DAT_00084814_backing[64] = "%d\n";
 #define DAT_00084814 DAT_00084814_backing[0]
 static char s_leaf_00084818[] = "leaf ";
 /* Sizing-audit pass: a ce_fscanf format string (`ce_fscanf(pvVar_fh, &DAT_00084820,&local_1e4)`,
    one int destination), sibling of the short format-string literals around it (e.g.
    s__d_1s_000848c8 = "%d%1s"). */
-static undefined DAT_00084820_backing[64] = "%1s,";
+static char DAT_00084820_backing[64] = "%1s,";
 #define DAT_00084820 DAT_00084820_backing[0]
 static char s_SUPER_NODES_00084828[] = "SUPER_NODES";
 static char s_NODES_00084834[] = "NODES";
@@ -161,7 +161,7 @@ static char s_got_sphere__d_000848e4[] = "got sphere %d\n";
 /* Sizing-audit pass: a ce_fscanf format string (multiple destination pointers), sibling of "got
    sphere %d\n" right above it. Real content confirmed via direct Ghidra memory export of UU.exe:
    "%d,". Sized to 64 for headroom; down from 8192. */
-static undefined DAT_000848f4_backing[64] = "%d,";
+static char DAT_000848f4_backing[64] = "%d,";
 #define DAT_000848f4 DAT_000848f4_backing[0]
 static char s_Too_many_polys_000848f8[] = "Too many polys\n";
 static char s_Out_of_vertex_list_space_00084908[] = "Out of vertex list space\n";
@@ -203,7 +203,7 @@ static undefined DAT_00084a24_backing[16] = "r";
    `DAT_000c8b00 = &DAT_000c4c38;` starts a write cursor there and walks it forward one 4-byte slot
    at a time while parsing PARTS) was declared as a lone undefined4 scalar... */
 static char DAT_000c4c38_backing[0x3e58];
-#define DAT_000c4c38 (*(undefined4 *)DAT_000c4c38_backing)
+#define DAT_000c4c38 (*(int *)DAT_000c4c38_backing)
 #define DAT_000c8a90 (*(undefined1 *)(DAT_000c4c38_backing + 0x3e58))
 /* INTERSECTIONS-block growing undefined4 array (DAT_000db4d0-indexed). */
 static undefined1 DAT_000c8b08_backing[256];
@@ -461,12 +461,12 @@ static undefined1 DAT_000d977c_backing[256];
 /* Sizing pass: live instrumentation across the full 19-script regression
    suite (29 real .E model files loaded) showed a real high-water mark of 8 chars for the unbounded
    %[a-z] token this feeds. Sized to 64 bytes for headroom above that. */
-static undefined1 DAT_000d98c8_backing[64];
+static char DAT_000d98c8_backing[64];
 #define DAT_000d98c8 DAT_000d98c8_backing[0]
 /* NAMES-block growing string-table cursor base (puVar16/local_258 walk forward from here, one
    null-terminated name per CLUSTER entry). Sizing pass: real usage across all 29 loaded models
    peaks at 270 bytes. Sized to 1024 for headroom, down from 65536. */
-static undefined1 DAT_000da480_backing[1024];
+static char DAT_000da480_backing[1024];
 #define DAT_000da480 DAT_000da480_backing[0]
 /* Per-CLUSTER pointer/index slot in the same ".E" model parser (parse_e_model_file's CLUSTERS
    block) as DAT_000dab90 right below, same "declared as a lone scalar, actually a large indexed
@@ -746,7 +746,7 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
   ushort tex_h;
   short sVar13;
   uint catalog_u;
-  char *pcVar15;
+  byte *pcVar15;
   int iVar16;
   /* iVar16 stays `int` for its FIRST role (a small face-index scalar, `faces_remaining-1`, used
      only to seed iVar22/local_58 before the loop). */
@@ -1034,7 +1034,7 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
     texptr = (byte *)0x0;
   }
   else if (local_58 == (byte *)0x0) {
-    pcVar15 = (char *)lookup_grtile_by_id(iVar29);
+    pcVar15 = (byte *)lookup_grtile_by_id(iVar29);
     tex_w = (ushort)(byte)pcVar15[1];
     tex_h = (ushort)(byte)pcVar15[2];
     if (*pcVar15 == '\x04') {
@@ -1679,7 +1679,7 @@ LAB_000640ec:
 // WARNING: Removing unreachable block (ram,0x000647ac)
 
 // was FUN_00064384
-void emit_anim_object_frames(uint door_type, ushort *obj)
+void emit_anim_object_frames(uint door_type, uw_unaligned_word_t *obj)
 {
   short sVar1;
   int iVar3;
@@ -2124,7 +2124,7 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
   undefined1 *puVar14;
   undefined4 extraout_r3_00;
   char *pcVar15;
-  undefined *puVar16;
+  char *puVar16;
   int *piVar17;
   char cVar18;
   int iVar19;
@@ -2135,7 +2135,7 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
      ce_fscanf (fscanf) calls -- were declared int... */
   void *local_25c;
   void *pvVar_fh;
-  undefined *local_258;
+  char *local_258;
   int local_254;
   undefined4 local_250;
   undefined1 auStack_24c [4];
@@ -2171,7 +2171,7 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
   undefined4 ***local_1d4;
   undefined4 local_1d0;
   int local_1cc;
-  undefined1 auStack_1c8 [104];
+  char auStack_1c8 [104];
   undefined1 auStack_160 [16];
   undefined1 auStack_150 [16];
   undefined1 auStack_140 [16];
@@ -2179,7 +2179,7 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
 
   local_258 = &DAT_000da480;
   ce_memset(acStack_130,0,0x104);
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (char *)&DAT_0023cca8;
     stack0xffdc3228_ptr = acStack_130;
   do {
     cVar18 = *pcVar2;
@@ -2228,7 +2228,7 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
      width limit, so DAT_000d98c8's real need is whatever the longest actual token in the shipped .E
      model files is, not a value derivable from the format string alone. */
   pcVar2 = pcVar15;
-  if (DAT_000db45c == (undefined1 *)0x0) {
+  if (DAT_000db45c == (char *)0x0) {
     do {
       cVar18 = *pcVar15;
       pcVar15 = pcVar15 + 1;
@@ -2247,8 +2247,8 @@ void parse_e_model_file(char *path, byte *out_buffer, int flip_winding)
        confirmed directly against the shipped files... */
     if (iVar4 == 2) {
       size_t _tklen = ce_strlen(auStack_1c8);
-      if (_tklen > 0 && ((char *)auStack_1c8)[_tklen - 1] == '{') {
-        ((char *)auStack_1c8)[_tklen - 1] = '\0';
+      if (_tklen > 0 && auStack_1c8[_tklen - 1] == '{') {
+        auStack_1c8[_tklen - 1] = '\0';
         ungetc(local_260[0], (FILE *)local_25c);
         local_260[0] = '{';
       }
@@ -2465,14 +2465,14 @@ LAB_00022604:
                 (&DAT_000c9e26)[iVar10] = uVar1;
               }
               if (iVar4 < DAT_000db458) {
-                g_eparse_part_name[iVar10 / 0x67] = (char *)local_258;
+                g_eparse_part_name[iVar10 / 0x67] = local_258;
                 iVar4 = ce_strlen(local_258);
                 puVar16 = puVar16 + iVar4 + 1;
                 local_258 = puVar16;
               }
               else {
                 g_eparse_part_name[iVar10 / 0x67] = NULL;
-                puVar16 = (undefined *)0x0;
+                puVar16 = (char *)0x0;
               }
               piVar17 = DAT_000c8b00;
               if (iVar5 == 0) {
@@ -2895,7 +2895,7 @@ LAB_check_clusters:
               if ((iVar4 != 1) || (iVar4 = 1, local_260[0] != '}')) {
                 iVar4 = DAT_000db4d4 * 4;
                 if (DAT_000db4d4 + g_model_parse_part_count < DAT_000db458) {
-                  *(undefined **)(&DAT_000da868 + iVar4) = local_258;
+                  *(char **)(&DAT_000da868 + iVar4) = local_258;
                   iVar5 = ce_strlen(local_258);
                   local_258 = puVar16 + iVar5 + 1;
                 }

@@ -27,7 +27,7 @@ uw_object_hdr_t *resolve_object_link(ushort *word)
     if(operation==1 && mode&1) object(1)->type_flags ^= 0x5a5a;
     return object(operation==1 ? 1 : 0);
 }
-int check_object_area_for_spawn_block(ushort *p)
+int check_object_area_for_spawn_block(uw_unaligned_word_t *p)
 { assert((void *)p==object(0)); observe(3,mode); return mode==4; }
 int object_ptr_in_arena(const uw_object_hdr_t *p)
 { assert(p==object(0)); observe(4,mode); return mode==1 || mode==7; }

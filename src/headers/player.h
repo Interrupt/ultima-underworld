@@ -65,7 +65,7 @@ extern undefined4 DAT_0024cfc8;
    tmap.c (update_wall_partition_phase) -- extern'd here so both
    translation units see the same storage. */
 extern char s_font5x6p_sys_0008430c[];
-extern undefined s_scroll_newline_0008522c_backing[8192];
+extern char s_scroll_newline_0008522c_backing[8192];
 #define s_scroll_newline_0008522c s_scroll_newline_0008522c_backing[0]
 extern short DAT_00201c94;
 extern undefined4 DAT_002028d8;
@@ -156,7 +156,7 @@ int apply_equipped_item_effect(byte opcode, byte magnitude, ushort *scratch, int
 void compute_light_source_colors(byte *out_colors);
 void update_level7_floor_hazard_state(uint active);
 void apply_equipment_effect_penalties(uint effect_mask);
-int compute_object_weight(ushort *object);
+int compute_object_weight(uw_unaligned_word_t *object);
 void refresh_player_equipment_effects();
 void trigger_view_transition();
 void set_movement_animation_timer(byte timer_id, byte ticks);

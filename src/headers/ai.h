@@ -12,7 +12,7 @@ extern short DAT_00100608;
 /* Globals defined in uw.c but also used by functions that now live in
    ai.c (NPC AI) -- extern'd here so both translation units see the
    same storage. */
-extern undefined DAT_00084f20_backing[128];
+extern char DAT_00084f20_backing[128];
 
 #define DAT_00084f20 DAT_00084f20_backing[0]
 /* UW1 OBJECTS.DAT critter rows, loaded without native expansion. */
@@ -22,7 +22,7 @@ extern uw_monster_type_props_t g_monster_type_props[64];
 extern undefined4 DAT_001013fc;
 extern ushort DAT_00101414;
 extern ushort DAT_0010141c;
-extern char * DAT_00101438;
+extern byte * DAT_00101438;
 extern undefined4 DAT_00101560;
 extern void * DAT_0010172c;
 extern char * DAT_00101904;
@@ -61,7 +61,7 @@ int record_line_walk_step(byte x, byte y);
 int pop_pending_path_cache_slot(byte *out_slot);
 void reset_npc_path_cache();
 void save_walk_path_to_cache_slot(byte *record);
-int advance_cached_path_step(char *record);
+int advance_cached_path_step(byte *record);
 int check_path_cache_position_match(int cache_flag, short tile_x, short tile_y, short sub_x, short sub_y, short expected_sub_x, short expected_sub_y);
 int walk_using_cached_path(byte *cache_record);
 void handle_blocked_cached_path(byte *cache_record);
@@ -100,7 +100,7 @@ void load_last_attacker_record();
 void save_last_attacker_record();
 void clear_last_attacker_record();
 int alert_npc_to_noise_callback(int scan_x, int scan_y, ushort *npc);
-void emit_noise_alert(ushort *source, byte noise_type);
+void emit_noise_alert(uw_unaligned_word_t *source, byte noise_type);
 int resolve_unique_npc_special_behavior(void *npc, int event_mode);
 int load_critter_association_tables(int file_handle);
 void flush_pending_critter_resource_slots();
@@ -112,14 +112,14 @@ void spawn_creature_treasure_drop(void *creature);
 void spawn_creature_special_item_drop(void *creature);
 void spawn_creature_equipment_drop(void *creature);
 void spawn_creature_misc_item_drop(void *creature);
-void spawn_creature_death_loot(ushort *creature);
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage);
+void spawn_creature_death_loot(uw_unaligned_word_t *creature);
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage);
 int mobile_object_tick(); // was FUN_0002b47c
 int npc_ai_tick(); // was FUN_00032d38
 int object_tick_is_due(short period, int phase); // was FUN_0003495c
 void tick_mobile_objects(char elapsed); // was FUN_000349bc
-void build_object_placement_snapshot(ushort *object, byte *snapshot); // was FUN_00054a00
-int sync_object_tile_position(ushort *object, void *position); // was FUN_00054f6c
-ushort *settle_mobile_to_immobile(ushort *object); // was FUN_0005596c
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot); // was FUN_00054a00
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position); // was FUN_00054f6c
+uw_unaligned_word_t *settle_mobile_to_immobile(uw_unaligned_word_t *object); // was FUN_0005596c
 
 #endif

@@ -288,7 +288,7 @@ int check_save_disk_space()
   undefined1 total_bytes_buffer[7];
   char save_path_buffer[261];
 
-  install_dir = &DAT_0023cca8;
+  install_dir = (char *)&DAT_0023cca8;
   path_cursor = install_path_copy;
   do {
     path_char = *install_dir;
@@ -296,13 +296,13 @@ int check_save_disk_space()
     path_cursor = path_cursor + 1;
     install_dir = install_dir + 1;
   } while (path_char != '\0');
-  ce_strcat(save_path_buffer + 1,&DAT_000857a0);
+  ce_strcat(save_path_buffer + 1,(char *)&DAT_000857a0);
   path_length = ce_strlen(save_path_buffer + 1);
   save_path_buffer[path_length] = '\0';
-  converted_path = load_string_resource(save_path_buffer + 1);
+  converted_path = (char *)load_string_resource(save_path_buffer + 1);
   CreateDirectoryW(converted_path,0);
   ensure_save_directory_exists(save_path_buffer + 1);
-  converted_path = load_string_resource(save_path_buffer + 1);
+  converted_path = (char *)load_string_resource(save_path_buffer + 1);
   /* local_114 is never actually passed to GetDiskFreeSpaceExW (only auStack_110 and &local_118 are)
      -- in the original 32-bit binary this local apparently sat immediately after auStack_110 on the
      stack and got written incidentally by a GetDiskFreeSpace-shaped call writing a wider... */

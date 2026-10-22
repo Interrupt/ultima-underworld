@@ -14,11 +14,11 @@ static byte *DAT_000b4618;
 /* Sizing-audit pass: `MultiByteToWideChar(...,&DAT_000fb650,0xff)`
    -- cchWideChar=0xff(255) counts WCHAR units, not bytes: real need
    510 bytes. Sized to 512. Down from 8192. */
-static undefined DAT_000fb650_backing[512];
+static char DAT_000fb650_backing[512];
 #define DAT_000fb650 DAT_000fb650_backing[0]
 /* Sizing-audit pass: `WideCharToMultiByte(...,&DAT_000fb550,0xff,...)`
    -- cbMultiByte=0xff(255) bytes exact. Sized to 256. Down from 8192. */
-static undefined DAT_000fb550_backing[256];
+static char DAT_000fb550_backing[256];
 #define DAT_000fb550 DAT_000fb550_backing[0]
 /* Real string, recovered via Ghidra disassembly of decode_critter_sprite_page (the caching
    "\CRIT\CR<pp>PAGE.N<nn>" per-page critter-animation resource loader): the decompile showed
@@ -125,7 +125,7 @@ char *decode_gr_entry_bitmap(char *entry)
     /* Dropped 3rd argument (the .GR entry's own compression-mode byte, entry) -- same bug already
        found and fixed twice elsewhere in this file for this identical decompress_gr_bitmap call
        shape (see object-rendering-findings.txt's "MILESTONE: objects render"). */
-    entry = (char *)decompress_gr_bitmap(entry + 4,&DAT_00202520 + (uint)(byte)entry[3] * 0x10,*entry);
+    entry = (char *)decompress_gr_bitmap((byte *)entry + 4,&DAT_00202520 + (uint)(byte)entry[3] * 0x10,*entry);
   }
   return entry;
 }
@@ -161,7 +161,7 @@ int open_gr_resource_file(char *path, char flag)
     } while (cVar2 != '\0');
   }
   else {
-    pcVar4 = &DAT_0023cca8;
+    pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc3244_ptr = local_114;
     do {
       cVar2 = *pcVar4;
@@ -820,7 +820,7 @@ int open_strings_pak_file()
   int iVar3;
   char acStack_118 [260];
 
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc3240_ptr = acStack_118;
   do {
     cVar1 = *pcVar2;
@@ -831,7 +831,7 @@ int open_strings_pak_file()
   ce_strcat(acStack_118,s_strings_pak_000878c0);
   iVar3 = open_file_for_read(acStack_118);
   if (iVar3 != -1) {
-    DAT_0024cfb8 = (short *)ce_malloc(2);
+    DAT_0024cfb8 = (unsigned short *)ce_malloc(2);
     read_file_handle(iVar3,DAT_0024cfb8,2);
     DAT_0024cfa8 = ce_malloc((int)*DAT_0024cfb8 << 2);
     if (DAT_0024cfa8 == 0) {
@@ -1363,7 +1363,7 @@ void select_gr_bitmap_remap_table(int unused_a, uint bank, int unused_b, uint sh
     bank = bank & 0xff | uVar1 << 8;
   }
   uVar1 = merge_byte_into_word(bank,0,0);
-  DAT_000b4610 = DAT_000b4614 + (uVar1 & 0xffff);
+  DAT_000b4610 = (byte *)(DAT_000b4614 + (uVar1 & 0xffff)); /* same cast as bitmap.c's sibling store */
   DAT_000b4624 = DAT_000b4610;
 }
 
@@ -1738,9 +1738,9 @@ int decode_gr_entry_to_buffer(char *path, int entry_index, void *dest)
 // was FUN_0002295c -- a Win32 LoadString-shaped resource-string loader: loads string resource
 // param_1 into a fixed static buffer and returns its address. Confirmed as "LoadString-shaped" by
 // an existing comment on win_file_exists, one of its callers.
-byte *load_string_resource(char *text)
+char *load_string_resource(char *text)
 {
-  MultiByteToWideChar(0,2,text,0xffffffff,&DAT_000fb650,0xff);
+  MultiByteToWideChar(0,2,text,0xffffffff,(char *)&DAT_000fb650,0xff);
   return &DAT_000fb650;
 }
 
@@ -1749,9 +1749,9 @@ byte *load_string_resource(char *text)
 // was FUN_00022998 -- structurally identical to load_string_resource but via a different ordinal
 // (WideCharToMultiByte, two extra trailing arguments) and a larger buffer (0x260 vs 0xff) -- likely
 // a longer- message variant of the same LoadString-shaped resource loader.
-byte *load_string_resource_large(char *text)
+char *load_string_resource_large(char *text)
 {
-  WideCharToMultiByte(0,0x260,text,0xffffffff,&DAT_000fb550,0xff,0,0);
+  WideCharToMultiByte(0,0x260,text,0xffffffff,(char *)&DAT_000fb550,0xff,0,0);
   return &DAT_000fb550;
 }
 
@@ -1857,7 +1857,7 @@ bool load_pals_bank(int bank, void *dest)
   char acStack_420 [264];
   undefined1 auStack_318 [768];
 
-  pcVar3 = &DAT_0023cca8;
+  pcVar3 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc2f38_ptr = acStack_420;
   do {
     cVar1 = *pcVar3;
@@ -1870,7 +1870,7 @@ bool load_pals_bank(int bank, void *dest)
   sVar2 = read_file_handle(uVar4,dest,0x300);
   CloseHandle(uVar4);
   if (sVar2 == 0x300) {
-    expand_pals_bytes(auStack_318,dest,0);
+    expand_pals_bytes((byte *)auStack_318,dest,0);
     build_rgb565_palette(auStack_318,bank);
   }
   return sVar2 == 0x300;
@@ -1920,7 +1920,7 @@ byte *uw_load_critter_page_cached(int param_1, int param_2) {
     DAT_00085929 = ((byte)param_1 & 7) + 0x30;
     DAT_00085930 = (char)((short)param_2 >> 3) + '0';
     DAT_00085931 = ((byte)param_2 & 7) + 0x30;
-    pcVar4 = &DAT_0023cca8;
+    pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc3238_ptr = stack0xffdc3238_buf;
     do {
       cVar2 = *pcVar4;

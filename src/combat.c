@@ -25,7 +25,9 @@ static char DAT_00084f18_backing[5] = {5, 3, 1, 7, 0};
    (`(&DAT_001007e0)[(uVar1&0x3f)*0x30]`, combat.c:1418/1433) index it by the same per-class
    monster-record base as ai.c's DAT_001007d0 -- aliased into DAT_001007d0_backing in ai.h instead. */
 static ushort DAT_00202d54;
-undefined DAT_00202878;
+/* Bare-hand fallback attack record: typed `char` to match the `char *` record pointer it is stored
+   through (resolve_equipped_weapon_attack's out_attack_data / DAT_001005e4). */
+char DAT_00202878;
 /* Was a lone `undefined` scalar (1 byte), but tick_weapon_swing_state indexes it as
    `(&DAT_00084eff)[iVar5]` with iVar5 = the swing's own attack-type value... */
 unsigned char DAT_00084eff_backing[12] = {
@@ -150,8 +152,8 @@ void npc_combat_approach_tick()
          truncated tilemap_lookup's real `void *` return */
       char *_tile9 = (char *)tilemap_lookup(cVar3,cVar2);
       pbVar6 = (byte *)tilemap_lookup((int)(iVar5) >> 0x18,iVar8 >> 0x18);
-      object_list_unlink(_tile9 + 2,DAT_0010190c);
-      object_list_insert_head(pbVar6 + 2,DAT_0010190c);
+      object_list_unlink((uw_link_word_t *)(_tile9 + 2),&DAT_0010190c->hdr);
+      object_list_insert_head((uw_link_word_t *)(pbVar6 + 2),&DAT_0010190c->hdr);
     }
     uVar7 = DAT_0010190c->tile_word & 0x3ff;
     DAT_0010190c->npc_xhome = (int)(char)((uint)(uintptr_t)iVar5 >> 0x18) & 0x3fU;
@@ -751,7 +753,7 @@ int find_nearest_hit_target(short *screen_pos)
   ushort uVar4;
   int iVar5;
   char *pcAttacker;
-  ushort *puVar6;
+  uw_object_hdr_t *puVar6;
   uint uVar7;
   uint uVar8;
   int iVar9;
@@ -778,8 +780,8 @@ int find_nearest_hit_target(short *screen_pos)
       /* BUG FIX (unit-testing-framework): was called bare -- dropped argument. ARM 0x25c84..0x25c8c
          passes the candidate link's slot index, confirmed by the identical `uVar4 >> 6` value used
          right below in this same loop. */
-      puVar6 = (ushort *)get_object_record_by_slot_index(uVar4 >> 6);
-      if ((((((uw_object_hdr_t *)puVar6)->object_id & 0x1c0) != 0x180) && (uVar4 >> 6 != DAT_00100610)) &&
+      puVar6 = get_object_record_by_slot_index(uVar4 >> 6);
+      if ((((puVar6->object_id & 0x1c0) != 0x180) && (uVar4 >> 6 != DAT_00100610)) &&
           (((DAT_00100610 != 1 ||
              ((iVar5 = object_ptr_in_arena(puVar6), iVar5 == 0 ||
                ((*(byte *)((char *)puVar6 + 0x19) & 0x40) == 0)))) ||
@@ -794,9 +796,9 @@ int find_nearest_hit_target(short *screen_pos)
         }
         uVar8 = (int)(short)(iVar5 >> 6) + (((int)screen_pos[1] << 0x10) >> 0x13) & 0x3f;
         DAT_00100604 = (ushort)uVar8;
-        iVar5 = (int)(((uVar7 * -8 - (uint)(((uw_object_hdr_t *)puVar6)->xpos)) +
+        iVar5 = (int)(((uVar7 * -8 - (uint)(puVar6->xpos)) +
                        (int)(short)((uVar3 >> 7 & 0x1f8) + (ushort)(bVar1 >> 5))) * 0x10000) >> 0x10;
-        iVar12 = (int)(((uVar8 * -8 - (((uw_object_hdr_t *)puVar6)->ypos)) +
+        iVar12 = (int)(((uVar8 * -8 - (puVar6->ypos)) +
                         (int)(short)((uVar3 >> 1 & 0x1f8) + (short)((bVar1 & 0x1c) >> 2))) * 0x10000)
                  >> 0x10;
         iVar5 = iVar5 * iVar5 + iVar12 * iVar12;
@@ -893,7 +895,7 @@ void spawn_blood_splat_object(int object_slot, int step_count, byte *snapshot)
     return;
   }
   iVar9 = tilemap_lookup((int)sVar4 >> 3,(int)sVar5 >> 3);
-  object_list_append_tail(iVar9 + 2,iVar7);
+  object_list_append_tail((uw_link_word_t *)(iVar9 + 2),iVar7);
 }
 
 
@@ -907,7 +909,7 @@ int resolve_melee_swing_hit()
   short sVar3;
   int iVar4;
   int iVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar6;
   uint uVar7;
   /* Same "6 independent locals treated as one contiguous record via DAT_00202c6c" bug already fixed
      in resolve_collision_candidate_interaction's own sibling collision-envelope caller (see its own
@@ -994,7 +996,7 @@ int resolve_weapon_hit_skill_check(short hit_flag, int target_slot)
 {
   int uw_ord2005_rem_6 = 0;
   byte bVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   int iVar3;
   undefined4 uVar4;
   byte *pbVar5;
@@ -1003,7 +1005,7 @@ int resolve_weapon_hit_skill_check(short hit_flag, int target_slot)
   uint uVar7;
   ushort uVar8;
   
-  puVar2 = (ushort *)get_object_record_by_slot_index(target_slot);
+  puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(target_slot);
   uVar6 = (uint)((uw_object_hdr_t *)puVar2)->type_flags;
   if ((uVar6 & 0x1c0) == 0x40) {
     uVar7 = uVar6 & 0x3f;
@@ -1068,8 +1070,8 @@ void apply_melee_damage(byte hit_type)
   short sVar3;
   ushort uVar4;
   ushort uVar5;
-  ushort *puVar6;
-  ushort *uVar7; /* ARM 0x26b58..0x26b80 forwards the attacker pointer in r1. */
+  uw_unaligned_word_t *puVar6;
+  uw_unaligned_word_t *uVar7; /* ARM 0x26b58..0x26b80 forwards the attacker pointer in r1. */
   short extraout_r1;
   int extraout_r1_00;
   ushort uVar8;
@@ -1084,7 +1086,7 @@ void apply_melee_damage(byte hit_type)
   
   uVar13 = (undefined1)((ushort)in_stack_ffffffc0 >> 8);
   uVar12 = (undefined1)((ushort)in_stack_ffffffbc >> 8);
-  puVar6 = (ushort *)get_object_record_by_slot_index((int)DAT_00100620);
+  puVar6 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)DAT_00100620);
   uVar5 = ((uw_object_hdr_t *)puVar6)->type_flags;
   sVar3 = DAT_0010061c;
   if (DAT_0010061c < 2) {
@@ -1144,7 +1146,7 @@ void apply_melee_damage(byte hit_type)
   if ((sVar2 == 1) && (*(char *)(DAT_00086df8 + 0xb4) != '\0')) {
     sVar3 = sVar3 >> 1;
   }
-  uVar7 = get_object_record_by_slot_index((int)DAT_00100610);
+  uVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)DAT_00100610);
   iVar11 = apply_typed_damage_to_object(puVar6,uVar7,(int)DAT_00100600,(int)DAT_00100604,
                         CONCAT11(uVar12,(char)sVar3),CONCAT11(uVar13,hit_type));
   sVar2 = DAT_00100610;
@@ -1255,7 +1257,7 @@ int play_weapon_impact_sound(short result)
   ushort uVar3;
   void *uVar4;
   undefined4 uVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar6;
   byte bVar7;
 
   if (result == 0) {
@@ -1263,7 +1265,7 @@ int play_weapon_impact_sound(short result)
     uVar5 = 10;
     goto LAB_0002701c;
   }
-  puVar6 = (ushort *)get_object_record_by_slot_index((int)(short)DAT_00100610);
+  puVar6 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)(short)DAT_00100610);
   if (puVar6 == (ushort *)0x0) {
     return 0;
   }
@@ -1276,7 +1278,7 @@ int play_weapon_impact_sound(short result)
     bVar7 = (byte) g_monster_type_props[(uVar1 & 0x3f)].category >> 6;
   }
   if (DAT_00100620 == 1) {
-    puVar6 = (ushort *)get_equipped_item_at_slot((char)DAT_00100624 + 1U & 3);
+    puVar6 = (uw_unaligned_word_t *)get_equipped_item_at_slot((char)DAT_00100624 + 1U & 3);
     if (((((puVar6 == (ushort *)0x0) || (uVar3 = ((uw_object_hdr_t *)puVar6)->object_id, uVar3 == 0x20)) || (uVar3 == 0x23)
          ) || ((uVar3 == 0x26 || (uVar3 == 0x29)))) || (uVar3 == 0x2c)) {
 LAB_00026fe8:
@@ -1307,13 +1309,13 @@ void compute_attack_relative_facing()
 {
   int uw_ord2005_rem_9 = 0;
   /* ARM 0x27038..0x27068 reads both returned object pointers directly. */
-  char *iVar1;
-  char *iVar2;
+  uw_object_hdr_t *iVar1;
+  uw_object_hdr_t *iVar2;
   uint extraout_r1;
   
   iVar1 = get_object_record_by_slot_index((int)DAT_00100620);
   iVar2 = get_object_record_by_slot_index((int)DAT_00100610);
-  uw_ord2005_rem_9 = ((int)(((((uw_object_hdr_t *)iVar1)->heading) - (((uw_object_hdr_t *)iVar2)->heading)) + 0xc)) % (8);
+  uw_ord2005_rem_9 = ((int)(((iVar1->heading) - (iVar2->heading)) + 0xc)) % (8);
   DAT_00100628 = (char)uw_ord2005_rem_9;
   if (4 < (uw_ord2005_rem_9 & 0xff)) {
     DAT_00100628 = '\b' - DAT_00100628;
@@ -1331,10 +1333,10 @@ int process_melee_attack_swing()
   undefined4 uVar2;
   int iVar3;
   /* ARM 0x27174..0x271a8 keeps attacker/target pointers for damage dispatch. */
-  ushort *uVar4;
-  ushort *uVar5;
-  ushort *puTarget;
-  ushort *puAttacker;
+  uw_object_hdr_t *uVar4;
+  uw_object_hdr_t *uVar5;
+  uw_object_hdr_t *puTarget;
+  uw_object_hdr_t *puAttacker;
   
   iVar1 = resolve_melee_swing_hit();
   if (iVar1 == 0) {
@@ -1364,7 +1366,7 @@ int process_melee_attack_swing()
     }
     uVar4 = get_object_record_by_slot_index((int)DAT_00100610);
     uVar5 = get_object_record_by_slot_index((int)DAT_00100620);
-    apply_typed_damage_to_object(uVar5,uVar4,(int)DAT_00100600,(int)DAT_00100604,0,4);
+    apply_typed_damage_to_object((uw_unaligned_word_t *)uVar5,(uw_unaligned_word_t *)uVar4,(int)DAT_00100600,(int)DAT_00100604,0,4);
   }
   uVar2 = play_weapon_impact_sound(uVar2);
   return uVar2;
@@ -1379,11 +1381,11 @@ int resolve_equipped_weapon_attack(char * *out_attack_data, char * *out_weapon_o
   uint uVar1;
   ushort uVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_unaligned_word_t *puVar4;
   int iVar5;
 
   *out_attack_data = 0;
-  puVar4 = (ushort *)get_equipped_item_at_slot(8 - (*(byte *)(DAT_00086df8 + 100) & 1));
+  puVar4 = (uw_unaligned_word_t *)get_equipped_item_at_slot(8 - (*(byte *)(DAT_00086df8 + 100) & 1));
   *out_weapon_object = (char *)puVar4;
   if (puVar4 != (ushort *)0x0) {
     uVar2 = ((uw_object_hdr_t *)puVar4)->type_flags;
@@ -1470,9 +1472,10 @@ void compute_player_weapon_attack_stats(char *weapon_stats, char *weapon_item, s
 // was FUN_00027b3c -- a general-purpose "attacker object directly hits target object"
 // damage-application entry point (parallel to, but independent of, the player's own
 // tick_weapon_swing_state chain)...
-void apply_direct_object_hit(short hit_flag, void *attacker_ptr, ushort *target, short tile_x, short tile_y, short damage_dice, byte hit_type)
+void apply_direct_object_hit(short hit_flag, void *attacker_ptr, uw_unaligned_word_t *target, short tile_x, short tile_y, short damage_dice, byte hit_type)
 {
   ushort *attacker = (ushort *)attacker_ptr;
+  uw_object_hdr_t *target_hdr = (uw_object_hdr_t *)target;
   short sVar1;
   uint uVar2;
   int iVar3;
@@ -1485,20 +1488,20 @@ void apply_direct_object_hit(short hit_flag, void *attacker_ptr, ushort *target,
   DAT_001005fc = 0x80;
   DAT_00100600 = tile_x;
   DAT_00100610 = hit_flag;
-  DAT_00100620 = encode_object_slot_index(target);
+  DAT_00100620 = encode_object_slot_index(target_hdr);
   uVar4 = (byte)attacker[1] & 0x7f;
-  uVar2 = ((uw_object_hdr_t *)target)->zpos;
+  uVar2 = target_hdr->zpos;
   sVar1 = resolve_combat_hit_zone(uVar2,
-                                  (byte) g_object_type_props[(((uw_object_hdr_t *)target)->object_id)].height + uVar2,
+                                  (byte) g_object_type_props[(target_hdr->object_id)].height + uVar2,
                                   uVar4,
                                   (byte) g_object_type_props[(*attacker & 0x1ff)].height + uVar4);
   DAT_00100624 = sVar1 + 4;
   DAT_0010061c = damage_dice;
-  if (target == g_player_object) {
+  if (target_hdr == &g_player_object->hdr) {
     play_sound_effect_with_pan(3,0,0);
   }
   else {
-    iVar3 = object_ptr_in_arena(target);
+    iVar3 = object_ptr_in_arena(target_hdr);
     if (iVar3 != 0) {
       play_sound_effect_at_object(4,target,0);
     }
@@ -1524,7 +1527,7 @@ int resolve_npc_melee_attack(void *npc_ptr, short tile_x, byte tile_y, short off
   uint uVar7;
   
   DAT_001005f4 = 2;
-  DAT_00100610 = encode_object_slot_index(npc);
+  DAT_00100610 = encode_object_slot_index(npc_ptr);
   iVar6 = (*npc & 0x3f) * 0x30;
   iVar5 = offset_x * 3 + iVar6;
   bVar1 = g_monster_type_props[iVar6 / 0x30].attacks[offset_x].damage;
@@ -1548,7 +1551,7 @@ int resolve_npc_melee_attack(void *npc_ptr, short tile_x, byte tile_y, short off
   iVar5 = process_melee_attack_swing();
   if ((iVar5 != 0) && (DAT_00100620 == 1)) {
     if (((short)(*(byte *)(DAT_00086df8 + 0x5f) >> 2 & 0xf) < offset_y) &&
-       (cVar2 = resolve_damage_type_resistance(g_player_object,1,0x10), cVar2 != '\0')) {
+       (cVar2 = resolve_damage_type_resistance((uw_unaligned_word_t *)g_player_object,1,0x10), cVar2 != '\0')) {
       uVar7 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
       *(byte *)(DAT_00086df8 + 0x5f) = (byte)uVar7 | (byte)(((int)offset_y & 0xfU) << 2);
       *(char *)(DAT_00086df8 + 0x60) = (char)(uVar7 >> 8);
@@ -1561,7 +1564,7 @@ int resolve_npc_melee_attack(void *npc_ptr, short tile_x, byte tile_y, short off
 // was FUN_00027f14 -- grants the player experience for killing param_1 (a monster object, category
 // 0x40): plays a HUD update and music sting, rolls XP from the monster's own stat table
 // (&DAT_001007f8), with a random spread when a specific stat flag bit is set...
-void award_monster_kill_experience(ushort *monster)
+void award_monster_kill_experience(uw_unaligned_word_t *monster)
 {
   int uw_ord2005_rem_10 = 0;
   short sVar1;
@@ -1601,7 +1604,7 @@ void load_combat_data_file()
   char *pcVar2;
   char acStack_108 [260];
   
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (char *)&DAT_0023cca8;
     stack0xffdc3250_ptr = acStack_108;
   do {
     cVar1 = *pcVar2;
@@ -1923,7 +1926,7 @@ int check_npc_fine_facing_alignment(char delta_x, char delta_y)
 
 // was FUN_000346a0 -- applies param_2 points of damage to object param_1 from damaging object
 // param_3 (NULL if none, e.g. environmental damage).
-int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
+int apply_damage_to_object(uw_unaligned_word_t *target, byte damage, uw_unaligned_word_t *attacker)
 {
   short sVar1;
   uint uVar2;
@@ -1932,15 +1935,18 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
   int iVar5;
   bool bVar6;
   uint attacker_id = 0;  /* was the `attacker` pointer param itself, reused as an integer id (truncating cast) */
+  /* typed views of the raw word-indexed target/attacker records, for the shared object helpers */
+  uw_object_hdr_t *target_hdr = (uw_object_hdr_t *)target;
+  uw_object_hdr_t *attacker_hdr = (uw_object_hdr_t *)attacker;
 
   /* GODMODE: the player takes no damage (every damage path funnels through here). */
-  if (g_debug_godmode && target == (ushort *)g_player_object) return 0;
+  if (g_debug_godmode && target_hdr == &g_player_object->hdr) return 0;
   bVar6 = attacker == (ushort *)0x0;
   iVar5 = (((int)(short)*target & 0xfU) + (short)((*target & 0x30) >> 4) * 0x10) * 0x30;
   *(byte *)((char *)target + 0x11) = *(char *)((char *)target + 0x11) + damage;
   if (!bVar6) {
     if ((*attacker & 0x1c0) == 0x40) {
-      sVar1 = encode_object_slot_index(attacker);
+      sVar1 = encode_object_slot_index(attacker_hdr);
       uVar2 = (uint)sVar1;
       if (0xff < (int)uVar2) {
         uVar2 = 0;
@@ -1957,7 +1963,7 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
   }
   if ((uVar2 == 1) && ((target[5] & 0x80) == 0)) {
     DAT_000853d0 = g_monster_type_props[(iVar5) / 0x30].race_flags;
-    DAT_0010194c = encode_object_slot_index(target);
+    DAT_0010194c = encode_object_slot_index(target_hdr);
     DAT_0010192c = *(byte *)((char *)target + 0x17) >> 2;
     DAT_00101930 = (byte)(target[0xb] >> 4) & 0x3f;
     DAT_00101934 = (byte)target[1] >> 3 & 0xf;
@@ -1965,7 +1971,7 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
   }
   if (damage < (byte)target[4]) {
     *(byte *)(target + 4) = (byte)target[4] - damage;
-    if (target == g_player_object) {
+    if (target_hdr == &g_player_object->hdr) {
       refresh_experience_display();
     }
   }
@@ -1985,7 +1991,7 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
     uVar4 = 5;
   }
   else {
-    if (target != g_player_object) {
+    if (target_hdr != &g_player_object->hdr) {
       return 0;
     }
     if (uVar2 == 0) {
@@ -2007,7 +2013,7 @@ int apply_damage_to_object(ushort *target, byte damage, ushort *attacker)
 // was FUN_000382cc -- resolves elemental/damage-type resistance for object param_1 against a
 // damage-type bitmask (param_3), returning the effective damage to apply: 0 if fully resisted,
 // otherwise param_2 (the original damage amount) unchanged.
-int resolve_damage_type_resistance(ushort *object, int damage, uint damage_type_mask)
+int resolve_damage_type_resistance(uw_unaligned_word_t *object, int damage, uint damage_type_mask)
 {
   int uw_ord2005_rem_102 = 0;
   undefined4 uVar1;
@@ -2036,7 +2042,7 @@ int resolve_damage_type_resistance(ushort *object, int damage, uint damage_type_
 // target; param_2: the damaging object/weapon, or 0; param_3/param_4: tile x/y, when relevant;
 // param_5: raw damage amount; param_6: damage-type bitmask).
 /* damaging object, forwarded to apply_damage_to_object */
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type)
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type)
 {
   uint uVar1;
   undefined4 uVar2;
@@ -2063,7 +2069,7 @@ int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, s
 // type's hardness/resistance divisor from DAT_00202c97) to a non-NPC object param_1, returning
 // whether it broke (durability reached 0).
 /* damaging actor, forwarded to the destruction trigger */
-bool apply_object_durability_damage(ushort *object, ushort *attacker, short damage, int tile_x, short tile_y)
+bool apply_object_durability_damage(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, short damage, int tile_x, short tile_y)
 {
   uw_object_hdr_t *object_hdr = (uw_object_hdr_t *)object;
   int iVar1;
@@ -2148,7 +2154,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
   char cVar2;
   undefined2 uVar3;
   short sVar4;
-  undefined2 *puVar5;
+  uw_unaligned_word_t *puVar5;
   int iVar6;
   undefined4 uVar7;
   char *pcVar8;
@@ -2159,8 +2165,8 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
   char acStackY_85aec [547480];
   char acStack_4d [53];
   
-  puVar5 = (undefined2 *)get_equipped_item_at_slot(slot);
-  if (puVar5 == (undefined2 *)0x0) {
+  puVar5 = (uw_unaligned_word_t *)get_equipped_item_at_slot(slot);
+  if (puVar5 == (uw_unaligned_word_t *)0x0) {
     return 0xfffffffe;
   }
   if (reaction_mode != 2) {
@@ -2205,7 +2211,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
     *wptr_30396 = cVar2; wptr_30396 = wptr_30396 + 1;
     pcVar8 = pcVar8 + 1;
   } while (cVar2 != '\0');
-  if (puVar5 == g_player_object) {
+  if ((uw_object_hdr_t *)puVar5 == &g_player_object->hdr) {
     uVar3 = ((uw_object_hdr_t *)puVar5)->type_flags;
     ((uw_object_hdr_t *)puVar5)->type_flags_low = 0xf;
     ((uw_object_hdr_t *)puVar5)->type_flags_high = (byte)((ushort)uVar3 >> 8) & 0xfe;
@@ -2231,7 +2237,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
 // was FUN_0005448c -- default collision outcome for object param_2 when nothing else handles it
 // (param_1, the object that struck it, is unused): takes a position snapshot, and if the snapshot's
 // velocity-like field is nonzero...
-int apply_object_collision_scatter(ushort *striker, ushort *object)
+int apply_object_collision_scatter(uw_unaligned_word_t *striker, uw_unaligned_word_t *object)
 {
   undefined2 uVar1;
   short sVar2;
@@ -2278,7 +2284,7 @@ int apply_object_collision_scatter(ushort *striker, ushort *object)
 // and that subtype's flag byte == -0x40) adjusts the damage via a skill check (+0x27) before...
 /* ARM 0x545c0 preserves the target in r8 and 0x54698 passes that address
    in r2 to apply_direct_object_hit. undefined4 truncated it on 64-bit hosts. */
-void apply_trap_type_damage_effect(void *trap_object_ptr, ushort *target)
+void apply_trap_type_damage_effect(void *trap_object_ptr, uw_unaligned_word_t *target)
 {
   byte *trap_object = (byte *)trap_object_ptr;
   byte bVar1;
@@ -2323,8 +2329,8 @@ int resolve_collision_candidate_interaction(short candidate_index, int mover_slo
   int iVar1;
   ushort uVar2;
   ushort uVar3;
-  ushort *puVar4;
-  ushort *puVar5;
+  uw_unaligned_word_t *puVar4;
+  uw_unaligned_word_t *puVar5;
   undefined4 uVar7;
   ushort uVar8;
   byte bVar9;
@@ -2345,7 +2351,7 @@ int resolve_collision_candidate_interaction(short candidate_index, int mover_slo
   }
   DAT_002046e0 = (byte)(DAT_002049c8 >> 3);
   DAT_002046e4 = (byte)(DAT_002049ca >> 3);
-  puVar4 = (ushort *)get_object_record_by_slot_index(mover_slot);
+  puVar4 = (uw_unaligned_word_t *)get_object_record_by_slot_index(mover_slot);
   /* HACK: get_object_record_by_slot_index legitimately returns NULL for an out-of-range/ empty slot
      (its own established contract, guarded at many other call sites this session) and this
      immediately dereferenced it unconditionally. */
@@ -2362,7 +2368,7 @@ int resolve_collision_candidate_interaction(short candidate_index, int mover_slo
     puVar5 = puVar11;
   }
   else {
-    puVar5 = (ushort *)get_object_record_by_slot_index(puVar11[iVar1 * 3 + 1] >> 6);
+    puVar5 = (uw_unaligned_word_t *)get_object_record_by_slot_index(puVar11[iVar1 * 3 + 1] >> 6);
     /* HACK: same unguarded get_object_record_by_slot_index NULL-return case as the
        puVar4 fix just above -- puVar5 is dereferenced (`*puVar5`)
        a few lines down with no check. Same early-out. */

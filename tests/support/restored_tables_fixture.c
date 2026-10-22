@@ -7,7 +7,7 @@ char *DAT_0024cfd4;
 int restored_spawn_id, restored_scan_count;
 int restored_message_kind, restored_message_id, restored_message_lparam;
 undefined4 restored_message_window, restored_message_wparam;
-ushort *restored_scan_objects[4];
+void *restored_scan_objects[4];
 static char character[256];
 static ushort player[16];
 void restored_tables_fixture_reset(void)
@@ -46,7 +46,7 @@ void scan_area_ahead_of_object(void *source, int radius, int (*callback)(), int 
     TEST_ASSERT_EQUAL_INT(4, mode);
     for (int i=0; i<4 && restored_scan_objects[i]; ++i) {
         restored_scan_count++;
-        if (callback(18, 5, restored_scan_objects[i], NULL, 0)) break;
+        if (((int (*)(int,int,void *,void *,int))callback)(18, 5, restored_scan_objects[i], NULL, 0)) break;
     }
 }
 

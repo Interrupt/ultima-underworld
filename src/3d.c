@@ -375,7 +375,7 @@ LAB_00014684:
 
 // was FUN_00014868 -- advance one scanline down an edge record
 /* was int -- edge-walk struct pointer */
-int raster_edge_step(char *edge)
+int raster_edge_step(byte *edge)
 {
   int iVar1;
 
@@ -502,7 +502,7 @@ void raster_triangle_perspective_setup(uint *triangle, void *coefficients_ptr)
 // was FUN_00014ef4 -- per-edge setup: given two vertex indices, the
 // starting value and per-scanline step for x, u/w, v/w and 1/w
 /* was int -- edge-coeff array pointer was int -- vertex array pointer (stride 0x14) */
-void raster_edge_setup(char *coefficients, char *vertices, int vertex_a, int vertex_b, int row_limit, void *edge_ptr)
+void raster_edge_setup(byte *coefficients, char *vertices, int vertex_a, int vertex_b, int row_limit, void *edge_ptr)
 {
   uint *edge = (uint *)edge_ptr;
   int iVar1;
@@ -610,7 +610,7 @@ void raster_edge_setup(char *coefficients, char *vertices, int vertex_a, int ver
 // was FUN_0001548c -- the textured span rasterizer: for one scanline span between two edges,
 // perspective-divides per pixel, samples the tile texture...
 /* framebuffer base edge struct edge struct edge struct texture pixel data */
-void raster_textured_span(int row, char *framebuffer, char *gradients, char *left_edge, char *right_edge, int texture_stride, int texture_size, char *texture_pixels, int *depth_limit, byte shade)
+void raster_textured_span(int row, char *framebuffer, byte *gradients, byte *left_edge, byte *right_edge, int texture_stride, int texture_size, char *texture_pixels, int *depth_limit, byte shade)
 {
   byte bVar1;
   uint uVar2;
@@ -1360,7 +1360,7 @@ void load_dungeon_texture_arenas()
   char cVar1;
   const char *pcVar2;
   int iVar3;
-  short local_11c [4];
+  ushort local_11c [4]; /* texture count in/out for load_texture_arena (never negative) */
   char acStack_114 [260];
   /* acStack_86af8 / _86af0 / _86ae8 / _86ae0 were four separate stack locals (8, 8, 8, 551364
      bytes), but every use is `<base> + iVar3` where iVar3 is strlen(acStack_114) after the "\DATA\"
@@ -1368,7 +1368,7 @@ void load_dungeon_texture_arenas()
 
   DAT_0023ae38 = &DAT_002049e0;
   ce_memset(acStack_114,0,0x104);
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (const char *)&DAT_0023cca8; /* install-dir string; the global is typed undefined1[] */
     stack0xffdc3244_ptr = acStack_114;
   do {
     cVar1 = *pcVar2;

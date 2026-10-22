@@ -53,11 +53,11 @@ static void dbgui_inspector_back(void) { g_dbgui_inspect_obj = 0; g_dbgui_inspec
    check_object_combination uses) on the door's link chain; the door is locked while that lock's
    type-word bit 0x200 is set (a matching key sets it, check_object_combination, and a count-0
    "is it locked" probe only returns 0 for it). */
-static ushort *dbgui_door_lock_object(ushort *door)
+static uw_unaligned_word_t *dbgui_door_lock_object(uw_unaligned_word_t *door)
 {
   ushort *chain = door + 3;
   if ((*door & 0x8000) != 0 || (*chain & 0xffc0) == 0) return 0;
-  return (ushort *)find_object_in_chain(&chain,0,4,0,0xf);
+  return (uw_unaligned_word_t *)find_object_in_chain(&chain,0,4,0,0xf);
 }
 
 /* Opens the inspected door whether or not it is locked -- the lock is only ever consulted by the
@@ -478,7 +478,7 @@ void dbgui_object_name(int id, char *out, size_t n)
   out[0] = 0;
   if (!name || !*name) return;
   snprintf(copy, sizeof copy, "%s", name);
-  snprintf(out, n, "%s", (const char *)format_object_display_name((byte *)copy, 1, 0));
+  snprintf(out, n, "%s", format_object_display_name(copy, 1, 0));
 }
 
 /* Create a fresh object of type `id`; critters live in the 27-byte mobile table, everything else in
@@ -508,7 +508,7 @@ int dbgui_spawn_object(int id, int *tile_x, int *tile_y)
   obj->xpos = x & 7;
   obj->ypos = y & 7;
   obj->zpos = height & 0x7f;
-  if (find_object_placement((ushort *)obj, (short)x, (short)y, (short)height, 2) == 0) {
+  if (find_object_placement((uw_unaligned_word_t *)obj, (short)x, (short)y, (short)height, 2) == 0) {
     free_object_slot(obj);
     return 0;
   }
@@ -545,7 +545,7 @@ int dbgui_all_runes(void)
 {
   int slot, result = 0, have_bag = 0;
   for (slot = 0xb; slot < 0x13 && !have_bag; slot++) {
-    ushort *o = (ushort *)resolve_object_link(&g_equipped_items + slot * 2);
+    uw_unaligned_word_t *o = (uw_unaligned_word_t *)resolve_object_link(&SLOT_LINK(slot));
     if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
   }
   if (!have_bag) result = dbgui_give_object(0x8f, 1) >= 0 ? 1 : -2;

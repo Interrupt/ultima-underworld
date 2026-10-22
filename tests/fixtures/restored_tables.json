@@ -105,6 +105,10 @@
     "src/game.c:FUN_000779f0",
     "src/game.c:FUN_00077a10",
     "src/game.c:FUN_00077a30",
+    "src/game.c:window_message_paint",
+    "src/game.c:window_message_destroy",
+    "src/game.c:window_message_keyboard",
+    "src/game.c:window_message_mouse",
     "src/game.c:@uw_window_message_handler",
     "src/game.c:@DAT_000830b0",
     "src/game.c:dispatch_window_message"

@@ -598,9 +598,9 @@ void dbgui_draw()
     }
     char line[64];
     if (f->is_button) {
-      snprintf(line, sizeof(line), "[ %s ]", f->name);
+      snprintf(line, sizeof(line), "[ %.58s ]", f->name);
     } else if (f->is_text) {
-      snprintf(line, sizeof(line), "%s: %s", f->name, f->text_value);
+      snprintf(line, sizeof(line), "%.28s: %.28s", f->name, f->text_value);
     } else if (f->is_toggle) {
       snprintf(line, sizeof(line), "%s: %s", f->name, *f->ival ? "ON" : "OFF");
     } else if (f->is_toggle_action) {

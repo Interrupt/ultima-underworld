@@ -14,7 +14,7 @@ undefined1 DAT_0023c3dc, DAT_0023c3d8;
 uw_ranged_type_props_t g_ranged_type_props[16];
 uw_object_type_props_t g_object_type_props[512];
 short DAT_00202a38, DAT_00202a3c, DAT_00202a40, DAT_0023beb4;
-ushort *DAT_00202a44;
+uw_unaligned_word_t *DAT_00202a44;
 ushort DAT_00202a48, DAT_00202a4c;
 undefined2 DAT_00202a50, DAT_00202a54, g_cursor_mode;
 char DAT_00101928;
@@ -28,15 +28,16 @@ void push_cursor_icon(int icon)
 { TEST_ASSERT_EQUAL_HEX16(0x1075, icon); spells_fixture.cursor_pushes++; }
 void pop_cursor_icon(ushort mode)
 { TEST_ASSERT_EQUAL_INT(3, mode); spells_fixture.cursor_pops++; }
-void get_mouse_position(ushort *x, ushort *y)
+void get_mouse_position(short *x, short *y)
 { *x=spells_fixture.mouse_x; *y=spells_fixture.mouse_y; }
 uw_object_hdr_t *alloc_object_slot(int region)
 {
     TEST_ASSERT_EQUAL_INT(1, region);
     spells_fixture.allocations++;
-    return spells_fixture.allocation_fails ? NULL : spells_fixture.projectile;
+    return spells_fixture.allocation_fails ? NULL
+        : (uw_object_hdr_t *)spells_fixture.projectile; /* raw record viewed as a header */
 }
-int check_object_drop_height(ushort *object, ushort *actor)
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *actor)
 {
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor);
@@ -52,7 +53,7 @@ void object_list_insert_head(ushort *head, uw_object_hdr_t *object)
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);
     spells_fixture.links++;
 }
-int play_sound_effect_at_object(int sound, ushort *object, int mode)
+int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode)
 {
     TEST_ASSERT_EQUAL_INT(10, sound);
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);

@@ -214,13 +214,14 @@ static void test_play_sound_effect_at_object_does_not_crash_on_null_object(void)
    instead of these exact values. */
 static void test_play_sound_effect_at_object_does_not_truncate_the_object_pointer(void)
 {
-    unsigned char fake_object[0x20];
-    memset(fake_object, 0, sizeof fake_object);
+    ushort fake_words[0x10];
+    unsigned char *fake_object = (unsigned char *)fake_words;
+    memset(fake_words, 0, sizeof fake_words);
     fake_object[3] = 0xA0;             /* byte3: >>5 == 5, >>2&7 == 0 */
     fake_object[0x16] = 0x34;          /* word16 (LE) == 0x1234:       */
     fake_object[0x17] = 0x12;          /*   &0xfc00>>7 == 32, &0x3f0>>1 == 280 */
 
-    undefined4 result = play_sound_effect_at_object(10, fake_object, 99);
+    undefined4 result = play_sound_effect_at_object(10, fake_words, 99);
 
     TEST_ASSERT_EQUAL_INT(1, audio_fixture_positional_sfx_call_count());
     TEST_ASSERT_EQUAL_INT(10, audio_fixture_last_positional_sfx_id());

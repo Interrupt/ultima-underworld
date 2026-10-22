@@ -10,7 +10,7 @@ uw_object_hdr_t *g_scratch_object_ptr;
 uw_object_type_props_t g_object_type_props[512];
 uw_container_type_props_t g_container_type_props[16];
 unsigned char DAT_00085ac8_backing[16];
-undefined1 DAT_00085c88_backing[128];
+char DAT_00085c88_backing[128];
 char s_UNNAMED_00084f24[] = "UNNAMED";
 static char s_is_too_full__00085c78[] = " is too full.\n";
 static unsigned seed, variant, slot_index, mutation, resolves, foods, effects, lights, weights, sums, names, messages, scrolls;
@@ -44,7 +44,7 @@ uw_object_hdr_t *resolve_object_link(ushort *link)
     if (variant == 0 || (*(ushort *)link >> 6) == 0) return NULL;
     return variant == 7 ? object(0) : object(current ? 2 : 1);
 }
-int use_food_item(void *actor, ushort *p, int consume)
+int use_food_item(void *actor, uw_unaligned_word_t *p, int consume)
 {
     assert(actor == g_player_object && (void *)p == object(0) && consume == 0); observe(2); ++foods; change(2);
     return variant == 0 ? 0 : variant == 1 ? 1 : variant == 2 ? -1 : variant == 3 ? -32768 : (short)seed;

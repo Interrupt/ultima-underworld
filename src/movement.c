@@ -266,8 +266,8 @@ void sweep_init_position()
 void reticle_object_pick(int mode)
 {
   byte bVar1;
-  ushort *puVar2;
-  short *psVar3;
+  uw_unaligned_word_t *puVar2;
+  uw_unaligned_short_t *psVar3;
   int iVar4;
   uint uVar5;
   int iVar6;
@@ -293,7 +293,7 @@ void reticle_object_pick(int mode)
       if (DAT_002049dc != 0) {
         do {
           iVar6 = iVar4 * 6;
-          puVar2 = (ushort *)get_object_record_by_slot_index(*(ushort *)(&DAT_00202c3a + iVar6) >> 6);
+          puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + iVar6) >> 6);
           /* get_object_record_by_slot_index returns NULL for an empty slot (id bits clear).
              Ghidra dropped the guard; with forward movement now working this
              loop runs (via sweep_collision_flags) and hit the NULL deref. */
@@ -368,7 +368,7 @@ LAB_00058a64:
   }
 LAB_00058db4:
   if (DAT_00086998 != -1) {
-    psVar3 = (short *)resolve_object_link(&DAT_00202c3a + DAT_00086998 * 6);
+    psVar3 = (uw_unaligned_short_t *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_00086998 * 6));
     /* resolve_object_link returns NULL when the picked slot carries no object link (id bits 6..15
        clear). */
     if (psVar3 == (short *)0x0) {
@@ -908,9 +908,9 @@ void sweep_land_on_surface()
   short sVar4;
   undefined2 uVar5;
   short sVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   uint uVar8;
-  short *psVar9;
+  uw_unaligned_short_t *psVar9;
   short sVar10;
   uint uVar11;
   int iVar12;
@@ -918,7 +918,7 @@ void sweep_land_on_surface()
   
   /* The decompile uses a short-pointer view of the movement record.
      Keep word indexing and raw byte offsets distinct (ARM 0x59d20..0x5a33c). */
-  puVar7 = (ushort *)get_object_record_by_slot_index((int)DAT_002049d2);
+  puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)DAT_002049d2);
   uVar2 = g_object_type_props[(((uw_object_hdr_t *)puVar7)->object_id)].size_weight;
   iVar12 = (int)_DAT_000869a1;
   if (iVar12 < 5) {
@@ -940,7 +940,7 @@ void sweep_land_on_surface()
   // PHYSICS: floor/ceiling collision -- snap the foot exactly onto the surface
   // and zero the vertical sub-unit accumulator so gravity restarts from rest
   *(short *)((char *)g_sweep_foot_pos + 4) = _DAT_0008699b;
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   DAT_00086984 = 0;
   // BUG FIX (confirmed live: landing in water made no splash). Both landing
   // sounds below test this word -- the object's downward velocity -- and the
@@ -958,7 +958,7 @@ void sweep_land_on_surface()
 // it. It is absent from the original ARM code. Clear downward velocity, gravity, and airborne state
 // before restitution so the player stops on landing. Mobile items retain their normal bounce.
   {
-    if ((puVar7 == g_player_object) && (*(short *)(DAT_00204874 + 10) < 0) &&
+    if (((uw_object_hdr_t *)puVar7 == &g_player_object->hdr) && (*(short *)(DAT_00204874 + 10) < 0) &&
         g_opts.player_no_bounce) {
       *(short *)(DAT_00204874 + 10) = 0;
       *(short *)(DAT_00204874 + 0x10) = 0;
@@ -982,7 +982,7 @@ void sweep_land_on_surface()
   uVar8 = ordint_divmod(10,((int)sVar4 ^ uVar8) - uVar8).quot;
   play_positional_sound_effect(0xf,(int)*psVar9 >> 5,(int)psVar9[1] >> 5,(uVar11 & 0xff) + (uVar8 & 0xff) + -0x28);
   uVar8 = resolve_collision_candidate_interaction((int)DAT_00086998,(int)DAT_002049d2);
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   if ((uVar8 & 0x18) != 0) {
     if ((uVar8 & 0x10) != 0) {
       sweep_kill_velocity();
@@ -1020,7 +1020,7 @@ void sweep_land_on_surface()
   pbVar1 = (byte *)(DAT_00204874 + 0x16);
   *(char *)(DAT_00204874 + 10) = (char)((uint)*pbVar1 * (int)sVar10);
   *(char *)((char *)DAT_00204874 + 0xb) = (char)((uint)*pbVar1 * (int)sVar10 >> 8);
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   if (*(byte *)(DAT_00204874 + 0x16) == 0) {
     sVar10 = 0;
   }
@@ -1038,7 +1038,7 @@ void sweep_land_on_surface()
   *(undefined1 *)((char *)DAT_00204874 + 0x11) = 0;
   if (DAT_00086998 == -1) {
     if ((int)((uint)DAT_002049d0 + (uint)DAT_002049d8) < (int)*(short *)((char *)g_sweep_foot_pos + 4)) {
-      puVar7 = (ushort *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23));
+      puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23));
       if ((((uw_object_hdr_t *)puVar7)->object_id & 0x1c0) != 0x40) goto LAB_0005a238;
       if ((DAT_002049d6 & 0x10) == 0) {
         if ((DAT_002049d6 & 0x20) == 0) goto LAB_0005a2d0;
@@ -1054,9 +1054,9 @@ void sweep_land_on_surface()
     *(undefined1 *)(DAT_00204874 + 0x28) = uVar3;
   }
   else {
-    psVar9 = (short *)get_object_record_by_slot_index(*(ushort *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
+    psVar9 = (uw_unaligned_short_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
     if (((g_object_type_props[((int)*psVar9 & 0x1ffU)].flags & 2) != 0) ||
-        (puVar7 = (ushort *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23)),
+        (puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23)),
          (((uw_object_hdr_t *)puVar7)->object_id & 0x1c0) == 0x40)) {
 LAB_0005a2d0:
       *(undefined1 *)(DAT_00204874 + 0x28) = 1;
@@ -1802,7 +1802,7 @@ LAB_0002bb2c:
     if ((uVar1 & 0xf8) == 0x10) {
       DAT_00101924 = 1;
       DAT_00101734 = 0;
-      spawn_scheduled_effect_object(DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
+      spawn_scheduled_effect_object((uw_unaligned_word_t *)DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
                    (short)(char)((ushort)_DAT_002048c2 >> 8));
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xcc | 0xc;
       uVar5 = DAT_0010190c->goal_word & 0xfff;
@@ -1989,7 +1989,7 @@ LAB_0002caa4:
 void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
 {
   ushort uVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   uint uVar3;
   void *uVar4;
   int iVar5;
@@ -1998,7 +1998,7 @@ void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
   iVar6 = 0;
   if (DAT_002049dd != 0) {
     do {
-      puVar2 = (ushort *)resolve_object_link(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6);
+      puVar2 = (uw_unaligned_word_t *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6));
       uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
       uVar3 = (uint)(byte)(&DAT_00202c3c)[(iVar6 + DAT_002049de) * 6] +
               ((int)DAT_002049c8 >> 3 & 0xffU) & 0x3f;
@@ -2010,7 +2010,7 @@ void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
       }
       *out_dy = (char)(iVar5 >> 6) + (char)(DAT_002049ca >> 3) & 0x3f;
       if (((uVar1 & 0x1f0) == 0x140) && ((uVar1 & 0xf) < 8)) {
-        uVar4 = resolve_object_link(&DAT_00202c3a + ((int)DAT_002049de + (int)(short)iVar6) * 6);
+        uVar4 = resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + ((int)DAT_002049de + (int)(short)iVar6) * 6));
         return uVar4;
       }
       iVar6 = (iVar6 + 1) * 0x10000 >> 0x10;
@@ -2031,7 +2031,7 @@ void *get_first_nearby_candidate_object()
     uVar1 = 0;
   }
   else {
-    uVar1 = resolve_object_link(&DAT_00202c3a + DAT_002049de * 6);
+    uVar1 = resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_002049de * 6));
   }
   return uVar1;
 }
@@ -2114,7 +2114,7 @@ void resolve_wall_slide_corner()
   int extraout_r1;
   short sVar5;
   int iVar6;
-  char *rec;
+  byte *rec;
   int iVar7;
   uint uVar8;
   int iVar9;

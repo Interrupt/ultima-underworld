@@ -10,7 +10,7 @@ void pop_cursor_icon(ushort mode);
 ushort *pick_object_under_cursor(int mode);
 int target_in_range(short actor, void *target, char *range);
 int target_line_of_sight(short actor, void *target);
-int check_object_combination(void *actor, ushort *target, short key_id);
+int check_object_combination(void *actor, uw_unaligned_word_t *target, short key_id);
 void handle_game_view_click_hold(void);
 void interact_use(void);
 void describe_picked_terrain(byte mode, short tile);
@@ -36,19 +36,24 @@ char *g_current_container_record;
 
 ushort *DAT_002046b4;
 
-uw_object_hdr_t *resolve_object_link(ushort *link_)
-{ ushort *link = (ushort *)link_;
+/* objects are raw 8-byte records; this is the single boundary where one is
+ * viewed as a game object header. */
+static uw_object_hdr_t *object_record(unsigned slot)
+{ return (uw_object_hdr_t *)objects[slot]; }
+
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{
     unsigned slot = *link >> 6;
     if (slot == 0) return NULL;
     TEST_ASSERT_LESS_THAN_UINT(5, slot);
-    return objects[slot];
+    return object_record(slot);
 }
 
 int encode_object_slot_index(const uw_object_hdr_t *object)
 {
     if (object == NULL) return 0;
     for (int i = 1; i < 5; i++)
-        if (object == objects[i]) return i;
+        if (object == object_record(i)) return i;
     TEST_FAIL_MESSAGE("Lookup must pass the actual object pointer to slot encoding");
     return 0;
 }
@@ -80,7 +85,7 @@ short DAT_000858c4, DAT_002020ac;
 
 code *DAT_002020b8;
 
-undefined1 DAT_000878ec_backing[64];
+char DAT_000878ec_backing[64];
 
 char s_UNNAMED_00084f24[] = "UNNAMED";
 
@@ -117,7 +122,7 @@ int target_in_range(short actor, void *target, char *range)
 int target_line_of_sight(short actor, void *target)
 { (void)actor; TEST_ASSERT_EQUAL_PTR(picked_target, target); return target_obstructed; }
 
-int check_object_combination(void *actor, ushort *target, short key_id)
+int check_object_combination(void *actor, uw_unaligned_word_t *target, short key_id)
 {
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor);
     TEST_ASSERT_EQUAL_INT(1, key_id);

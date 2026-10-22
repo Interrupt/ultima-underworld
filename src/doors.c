@@ -23,7 +23,7 @@ void *alloc_door_frame_buffer(unsigned int byte_count)
 
 
 // was FUN_0007c580
-void close_door_object(void *actor_ptr, ushort *door)
+void close_door_object(void *actor_ptr, uw_unaligned_word_t *door)
 {
   char *actor = (char *)actor_ptr;
   ushort quality_word;
@@ -244,7 +244,7 @@ void apply_special_object_use_effect()
 // was FUN_0007c3f4 -- schedules a door's open animation: derives an animation type from the door's
 // own low bits (a "portcullis"-style door, low 3 bits == 6, uses type 4; every other door type uses
 // 5), sets the door's quality/state field, forces its type-id bits to 0x1cf...
-void schedule_door_open_animation(ushort *door)
+void schedule_door_open_animation(uw_unaligned_word_t *door)
 {
   ushort original_word = *door;
   ushort quality_word = door[3];
@@ -264,7 +264,7 @@ void schedule_door_open_animation(ushort *door)
   /* HACK: was a bare `encode_object_slot_index();` -- dropped argument, same class as
      scheduler_tick's own `scheduler_finish_entry();` fix just above (see its comment).
      encode_object_slot_index's real signature takes the object pointer it encodes... */
-  slot_index = encode_object_slot_index((char *)door);
+  slot_index = encode_object_slot_index((uw_object_hdr_t *)door);
   scheduler_add_entry(slot_index, animation_type, 0, (undefined1)DAT_002020a0, (char)DAT_002020a4);
 }
 
@@ -275,7 +275,7 @@ void schedule_door_open_animation(ushort *door)
 // was FUN_0007c4a8 -- companion to schedule_door_open_animation for closing a door: derives the
 // same portcullis-aware animation type (4 vs 5), decrements the door's state field, and, if it
 // already has a live scheduler entry...
-void adjust_door_close_animation_delay(ushort *door)
+void adjust_door_close_animation_delay(uw_unaligned_word_t *door)
 {
   short delay;
   ushort door_word = *door;

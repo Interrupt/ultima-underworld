@@ -6,7 +6,7 @@ void describe_picked_terrain(byte mode, short texture);
 void print_scroll_message_by_id(uint message_id);
 char *get_message_string(ushort message_id);
 void msg_scroll_panel_reset(int redraw);
-byte *format_object_display_name(byte *buffer, int flag_a, int flag_b);
+char *format_object_display_name(char *buffer, int flag_a, int flag_b);
 int message_scroll_print_wrapped(char *text);
 int open_file_for_read(const char *path);
 int read_file_handle(int handle, void *buffer, uint count);
@@ -20,15 +20,15 @@ short DAT_00201b68;
 
 undefined2 DAT_0023add0_backing[64];
 
-undefined1 DAT_0023c698_backing[1024];
+char DAT_0023c698_backing[1024];
 
-undefined1 DAT_00085460_backing[11] = "\\CSXXX.N00";
+char DAT_00085460_backing[11] = "\\CSXXX.N00";
 
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 
 char s__DATA_grave_dat_00085cf8[] = "\\DATA\\grave.dat";
 
-undefined s_scroll_newline_0008522c_backing[8192] = "\n";
+char s_scroll_newline_0008522c_backing[8192] = "\n";
 
 byte level_one[0x7c08], script[16];
 
@@ -49,7 +49,7 @@ char *get_message_string(ushort message_id) { (void)message_id; TEST_FAIL_MESSAG
 
 void msg_scroll_panel_reset(int redraw) { (void)redraw; TEST_FAIL_MESSAGE("Unexpected inscription reset"); }
 
-byte *format_object_display_name(byte *buffer, int flag_a, int flag_b) { (void)buffer; (void)flag_a; (void)flag_b; TEST_FAIL_MESSAGE("Unexpected inscription formatting"); return NULL; }
+char *format_object_display_name(char *buffer, int flag_a, int flag_b) { (void)buffer; (void)flag_a; (void)flag_b; TEST_FAIL_MESSAGE("Unexpected inscription formatting"); return NULL; }
 
 int message_scroll_print_wrapped(char *text) { (void)text; TEST_FAIL_MESSAGE("Unexpected inscription printing"); return 0; }
 

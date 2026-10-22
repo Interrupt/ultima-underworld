@@ -6,7 +6,7 @@ extern undefined1 DAT_00086da8;
 extern uw_melee_type_props_t g_melee_type_props[16];
 extern undefined1 DAT_0023b039_backing[4096];
 extern undefined4 DAT_000b5638_backing[160];
-extern undefined1 DAT_0023cca8_backing[1024];
+extern char DAT_0023cca8_backing[1024];
 extern unsigned char DAT_00085ac8_backing[16];
 extern undefined4 DAT_0023bc98, DAT_002020d8;
 extern char DAT_000872a0, DAT_000842b0, DAT_0023b830;

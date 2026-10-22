@@ -77,11 +77,11 @@ void uw_debug_force_item_id_once(void);
 void tick_weapon_swing_state(short attack_direction);
 void poll_input_bindings(void *input_state);
 
-undefined1 DAT_00085448_backing[11] = "\\CSXXX.nXX";
+char DAT_00085448_backing[11] = "\\CSXXX.nXX";
 
-undefined1 DAT_0023c698_backing[1024];
+char DAT_0023c698_backing[1024];
 
-undefined1 DAT_00101968_backing[260];
+char DAT_00101968_backing[260];
 
 uintptr_t DAT_00101a70;
 

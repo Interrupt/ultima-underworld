@@ -6,6 +6,7 @@
 //!   zig build -Dtarget=x86_64-linux-gnu
 //!   zig build -Dtarget=aarch64-macos
 //!   zig build run -- --data-dir data           build and run
+//!   zig build -Dwerror=true                    fail on any C compiler warning (CI uses this)
 //!
 //! SDL2 comes from the system when building for the host (override with
 //! -Dsystem-sdl=false/true); otherwise it is built from the `sdl2` dependency
@@ -81,15 +82,14 @@ const uw_sources = [_][]const u8{
 
 const c_flags = [_][]const u8{
     "-std=gnu11",
-    "-Wno-pointer-sign",
-    // Decompiled code mixes pointer types freely; newer clang makes these hard errors on some targets.
-    "-Wno-incompatible-pointer-types",
-    "-Wno-int-conversion",
-    "-Wno-int-to-pointer-cast",
     "-fno-common",
+    // The code assumes plain char is signed (see CMakeLists.txt); it is unsigned on ARM Linux.
+    "-fsigned-char",
     // The decompiled code relies on behaviour UBSan would trap on; the CMake build does not enable it.
     "-fno-sanitize=undefined",
 };
+
+const c_flags_werror = c_flags ++ [_][]const u8{"-Werror"};
 
 // SDL is always built optimised (no UBSan runtime needed). Zig 0.17 renamed the enum tags.
 const sdl_optimize: std.builtin.OptimizeMode = if (@hasField(std.builtin.OptimizeMode, "fast")) .fast else .ReleaseFast;
@@ -102,6 +102,8 @@ pub fn build(b: *std.Build) void {
     const native = target.result.os.tag == host.os.tag and target.result.cpu.arch == host.cpu.arch;
     const system_sdl = b.option(bool, "system-sdl", "Link the system SDL2 instead of building it (default: only for native builds)") orelse native;
 
+    const werror = b.option(bool, "werror", "Treat C compiler warnings in the game sources as errors (CI enables this)") orelse false;
+
     const mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
@@ -113,7 +115,7 @@ pub fn build(b: *std.Build) void {
     mod.addIncludePath(b.path("third_party/hxcmod"));
     mod.addIncludePath(b.path("third_party/openabyss"));
 
-    mod.addCSourceFiles(.{ .files = &uw_sources, .flags = &c_flags });
+    mod.addCSourceFiles(.{ .files = &uw_sources, .flags = if (werror) &c_flags_werror else &c_flags });
 
     if (target.result.os.tag != .windows) mod.linkSystemLibrary("m", .{});
 

@@ -20,8 +20,8 @@ short g_visibility_max_ring_passes;
    "DAT_0023c7a0[0x140], DAT_002020f8[0x80]" -- and shutdown_game_resources's matching
    0x80-iteration cleanup loop for DAT_00202308)... */
 void *DAT_002020f8_arr[256];
-char *DAT_0023ae34;
-char *DAT_0023ae30;
+byte *DAT_0023ae34;
+byte *DAT_0023ae30;
 /* Parallel array to DAT_0024f090 (0x3a/58 entries) -- see that array's
    own comment. */
 static undefined1 DAT_0024f0ca_backing[64];
@@ -267,11 +267,13 @@ bool load_level_texture_ids(byte *archive, int level_number)
 
 
 
-/* param_2 (a short* remap/index table) and param_4 (the destination arena region) were `int`,
+/* id_list / out_count are the ushort tmap-id globals (DAT_0023ae58 / DAT_0023adb8 / DAT_0023aeb8);
+   the original reads them as signed halfwords, hence the (short) casts below.
+   param_2 (a short* remap/index table) and param_4 (the destination arena region) were `int`,
    truncating the real pointers -- fread'ing texture data through a chopped &DAT_002049e0 segfaulted
    the moment the .tr files actually opened. */
 // was FUN_0005b514 -- load selected entries of a .tr texture file (ids in list param_2) into an arena
-void load_texture_arena(char *path, short *id_list, short *out_count, char *arena)
+void load_texture_arena(char *path, ushort *id_list, ushort *out_count, byte *arena)
 {
   int iVar1;
   char *iVar2; /* was int -- ce_calloc() offset-table allocation */
@@ -303,13 +305,13 @@ void load_texture_arena(char *path, short *id_list, short *out_count, char *aren
   else {
     read_file_handle(iVar1,iVar2,(int)local_22 << 2);
     iVar3 = 0;
-    if (0 < *out_count) {
+    if (0 < (short)*out_count) {
       iVar3 = 0;
       do {
         /* Ghidra kept a byte *2 scale from the original `*(short*)((char*)base + i*2)` but also
            retyped id_list as short* -- the two compound, so this read every OTHER id (idlist[0],
            idlist[2], idlist[4]...). */
-        iVar4 = (int)id_list[iVar3];
+        iVar4 = (int)(short)id_list[iVar3]; /* signed: a negative id ends the list */
         if (iVar4 < 0) break;
         seek_file_handle(iVar1,*(undefined4 *)(iVar2 + iVar4 * 4),0);
         iVar4 = read_file_handle(iVar1,arena,iVar5);
@@ -318,10 +320,10 @@ void load_texture_arena(char *path, short *id_list, short *out_count, char *aren
         }
         iVar3 = (iVar3 + 1) * 0x10000 >> 0x10;
         arena = iVar5 + arena;
-      } while (iVar3 < *out_count);
+      } while (iVar3 < (short)*out_count);
     }
   }
-  *out_count = (short)iVar3;
+  *out_count = (ushort)iVar3;
   LocalFree(iVar2);
   CloseHandle(iVar1);
 }
@@ -342,7 +344,7 @@ void load_terrain_texture_props(char *wall_texture_ids, char *floor_texture_ids)
   int iVar4;
   char acStack_120 [260];
   
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc3238_ptr = acStack_120;
   do {
     cVar1 = *pcVar2;
@@ -438,7 +440,7 @@ void render_dungeon_frame_timed()
   int iVar8;
   short extraout_r1;
   short sVar9;
-  undefined1 auStack_60 [60];
+  char auStack_60 [60];
   
   DAT_0023aec8 = read_realtime_clock_units();
   iVar8 = build_frame_draw_list();
@@ -1102,10 +1104,10 @@ void merge_adjacent_visibility_rays(byte **ray_cursor, byte **out_cursor)
   int iVar3;
   int iVar4;
   int iVar5;
-  char *pcVar6;
+  byte *pcVar6;
   char *pcVar7;
   byte *pbVar8;
-  char *pcVar9;
+  byte *pcVar9;
   /* acStack_28/local_23 were separate locals sized 5+1=6 bytes, but the copy loop just below writes
      a full 0x15(21)-byte record into acStack_28 (`iVar3 = 0x15; ... *pcVar7 = *pcVar6; ...`) -- a
      genuine stack-buffer overflow... */
@@ -1395,7 +1397,7 @@ void load_floor_texture_arenas(byte special_floor_id)
     DAT_0023adc0 = (ushort)special_floor_id;
   }
   ce_memset(acStack_114,0,0x104);
-  pcVar3 = &DAT_0023cca8;
+  pcVar3 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc3244_ptr = stack0xffdc3244_buf;
   pcVar2 = pcVar3;
     stack0xffdc3244_ptr = acStack_114;
@@ -1447,7 +1449,7 @@ void load_shading_level_config(char shading_level)
   if (DAT_000872a0 == shading_level) {
     return;
   }
-  pcVar4 = &DAT_0023cca8;
+  pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
   stack0xffdc323c_ptr = acStack_11c;
   if (DAT_000872a0 == '\x05') {
     ce_memset(acStack_11c,0,0x104);
@@ -1536,7 +1538,7 @@ void load_light_tables()
     report_fatal_error_message_and_exit(s_cLightTabs_allocation_error_____000872e8);
   }
   ce_memset(acStack_11c,0,0x104);
-  pcVar4 = &DAT_0023cca8;
+  pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc323c_ptr = stack0xffdc323c_buf;
   pcVar2 = pcVar4;
     stack0xffdc323c_ptr = acStack_11c;

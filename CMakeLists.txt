@@ -8,6 +8,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 
+# The decompiled code treats plain `char` as signed (Ghidra's meaning: `char` is signed, `byte` and
+# `undefined1` are not) and compares chars with -1, sign-extends them and so on. Plain char is
+# unsigned on ARM Linux, so pin it to signed everywhere to keep behaviour identical on every target.
+add_compile_options(-fsigned-char)
+
 # glibc hides dladdr/Dl_info (used by the debug helpers) unless _GNU_SOURCE is defined.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_compile_definitions(_GNU_SOURCE)
@@ -120,7 +125,6 @@ add_library(uw_game_objs OBJECT ${UW_SOURCES})
 target_include_directories(uw_game_objs PUBLIC ${SDL2_INCLUDE_DIRS} third_party/hxcmod third_party/openabyss)
 target_compile_options(uw_game_objs PRIVATE
   ${SDL2_CFLAGS_OTHER}
-  -Wno-pointer-sign
   -fno-common
 )
 target_compile_definitions(uw_game_objs PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
@@ -132,7 +136,6 @@ target_link_directories(uw_dbg PRIVATE ${SDL2_LIBRARY_DIRS})
 target_link_libraries(uw_dbg PRIVATE ${SDL2_LIBRARIES})
 target_compile_options(uw_dbg PRIVATE
   ${SDL2_CFLAGS_OTHER}
-  -Wno-pointer-sign
   -fno-common
 )
 
@@ -154,7 +157,6 @@ target_link_directories(uw_asan PRIVATE ${SDL2_LIBRARY_DIRS})
 target_link_libraries(uw_asan PRIVATE ${SDL2_LIBRARIES})
 target_compile_options(uw_asan PRIVATE
   ${SDL2_CFLAGS_OTHER}
-  -Wno-pointer-sign
   -fno-common
   -fsanitize=address
   -fno-omit-frame-pointer

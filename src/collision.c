@@ -32,25 +32,26 @@ static char DAT_00202c1c;
 
 // was FUN_0002b7a0. Builds the collision_build_height_field scratch buffer (DAT_00202c6c, a local
 // 24-byte struct) for param_1, then returns a combined height/step-limit field.
-int build_collision_height_field_for_object(ushort *object)
+int build_collision_height_field_for_object(uw_unaligned_word_t *object)
 {
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
   undefined2 slot_index;
   int field;
   undefined1 height_scratch [24];
   
   DAT_00202c6c = height_scratch;
-  slot_index = encode_object_slot_index(object);
+  slot_index = encode_object_slot_index(record);
   DAT_00202c6c[10] = (char)slot_index;
   DAT_00202c6c[0xb] = (char)((ushort)slot_index >> 8);
-  DAT_00202c6c[8] = g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].collision_radius;
-  DAT_00202c6c[9] = g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].height;
-  field = ((((uw_mobile_object_t *)object)->tile_x << 3)) + (uint)(((uw_object_hdr_t *)object)->xpos);
+  DAT_00202c6c[8] = g_object_type_props[(record->object_id)].collision_radius;
+  DAT_00202c6c[9] = g_object_type_props[(record->object_id)].height;
+  field = ((((uw_mobile_object_t *)object)->tile_x << 3)) + (uint)(record->xpos);
   *DAT_00202c6c = (char)field;
   DAT_00202c6c[1] = (char)((uint)field >> 8);
-  field = (((uw_object_hdr_t *)object)->ypos) + ((((uw_mobile_object_t *)object)->tile_y << 3));
+  field = (record->ypos) + ((((uw_mobile_object_t *)object)->tile_y << 3));
   DAT_00202c6c[2] = (char)field;
   DAT_00202c6c[3] = (char)((uint)field >> 8);
-  DAT_00202c6c[4] = ((uw_object_hdr_t *)object)->zpos;
+  DAT_00202c6c[4] = record->zpos;
   DAT_00202c6c[5] = 0;
   collision_build_height_field(8);
   return (int)(short)(*(ushort *)(DAT_00202c6c + 0xe) | *(ushort *)(DAT_00202c6c + 0xc));
@@ -92,7 +93,7 @@ bool collision_corner_flags(uint step_limit)
   undefined1 sampled_height;
   uint sampled_height_wide;
   ushort corner_flags;
-  int sample_blocked;
+  uint sample_blocked;
   
   *(byte *)(DAT_00202c6c + 0xc) = (byte)(DAT_00202c78 >> 8) & 3;
   *(undefined1 *)(DAT_00202c6c + 0xd) = 0;
@@ -295,8 +296,8 @@ void collision_height_envelope(int mode, int collision)
   char *iVar5;  /* was int -- holds the void* tilemap_lookup returns (a real 64-bit tile-array pointer); truncated
    to 32 bits it made `*(ushort *)(iVar5 + ...)` a wild deref -- the crash the first time a keyboard
    forward step actually dispatched. */
-  ushort *puVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar6;
+  uw_unaligned_word_t *puVar7;
   short sVar8;
   int iVar9;
   int iVar10;
@@ -319,7 +320,7 @@ void collision_height_envelope(int mode, int collision)
   if (*(short *)(DAT_00202c6c + 10) != 0) {
     /* Ghidra dropped get_object_record_by_slot_index's argument -- it's the object-slot id this
        branch just tested non-zero (classic `if ((id=..)!=0) rec=f(id)`)... */
-    puVar6 = (ushort *)get_object_record_by_slot_index((int)*(short *)(DAT_00202c6c + 10));
+    puVar6 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)(DAT_00202c6c + 10));
     if (puVar6 != (ushort *)0x0 && (*puVar6 & 0x1c0) == 0x40) {
       local_3c = 1;
     }
@@ -391,7 +392,7 @@ void collision_height_envelope(int mode, int collision)
             sVar8 = (short)iVar10;
             if (0x3f < sVar8) break;
             if ((uint)(uVar3 >> 6) != (int)*(short *)(pbVar13 + 10)) {
-              puVar7 = (ushort *)resolve_object_link(puVar6);
+              puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar6);
               /* resolve_object_link can now return NULL for an out-of-range link (see its own
                  comment) where this loop's `while ((uVar3 & 0xffc0) != 0)` condition alone used to
                  guarantee success... */
@@ -467,12 +468,12 @@ LAB_00050b18:
 // collision_build_height_field: samples its floor height, derives a wall-type/offset code...
 bool collision_classify_corner_wall(uint corner, uint step_limit)
 {
-  char *scratch;
+  byte *scratch;
   byte floor_height;
   uint floor_height_wide;
   undefined2 wall_flags;
   int corner_offset;
-  int sample_blocked;
+  uint sample_blocked;
 
   floor_height = collision_sample_floor_height(corner,&sample_blocked);
   scratch = DAT_00202c6c;
@@ -504,7 +505,7 @@ bool collision_classify_corner_wall(uint corner, uint step_limit)
 
 // was FUN_00051658 -- appends object param_1 to the small (max 9) collision candidate list at
 // DAT_00202c38 if its bounding box...
-void collision_add_candidate_object(ushort *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised)
+void collision_add_candidate_object(uw_unaligned_word_t *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised)
 {
   undefined1 uVar1;
   ushort object_word;
@@ -636,7 +637,7 @@ void sort_collision_candidates()
   uint uVar2;
   int iVar3;
   int iVar4;
-  char *iVar5;
+  byte *iVar5;
   int iVar6;
   int iVar7;
   
@@ -702,9 +703,9 @@ void sort_collision_candidates()
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit)
 {
   byte bVar1;
-  char *uVar2;
+  byte *uVar2;
   undefined4 uVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   uint uVar5;
   int iVar6;
   short sVar7;
@@ -776,11 +777,11 @@ int check_object_placement_clearance(short catalog_type, short ignore_slot, shor
           } while (iVar6 < *(char *)(DAT_00202c6c + 0x16));
         }
         if (-1 < sVar7) {
-          puVar4 = (ushort *)resolve_object_link(&DAT_00202c3a + sVar7 * 6);
+          puVar4 = resolve_object_link(collision_candidate_link_ptr(sVar7));
           /* Was an unguarded `*puVar4` -- resolve_object_link legitimately returns NULL when the
              candidate slot (&DAT_00202c3a + sVar7*6) has no object linked there at all... */
-          if ((puVar4 != (ushort *)0x0) &&
-             ((g_object_type_props[(((uw_object_hdr_t *)puVar4)->object_id)].flags & 2) == 0)) {
+          if ((puVar4 != NULL) &&
+             ((g_object_type_props[(puVar4->object_id)].flags & 2) == 0)) {
             DAT_00202c6c = uVar2;
             return 0;
           }

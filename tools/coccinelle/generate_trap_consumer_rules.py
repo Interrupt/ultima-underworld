@@ -100,7 +100,12 @@ bVar2 = (byte)uVar1;
     hdr = '((uw_object_hdr_t *)trap_object)->'
     add(q,'quality','*(byte *)(trap_object + 4) & 0x3f',hdr+'quality')
     add(q,'owner','*(ushort *)(trap_object + 6) & 0x3f',hdr+'owner')
-    add(q,'marker_link','trap_object + 6','(char *)&((uw_object_hdr_t *)trap_object)->link_word')
+    add(q,'marker_link','trap_object + 6','uw_link_word_ptr((uw_object_hdr_t *)trap_object)')
+    # The char * parameters are this function's fixed historical interface: the unlinked marker
+    # is an object record and link_field the address of the chain word that holds it.
+    add(q,'unlink_types','object_list_unlink(link_field,trap_object);',
+        'object_list_unlink((uw_link_word_t *)link_field, (uw_object_hdr_t *)trap_object);')
+    add(q,'free_type','free_object_slot(trap_object);','free_object_slot((uw_object_hdr_t *)trap_object);')
     add(q,'counter_write', '''bVar3 = (byte)(uVar2 >> 8);
 ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)uVar2;
 ((uw_object_hdr_t *)puVar4)->type_flags_high = ((byte)((uVar1 * 0x200 + -1) >> 8) ^ bVar3) & 0x1e ^ bVar3;''',
@@ -127,7 +132,7 @@ def generate():
             patch.extend('- '+line if line else '-' for line in oldlines[i:j])
             patch.extend('+ '+line if line else '+' for line in newlines[k:l])
     rules.append('@marker_exact disable optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@\n'
-        'typedef byte, ushort, uint, uw_object_hdr_t;\n@@\n'+'\n'.join(patch)+'\n')
+        'typedef byte, ushort, uint, uw_object_hdr_t, uw_link_word_t;\n@@\n'+'\n'.join(patch)+'\n')
     return ''.join(rules).replace('@projectile_spawn_', '@trap_consumer_').replace('typedef byte, ushort, uint,', 'typedef byte, ushort, uint, undefined1, undefined2,')
 
 

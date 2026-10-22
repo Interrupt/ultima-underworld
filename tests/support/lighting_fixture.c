@@ -16,7 +16,7 @@ undefined1 DAT_00086da8;
 uw_melee_type_props_t g_melee_type_props[16];
 undefined1 DAT_0023b039_backing[4096];
 undefined4 DAT_000b5638_backing[160];
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 unsigned char DAT_00085ac8_backing[16] = {5,6,7,8};
 undefined4 DAT_0023bc98, DAT_002020d8;
 char DAT_000872a0, DAT_000842b0, DAT_0023b830;
@@ -31,12 +31,13 @@ ushort lights[4][4], *slots[11];
 byte light_records[32];
 int rebuilds, message;
 int g_ambient_bias_reduction;
-uw_object_hdr_t *get_equipped_item_at_slot(short slot) { return slots[slot]; }
+/* slots hold raw 8-byte light records; view one as a game object header. */
+uw_object_hdr_t *get_equipped_item_at_slot(short slot) { return (uw_object_hdr_t *)slots[slot]; }
 void *get_scanned_object_class_effect_ptr(void)
 {
     return light_records + (g_scratch_object_ptr->type_flags & 15) * 2;
 }
-int compute_object_weight(ushort *object) { (void)object; return 0; }
+int compute_object_weight(uw_unaligned_word_t *object) { (void)object; return 0; }
 void request_weapon_swing_graphic(char category) {}
 void reset_player_derived_state(void) {}
 int is_valid_equipment_slot_item(ushort id, short slot) { return 0; }
@@ -54,8 +55,8 @@ void update_screen_flicker_effect(int active) {}
 void force_locomotion_state_refresh(void) {}
 void apply_movement_mode_profile(byte mode) {}
 int find_or_assign_object_widget(void *object) { return 5; }
-void decrement_object_count(ushort *object) { TEST_FAIL_MESSAGE("Unexpected auto-equip"); }
-int place_object_in_backpack_slot(ushort *object, short slot) { return 1; }
+void decrement_object_count(uw_unaligned_word_t *object) { TEST_FAIL_MESSAGE("Unexpected auto-equip"); }
+int place_object_in_backpack_slot(uw_unaligned_word_t *object, short slot) { return 1; }
 void redraw_container_icon_slot(void) {}
 void redraw_backpack_slot_widget(short slot) {}
 void print_scroll_message_by_id(uint id) { message = id; }
@@ -143,8 +144,8 @@ void lighting_draw_span(int reciprocal_w, int x, int y, int count, int clip_left
     left[0x28/4] = x << 14;
     left[0x30/4] = reciprocal_w;
     right[0x28/4] = (x + count) << 14;
-    raster_textured_span(320, (char *)framebuffer, (char *)gradients,
-                        (char *)left, (char *)right, 1, 1, 0, clip, lighting_span_shade);
+    raster_textured_span(320, (char *)framebuffer, (byte *)gradients,
+                        (byte *)left, (byte *)right, 1, 1, 0, clip, lighting_span_shade);
     memcpy(pixels, framebuffer + y * 320 + x, count * sizeof *pixels);
 }
 ushort lighting_draw_texel(int reciprocal_w, int x, int y)

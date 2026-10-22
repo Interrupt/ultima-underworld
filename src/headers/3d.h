@@ -37,13 +37,13 @@ void copy_matrix4x4(uint *source, uint *dest);
 void raster_triangle(int stride, void *buffer, uint *vertices, int surface, int width, int size, char *texture, int *clip);
 void vec3_sub(void *a, void *b, byte *out);
 void vec3_cross(void *a, void *b, byte *out);
-int raster_edge_step(char *edge);
+int raster_edge_step(byte *edge);
 void raster_triangle_perspective_setup(uint *triangle, void *coefficients);
-void raster_edge_setup(char *coefficients, char *vertices, int vertex_a, int vertex_b, int row_limit, void *edge);
+void raster_edge_setup(byte *coefficients, char *vertices, int vertex_a, int vertex_b, int row_limit, void *edge);
 extern undefined4 DAT_000c8ac0_mtx[16]; /* the view/camera matrix build_view_matrix builds */
 void update_fullbright_palette_mask();
 extern unsigned char g_fullbright_palette_mask[256];
-void raster_textured_span(int row, char *framebuffer, char *gradients, char *left_edge, char *right_edge, int texture_stride, int texture_size, char *texture_pixels, int *depth_limit, byte shade);
+void raster_textured_span(int row, char *framebuffer, byte *gradients, byte *left_edge, byte *right_edge, int texture_stride, int texture_size, char *texture_pixels, int *depth_limit, byte shade);
 void build_trig_tables();
 void build_view_matrix();
 void translate_verts_to_camera_space(uw_geom_arena_t *arena);

@@ -75,7 +75,7 @@ void npc_set_goal(byte goal, uint target)
 {
     assert(goal == 8 && target == 0); observe(2); change(2); DAT_0010190c->npc_goal = goal; DAT_0010190c->npc_gtarg = target;
 }
-int advance_cached_path_step(char *p) { unsigned slot = cache_slot(p); observe(3); argument(slot); change(3); return 65536; }
+int advance_cached_path_step(byte *p) { unsigned slot = cache_slot(p); observe(3); argument(slot); change(3); return 65536; }
 long ce_rand(void) { observe(4); change(4); return mode == 11 || mode == 24 ? 0 : mode == 26 ? -1 : 1; }
 void npc_arrival_interaction(void *p) { assert(p == DAT_00101904); observe(5); change(5); }
 int walk_using_cached_path(byte *p)
