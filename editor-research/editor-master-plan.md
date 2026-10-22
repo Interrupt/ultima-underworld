@@ -38,7 +38,7 @@ The screen has five regions: 3D view (top-left), top-down tile map (top-right), 
 
 | Icon | Our reading | Confidence |
 | --- | --- | --- |
-| Big 8-ray starburst | Not a live compass: it has no direction marker at actual size, unlike the heading rose. Probably a menu or mode button. Ours: unassigned, candidate home for the menu | Low |
+| Big 8-ray starburst | Not a live compass: it has no direction marker at actual size, unlike the heading rose. Probably a menu or mode button. Ours: Save, for now (a candidate home for the menu later) | Low |
 | Grid / tiles icon | Tile properties mode (type, height, flags) | Medium |
 | Panel / swatch icon | Texture painter mode | Medium |
 | OBJ | Object mode (the screenshot's active mode) | High |
@@ -47,7 +47,7 @@ The screen has five regions: 3D view (top-left), top-down tile map (top-right), 
 | First lettered icon | Unreadable at screenshot resolution | Unknown |
 | Second lettered icon | Cut / copy mode for tile regions | Medium |
 | Black blob | Paint-bucket fill | Medium |
-| Orange figure (bottom, set apart) | Play-test: drop into the normal game | Medium |
+| Orange figure (bottom, set apart) | Play-test: drop into the normal game at the camera. Ours: Play | Medium |
 
 ### Object mode, bottom-left panel
 
@@ -68,7 +68,7 @@ Item was drawn dimmer than Class and Comm with a spider selected, which hints it
 
 ### Object mode, bottom-right palette
 
-The brush for placing objects. The top row is category tabs (the selected one is scenery/junk, IDs 0xC0-0xDF), the grid below is types in that category.
+The brush for placing objects. The bar above it (the object-group bar, native rect (194,119)-(299,141)) is a scrollable row of group icons, not the objects on the selected tile: its first icon, a skull pile, carries the selection frame, and the palette below it shows what a decor group would hold (plants, grass, skulls, bones, sticks, a shield, debris). Clicking a group fills the palette with that group's objects. The bar scrolls (arrows at both ends, mouse wheel) because there are more groups than fit, and the palette scrolls too. The tile's own objects are reached through Head / Next / Link and the selected-object editor.
 
 ### Status bar
 
@@ -82,7 +82,10 @@ The editor runs as an overlay on dungeon mode and freezes simulation while activ
 
 - **Framebuffer is fixed at 320x240 RGB565** (`g_uw_framebuffer`). `0x140` strides and 200/240 clamps run through graphics, text, bitmap, tmap and the pick buffer. The original editor's 320x200 screen fits inside it, so the editor draws its panels with the game's own primitives into a separate 320x200 buffer instead of needing a larger canvas.
 - **The 3D view rect is defined in about eight places**: `configure_dungeon_viewport`, the static clip in `render_visible_tile_list`, projection cx/cy/scale in tmap.c and again in `raster_textured_span`, the clear in `render_dungeon_view`, the dirty rect in `render_dungeon_frame_timed`, the weapon overlay and the debug pick blit. `fullscreen_view.c` already overrides all of them.
-- **Free camera survives** because the Far Sight spell uses it: `DAT_0023b82c = 0` makes `update_current_view_from_subject` read `DAT_0023be90/92/94` and `DAT_0023bf00`. Pitch still comes from the player's `DAT_0023beb4`, and a camera in a solid or off-map tile renders nothing.
+- **Free camera survives** because the Far Sight spell uses it, and the editor runs the camera in Far Sight's mode (below): `DAT_0023b82c = 0` makes `update_current_view_from_subject` read `DAT_0023be90/92/94` and `DAT_0023bf00`. Pitch still comes from the player's `DAT_0023beb4`, and a camera in a solid or off-map tile renders nothing.
+- **Far Sight mode.** While the editor is on it holds the same flag the `FARSIGHT` demo command holds (`g_debug_farsight`, which sets `DAT_002020d8` when the player's effects are refreshed), so the view is lit at Far Sight's light level (6) whatever light the player carries; turning the editor off restores the previous state. The camera flies through walls: like the game's `move_custom_view_target`, it only stays within the map (0x180-0x3d80), with no collision. Inside a solid tile the view draws nothing, because the visibility flood starts from the camera's tile, as in Far Sight.
+- **Camera controls** use the game's own keys: W or Up runs forward, S walks forward slowly, X or Down goes back, A / D / Left / Right turn, Z / C sidestep, Q / E change height. The mouse cursor is always the plain X cursor (never the walk and turn arrows). Right-drag pans the tile map; Show recentres it.
+- **3D picking** has two parts. Objects come from the game's per-pixel pick buffer. The floor comes from a ray cast through the clicked pixel (the inverse of the renderer's projection, turned by the camera's facing and pitch) over the tile map, which treats floors as flat at their tile's height; this places and moves objects at exact spots. Wall faces still need the tile-index pick buffer (texture painting).
 - **Picking finds objects only** (up to 191 per frame); walls and floors report a texture, not a tile.
 - **Dangerous APIs**: `alloc_object_slot` randomly despawns objects when a free list is empty; `free_linked_object_recursive` frees an object and every following sibling.
 - **Only one lev.ark can be open at a time** (single offset table `DAT_000b78b8`).
@@ -105,7 +108,7 @@ The editor always works on the master `DATA\lev.ark`, never on save slots, and r
 2. Press **F9** in the dungeon view (also the `--editor` startup option, and `editor` in the console: bare `editor` toggles, `editor on|off` sets it). L is not used: the game binds it to a movement command. The original entry point is gone, so these choices are ours.
 3. The current level is reloaded from `DATA\lev.ark`, discarding play-session state. Confirm the first time, since it throws away the current session's changes to that level.
 4. Edit, then save with Ctrl+S or the menu.
-5. **Play** (the orange button) saves if requested, then switches to the normal game with the full HUD, placing the player at the editor camera's tile if it is open.
+5. **Play** (the orange button at the bottom of the mode column) saves, then switches to the normal game with the full HUD, placing the player at the editor camera's X and Y, facing the way the camera faces. It refuses if the camera is over a wall (the player cannot stand inside one). It uses the current game and character, not a new one.
 6. Press **F9** (or type `editor`) during play to return. The level reloads from the archive again so nothing done while playing leaks into the edit. Escape keeps its normal game-menu job during play.
 
 **Level switching** uses its own path that reads and writes the master archive. The game's stairs path writes save slots, so reusing it unchanged would put edits in the wrong file.
@@ -123,7 +126,7 @@ Selection, brush and Mv slot are all kept while the menu is open. If an action i
 | Save | Ctrl+S | Write the current level into `DATA\lev.ark`; back up lev.ark before the first save of a session |
 | Revert | none | Reload the level from the archive, discarding unsaved edits (always confirms) |
 | Change level | Page Up / Page Down | Pick a level; clears selection and Mv, since they belong to the old level; camera resets to an open tile |
-| Play | orange button | Save prompt if dirty, then normal game at the camera's tile |
+| Play | orange button | Save prompt if dirty, then normal game at the camera's position and facing (over open floor only) |
 | Exit editor | F9 | Return to the game, same rules as Play |
 
 There is no Open: UW keeps every level in one archive, so opening means picking a level. A dirty flag drives a Save / Discard / Cancel prompt on Change level, Play and Exit, and an unsaved marker in the status bar. Saving uses a generalised `commit_level_to_save_slot` that keeps its player-strip step.
@@ -135,7 +138,24 @@ The palette sets a brush for placing objects; the left panel edits one selected 
 ### Palette and placement
 
 - Built directly from OBJECTS.GR (frame N = type N), so no list is maintained by hand. Art is not a field: it comes from the ID (OBJECTS.GR, CRIT files via ASSOC.ANM, or .E models chosen in code), and was in place before the editor ever saw a type.
-- Category tabs by ID range / class bits. Verify ranges against `g_object_type_props`.
+- Groups by ID range (the original's groups are not known; this set is a guess, to verify against `g_object_type_props` class bits). Each group's icon is a representative object:
+
+  | Group | IDs |
+  | --- | --- |
+  | Weapons | 0x00-0x1F |
+  | Armour | 0x20-0x3F |
+  | Critters | 0x40-0x7F |
+  | Containers | 0x80-0x8F |
+  | Lights, wands | 0x90-0x9F |
+  | Treasure, food | 0xA0-0xBF |
+  | Decor (scenery, bones, plants, debris; the default) | 0xC0-0xDF |
+  | Runes, bits | 0xE0-0xFF |
+  | Keys, books, scrolls | 0x100-0x13F |
+  | Special objects, shrines | 0x140-0x17F |
+  | Traps | 0x180-0x1BF |
+  | Triggers | 0x1C0-0x1FF |
+
+- Clicking a palette icon **arms** it as the brush (orange frame); clicking the armed icon again disarms it. Left clicks on the map or on the 3D floor then place it; the click's position inside the tile sets the object's exact sub-tile position, and it stands on the floor. Right-drag on the map pans it, so a right click never selects or places.
 - With a brush, click a map tile or a 3D floor to place. Exact `xpos`/`ypos` from the click, created through `ed_alloc` with `spawn_new_object` defaults.
 - New critters get `npc_hp` from monster properties and `whoami = 0` (generic behaviour and conversation). Named NPCs get a whoami by hand.
 - Selecting a type in the palette can open its Comm and Class pages directly, so tuning a type never requires placing a temporary instance.
@@ -186,7 +206,7 @@ Pick a tile type and height as a brush, then paint tiles; select-and-edit is als
 - **Palette (bottom-right)**: one icon per tile type: solid, open, four diagonals and four slopes (verify enum values against the loader).
 - **Panel (bottom-left)**: floor height spinner with a side-view preview, brush scope (type only, height only, or both), door and no-magic checkboxes, and a readout of the selected tile's coordinates, type, height, flags, textures and object count.
 - **Painting**: click or drag over tiles on the map or floors in 3D. Modifier-click is an eyedropper that copies a tile's type and height into the brush, rather than a separate pick mode. Modifier-drag paints a rectangle. Raise/lower steps height by one.
-- **Consistency checks** after each stroke (warn, don't block): objects on a newly solid tile (offer move or delete), objects below a raised floor (offer lift), camera inside a solid tile (move it so the visibility flood still has a seed), mismatched slope ends, door bit without a door object or the reverse, diagonals facing solid tiles.
+- **Consistency checks** after each stroke (warn, don't block): objects on a newly solid tile (offer move or delete), objects below a raised floor (offer lift), camera inside a solid tile (allowed, as in Far Sight, but the view draws nothing there and Play refuses; offer to move it out), mismatched slope ends, door bit without a door object or the reverse, diagonals facing solid tiles.
 - **Applying**: one undo snapshot per stroke, write through `uw_tile_t` fields, rebuild geometry caches for affected tiles and neighbours, then `full_dungeon_redraw()` and `set_pending_update_flags(0x7ffe)`. Run VALIDATE if a check moved or deleted objects.
 - **Extras**: map coloured by height (light to dark green, like the original), a side-view cross-section, auto-slope between heights.
 
@@ -222,7 +242,7 @@ Find starts from a recovered dead routine in the decomp that finds the next obje
 3. **Extend criteria** (over every allocated slot, so container contents count): exact type, category, owner, whoami, "what links to this" (find a trap's trigger or a trigger's lever), trigger target tile, and the invisible/enchanted flags. Tile searches (texture slot, type, height, doors) come later.
 
 - **UI**: criteria with a value prefilled from the selection in the bottom-left; a scrollable results list (icon, name, tile, container path) in the bottom-right; result count in the status bar.
-- **Camera**: fly to an open tile beside the object, facing it; never into a solid tile.
+- **Camera**: fly to an open tile beside the object, facing it; if the spot behind it is solid, use the tile's centre. (The free camera itself may enter walls; Find just prefers open floor.)
 - **Validation searches**: traps nothing links to, triggers with no trap or a solid target, whoami with no conversation, owners missing from the level.
 
 ## Cut and copy mode
@@ -239,11 +259,11 @@ Cut and copy work on rectangular regions of tiles on the map, since object mode 
 Build the safety layer first, then a usable inspect-and-tweak object editor, then the painting tools.
 
 1. **Phase 0, safety**: VALIDATE, arena-snapshot undo, `ed_alloc` / `ed_delete`.
-2. **Phase 1, shell**: F9 toggle, `--editor` and the console command, archive reload on entry, simulation pause, free camera (with editor pitch), 320x200 composite, status bar.
+2. **Phase 1, shell**: F9 toggle, `--editor` and the console command, archive reload on entry, simulation pause, free camera in Far Sight mode (lit, through walls; with editor pitch), 320x200 composite, status bar.
 3. **Phase 2, object navigation**: Head/Next/Link/Back cursor, 3D picking, Show.
 4. **Phase 3, object editing**: Item, Comm, Class and critter pages; Move/Copy via Mv; Delete; Replace with brush; trap Set Target; editor markers.
 5. **Phase 4, map pane**: top-down renderer with height colours, object dots, camera cone.
-6. **Phase 5, palette and placement**: OBJECTS.GR palette, tile-index pick buffer for 3D floor clicks.
+6. **Phase 5, palette and placement**: OBJECTS.GR palette with the group bar, ray-cast floor picking in 3D (built); the tile-index pick buffer is still needed for wall faces.
 7. **Phase 6, saving and menu**: Escape popup, Save/Revert/Change level/Play, archive writer, dirty flag, backup.
 8. **Phase 7, terrain**: tile and terrain mode, texture painter, fill.
 9. **Phase 8, search and cut/copy**: recovered find-next, criteria, validation searches, region copy.
