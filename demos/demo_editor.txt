@@ -299,6 +299,18 @@ WAIT 20
 SDLCLICK 330 130
 WAIT 10
 EDITOR validate
+# view modes (the Eye button): Triggers and Markers draw editor sprites in the 3D view, then back to Preview; the mode is kept
+SDLCLICK 330 162
+WAIT 10
+SDLCLICK 80 324
+WAIT 40
+SDLCLICK 80 356
+WAIT 40
+SDLCLICK 80 292
+WAIT 40
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
 # undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
 EDITOR selftest
 WAIT 10

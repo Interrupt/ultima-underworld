@@ -73,6 +73,8 @@ static int g_sel_slot;            /* object slot index, 0 == none */
 static ushort *g_sel_link;        /* the link field that holds the selected object: its tile's, the previous
                                      object's chain word, or a container's contents word */
 static int g_held_slot;           /* Move or Copy in progress: the object picked up, 0 == none ("Mv:" box) */
+enum { VIEW_PREVIEW, VIEW_TRIGGERS, VIEW_MARKERS, VIEW_MODES };
+static int g_view_mode = VIEW_PREVIEW;   /* the Eye button's view mode, kept while the editor is closed */
 static int g_dirty;               /* the level has edits that are not saved in the master archive */
 static int g_tab = -1;            /* the picked-object editor tab shown instead of the position view: 0 Class, 1 Comm, 2 Item */
 static int g_held_copy;           /* the held object is copied, not moved, when it is put down */
@@ -366,8 +368,9 @@ static const ed_group_t g_groups[] = {
   { 0xe0, 0x20, 0xe0 },   /* runes, bits */
   { 0x100, 0x40, 0x100 }, /* keys, books, scrolls */
   { 0x140, 0x40, 0x157 }, /* special objects, shrines */
-  { 0x180, 0x40, 0x180 }, /* traps */
-  { 0x1c0, 0x40, 0x1c0 }, /* triggers */
+  { 0x180, 0x20, 0x180 }, /* traps */
+  { 0x1a0, 0x20, 0x1a0 }, /* triggers */
+  { 0x1c0, 0x40, 0x1c0 }, /* decals and effects: blood, smoke, explosions, a sound source */
 };
 #define GROUP_COUNT ((int)(sizeof g_groups / sizeof g_groups[0]))
 #define GROUPS_SHOWN 5
@@ -462,16 +465,16 @@ enum { TAB_CLASS, TAB_COMM, TAB_ITEM };
 #define PAGE_ROW_H 7
 static const ed_field_t g_crit_fields[] = { { "HP", K_HP, 255 }, { "Goal", K_GOAL, 15 }, { "Target", K_TARGET, 255 }, { "Level", K_LEVEL, 15 }, { "Attit", K_ATTIT, 3 }, { "Talked", K_TALKED, 1 } };
 static const ed_field_t g_item_fields[] = { { "Qual", K_QUAL, 63 }, { "Owner", K_OWNER, 63 }, { "Ench", K_ENCH, 1 }, { "Invis", K_INVIS, 1 }, { "Door", K_DOOR, 1 } };
-/* Traps (0x180-0x1BF) pack their parameters into the quality, owner and height fields; what they mean comes from the game's own trap
-   dispatch (traps.c). Types not listed have the generic page. Triggers (0x1C0-0x1FF) keep a target tile in quality and owner; that is
+/* Traps (0x180-0x19F) pack their parameters into the quality, owner and height fields; what they mean comes from the game's own trap
+   dispatch (traps.c). Types not listed have the generic page. Triggers (0x1A0-0x1BF) keep a target tile in quality and owner; that is
    the plan's guess, not confirmed. */
-static const ed_field_t g_trap_damage[] = { { "Damage", K_QUAL, 63 }, { "Sign", K_OWNER, 1 } };                          /* 0x180 */
-static const ed_field_t g_trap_teleport[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Level", K_ZPOS, 127 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x181 */
-static const ed_field_t g_trap_spawn[] = { { "Chance", K_QUAL, 63 } };                                                   /* 0x187 */
-static const ed_field_t g_trap_door[] = { { "Action", K_QUAL, 3 } };                                                     /* 0x188: 1 close, 2 open, 3 toggle */
-static const ed_field_t g_trap_remove[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x18B */
-static const ed_field_t g_trap_generic[] = { { "Qual", K_QUAL, 63 }, { "Owner", K_OWNER, 63 }, { "Height", K_ZPOS, 127 } };
-static const ed_field_t g_trigger_fields[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Height", K_ZPOS, 127 }, { "Set Target", K_SET_TARGET, 0 } };
+static const ed_field_t g_trap_damage[] = { { "Damage", K_QUAL, 63 }, { "Sign", K_OWNER, 1 }, { "Invis", K_INVIS, 1 } };                          /* 0x180 */
+static const ed_field_t g_trap_teleport[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Level", K_ZPOS, 127 }, { "Invis", K_INVIS, 1 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x181 */
+static const ed_field_t g_trap_spawn[] = { { "Chance", K_QUAL, 63 }, { "Invis", K_INVIS, 1 } };                                                   /* 0x187 */
+static const ed_field_t g_trap_door[] = { { "Action", K_QUAL, 3 }, { "Invis", K_INVIS, 1 } };                                                     /* 0x188: 1 close, 2 open, 3 toggle */
+static const ed_field_t g_trap_remove[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Invis", K_INVIS, 1 }, { "Set Target", K_SET_TARGET, 0 } };   /* 0x18B */
+static const ed_field_t g_trap_generic[] = { { "Qual", K_QUAL, 63 }, { "Owner", K_OWNER, 63 }, { "Height", K_ZPOS, 127 }, { "Invis", K_INVIS, 1 } };
+static const ed_field_t g_trigger_fields[] = { { "TileX", K_QUAL, 63 }, { "TileY", K_OWNER, 63 }, { "Height", K_ZPOS, 127 }, { "Invis", K_INVIS, 1 }, { "Set Target", K_SET_TARGET, 0 } };
 
 /* A field in a table of fixed-size records: where it is in the record, and which bits of it. */
 typedef struct { const char *name; unsigned char off, bytes, shift, bits; } ed_fdesc_t;
@@ -547,8 +550,8 @@ static const ed_field_t *item_fields(const uw_object_hdr_t *o, int *count)
 {
   int id = o->object_id;
   if (slot_is_mobile(o)) { *count = (int)(sizeof g_crit_fields / sizeof *g_crit_fields); return g_crit_fields; }
-  if ((id & 0x1c0) == 0x1c0) { *count = (int)(sizeof g_trigger_fields / sizeof *g_trigger_fields); return g_trigger_fields; }
-  if ((id & 0x1c0) == 0x180) {
+  if ((id & 0x1e0) == 0x1a0) { *count = (int)(sizeof g_trigger_fields / sizeof *g_trigger_fields); return g_trigger_fields; }
+  if ((id & 0x1e0) == 0x180) {
     switch (id & 0x3f) {
       case 0: *count = (int)(sizeof g_trap_damage / sizeof *g_trap_damage); return g_trap_damage;
       case 1: *count = (int)(sizeof g_trap_teleport / sizeof *g_trap_teleport); return g_trap_teleport;
@@ -776,7 +779,7 @@ static void draw_info_bar(void)
   fill(R_INFO.x0, R_INFO.y0, R_INFO.x1, R_INFO.y1, COL_INFO_BG);
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
   text(line, 2, 193, COL_TEXT);
-  snprintf(line, sizeof line, "Map= Lvl %d%s %d,%d", DAT_00201b68, g_dirty ? "*" : "", x >> 8, y >> 8);
+  snprintf(line, sizeof line, "Map= Lvl %d%s%s %d,%d", DAT_00201b68, g_dirty ? "*" : "", g_view_mode ? (g_view_mode == 1 ? " [trig]" : " [mark]") : "", x >> 8, y >> 8);
   if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));   /* replaces the map position while it shows */
   else text(line, 150, 193, COL_TEXT);
   {
@@ -2220,13 +2223,13 @@ static int find_test(const uw_object_hdr_t *o, int slot)
     case FC_OWNER: return !o->is_quant && o->owner == (unsigned)g_find_value && g_find_value != 0;
     case FC_WHOAMI: return slot_is_mobile(o) && m->npc_whoami == g_find_value;
     case FC_LINKED: return g_sel_slot && !o->is_quant && o->link == (unsigned)g_sel_slot;
-    case FC_TARGET: return ((id & 0x1c0) == 0x1c0 || id == 0x181 || id == 0x18b) && o->quality == (unsigned)g_sel_tx && o->owner == (unsigned)g_sel_ty;
+    case FC_TARGET: return ((id & 0x1e0) == 0x1a0 || id == 0x181 || id == 0x18b) && o->quality == (unsigned)g_sel_tx && o->owner == (unsigned)g_sel_ty;
     case FC_FLAGS: return g_find_value == 1 ? o->invisible : g_find_value == 2 ? o->enchanted : 0;
-    case FC_ORPHAN_TRAPS: return (id & 0x1c0) == 0x180 && !g_find_linked[slot & 0x3ff];
+    case FC_ORPHAN_TRAPS: return (id & 0x1e0) == 0x180 && !g_find_linked[slot & 0x3ff];
     case FC_BAD_TRIGGERS: {
-      if ((id & 0x1c0) != 0x1c0) return 0;
+      if ((id & 0x1e0) != 0x1a0) return 0;
       const uw_object_hdr_t *trap = !o->is_quant && o->link ? object_at(o->link) : NULL;
-      return !trap || (trap->object_id & 0x1c0) != 0x180 || !tile_is_open(o->quality, o->owner);
+      return !trap || (trap->object_id & 0x1e0) != 0x180 || !tile_is_open(o->quality, o->owner);
     }
     case FC_NO_CONVERSATION: return slot_is_mobile(o) && m->npc_whoami != 0 && !find_conversation_exists(o);
     case FC_OWNER_MISSING: return !o->is_quant && o->owner && g_object_type_props[id].can_have_owner && !g_find_whoami[o->owner & 255];
@@ -2564,6 +2567,110 @@ static int cutcopy_click(int x, int y, int button)
   return 0;
 }
 
+/* ---- the Eye button: view modes ---- */
+
+/* What the 3D view draws as editor sprites (see UW_EDITOR_SPRITE_BASE in editor.h): Preview nothing, as the game would; Triggers the invisible
+   objects, traps and triggers; Markers every object. The mode is kept while the editor is closed and opened again. */
+static const char *const g_view_names[VIEW_MODES] = { "Preview", "Triggers", "Markers" };
+static const char *const g_view_help[VIEW_MODES] = { "as the game would", "invisible things show", "every object shows" };
+
+int uw_editor_view_object(unsigned object_word)
+{
+  if (!g_active || g_view_mode == VIEW_PREVIEW) return 0;
+  if (g_view_mode == VIEW_MARKERS) return 1;
+  /* Triggers: an invisible object (bit 14), or a trap (0x180-0x19F) or a trigger (0x1A0-0x1BF), which are class 6 */
+  return (object_word & 0x4000) != 0 || (object_word & 0x1c0) == 0x180;
+}
+
+/* The sprite an object draws as: its own icon, if the game has one for it; otherwise a diamond coloured for what it is (a trap red, a trigger
+   blue, anything else yellow). Palette-index pixels with 0 transparent, cached per object type. */
+static unsigned char nearest_palette_index(int r, int g, int b)
+{
+  int best = 1, best_d = 1 << 30;
+  for (int i = 1; i < 256; i++) {
+    unsigned short c = (unsigned short)(&g_palette_rgb565)[i];
+    int dr = ((c >> 11) & 31) * 255 / 31 - r, dg = ((c >> 5) & 63) * 255 / 63 - g, db = (c & 31) * 255 / 31 - b;
+    int d = dr * dr + dg * dg + db * db;
+    if (d < best_d) { best_d = d; best = i; }
+  }
+  return (unsigned char)best;
+}
+
+const unsigned char *uw_editor_marker_pixels(int id, int *w, int *h)
+{
+  static unsigned char cache[512][32 * 32];
+  static unsigned char cw[512], ch[512], have[512];
+  if (id < 0 || id >= 512) return NULL;
+  if (!have[id]) {
+    int ok = 0;
+    char *rec = (char *)lookup_grtile_by_id((short)resolve_sprite_id_to_frame(id));
+    if (rec && rec[1] > 0 && rec[1] <= 32 && rec[2] > 0 && rec[2] <= 32) {
+      int sw = (unsigned char)rec[1], sh = (unsigned char)rec[2];
+      const unsigned char *px = rec[0] == 4 ? (unsigned char *)rec + 5
+          : (const unsigned char *)decompress_gr_bitmap(rec + 4, &DAT_00202520 + (unsigned char)rec[3] * 0x10, rec[0]);
+      for (int i = 0; px && i < sw * sh && !ok; i++) if (px[i]) ok = 1;
+      if (ok) { memcpy(cache[id], px, (size_t)sw * sh); cw[id] = (unsigned char)sw; ch[id] = (unsigned char)sh; }
+    }
+    if (!ok) {   /* no icon: a diamond */
+      int r = 255, g = 224, b = 64;
+      if ((id & 0x1e0) == 0x180) { r = 255; g = 64; b = 64; }
+      else if ((id & 0x1e0) == 0x1a0) { r = 64; g = 96; b = 255; }
+      unsigned char fill_c = nearest_palette_index(r, g, b), edge = nearest_palette_index(r / 3, g / 3, b / 3);
+      memset(cache[id], 0, 12 * 12);
+      for (int y = 0; y < 12; y++)
+        for (int x = 0; x < 12; x++) {
+          int d = abs(x - 5) + abs(y - 5);
+          if (d <= 5) cache[id][y * 12 + x] = d == 5 ? edge : fill_c;
+        }
+      cw[id] = ch[id] = 12;
+    }
+    have[id] = 1;
+  }
+  *w = cw[id]; *h = ch[id];
+  return cache[id];
+}
+
+static void set_view_mode(int mode)
+{
+  if (mode == g_view_mode) return;
+  g_view_mode = mode;
+  set_pending_update_flags(0x7ffe);
+  full_dungeon_redraw();
+  dirty_rect_union(0, 200, 0, 0x140);
+}
+
+static void draw_view_mode(void)
+{
+  frame(0, 126, 150, 190, COL_FRAME);
+  text("View", 4, 128, COL_TEXT);
+  for (int i = 0; i < VIEW_MODES; i++) {
+    int y = 140 + i * 16;
+    frame(4, y, 86, y + 13, i == g_view_mode ? COL_BLUE : COL_ORANGE);
+    if (i == g_view_mode) fill(5, y + 1, 85, y + 12, RGB(24, 24, 88));
+    text(g_view_names[i], 8, y + 1, i == g_view_mode ? COL_TEXT : COL_ORANGE);
+    text(g_view_help[i], 8, y + 7, COL_FRAME);
+  }
+  frame(R_FIND_LIST.x0, R_FIND_LIST.y0, R_FIND_LIST.x1, R_FIND_LIST.y1, COL_FRAME);
+  text("Editor sprites", R_FIND_LIST.x0 + 6, R_FIND_LIST.y0 + 4, COL_TEXT);
+  static const int legend_ids[3] = { 0x181, 0x1a0, 0xc2 };   /* a trap, a trigger, anything else */
+  static const char *const legend[3] = { "trap", "trigger", "invisible object" };
+  for (int i = 0; i < 3; i++) {
+    int w, h, y = R_FIND_LIST.y0 + 16 + i * 14;
+    const unsigned char *px = uw_editor_marker_pixels(legend_ids[i] == 0xc2 ? 0x1ff : legend_ids[i], &w, &h);
+    if (px) for (int yy = 0; yy < h; yy++) for (int xx = 0; xx < w; xx++) if (px[yy * w + xx]) put(R_FIND_LIST.x0 + 8 + xx, y + yy, (unsigned short)(&g_palette_rgb565)[px[yy * w + xx]]);
+    text(legend[i], R_FIND_LIST.x0 + 28, y + 3, COL_ORANGE);
+  }
+  text("clickable, like any object", R_FIND_LIST.x0 + 6, R_FIND_LIST.y0 + 60, COL_FRAME);
+}
+
+static int view_mode_click(int x, int y, int button)
+{
+  (void)button;
+  for (int i = 0; i < VIEW_MODES; i++)
+    if (x >= 4 && x < 86 && y >= 140 + i * 16 && y < 153 + i * 16) { set_view_mode(i); return 1; }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -2727,7 +2834,7 @@ void uw_editor_selftest(void)
     uw_editor_undo();
     selftest_expect(&before, "undoing Set Target");
     int n; const ed_field_t *tf = item_fields(trap, &n);
-    if (n != 4 || tf[0].kind != K_QUAL || tf[3].kind != K_SET_TARGET) { fprintf(stderr, "[editor] selftest FAILED: the teleport trap page\n"); abort(); }
+    if (n != 5 || tf[0].kind != K_QUAL || tf[4].kind != K_SET_TARGET) { fprintf(stderr, "[editor] selftest FAILED: the teleport trap page\n"); abort(); }
     g_selftest_checks++;
   }
 
@@ -2875,7 +2982,7 @@ void uw_editor_selftest(void)
       int skull = g_sel_slot;
       op_place(0x181, tiles[2][0], tiles[2][1], 4, 4);   /* a trap nothing links to */
       int trap = g_sel_slot;
-      op_place(0x1c0, tiles[3][0], tiles[3][1], 4, 4);   /* a trigger with no trap */
+      op_place(0x1a0, tiles[3][0], tiles[3][1], 4, 4);   /* a trigger with no trap */
       int trigger = g_sel_slot;
       op_place(0x44, tiles[4][0], tiles[4][1], 4, 4);    /* a creature whose whoami has no conversation */
       uw_mobile_object_t *critter = (uw_mobile_object_t *)object_at(g_sel_slot);
@@ -3452,6 +3559,7 @@ static void draw_mode(void)
     case M_TEXTURE: draw_texture_mode(); break;
     case M_FILL: draw_fill_mode(); break;
     case M_FIND: draw_find_mode(); break;
+    case M_VIEW: draw_view_mode(); break;
     case M_CUTCOPY: draw_cutcopy(); break;
     case M_PASTE: draw_paste(); break;
     default: draw_mode_placeholder(); break;
@@ -3466,6 +3574,7 @@ static int mode_click(int x, int y, int button)
     case M_TEXTURE: return texture_mode_click(x, y, button);
     case M_FILL: return fill_mode_click(x, y, button);
     case M_FIND: return find_mode_click(x, y, button);
+    case M_VIEW: return view_mode_click(x, y, button);
     case M_CUTCOPY: return cutcopy_click(x, y, button);
     default: return 0;
   }

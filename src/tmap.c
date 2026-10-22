@@ -1,6 +1,7 @@
 /* The dungeon tile map: the tile-record lookup accessor, the per-frame visible-tile
    walk/collection, per-tile wall/floor/object emission, and the final visible-tile-list
    rasterization pass. */
+#include "headers/editor.h"
 #include "headers/tmap.h"
 #include "headers/options.h"
 #include <math.h>
@@ -1692,7 +1693,9 @@ void emit_tile_objects(ushort *tile)
   if (tile == g_player_object) {
     return;
   }
-  if ((*tile & 0x4000) == 0x4000) {
+  /* HACK: not original behaviour -- the level editor's Triggers and Markers view modes draw some objects as editor sprites, even invisible ones. */
+  int _editor_sprite = uw_editor_view_object(*tile);
+  if ((*tile & 0x4000) == 0x4000 && !_editor_sprite) {
     return;
   }
   if (DAT_0023b830 != 0) {
@@ -1962,6 +1965,10 @@ void emit_tile_objects(ushort *tile)
   }
   else {
     uVar27 = uVar27 & 0x1ff;
+  }
+  if (_editor_sprite) {
+    uVar27 = UW_EDITOR_SPRITE_BASE + (*tile & 0x1ff);
+    goto LAB_emit_mesh_sprite_quad;
   }
   if ((bVar1 & 3) == 0) {
     if ((((ushort)uVar27 & 0x1e0) == 0xe0) && ((uVar27 & 0x18) != 0)) {

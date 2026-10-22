@@ -152,8 +152,9 @@ The palette sets a brush for placing objects; the left panel edits one selected 
   | Runes, bits | 0xE0-0xFF |
   | Keys, books, scrolls | 0x100-0x13F |
   | Special objects, shrines | 0x140-0x17F |
-  | Traps | 0x180-0x1BF |
-  | Triggers | 0x1C0-0x1FF |
+  | Traps | 0x180-0x19F |
+  | Triggers | 0x1A0-0x1BF |
+  | Decals and effects (blood, smoke, explosions, a sound source; class 7) | 0x1C0-0x1FF |
 
 - Clicking a palette icon **arms** it as the brush (orange frame); clicking the armed icon again disarms it. Left clicks on the map or on the 3D floor then place it; the click's position inside the tile sets the object's exact sub-tile position, and it stands on the floor. Right-drag on the map pans it, so a right click never selects or places.
 - With a brush, click a map tile or a 3D floor to place. Exact `xpos`/`ypos` from the click, created through `ed_alloc` with `spawn_new_object` defaults.
@@ -194,7 +195,7 @@ Picking a brush keeps the selection. **Replace with brush** is an explicit butto
 
 ### Traps, triggers and markers
 
-- Traps (around 0x180-0x19F) and triggers are invisible objects whose parameters are packed into quality, owner and position fields; each trap type gets its own small parameter page.
+- Traps (0x180-0x19F) and triggers (0x1A0-0x1BF; both are object class 6) are invisible objects whose parameters are packed into quality, owner and position fields; each trap type gets its own small parameter page.
 - Chain: switch or lever, then trigger, then trap (often only on the link chain, not a tile list).
 - Triggers store a target tile, believed to be quality/owner (verify). **Set Target**: select a trigger, then click a tile.
 - The editor draws invisible objects, traps and triggers as icon billboards so they can be seen and clicked (they then land in the pick buffer). A view toggle hides them.
@@ -311,5 +312,6 @@ Updated as work lands; the phases above say what each item is, this says what ex
 - **Map pane:** floors are coloured from their real height (dark green low, light green high), diagonal tiles draw as triangles (wall on one side of the line), and a slope ramps through its real heights from its floor height to its higher neighbour's, so angled walls and stairs read on the map.
 - **Find:** built. `find_object_in_world` (the game's own find-next: tile chains in row order, into containers, cursor left on the tile found) is named in the function database, documented and unit-tested (`object_core`); Find collects every match with the same scan. Criteria: exact type, palette category, owner, whoami, what links to the selected object, what targets the selected tile, invisible / enchanted; validation searches: traps nothing links to, triggers with no trap (or a solid target tile), named creatures with no conversation, owners no creature in the level is. Prev / Next fly the camera to an open tile beside the match, facing it (an object in a container is selected through its containers, with Back to return); All fills the results list; a click on a result goes to it. Tile searches (texture slot, type, height, doors) are not built.
 - **Cut, copy and paste:** built (tiles only: type, height, door and no-magic flags, both texture slots). Cut / Copy mode: drag a rectangle on the map, Copy or Cut (cut copies, then makes the region solid); Paste mode: a preview outline follows the pointer and a click puts the clipboard's top left there, with an undo step first and the tile checks run on the destination; a picture of the clipboard shows in the palette area. Bringing objects along is not built.
-- **Not built yet:** the Eye view modes and editor markers,  cut / copy.
+- **View modes (the Eye button):** built. Preview / Triggers / Markers, kept while the editor is closed and reopened, with a [trig] or [mark] tag in the status bar. The 3D pass draws an object as an editor sprite (an object's own icon if the game has one, else a coloured diamond: a trap red, a trigger blue, anything else yellow) by giving the billboard path a sprite frame in the range 0x6000 + object id, so the sprite is in the pick buffer and can be clicked. The plan's id ranges were corrected from the game's own names: traps are 0x180-0x19F, triggers 0x1A0-0x1BF, and 0x1C0-0x1FF are decals and effects.
+- **Remaining:** none of the goal's items; open questions below.
 - **Dropped for now (by request):** the map view cone and zoom, and the viewport struct.

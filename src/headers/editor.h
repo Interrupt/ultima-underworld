@@ -47,6 +47,12 @@ int uw_editor_validate(void);
 /* The mouse wheel turned (dy > 0 is up) with the pointer at a screen point. */
 void uw_editor_wheel(int x, int y, int dy);
 
+/* The editor's view modes (the Eye button): what the 3D view draws as editor sprites. In Preview the game draws as it would; in Triggers the
+   invisible objects, traps and triggers draw as sprites too; in Markers every object does. They apply only while the editor is on. */
+#define UW_EDITOR_SPRITE_BASE 0x6000   /* sprite frames 0x6000 + object id are editor sprites */
+int uw_editor_view_object(unsigned object_word);   /* nonzero: draw this object as an editor sprite (and draw it even if invisible) */
+const unsigned char *uw_editor_marker_pixels(int object_id, int *width, int *height);   /* its palette-index pixels */
+
 /* Builds the editor screen into `display` (320-wide landscape RGB565). Returns nonzero if it did. */
 int uw_editor_compose(unsigned short *display);
 
