@@ -429,6 +429,12 @@ void uw_pump_events(void) {
                     dbgui_toggle();
                     return;
                 }
+                if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_s &&
+                    (ev.key.keysym.mod & KMOD_CTRL) && uw_editor_active()) {
+                    if (ev.key.keysym.mod & KMOD_SHIFT) uw_editor_export();   /* Ctrl+Shift+S: the edited level archive */
+                    else uw_editor_save();   /* Ctrl+S saves the level being edited */
+                    return;
+                }
                 if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_F9) {
                     uw_editor_toggle(0);   /* the level editor, see editor.c */
                     return;

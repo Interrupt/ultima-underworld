@@ -16,6 +16,12 @@ void uw_editor_tick(void);
 /* A mouse button pressed at a screen point (the 320x200 editor screen). */
 void uw_editor_click(int x, int y, int button);
 
+/* Save the level being edited into the working save (SAVE0\\LEV.ARK). Also Ctrl+S, the demo command EDITOR save, and the
+   orange button under the mode palette. */
+void uw_editor_save(void);
+/* Write the level into an edited copy of the level archive, DATA\\LEV_EDIT.ARK (Ctrl+Shift+S, or EDITOR export). */
+void uw_editor_export(void);
+
 /* Walks every tile chain and checks the object lists are consistent; returns the number of problems (0 == good). */
 int uw_editor_validate(void);
 

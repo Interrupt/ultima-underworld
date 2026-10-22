@@ -19,6 +19,9 @@
 #include "headers/objects.h"
 #include "headers/3d.h"
 #include "headers/ai.h"
+#include "headers/debug_ui.h"
+#include "headers/saveload.h"
+#include "headers/file_io.h"
 #include "headers/traps.h"
 
 #include <SDL.h>
@@ -505,7 +508,7 @@ static void draw_info_bar(void)
   fill(R_INFO.x0, R_INFO.y0, R_INFO.x1, R_INFO.y1, COL_INFO_BG);
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
   text(line, 2, 193, COL_TEXT);
-  snprintf(line, sizeof line, "Map= Lvl %d %d,%d", DAT_00201b68 + 1, x >> 8, y >> 8);
+  snprintf(line, sizeof line, "Map= Lvl %d %d,%d", DAT_00201b68, x >> 8, y >> 8);
   if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));   /* replaces the map position while it shows */
   else text(line, 150, 193, COL_TEXT);
   {
@@ -534,6 +537,15 @@ int uw_editor_compose(unsigned short *display)
   draw_object_editor();
   draw_info_bar();
   g_uw_framebuffer = saved;
+  {
+    /* the debug panel or console (drawn by the game into its own framebuffer) stays on top */
+    const unsigned short *hud = (const unsigned short *)saved;
+    int x0, y0, x1, y1;
+    if (hud && dbgui_overlay_rect(&x0, &y0, &x1, &y1)) {
+      x0 = x0 < 0 ? 0 : x0; y0 = y0 < 0 ? 0 : y0; x1 = x1 > ED_W ? ED_W : x1; y1 = y1 > ED_H ? ED_H : y1;
+      for (int y = y0; y < y1 && x1 > x0; y++) memcpy(g_screen + y * ED_W + x0, hud + y * ED_W + x0, (size_t)(x1 - x0) * sizeof *g_screen);
+    }
+  }
   memcpy(display, g_screen, sizeof g_screen);
   return 1;
 }
@@ -627,7 +639,7 @@ int uw_editor_validate(void)
   memset(seen, 0, sizeof seen);
   for (int ty = 0; ty < 64; ty++)
     for (int tx = 0; tx < 64; tx++) objects += validate_chain(tile_head(tx, ty), tx, ty, seen, 0, &problems);
-  fprintf(stderr, "[editor] validate: %d objects reachable, %d problems\n", objects, problems);
+  fprintf(stderr, "[editor] validate level %d: %d objects reachable, %d problems\n", DAT_00201b68, objects, problems);
   return problems;
 }
 
@@ -766,6 +778,39 @@ static void op_put_down(int tx, int ty, int sub_x, int sub_y)
   }
   g_held_slot = 0;
   uw_editor_validate();
+}
+
+/* Save the level being edited into the working save (SAVE0\\LEV.ARK), with the game's own level commit: it writes the
+   level's tile map and objects (and the texture map and automap reveal) and takes the player out of the level and back,
+   as when the player leaves a level. The edited level is read back from there when the level is next entered. The edits
+   are the level as it is now in memory, so creatures keep whatever the simulation did to them before the editor was
+   turned on. */
+void uw_editor_save(void)
+{
+  if (!g_active) return;
+  if (g_held_slot) { g_status = "put the object down first"; return; }
+  if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
+  int ok = commit_level_to_save_slot((int)DAT_00201b68);
+  g_status = ok ? "level saved" : "save failed";
+  fprintf(stderr, "[editor] save level %d: %s\n", DAT_00201b68, ok ? "ok" : "failed");
+}
+
+/* Write the level being edited into an edited copy of the game's level archive, DATA\\LEV_EDIT.ARK: a copy of
+   DATA\\LEV.ARK the first time, then updated in place, so the edits to several levels collect in the one file. Rename it
+   LEV.ARK to play it. The player's automap is not written into it. As with the save, this is the level as it is in
+   memory now. */
+void uw_editor_export(void)
+{
+  static char path[] = "\\DATA\\LEV_EDIT.ARK";
+  if (!g_active) return;
+  if (g_held_slot) { g_status = "put the object down first"; return; }
+  if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
+  int have = uw_file_open_read(path);
+  if (have != -1) uw_file_close(have);
+  else if (!uw_file_copy("\\DATA\\LEV.ARK", path)) { g_status = "could not copy LEV.ARK"; return; }
+  int ok = commit_level_to_archive((int)DAT_00201b68, path, 0);
+  g_status = ok ? "exported to LEV_EDIT.ARK" : "export failed";
+  fprintf(stderr, "[editor] export level %d to LEV_EDIT.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
 }
 
 /* Show: bring the camera next to the selected object's tile, looking at it. */
@@ -928,6 +973,9 @@ void uw_editor_click(int x, int y, int button)
       else select_tile(tx, ty);
     }
   }
+  else if (in_rect(&R_PALETTE, x, y) && y >= 175 && x >= 156 && x < 172) {
+    uw_editor_save();   /* the orange button below the modes (a guess; see editor-research) */
+  }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;
     if (y >= 26 && i < 8 && x >= 156 && x < 172) g_mode = i;
@@ -996,7 +1044,7 @@ static void try_move(int dx, int dy)
 
 void uw_editor_tick(void)
 {
-  if (!g_active || DAT_00201b64 != 0 || DAT_0023b82c != 0) return;
+  if (!g_active || DAT_00201b64 != 0 || DAT_0023b82c != 0 || dbgui_visible()) return;   /* typing in the console is not flying */
 #define KEY(sc) uw_scancode_held(sc)
   int fwd = (KEY(SDL_SCANCODE_UP) || KEY(SDL_SCANCODE_W)) - (KEY(SDL_SCANCODE_DOWN) || KEY(SDL_SCANCODE_S));
   int strafe = KEY(SDL_SCANCODE_D) - KEY(SDL_SCANCODE_A);

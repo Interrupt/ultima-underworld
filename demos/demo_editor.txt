@@ -159,9 +159,13 @@ SDLCLICK 630 306
 WAIT 5
 SDLCLICK 260 318
 WAIT 10
-EDITOR off
+# save the level into the working save (not export: that would write into the shared DATA directory)
+EDITOR save
+WAIT 30
+EDITOR validate
+EDITOR
 WAIT 20
-EDITOR on
+EDITOR
 WAIT 20
 EDITOR off
 WAIT 10
