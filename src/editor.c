@@ -223,7 +223,7 @@ static void draw_map_pane(void)
 }
 
 /* BUTTONS.GR frames of the mode palette, top to bottom (14x14 each). */
-static const int g_mode_frames[8] = { 3, 4, 5, 7, 8, 9, 10, 11 };
+static const int g_mode_frames[8] = { 3, 4, 5, 7, 8, 9, 10, 14 };   /* the last is the paint bucket (fill) */
 
 static void draw_palette_pane(void)
 {
