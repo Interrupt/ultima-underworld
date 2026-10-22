@@ -20,9 +20,14 @@ extern void * DAT_000c4838_backing[4096];
 #define DAT_000c4838 DAT_000c4838_backing[0]
 extern int DAT_000c8c98;
 extern undefined2 DAT_000da47c;
-/* HACK: not original behaviour -- extra rows of darkening for the triangle being rasterised: the shade level
-   of a DOS model face (models_dos.c), 0 for everything else. Read by shade_span_pixel. */
-extern int g_face_shade_rows;
+/* HACK: not original behaviour -- a DOS model face's shade (models_dos.c). The triangle being rasterised, when
+   g_face_shade_active, is darkened by s0 + dx*(x - x0) + dy*(y - y0) light-table rows in 8.8 fixed point,
+   a plane tmap.c fits through its corners' shades: screen-space interpolation, as the DOS scan converter does.
+   raster_textured_span turns it into g_face_shade_fixed for each pixel, which shade_span_pixel adds to the
+   distance row. All zero for everything else. */
+extern int g_face_shade_active;
+extern double g_face_shade_x0, g_face_shade_y0, g_face_shade_s0, g_face_shade_dx, g_face_shade_dy;
+extern int g_face_shade_fixed;
 extern undefined4 DAT_000db438;
 extern undefined4 DAT_000db43c;
 extern undefined4 DAT_000db440;

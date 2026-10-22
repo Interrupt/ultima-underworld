@@ -9,7 +9,8 @@ unsigned char g_fullbright_palette_mask[256];
 uw_extra_light_t g_extra_lights[UW_MAX_EXTRA_LIGHTS];
 int g_extra_light_count;
 int g_view_fullscreen;
-int g_face_shade_rows;
+int g_face_shade_active, g_face_shade_fixed;
+double g_face_shade_x0, g_face_shade_y0, g_face_shade_s0, g_face_shade_dx, g_face_shade_dy;
 double uw_fullscreen_proj_cy(void) { return 84.0; }
 byte lighting_span_shade = 88;
 char *g_selected_object;

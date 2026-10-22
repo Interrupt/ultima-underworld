@@ -81,11 +81,12 @@
  * face. See that function's comment for the auxiliary-palette mapping.
  *
  * Shading: the bytecode also shades each face. 0x00bc's second operand is a flat shade level, and 0x00d4
- * gives vertices a shade byte each (0x00d6 marks the faces that take their vertices' average). Levels run
- * 0-7 with 0 brightest -- the shrine's upward faces are 1-2 and its undersides 5-6 -- and are reported out
- * of band, like the colour, by uw_dos_model_face_shade. The renderer darkens a face by that many rows of
- * the light table; one row per level is an assumption, not something measured against the DOS engine. The
- * vertex shades are averaged per face rather than interpolated across it.
+ * gives vertices a shade byte each (0x00d6 marks the faces that take their vertices' shades). A level is a
+ * row of the light table, 0 brightest -- the shrine's upward faces are 1-2 and its undersides 5-6; the DOS
+ * engine adds it to the object's own light level and clamps the sum to 14 or 15. It is reported out of
+ * band, like the colour, one value per corner of each emitted part by uw_dos_model_face_vertex_shade. The
+ * renderer darkens each corner by that many rows and interpolates across the face in screen space, which is
+ * what the DOS scan converter does (cimmerianpit/openabyss's uw_shade.c, from the original's code).
  *
  * ---- Draw order, and what is still wrong -----------------------------------
  *
@@ -198,9 +199,9 @@ typedef struct {
   /* Index into the model's auxiliary palette, from the colour in force when
      this face was emitted. */
   int colour;
-  /* Shade level from the bytecode: the flat level in force (0x00bc), or the rounded average of the face's
-     vertices' shades (0x00d4); -1 when the model gives none. */
-  int shade;
+  /* Shade level of each corner from the bytecode: the flat level in force (0x00bc) for all of them, or that
+     vertex's own (0x00d4); -1 when the model gives none. */
+  signed char shade[DOS_MAX_FACE_VERTS];
 } dos_face;
 
 typedef struct {
@@ -220,7 +221,7 @@ typedef struct {
 /* Per-emitted-part colour index, by DOS model. -1 = none, which is what the
    Pocket PC path sees because nothing ever fills it there. */
 static signed char g_face_colour[32][DOS_MAX_FACES];
-static signed char g_face_shade[32][DOS_MAX_FACES];
+static signed char g_face_shade[32][DOS_MAX_FACES][4];   /* up to four corners a part; -1 = none */
 static int g_face_colour_ready;
 
 /* A Color operand is a data-segment offset into the model's auxiliary palette;
@@ -399,16 +400,10 @@ static void face_add(dos_model *m, const int *idx, int n, int keep_first)
   for (int i = 0; i < n; i++) {
     f->idx[i] = idx[i];
   }
-  f->shade = -1;
-  if (m->flat_faces) {
-    f->shade = m->cur_flat_shade;
-  } else {
-    int sum = 0, known = 0;
-    for (int i = 0; i < n; i++) {
-      int v = idx[i];
-      if (v >= 0 && v < DOS_MAX_VERTS && m->vert_shade[v] >= 0) { sum += m->vert_shade[v]; known++; }
-    }
-    if (known) f->shade = (sum + known / 2) / known;
+  for (int i = 0; i < n; i++) {
+    int v = idx[i];
+    f->shade[i] = m->flat_faces ? (signed char)m->cur_flat_shade
+                : (v >= 0 && v < DOS_MAX_VERTS) ? m->vert_shade[v] : (signed char)-1;
   }
 }
 
@@ -1054,18 +1049,20 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz)
   int parts = 0;
   for (int f = 0; f < m->face_count; f++) {
     const dos_face *face = &m->faces[f];
-    int mapped[DOS_MAX_FACE_VERTS];
+    int mapped[DOS_MAX_FACE_VERTS], mapped_shade[DOS_MAX_FACE_VERTS];
     int n = 0;
     for (int k = 0; k < face->count; k++) {
       int v = face->idx[k];
       if (v >= 0 && v < DOS_MAX_VERTS && remap[v] >= 0) {
+        mapped_shade[n] = face->shade[k];
         mapped[n++] = remap[v];
       }
     }
     if (n < 3) {
       continue;
     }
-    int wound[DOS_MAX_FACE_VERTS];
+    int wound[DOS_MAX_FACE_VERTS], wound_shade[DOS_MAX_FACE_VERTS];
+    emit_face_order(face, mapped_shade, n, wound_shade);
     n = emit_face_order(face, mapped, n, wound);
 
     /* Planarity is judged on the emitted coordinates, so it matches exactly
@@ -1107,7 +1104,7 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz)
       }
       emit(out, out_sz, &pos, ");\n");
       g_face_colour[dos_index][parts] = (signed char)face->colour;
-      g_face_shade[dos_index][parts] = (signed char)face->shade;
+      for (int k = 0; k < n; k++) g_face_shade[dos_index][parts][k] = (signed char)wound_shade[k];
       parts++;
     } else {
       int tris[DOS_MAX_FACE_VERTS][3];
@@ -1122,7 +1119,8 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz)
              parts, wound[tris[t][0]], wound[tris[t][1]], wound[tris[t][2]]);
         /* Each triangle inherits the colour of the face it came from. */
         g_face_colour[dos_index][parts] = (signed char)face->colour;
-        g_face_shade[dos_index][parts] = (signed char)face->shade;
+        for (int j = 0; j < 3; j++)
+          g_face_shade[dos_index][parts][j] = (signed char)wound_shade[tris[t][j]];
         parts++;
       }
     }
@@ -1154,11 +1152,11 @@ int uw_dos_model_face_colour(int dos_index, int part)
   return g_face_colour[dos_index][part];
 }
 
-int uw_dos_model_face_shade(int dos_index, int part)
+int uw_dos_model_face_vertex_shade(int dos_index, int part, int corner)
 {
   if (!g_face_colour_ready || dos_index < 0 || dos_index > 31
-      || part < 0 || part >= DOS_MAX_FACES) {
+      || part < 0 || part >= DOS_MAX_FACES || corner < 0 || corner > 3) {
     return -1;
   }
-  return g_face_shade[dos_index][part];
+  return g_face_shade[dos_index][part][corner];
 }

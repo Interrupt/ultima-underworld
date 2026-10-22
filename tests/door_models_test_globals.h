@@ -27,4 +27,4 @@ extern undefined1 DAT_00086d60_backing[64];
    sees at runtime -- so these tests passing unchanged is the check that the
    per-face colour deviation cannot affect that path. */
 int uw_dos_model_face_colour(int dos_index, int part);
-int uw_dos_model_face_shade(int dos_index, int part);   /* likewise -1 here: the .E models get no shade rows */
+int uw_dos_model_face_vertex_shade(int dos_index, int part, int corner);   /* likewise -1 here: the .E models get no shade */

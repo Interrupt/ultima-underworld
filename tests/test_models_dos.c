@@ -763,21 +763,25 @@ static void test_each_face_keeps_its_own_colour(void)
                                   "second face follows FACE_SHADE 0x2920 -> entry 0");
 }
 
-/* Each face carries a shade level too: the flat one from 0x00bc, or the average of its vertices' shades. */
-static void test_each_face_reports_its_shade_level(void)
+/* Each corner carries a shade level: the flat one from 0x00bc for all of them, or its own vertex's from 0x00d4. */
+static void test_each_corner_reports_its_shade_level(void)
 {
     TEST_ASSERT_TRUE(script_of(SLOT_SHADE) > 0);
-    TEST_ASSERT_EQUAL_INT_MESSAGE(3, uw_dos_model_face_shade(SLOT_SHADE, 0), "0x00bc's flat shade");
-    TEST_ASSERT_EQUAL_INT_MESSAGE(4, uw_dos_model_face_shade(SLOT_SHADE, 1),
-                                  "after 0x00d6, the average of the vertex shades 2, 4, 6");
+    for (int k = 0; k < 3; k++)
+        TEST_ASSERT_EQUAL_INT_MESSAGE(3, uw_dos_model_face_vertex_shade(SLOT_SHADE, 0, k), "0x00bc's flat shade");
+    /* The face lists vertices 0, 2, 1 (shades 2, 6, 4) and is emitted in reverse, like every DOS face. */
+    TEST_ASSERT_EQUAL_INT(4, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 0));
+    TEST_ASSERT_EQUAL_INT(6, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 1));
+    TEST_ASSERT_EQUAL_INT(2, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 2));
 }
 
 static void test_a_model_with_no_shade_operand_reports_none(void)
 {
     TEST_ASSERT_TRUE(script_of(SLOT_SIMPLE) > 0);
-    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_shade(SLOT_SIMPLE, 0));
-    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_shade(SLOT_SHADE, 999));
-    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_shade(-1, 0));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SIMPLE, 0, 0));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SHADE, 999, 0));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SHADE, 0, 4));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(-1, 0, 0));
 }
 
 /* The decoder reports the index the data actually says, even when no palette
@@ -874,7 +878,7 @@ int main(void)
     RUN_TEST(test_a_concave_face_splits_without_inverting_any_triangle);
     RUN_TEST(test_no_emitted_face_is_wider_than_a_quad);
     RUN_TEST(test_each_face_keeps_its_own_colour);
-    RUN_TEST(test_each_face_reports_its_shade_level);
+    RUN_TEST(test_each_corner_reports_its_shade_level);
     RUN_TEST(test_a_model_with_no_shade_operand_reports_none);
     RUN_TEST(test_an_out_of_range_colour_is_reported_truthfully);
     RUN_TEST(test_a_model_with_no_colour_operand_reports_none);
