@@ -1,5 +1,6 @@
 /* See demomode.h. */
 #include "headers/demomode.h"
+#include "headers/editor.h"
 #include "headers/debug_ui.h"
 #include "headers/options.h"
 #include "headers/uw.h"
@@ -946,6 +947,13 @@ static void demo_exec_line(char *p, Uint32 now) {
           flush_dirty_rect_to_display(1);
           g_force_flush = 0; }
         uw_save_screenshot(path);
+        g_demo_next_tick = now;
+        return;
+    }
+
+    if (strncasecmp(p, "EDITOR ", 7) == 0) {
+        /* EDITOR on|off -- the level editor (editor.c). */
+        uw_editor_set(strncasecmp(p + 7, "on", 2) == 0);
         g_demo_next_tick = now;
         return;
     }

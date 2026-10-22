@@ -8,6 +8,7 @@
 #include "headers/demomode.h"
 #include "headers/democapture.h"
 #include "headers/debug_ui.h"
+#include "headers/editor.h"
 #include "headers/mouselook.h"
 #include "headers/audio.h"
 #include "headers/platform_music.h"
@@ -188,7 +189,7 @@ static void poll_dungeon_movement_keys(int game_frame_due)
     /* With the debug console open, only injected (console command) keys count -- the human is
        typing into the console, not walking. */
     const Uint8 *ks = SDL_GetKeyboardState(NULL);
-    const int physical_keys = !dbgui_visible();
+    const int physical_keys = !dbgui_visible() && !uw_editor_active();
     #define UW_HELD(sc) ((physical_keys && ks[(sc)]) || g_synth_scancode_held[(sc)])
     /* Arrow keys: up forward (run), down backward, left/right turn -- the same held-key state as
        WASD/X, so they combine with a jump or each other exactly as those do. */
@@ -369,6 +370,7 @@ void uw_pump_events(void) {
     democapture_tick();
     demomode_pump();
     uw_mouselook_refresh();
+    uw_editor_tick();
     /* poll_dungeon_movement_keys() reads physical keyboard state directly (not the SDL event
        queue), so swallowing key EVENTS below (the dbgui_visible() checks in the
        SDL_KEYDOWN/TEXTINPUT cases) doesn't stop it on its own... */
@@ -419,6 +421,10 @@ void uw_pump_events(void) {
                    game function is bound to backtick to preserve. */
                 if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_BACKQUOTE) {
                     dbgui_toggle();
+                    return;
+                }
+                if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_F9) {
+                    uw_editor_toggle(0);   /* the level editor, see editor.c */
                     return;
                 }
                 /* While the debug UI is visible, it owns ALL keyboard input -- a debug/dev tool,
@@ -581,6 +587,11 @@ void uw_pump_events(void) {
                         landscape_x = cx;
                         landscape_y = cy;
                     }
+                }
+                if (uw_editor_active() && !dbgui_visible()) {
+                    /* The editor owns the mouse; plain motion still goes to the game so the cursor follows. */
+                    if (ev.type == SDL_MOUSEBUTTONDOWN) uw_editor_click(landscape_x, landscape_y, ev.button.button);
+                    if (ev.type != SDL_MOUSEMOTION) return;
                 }
                 if (dbgui_visible() && !(dbgui_console_active() && ev.button.which == UW_SYNTH_MOUSE)) {
                     if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT && !dbgui_console_active()) {
@@ -1243,7 +1254,7 @@ int GXEndDraw(void) {
     }
     /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) presents its scene with
        the HUD overlays on top, unless a modal screen is up. */
-    if (!g_present_state.modal_depth) uw_fullscreen_compose(g_display_buf);
+    if (!g_present_state.modal_depth && !uw_editor_compose(g_display_buf)) uw_fullscreen_compose(g_display_buf);
     uw_composite_desktop_cursor(g_display_buf);
     SDL_UpdateTexture(g_tex, NULL, g_display_buf, GX_W * sizeof(unsigned short));
     SDL_RenderClear(g_ren);

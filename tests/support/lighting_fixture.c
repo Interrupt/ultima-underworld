@@ -10,6 +10,7 @@ uw_extra_light_t g_extra_lights[UW_MAX_EXTRA_LIGHTS];
 int g_extra_light_count;
 int g_view_fullscreen;
 double uw_fullscreen_proj_cy(void) { return 84.0; }
+int uw_editor_active(void) { return 0; }
 byte lighting_span_shade = 88;
 char *g_selected_object;
 undefined1 DAT_00086da8;
