@@ -21,6 +21,7 @@
 #include "headers/ai.h"
 #include "headers/player.h"
 #include "headers/debug_ui.h"
+#include "headers/debug_shim.h"
 #include "headers/saveload.h"
 #include "headers/level.h"
 #include "headers/scheduler.h"
@@ -196,25 +197,17 @@ static void camera(int *x, int *y, int *z)
 
 #define MAP_TILE 6
 
+/* A floor's colour from its height: the real height, 0 to 15, from dark green to light green, so every step reads on the map. */
+static unsigned short height_colour(double h)
+{
+  int g = (int)floor(40 + h * 14 + 0.5);   /* rounded, so a ramp and its mirror image band at mirrored pixels */
+  return RGB(0, g > 255 ? 255 : g < 0 ? 0 : g, 0);
+}
+
 static unsigned short tile_colour(const uw_tile_t *t)
 {
   if (t->tile_type == 0) return RGB(124, 64, 16);                 /* solid */
-  int shade = 120 + t->floor_height * 8;
-  if (shade > 255) shade = 255;
-  return RGB(0, shade, 0);
-}
-
-/* The map pane can be panned (right drag): the pan is in screen pixels, added to the layout that puts the camera's tile at
-   (MAP_ORIGIN_X, MAP_ORIGIN_Y) in the pane (a tile's left edge and the top of its row). */
-static int g_map_pan_x, g_map_pan_y;
-static int g_map_dragging, g_map_drag_x, g_map_drag_y;   /* a right drag in progress */
-#define MAP_ORIGIN_X 248
-#define MAP_ORIGIN_Y 50
-
-static void map_tile_origin(int tx, int ty, int cam_tx, int cam_ty, int *sx, int *sy)
-{
-  *sx = MAP_ORIGIN_X + (tx - cam_tx) * MAP_TILE + g_map_pan_x;
-  *sy = MAP_ORIGIN_Y - (ty - cam_ty) * MAP_TILE + g_map_pan_y;   /* tile y grows upwards on screen, as in the automap */
+  return height_colour(t->floor_height);
 }
 
 /* The angled tiles. The mode palette's swatches (BUTTONS.GR frames 33 to 42, 8x8) draw each tile type, so a diagonal tile's map pixels come
@@ -237,16 +230,61 @@ static const unsigned char *tile_swatch(int type)
   return pixels[type];
 }
 
-static unsigned short tile_pixel(const uw_tile_t *t, unsigned short flat, int x, int y)
+/* The angled tiles. A diagonal's map pixels come from its swatch (BUTTONS.GR frames 33 to 42, 8x8): where the swatch is the solid colour the pixel
+   is wall, elsewhere it is floor. A slope shows its real height: the colour ramps along the slope from the tile's floor height to that of the
+   higher of its two neighbours along the slope (one step up if they are level). */
+static uw_tile_t *tile_at(int tx, int ty);
+
+/* Which corner of the tile a diagonal's wall fills (its right-angle corner), found from its swatch: the corner that is solid with the opposite corner open.
+   0 top left, 1 top right, 2 bottom left, 3 bottom right. */
+static int diagonal_wall_corner(int type)
 {
-  if (t->tile_type < 2 || t->tile_type > 9) return flat;
-  const unsigned char *sw = tile_swatch(t->tile_type), *solid = tile_swatch(0);
-  unsigned char p = sw[(y * 8 / MAP_TILE) * 8 + x * 8 / MAP_TILE];
-  if (t->tile_type <= 5) return p == solid[0] ? RGB(124, 64, 16) : flat;   /* a diagonal: wall on one side of the line */
-  /* a slope: the swatch's gradient, darker or lighter with the floor height */
-  unsigned short c = (unsigned short)(&g_palette_rgb565)[p];
-  int r = ((c >> 11) & 31) * (60 + t->floor_height * 12) / 255, g = ((c >> 5) & 63) * (60 + t->floor_height * 12) / 255, b = (c & 31) * (60 + t->floor_height * 12) / 255;
-  return (unsigned short)(((r > 31 ? 31 : r) << 11) | ((g > 63 ? 63 : g) << 5) | (b > 31 ? 31 : b));
+  const unsigned char *sw = tile_swatch(type), *solid = tile_swatch(0);
+  int c[4] = { sw[0] == solid[0], sw[7] == solid[0], sw[56] == solid[0], sw[63] == solid[0] };   /* the corners, as solid or not */
+  for (int k = 0; k < 4; k++) if (c[k] && !c[3 - k]) return k;
+  return 3;
+}
+
+static unsigned short tile_pixel(const uw_tile_t *t, int tx, int ty, int x, int y)
+{
+  if (t->tile_type < 2 || t->tile_type > 9) return tile_colour(t);
+  if (t->tile_type <= 5) {
+    /* a diagonal: the line between the open half and the wall half is drawn geometrically, not sampled, so it is a clean one pixel staircase
+       and mirrored diagonals match; the pixels on the line itself are floor, whichever side the wall is on */
+    int corner = diagonal_wall_corner(t->tile_type);
+    int on_wall_side;
+    switch (corner) {
+      case 0: on_wall_side = x + y < MAP_TILE - 1; break;          /* wall top left: the line runs bottom left to top right */
+      case 3: on_wall_side = x + y > MAP_TILE - 1; break;          /* wall bottom right */
+      case 1: on_wall_side = x > y; break;                         /* wall top right: the line runs top left to bottom right */
+      default: on_wall_side = x < y; break;                        /* wall bottom left */
+    }
+    return on_wall_side ? RGB(124, 64, 16) : height_colour(t->floor_height);
+  }
+  static const int dx[4] = { 0, 0, 1, -1 }, dy[4] = { 1, -1, 0, 0 };   /* slope N, S, E, W: the line it climbs along */
+  int k = t->tile_type - 6;
+  const uw_tile_t *a = tile_at(tx + dx[k], ty + dy[k]), *b = tile_at(tx - dx[k], ty - dy[k]);
+  int ha = a && a->tile_type != 0 ? a->floor_height : t->floor_height, hb = b && b->tile_type != 0 ? b->floor_height : t->floor_height;
+  int up = ha >= hb ? 1 : -1;                           /* which neighbour is higher: the slope climbs towards it */
+  int rise = ha == hb ? 1 : (ha > hb ? ha : hb) - t->floor_height;
+  if (rise < 1) rise = 1;
+  /* position along the slope, 0 at the low end, 1 at the high end; the pixel's y runs down the screen while the tile's y runs up */
+  double along = dx[k] ? (x + 0.5) / MAP_TILE : 1.0 - (y + 0.5) / MAP_TILE;
+  if ((dx[k] ? up * dx[k] : up * dy[k]) < 0) along = 1.0 - along;
+  return height_colour(t->floor_height + rise * along);
+}
+
+/* The map pane can be panned (right drag): the pan is in screen pixels, added to the layout that puts the camera's tile at
+   (MAP_ORIGIN_X, MAP_ORIGIN_Y) in the pane (a tile's left edge and the top of its row). */
+static int g_map_pan_x, g_map_pan_y;
+static int g_map_dragging, g_map_drag_x, g_map_drag_y;   /* a right drag in progress */
+#define MAP_ORIGIN_X 248
+#define MAP_ORIGIN_Y 50
+
+static void map_tile_origin(int tx, int ty, int cam_tx, int cam_ty, int *sx, int *sy)
+{
+  *sx = MAP_ORIGIN_X + (tx - cam_tx) * MAP_TILE + g_map_pan_x;
+  *sy = MAP_ORIGIN_Y - (ty - cam_ty) * MAP_TILE + g_map_pan_y;   /* tile y grows upwards on screen, as in the automap */
 }
 
 static void draw_map_pane(void)
@@ -265,7 +303,7 @@ static void draw_map_pane(void)
       for (int y = 0; y < MAP_TILE; y++)
         for (int x = 0; x < MAP_TILE; x++)
           if (sx + x >= R_MAP.x0 && sx + x < R_MAP.x1 && sy + y >= R_MAP.y0 && sy + y < R_MAP.y1)
-            put(sx + x, sy + y, t ? tile_pixel(t, c, x, y) : c);
+            put(sx + x, sy + y, t ? tile_pixel(t, tx, ty, x, y) : c);
     }
   /* objects: a dot for each, red for critters */
   for (int ty = 0; ty < 64; ty++)
@@ -2114,6 +2152,262 @@ static int fill_mode_click(int x, int y, int button)
   return 0;
 }
 
+/* ---- Find ---- */
+
+/* Find looks through every object of the level, containers' contents included, for those that match a criterion: an exact type, a palette
+   category, an owner, a whoami, what links to the selected object, what targets the selected tile, or a flag; and four checks of the level
+   itself (traps nothing links to, triggers with no trap or a solid target, named creatures with no conversation, owners nobody in the level
+   is). Next and Previous step through the matches in tile order and fly the camera to each; All lists them. The scan is the game's own
+   find_object_in_world's (tile chains in row order, into containers), made to collect every match instead of the first. */
+enum { FC_TYPE, FC_CATEGORY, FC_OWNER, FC_WHOAMI, FC_LINKED, FC_TARGET, FC_FLAGS, FC_ORPHAN_TRAPS, FC_BAD_TRIGGERS, FC_NO_CONVERSATION, FC_OWNER_MISSING, FC_COUNT };
+static const char *const g_find_names[FC_COUNT] = { "Type", "Category", "Owner", "Whoami", "Linked to sel", "Targets tile", "Flag", "Orphan traps", "Bad triggers", "No conversation", "Owner missing" };
+static int g_find_crit, g_find_value;
+typedef struct { int slot, tx, ty, path[8], depth; } ed_found_t;   /* path: the containers it is inside, outermost first */
+#define FOUND_MAX 1024
+static ed_found_t g_found[FOUND_MAX];
+static int g_found_count, g_found_cur = -1, g_found_scroll;
+
+static int find_has_value(int crit) { return crit <= FC_WHOAMI || crit == FC_FLAGS; }
+static int find_value_max(int crit)
+{
+  switch (crit) {
+    case FC_TYPE: return 511;
+    case FC_CATEGORY: return GROUP_COUNT - 1;
+    case FC_OWNER: return 63;
+    case FC_WHOAMI: return 255;
+    default: return 2;   /* flags: 1 invisible, 2 enchanted */
+  }
+}
+
+static int group_of(int id)
+{
+  for (int g = 0; g < GROUP_COUNT; g++)
+    if (id >= g_groups[g].first && id < g_groups[g].first + g_groups[g].count) return g;
+  return -1;
+}
+
+/* What the level looks like to the checks: which slots something links to, and which owners are creatures that exist. */
+static unsigned char g_find_linked[0x400], g_find_whoami[256];
+
+static void find_survey_chain(int slot, int depth)
+{
+  for (int n = 0; slot && n < FOUND_MAX; n++) {
+    const uw_object_hdr_t *o = object_at(slot);
+    if (!o) return;
+    if (!o->is_quant && o->link) g_find_linked[o->link & 0x3ff] = 1;
+    if (slot_is_mobile(o)) g_find_whoami[((const uw_mobile_object_t *)o)->npc_whoami] = 1;
+    if (!o->is_quant && o->link && (o->object_id & 0x1f0) == 0x80 && depth < 8) find_survey_chain(o->link, depth + 1);
+    slot = o->next;
+  }
+}
+
+static int find_conversation_exists(const uw_object_hdr_t *o)
+{
+  static char cnv[] = "\\DATA\\cnv.ark";
+  int whoami = ((const uw_mobile_object_t *)o)->npc_whoami;
+  return probe_archive_entry_exists(cnv, whoami ? (unsigned)whoami : (unsigned)((o->object_id & 0x3f) + 0x100)) > 0;
+}
+
+static int find_test(const uw_object_hdr_t *o, int slot)
+{
+  const uw_mobile_object_t *m = (const uw_mobile_object_t *)o;
+  int id = o->object_id;
+  switch (g_find_crit) {
+    case FC_TYPE: return id == g_find_value;
+    case FC_CATEGORY: return group_of(id) == g_find_value;
+    case FC_OWNER: return !o->is_quant && o->owner == (unsigned)g_find_value && g_find_value != 0;
+    case FC_WHOAMI: return slot_is_mobile(o) && m->npc_whoami == g_find_value;
+    case FC_LINKED: return g_sel_slot && !o->is_quant && o->link == (unsigned)g_sel_slot;
+    case FC_TARGET: return ((id & 0x1c0) == 0x1c0 || id == 0x181 || id == 0x18b) && o->quality == (unsigned)g_sel_tx && o->owner == (unsigned)g_sel_ty;
+    case FC_FLAGS: return g_find_value == 1 ? o->invisible : g_find_value == 2 ? o->enchanted : 0;
+    case FC_ORPHAN_TRAPS: return (id & 0x1c0) == 0x180 && !g_find_linked[slot & 0x3ff];
+    case FC_BAD_TRIGGERS: {
+      if ((id & 0x1c0) != 0x1c0) return 0;
+      const uw_object_hdr_t *trap = !o->is_quant && o->link ? object_at(o->link) : NULL;
+      return !trap || (trap->object_id & 0x1c0) != 0x180 || !tile_is_open(o->quality, o->owner);
+    }
+    case FC_NO_CONVERSATION: return slot_is_mobile(o) && m->npc_whoami != 0 && !find_conversation_exists(o);
+    case FC_OWNER_MISSING: return !o->is_quant && o->owner && g_object_type_props[id].can_have_owner && !g_find_whoami[o->owner & 255];
+    default: return 0;
+  }
+}
+
+static void find_scan_chain(int slot, int tx, int ty, const int *path, int depth)
+{
+  for (int n = 0; slot && n < FOUND_MAX; n++) {
+    const uw_object_hdr_t *o = object_at(slot);
+    if (!o) return;
+    if (find_test(o, slot) && g_found_count < FOUND_MAX) {
+      ed_found_t *f = &g_found[g_found_count++];
+      f->slot = slot; f->tx = tx; f->ty = ty; f->depth = depth;
+      memcpy(f->path, path, sizeof(int) * (size_t)depth);
+    }
+    if (!o->is_quant && o->link && (o->object_id & 0x1f0) == 0x80 && depth < 8) {
+      int inner[8];
+      memcpy(inner, path, sizeof(int) * (size_t)depth);
+      inner[depth] = slot;
+      find_scan_chain(o->link, tx, ty, inner, depth + 1);
+    }
+    slot = o->next;
+  }
+}
+
+/* Collect every match, in tile order. */
+static int find_collect(void)
+{
+  int path[8] = { 0 };
+  g_found_count = 0;
+  memset(g_find_linked, 0, sizeof g_find_linked);
+  memset(g_find_whoami, 0, sizeof g_find_whoami);
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) find_survey_chain(tile_head(tx, ty), 0);
+  for (int ty = 0; ty < 64; ty++)
+    for (int tx = 0; tx < 64; tx++) find_scan_chain(tile_head(tx, ty), tx, ty, path, 0);
+  return g_found_count;
+}
+
+/* Select a found object: through its containers, with the Back stack remembering the way, and fly the camera beside its tile. */
+static void find_goto(int index)
+{
+  if (index < 0 || index >= g_found_count) return;
+  const ed_found_t *f = &g_found[index];
+  g_found_cur = index;
+  select_tile(f->tx, f->ty);
+  if (f->depth == 0) select_object_on_tile(f->tx, f->ty, object_at(f->slot));
+  else {
+    select_object_on_tile(f->tx, f->ty, object_at(f->path[0]));
+    for (int d = 0; d < f->depth; d++) {   /* into each container in turn, to the next one or to the object */
+      uw_object_hdr_t *box = object_at(g_sel_slot);
+      int want = d + 1 < f->depth ? f->path[d + 1] : f->slot;
+      if (!box || g_back_depth >= BACK_DEPTH) break;
+      g_back_slot[g_back_depth] = g_sel_slot; g_back_link[g_back_depth++] = g_sel_link;
+      g_sel_link = &box->link_word;
+      g_sel_slot = box->link;
+      for (int n = 0; g_sel_slot != want && n < FOUND_MAX; n++) {
+        uw_object_hdr_t *c = object_at(g_sel_slot);
+        if (!c) break;
+        g_sel_link = &c->chain_word;
+        g_sel_slot = c->next;
+      }
+    }
+  }
+  /* the camera: an open tile beside it, facing it (the tile itself if none is open), at eye height over the floor there */
+  static const int dx[4] = { 1, -1, 0, 0 }, dy[4] = { 0, 0, 1, -1 };
+  int cx = f->tx, cy = f->ty, from = -1;
+  for (int k = 0; k < 4 && from < 0; k++) if (tile_is_open(f->tx + dx[k], f->ty + dy[k])) from = k;
+  if (from >= 0) { cx = f->tx + dx[from]; cy = f->ty + dy[from]; }
+  if (!tile_is_open(cx, cy)) { g_status = "found, but in a wall"; return; }
+  const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)cx, (short)cy);
+  DAT_0023be90 = (short)(cx * 256 + 128);
+  DAT_0023be92 = (short)(cy * 256 + 128);
+  DAT_0023be94 = (short)(t->floor_height * 64 + 176);
+  if (from >= 0) DAT_0023bf00 = (ushort)(atan2((double)-dx[from], (double)-dy[from]) * (65536.0 / (2 * M_PI)));   /* looking back at the tile */
+  g_map_pan_x = g_map_pan_y = 0;
+  set_pending_update_flags(2);
+}
+
+static void find_step(int direction)
+{
+  int n = find_collect();
+  static char msg[32];
+  snprintf(msg, sizeof msg, "%d found", n);
+  g_status = msg;
+  if (!n) { g_found_cur = -1; return; }
+  /* the next match after the selected object (in tile order), wrapping round */
+  int here = g_sel_tx >= 0 ? g_sel_ty * 64 + g_sel_tx : -1, pick = -1;
+  if (g_found_cur >= 0 && g_found_cur < n && g_found[g_found_cur].slot == g_sel_slot) pick = (g_found_cur + direction + n) % n;
+  else if (direction > 0) { pick = 0; for (int i = 0; i < n; i++) if (g_found[i].ty * 64 + g_found[i].tx > here) { pick = i; break; } }
+  else { pick = n - 1; for (int i = n - 1; i >= 0; i--) if (g_found[i].ty * 64 + g_found[i].tx < here) { pick = i; break; } }
+  find_goto(pick);
+}
+
+static void find_prefill(void)
+{
+  const uw_object_hdr_t *o = object_at(g_sel_slot);
+  if (!o) return;
+  switch (g_find_crit) {
+    case FC_TYPE: g_find_value = o->object_id; break;
+    case FC_CATEGORY: g_find_value = group_of(o->object_id) < 0 ? 0 : group_of(o->object_id); break;
+    case FC_OWNER: g_find_value = o->is_quant ? 0 : (int)o->owner; break;
+    case FC_WHOAMI: g_find_value = slot_is_mobile(o) ? ((const uw_mobile_object_t *)o)->npc_whoami : 0; break;
+    default: break;
+  }
+}
+
+#define FIND_ROWS 8
+#define FIND_ROW_H 8
+static const ed_rect_t R_FIND_LIST = { 174, 119, 320, 190 };
+
+static void draw_find_mode(void)
+{
+  char line[64], name[40];
+  frame(0, 126, 150, 190, COL_FRAME);
+  text("Find", 4, 128, COL_TEXT);
+  snprintf(line, sizeof line, "%s", g_find_names[g_find_crit]);
+  text(line, 22, 138, COL_ORANGE);
+  arrow_small(4, 138, 0, COL_BLUE); arrow_small(14, 138, 1, COL_BLUE);
+  if (find_has_value(g_find_crit)) {
+    if (g_find_crit == FC_FLAGS) snprintf(line, sizeof line, "%s", g_find_value == 1 ? "invisible" : g_find_value == 2 ? "enchanted" : "(none)");
+    else snprintf(line, sizeof line, "value %d", g_find_value);
+    text(line, 22, 148, COL_TEXT);
+    arrow_small(4, 148, 0, COL_BLUE); arrow_small(14, 148, 1, COL_BLUE);
+    if (g_find_crit == FC_TYPE) { dbgui_object_name(g_find_value, name, sizeof name); text(name, 22, 156, COL_FRAME); }
+    frame(100, 146, 146, 155, COL_ORANGE); text("From sel", 103, 147, COL_ORANGE);
+  }
+  frame(4, 168, 34, 177, COL_ORANGE); text("Prev", 8, 169, COL_ORANGE);
+  frame(38, 168, 68, 177, COL_ORANGE); text("Next", 42, 169, COL_ORANGE);
+  frame(72, 168, 102, 177, COL_ORANGE); text("All", 80, 169, COL_ORANGE);
+  snprintf(line, sizeof line, "%d found", g_found_count);
+  text(line, 4, 180, COL_FRAME);
+  /* the results: name and tile, with a mark for one inside a container */
+  frame(R_FIND_LIST.x0, R_FIND_LIST.y0, R_FIND_LIST.x1, R_FIND_LIST.y1, COL_FRAME);
+  if (g_found_scroll > g_found_count - FIND_ROWS) g_found_scroll = g_found_count - FIND_ROWS;
+  if (g_found_scroll < 0) g_found_scroll = 0;
+  for (int i = 0; i < FIND_ROWS && g_found_scroll + i < g_found_count; i++) {
+    const ed_found_t *f = &g_found[g_found_scroll + i];
+    const uw_object_hdr_t *o = object_at(f->slot);
+    int y = R_FIND_LIST.y0 + 3 + i * FIND_ROW_H;
+    if (g_found_scroll + i == g_found_cur) fill(R_FIND_LIST.x0 + 2, y - 1, R_FIND_LIST.x1 - 10, y + FIND_ROW_H - 2, RGB(24, 24, 88));
+    if (o) dbgui_object_name(o->object_id, name, sizeof name); else name[0] = 0;
+    snprintf(line, sizeof line, "%.18s %d,%d%s", name, f->tx, f->ty, f->depth ? " in" : "");
+    text(line, R_FIND_LIST.x0 + 4, y, COL_ORANGE);
+  }
+  if (g_found_count > FIND_ROWS) {
+    arrow(R_FIND_LIST.x1 - 8, R_FIND_LIST.y0 + 3, 2, g_found_scroll > 0 ? COL_TEXT : COL_FRAME);
+    arrow(R_FIND_LIST.x1 - 8, R_FIND_LIST.y1 - 8, 3, g_found_scroll < g_found_count - FIND_ROWS ? COL_TEXT : COL_FRAME);
+  }
+}
+
+static int find_mode_click(int x, int y, int button)
+{
+  int step = button == SDL_BUTTON_RIGHT ? 8 : 1;
+  if (in_rect(&R_FIND_LIST, x, y)) {
+    if (x >= R_FIND_LIST.x1 - 9) { g_found_scroll += y < (R_FIND_LIST.y0 + R_FIND_LIST.y1) / 2 ? -1 : 1; return 1; }
+    int row = g_found_scroll + (y - R_FIND_LIST.y0 - 3) / FIND_ROW_H;
+    if (y >= R_FIND_LIST.y0 + 3 && row < g_found_count) find_goto(row);
+    return 1;
+  }
+  if (y >= 138 && y < 146 && x >= 2 && x < 20) {   /* the criterion */
+    g_find_crit = (g_find_crit + (x < 10 ? FC_COUNT - 1 : 1)) % FC_COUNT;
+    g_find_value = 0; g_found_count = 0; g_found_cur = -1;
+    find_prefill();
+    return 1;
+  }
+  if (find_has_value(g_find_crit) && y >= 148 && y < 156 && x >= 2 && x < 20) {
+    int v = g_find_value + (x < 10 ? -step : step);
+    g_find_value = v < 0 ? 0 : v > find_value_max(g_find_crit) ? find_value_max(g_find_crit) : v;
+    return 1;
+  }
+  if (find_has_value(g_find_crit) && x >= 100 && x < 146 && y >= 146 && y < 155) { find_prefill(); return 1; }
+  if (y >= 168 && y < 178) {
+    if (x >= 4 && x < 34) find_step(-1);
+    else if (x >= 38 && x < 68) find_step(1);
+    else if (x >= 72 && x < 102) { find_collect(); static char msg[32]; snprintf(msg, sizeof msg, "%d found", g_found_count); g_status = msg; g_found_scroll = 0; g_found_cur = -1; }
+    return 1;
+  }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -2402,6 +2696,62 @@ void uw_editor_selftest(void)
     if (in_rect_n < 1 || in_rect_n > 4) { fprintf(stderr, "[editor] selftest FAILED: a rectangle fill painted %d tiles\n", in_rect_n); abort(); }
     g_fill_spread = FS_FLOOR_TEX;
     g_selftest_checks += 4;
+  }
+
+  /* Find: the criteria over every object including container contents, the level checks, and flying to a match through its containers */
+  {
+    int tiles[5][2], found = 0;
+    for (int r = 0; r < 12 && found < 5; r++)
+      for (int dy = -r; dy <= r && found < 5; dy++)
+        for (int dx = -r; dx <= r && found < 5; dx++) {
+          if (r && dx > -r && dx < r && dy > -r && dy < r) continue;
+          if (tile_is_open(tx + dx, ty + dy) && (r || (dx == 0 && dy == 0))) { tiles[found][0] = tx + dx; tiles[found][1] = ty + dy; found++; }
+        }
+    if (found < 5) { fprintf(stderr, "[editor] selftest: too few open tiles to test Find\n"); }
+    else {
+      op_place(0x80, tiles[0][0], tiles[0][1], 4, 4);   /* a container with a skull in it */
+      int box = g_sel_slot;
+      op_place(0xc2, tiles[1][0], tiles[1][1], 4, 4);
+      select_object_on_tile(tiles[1][0], tiles[1][1], object_at(tile_head(tiles[1][0], tiles[1][1])));
+      op_pick_up(0);
+      select_object_on_tile(tiles[0][0], tiles[0][1], object_at(box));
+      button_pressed(2);
+      int skull = g_sel_slot;
+      op_place(0x181, tiles[2][0], tiles[2][1], 4, 4);   /* a trap nothing links to */
+      int trap = g_sel_slot;
+      op_place(0x1c0, tiles[3][0], tiles[3][1], 4, 4);   /* a trigger with no trap */
+      int trigger = g_sel_slot;
+      op_place(0x44, tiles[4][0], tiles[4][1], 4, 4);    /* a creature whose whoami has no conversation */
+      uw_mobile_object_t *critter = (uw_mobile_object_t *)object_at(g_sel_slot);
+      critter->npc_whoami = 250;
+      int critter_slot = g_sel_slot;
+      #define FIND_HAS(slot_) ({ int h_ = 0; for (int i_ = 0; i_ < g_found_count; i_++) if (g_found[i_].slot == (slot_)) h_ = 1; h_; })
+      g_find_crit = FC_TYPE; g_find_value = 0xc2;
+      find_collect();
+      if (!FIND_HAS(skull)) { fprintf(stderr, "[editor] selftest FAILED: Find missed an object inside a container\n"); abort(); }
+      g_find_crit = FC_ORPHAN_TRAPS; find_collect();
+      if (!FIND_HAS(trap)) { fprintf(stderr, "[editor] selftest FAILED: Find missed an orphan trap\n"); abort(); }
+      g_find_crit = FC_BAD_TRIGGERS; find_collect();
+      if (!FIND_HAS(trigger)) { fprintf(stderr, "[editor] selftest FAILED: Find missed a trigger with no trap\n"); abort(); }
+      g_find_crit = FC_NO_CONVERSATION; find_collect();
+      if (!FIND_HAS(critter_slot)) { fprintf(stderr, "[editor] selftest FAILED: Find missed a creature with no conversation\n"); abort(); }
+      g_find_crit = FC_WHOAMI; g_find_value = 250; find_collect();
+      if (g_found_count != 1 || g_found[0].slot != critter_slot) { fprintf(stderr, "[editor] selftest FAILED: Find by whoami\n"); abort(); }
+      g_find_crit = FC_LINKED; g_sel_slot = skull; find_collect();
+      if (!FIND_HAS(box)) { fprintf(stderr, "[editor] selftest FAILED: Find missed what links to the selection\n"); abort(); }
+      /* going to the skull selects it inside its container (Back returns to the container) and puts the camera beside the container's tile */
+      g_find_crit = FC_TYPE; g_find_value = 0xc2; find_collect();
+      int idx = -1;
+      for (int i = 0; i < g_found_count; i++) if (g_found[i].slot == skull) idx = i;
+      find_goto(idx);
+      if (g_sel_slot != skull || g_back_depth != 1 || g_back_slot[0] != box) { fprintf(stderr, "[editor] selftest FAILED: Find did not select through the container\n"); abort(); }
+      int cx, cy, cz;
+      camera(&cx, &cy, &cz);
+      if (abs((cx >> 8) - tiles[0][0]) + abs((cy >> 8) - tiles[0][1]) > 1) { fprintf(stderr, "[editor] selftest FAILED: Find put the camera at (%d,%d), not beside (%d,%d)\n", cx >> 8, cy >> 8, tiles[0][0], tiles[0][1]); abort(); }
+      #undef FIND_HAS
+      g_found_count = 0; g_found_cur = -1;
+      g_selftest_checks += 8;
+    }
   }
 
   /* leave the level as the test found it: undo everything */
@@ -2911,6 +3261,7 @@ static void draw_mode(void)
     case M_TILE: draw_tile_mode(); break;
     case M_TEXTURE: draw_texture_mode(); break;
     case M_FILL: draw_fill_mode(); break;
+    case M_FIND: draw_find_mode(); break;
     default: draw_mode_placeholder(); break;
   }
 }
@@ -2922,6 +3273,7 @@ static int mode_click(int x, int y, int button)
     case M_TILE: return tile_mode_click(x, y, button);
     case M_TEXTURE: return texture_mode_click(x, y, button);
     case M_FILL: return fill_mode_click(x, y, button);
+    case M_FIND: return find_mode_click(x, y, button);
     default: return 0;
   }
 }
