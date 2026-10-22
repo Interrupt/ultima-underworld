@@ -146,7 +146,7 @@ add_fixture_game_unit_test(chargen
 target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_fixture_game_unit_test(new_game
   src/game.c:prepare_new_game src/game.c:start_game_with_current_character src/game.c:begin_gameplay
-  src/level.c:load_level_object_table src/level.c:load_level
+  src/level.c:load_level_object_table src/level.c:load_level src/level.c:load_level_from_archive
   src/game.c:set_game_mode
   src/ordinal_stubs.c:ce_wcscpy src/ordinal_stubs.c:CopyFileW
   src/ordinal_stubs.c:MultiByteToWideChar)

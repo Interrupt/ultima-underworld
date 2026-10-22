@@ -22,6 +22,7 @@
 #include "headers/player.h"
 #include "headers/debug_ui.h"
 #include "headers/saveload.h"
+#include "headers/level.h"
 #include "headers/file_io.h"
 #include "headers/traps.h"
 
@@ -798,41 +799,54 @@ static void op_put_down(int tx, int ty, int sub_x, int sub_y)
   uw_editor_validate();
 }
 
-/* Save the level being edited into the working save (SAVE0\\LEV.ARK), with the game's own level commit: it writes the
-   level's tile map and objects (and the texture map and automap reveal) and takes the player out of the level and back,
-   as when the player leaves a level. The edited level is read back from there when the level is next entered. The edits
-   are the level as it is now in memory, so creatures keep whatever the simulation did to them before the editor was
-   turned on. */
+/* The editor works on the master level archive, DATA\\LEV.ARK, not on a save slot. Entering the editor reloads the level
+   being edited from it (so play-session state is thrown away), and Save writes the level back into it. The first save
+   makes a one-time copy of the pristine archive as LEV.ARK.BAK. */
+static char g_master_ark[] = "\\DATA\\LEV.ARK";
+static char g_master_backup[] = "\\DATA\\LEV.ARK.BAK";
+static char g_save0_ark[] = "\\SAVE0\\LEV.ARK";
+
+/* Reload the level being edited from the master archive. The player is put back on its tile afterwards, as when the game
+   changes level. */
+static int reload_level_from_master(void)
+{
+  int tx = ((const uw_mobile_object_t *)g_player_object)->tile_x, ty = ((const uw_mobile_object_t *)g_player_object)->tile_y;
+  if (!load_level_from_archive((int)DAT_00201b68, g_master_ark)) return 0;
+  set_player_tile_position((uint)tx, (uint)ty, 1);
+  g_sel_tx = g_sel_ty = -1;
+  g_sel_slot = 0;
+  g_sel_link = NULL;
+  g_held_slot = 0;
+  full_dungeon_redraw();
+  set_pending_update_flags(0x7ffe);
+  fprintf(stderr, "[editor] level %d reloaded from LEV.ARK\n", DAT_00201b68);
+  return 1;
+}
+
+/* Save the level being edited into the master archive, with the game's own level commit: it writes the level's tile map
+   and objects and its texture map (not the automap), and takes the player out of the level and back, as when the player
+   leaves a level. Returns nonzero on success. */
+static int save_to_master(void)
+{
+  int have = uw_file_open_read(g_master_backup);
+  if (have != -1) uw_file_close(have);
+  else if (!uw_file_copy(g_master_ark, g_master_backup)) { g_status = "could not back up LEV.ARK"; return 0; }
+  return commit_level_to_archive((int)DAT_00201b68, g_master_ark, 0);
+}
+
 void uw_editor_save(void)
 {
   if (!g_active) return;
   if (g_held_slot) { g_status = "put the object down first"; return; }
   if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
-  int ok = commit_level_to_save_slot((int)DAT_00201b68);
-  g_status = ok ? "level saved" : "save failed";
-  fprintf(stderr, "[editor] save level %d: %s\n", DAT_00201b68, ok ? "ok" : "failed");
+  int ok = save_to_master();
+  if (ok) g_status = "level saved";
+  else if (!g_status) g_status = "save failed";
+  fprintf(stderr, "[editor] save level %d to LEV.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
 }
 
-/* Write the level being edited into an edited copy of the game's level archive, DATA\\LEV_EDIT.ARK: a copy of
-   DATA\\LEV.ARK the first time, then updated in place, so the edits to several levels collect in the one file. Rename it
-   LEV.ARK to play it. The player's automap is not written into it. As with the save, this is the level as it is in
-   memory now. */
-void uw_editor_export(void)
-{
-  static char path[] = "\\DATA\\LEV_EDIT.ARK";
-  if (!g_active) return;
-  if (g_held_slot) { g_status = "put the object down first"; return; }
-  if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
-  int have = uw_file_open_read(path);
-  if (have != -1) uw_file_close(have);
-  else if (!uw_file_copy("\\DATA\\LEV.ARK", path)) { g_status = "could not copy LEV.ARK"; return; }
-  int ok = commit_level_to_archive((int)DAT_00201b68, path, 0);
-  g_status = ok ? "exported to LEV_EDIT.ARK" : "export failed";
-  fprintf(stderr, "[editor] export level %d to LEV_EDIT.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
-}
-
-/* Play from here: save the level, leave the editor and drop the player where the camera is, facing the way it faces.
-   (The current game and character, not a new one.) */
+/* Play from here: save the level into the master archive, copy that over the save slot's archive, leave the editor and drop
+   the player where the camera is, facing the way it faces. (The current game and character, not a new one.) */
 void uw_editor_play(void)
 {
   if (!g_active) return;
@@ -844,6 +858,8 @@ void uw_editor_play(void)
   double yaw = (ushort)DAT_0023bf00 * (360.0 / 65536.0), pitch = DAT_0023beb4 / 256.0;
   uw_editor_save();
   if (g_status && strcmp(g_status, "level saved") != 0) return;   /* it said why it could not */
+  /* the game plays from the save slot, so it gets the master archive: every level as authored */
+  if (!uw_file_copy(g_master_ark, g_save0_ark)) { g_status = "could not copy LEV.ARK to SAVE0"; return; }
   uw_editor_set(0);
   demo_set_player_pos(x / 256.0, y / 256.0, floor_z, yaw, pitch);
   full_dungeon_redraw();
@@ -1136,6 +1152,8 @@ void uw_editor_set(int on)
   if (on && !in_dungeon()) return;
   g_active = on;
   if (on) {
+    /* reload the level from the master archive first: the editor never edits play-session state */
+    if (!reload_level_from_master()) g_status = "could not load LEV.ARK";
     /* detach the view from the player: Far Sight's free camera (DAT_0023b82c == 0), seeded at the player */
     int x, y, z;
     camera(&x, &y, &z);

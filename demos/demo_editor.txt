@@ -26,15 +26,17 @@ ENTER
 ENTER
 WAIT 30
 DELAY 1
+GOTOLEVEL 1
+WAIT 90
 SETPLAYERPOS 17.500 6.500 768 180 0
 WAIT 120
+# the level editor (editor.c): the level is reloaded from the master LEV.ARK (a copy, in this run's own data directory) on entry; pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
+EDITOR on
+WAIT 60
 SPAWNOBJ 0x157
 WAIT 5
 SPAWNOBJ 0x44
 WAIT 5
-# the level editor (editor.c): on, pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
-EDITOR on
-WAIT 60
 # Edit the picked object: the position grid, height spinner (right click steps by 8), heading rose, then the
 # Item, Comm and Class tabs' fields
 SDLCLICK 502 118
@@ -172,7 +174,7 @@ SDLRCLICK 502 118
 WAIT 10
 SDLCLICK 320 30
 WAIT 30
-# save the level into the working save (not export: that would write into the shared DATA directory)
+# save the level into the master archive (this run's own copy of it)
 EDITOR save
 WAIT 30
 EDITOR validate

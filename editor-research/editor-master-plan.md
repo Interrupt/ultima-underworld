@@ -106,9 +106,9 @@ The editor always works on the master `DATA\lev.ark`, never on save slots, and r
 
 1. Start the game and load into a level. The editor needs a loaded level, so it cannot be entered from the main menu (a later "Edit level" menu option could load one and jump straight in).
 2. Press **F9** in the dungeon view (also the `--editor` startup option, and `editor` in the console: bare `editor` toggles, `editor on|off` sets it). L is not used: the game binds it to a movement command. The original entry point is gone, so these choices are ours.
-3. The current level is reloaded from `DATA\lev.ark`, discarding play-session state. Confirm the first time, since it throws away the current session's changes to that level.
+3. The current level is reloaded from `DATA\lev.ark`, discarding play-session state (built: it reloads with `load_level_from_archive`, which is `load_level` for any archive path; the confirmation the first time is not built yet).
 4. Edit, then save with Ctrl+S or the menu.
-5. **Play** (the orange button at the bottom of the mode column) saves, then switches to the normal game with the full HUD, placing the player at the editor camera's X and Y, facing the way the camera faces. It refuses if the camera is over a wall (the player cannot stand inside one). It uses the current game and character, not a new one.
+5. **Play** (the orange button at the bottom of the mode column) saves the level into `DATA\lev.ark`, copies that archive over `SAVE0\lev.ark` (so every level is as authored), then switches to the normal game with the full HUD, placing the player at the editor camera's X and Y, facing the way the camera faces. It refuses if the camera is over a wall (the player cannot stand inside one). It uses the current game and character, not a new one.
 6. Press **F9** (or type `editor`) during play to return. The level reloads from the archive again so nothing done while playing leaks into the edit. Escape keeps its normal game-menu job during play.
 
 **Level switching** uses its own path that reads and writes the master archive. The game's stairs path writes save slots, so reusing it unchanged would put edits in the wrong file.

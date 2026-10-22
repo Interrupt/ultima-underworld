@@ -105,8 +105,17 @@ setup_isolated_data_dir() {
   d="$DATA_DIR_ROOT/$script_name"
   rm -rf "$d"
   mkdir -p "$d"
-  for ro in CRIT CUTS DATA DATA3D SOUND gx.dll UU.exe; do
+  for ro in CRIT CUTS DATA3D SOUND gx.dll UU.exe; do
     ln -s "$(pwd)/data/$ro" "$d/$ro"
+  done
+  # DATA is a real directory of links, with its own copy of LEV.ARK: the level editor writes the master archive, and a run
+  # must never write into the repo's data/ directory.
+  mkdir -p "$d/DATA"
+  for f in "$(pwd)"/data/DATA/*; do
+    case "$(basename "$f")" in
+      LEV.ARK) cp "$f" "$d/DATA/LEV.ARK" ;;
+      *) ln -s "$f" "$d/DATA/$(basename "$f")" ;;
+    esac
   done
   # SAVE1 is the real template "new game" copies FROM -- needs real
   # content. SAVE0 (and the other slots) are left EMPTY: every script
