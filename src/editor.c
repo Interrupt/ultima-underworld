@@ -13,16 +13,21 @@
 #include "headers/uw.h"
 #include "headers/options.h"
 #include "headers/fullscreen_view.h"
+#include "headers/input.h"
+#include "headers/interact.h"
+#include "headers/automap.h"
 
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 extern short DAT_00201b64;   /* game mode; 0 == in-game 3D dungeon view */
 extern short DAT_00201b68;   /* dungeon level, 0-based */
 extern char *DAT_0023b82c;   /* the object the camera tracks; 0 == the free camera */
 extern unsigned short *uw_fullscreen_scene_pixels(void);
+extern int uw_scancode_held(int sc);   /* gx_stub.c */
 
 #define ED_W 320
 #define ED_H 200
@@ -122,6 +127,23 @@ static void draw_view_pane(void)
       put(R_VIEW.x0 + x, R_VIEW.y0 + y, scene[(y * ED_H / h) * ED_W + sx0 + x * sw / w]);
 }
 
+static uw_object_hdr_t *object_at(int slot)
+{
+  return slot > 0 ? get_object_record_by_slot_index((short)slot) : NULL;
+}
+
+/* The first object on a tile. */
+static int tile_head(int tx, int ty)
+{
+  const uw_tile_t *t = tx >= 0 && tx < 64 && ty >= 0 && ty < 64 ? (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty) : NULL;
+  return t ? t->obj_head : 0;
+}
+
+static int is_mobile(const uw_object_hdr_t *o)
+{
+  return (o->object_id & 0x1c0) == 0x40;   /* critters */
+}
+
 /* The camera in world units (256 to a tile): the free camera's position when the view is detached from the player
    (as Far Sight does), otherwise the player's. */
 static void camera(int *x, int *y, int *z)
@@ -167,6 +189,19 @@ static void draw_map_pane(void)
         for (int x = 0; x < MAP_TILE; x++)
           if (sx + x >= R_MAP.x0 && sx + x < R_MAP.x1 && sy + y >= R_MAP.y0 && sy + y < R_MAP.y1) put(sx + x, sy + y, c);
     }
+  /* objects: a dot on each tile that has any, red for critters */
+  for (int j = 0; j < tiles_h; j++)
+    for (int i = 0; i < tiles_w; i++) {
+      int tx = left + i, ty = bottom + j, slot = tile_head(tx, ty);
+      for (int n = 0; slot && n < 64; n++) {
+        const uw_object_hdr_t *o = object_at(slot);
+        if (!o) break;
+        int sx = R_MAP.x0 + i * MAP_TILE + o->xpos * MAP_TILE / 8, sy = R_MAP.y1 - (j + 1) * MAP_TILE + (7 - o->ypos) * MAP_TILE / 8;
+        if (sx >= R_MAP.x0 && sx < R_MAP.x1 - 1 && sy >= R_MAP.y0 && sy < R_MAP.y1 - 1)
+          fill(sx, sy, sx + 2, sy + 2, is_mobile(o) ? RGB(255, 60, 60) : RGB(255, 255, 80));
+        slot = o->next;
+      }
+    }
   if (g_sel_tx >= 0) {
     int sx = R_MAP.x0 + (g_sel_tx - left) * MAP_TILE, sy = R_MAP.y1 - (g_sel_ty - bottom + 1) * MAP_TILE;
     frame(sx, sy, sx + MAP_TILE, sy + MAP_TILE, RGB(255, 255, 0));
@@ -191,23 +226,6 @@ static void draw_palette_pane(void)
     if (i == g_mode) frame(156, y - 1, 172, y + 15, COL_BLUE);
   }
   sprite("buttons", 16, 157, 176);
-}
-
-static uw_object_hdr_t *object_at(int slot)
-{
-  return slot > 0 ? get_object_record_by_slot_index((short)slot) : NULL;
-}
-
-/* The first object on a tile. */
-static int tile_head(int tx, int ty)
-{
-  const uw_tile_t *t = tx >= 0 && tx < 64 && ty >= 0 && ty < 64 ? (const uw_tile_t *)tilemap_lookup((short)tx, (short)ty) : NULL;
-  return t ? t->obj_head : 0;
-}
-
-static int is_mobile(const uw_object_hdr_t *o)
-{
-  return (o->object_id & 0x1c0) == 0x40;   /* critters */
 }
 
 #define STRIP_MAX 6
@@ -300,8 +318,13 @@ static void draw_info_bar(void)
   snprintf(line, sizeof line, "P:%d.%d %d.%d %d", x >> 8, (x & 255) * 10 / 256, y >> 8, (y & 255) * 10 / 256, z >> 3);
   text(line, 2, 193, COL_TEXT);
   snprintf(line, sizeof line, "Map= Lvl %d %d,%d", DAT_00201b68 + 1, x >> 8, y >> 8);
-  text(line, 160, 193, COL_TEXT);
+  text(line, 150, 193, COL_TEXT);
   if (g_status) text(g_status, 70, 193, RGB(255, 140, 140));
+  {
+    time_t now = time(NULL);
+    strftime(line, sizeof line, "%a %d %H:%M", localtime(&now));
+    text(line, 262, 193, COL_TEXT);
+  }
 }
 
 /* ---- compose ---- */
@@ -366,12 +389,35 @@ static void button_pressed(int i)
   }
 }
 
+/* Pick the object under a point of the 3D pane with the game's own per-pixel pick buffer, which is in scene
+   coordinates, and select it with its tile. */
+static void pick_in_view(int px, int py)
+{
+  int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0;
+  int sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+  g_mouse_x = (short)(sx0 + (px - R_VIEW.x0) * sw / w);
+  g_mouse_y = (short)((py - R_VIEW.y0) * ED_H / h);
+  uw_object_hdr_t *o = (uw_object_hdr_t *)pick_object_under_cursor(2);
+  if (!o) { g_status = "nothing there"; return; }
+  int tile = (int)(((intptr_t)DAT_002020b0 - (intptr_t)tilemap_lookup(0, 0)) / 4);
+  select_tile(tile & 63, tile >> 6);
+  for (int slot = tile_head(g_sel_tx, g_sel_ty); slot; ) {
+    uw_object_hdr_t *c = object_at(slot);
+    if (!c) break;
+    if (c == o) { g_sel_slot = slot; break; }
+    slot = c->next;
+  }
+}
+
 void uw_editor_click(int x, int y, int button)
 {
   int tx, ty;
   (void)button;
   g_status = NULL;
-  if (in_rect(&R_MAP, x, y)) {
+  if (in_rect(&R_VIEW, x, y)) {
+    pick_in_view(x, y);
+  }
+  else if (in_rect(&R_MAP, x, y)) {
     if (map_tile_at(x, y, &tx, &ty)) select_tile(tx, ty);
   }
   else if (in_rect(&R_PALETTE, x, y)) {
@@ -415,11 +461,11 @@ static void try_move(int dx, int dy)
 void uw_editor_tick(void)
 {
   if (!g_active || DAT_00201b64 != 0 || DAT_0023b82c != 0) return;
-  const Uint8 *k = SDL_GetKeyboardState(NULL);
-  int fwd = (k[SDL_SCANCODE_UP] || k[SDL_SCANCODE_W]) - (k[SDL_SCANCODE_DOWN] || k[SDL_SCANCODE_S]);
-  int strafe = k[SDL_SCANCODE_D] - k[SDL_SCANCODE_A];
-  int turn = k[SDL_SCANCODE_RIGHT] - k[SDL_SCANCODE_LEFT];
-  int lift = k[SDL_SCANCODE_E] - k[SDL_SCANCODE_Q];
+#define KEY(sc) uw_scancode_held(sc)
+  int fwd = (KEY(SDL_SCANCODE_UP) || KEY(SDL_SCANCODE_W)) - (KEY(SDL_SCANCODE_DOWN) || KEY(SDL_SCANCODE_S));
+  int strafe = KEY(SDL_SCANCODE_D) - KEY(SDL_SCANCODE_A);
+  int turn = KEY(SDL_SCANCODE_RIGHT) - KEY(SDL_SCANCODE_LEFT);
+  int lift = KEY(SDL_SCANCODE_E) - KEY(SDL_SCANCODE_Q);
   if (!fwd && !strafe && !turn && !lift) return;
   short sn, cs;
   DAT_0023bf00 = (ushort)(DAT_0023bf00 + turn * FLY_TURN);

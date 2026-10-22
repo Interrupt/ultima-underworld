@@ -1,0 +1,67 @@
+# The level editor (editor.c): pick and select objects, fly the free camera, click the map, strip, palette and
+# buttons, and toggle it off and on. Run under ASan.
+
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+TYPE Avatar
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+WAIT 30
+DELAY 1
+SETPLAYERPOS 17.500 6.500 768 180 0
+WAIT 10
+SPAWNOBJ 0x157
+WAIT 5
+# the level editor (editor.c): on, pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
+EDITOR on
+WAIT 20
+SDLCLICK 140 160
+WAIT 10
+SDLKEYDOWN e
+WAIT 30
+SDLKEYUP e
+SDLKEYDOWN left
+WAIT 40
+SDLKEYUP left
+SDLKEYDOWN w
+WAIT 20
+SDLKEYUP w
+WAIT 10
+SDLCLICK 502 118
+WAIT 5
+SDLCLICK 440 190
+WAIT 5
+SDLCLICK 250 290
+WAIT 5
+SDLCLICK 480 90
+WAIT 5
+SDLCLICK 760 358
+WAIT 5
+SDLCLICK 240 262
+WAIT 5
+SDLCLICK 240 280
+WAIT 5
+EDITOR off
+WAIT 20
+EDITOR on
+WAIT 20
+EDITOR off
+WAIT 10

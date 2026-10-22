@@ -72,7 +72,7 @@ ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=0}"
 SDL_VIDEODRIVER="${SDL_VIDEODRIVER-dummy}"
 SDL_AUDIODRIVER="${SDL_AUDIODRIVER-dummy}"
 
-DEFAULT_SCRIPTS="demo_critter_orbit_cardinal.txt demo_inventory_container_item_click_test.txt demo_inventory_container_torch_use_test.txt demo_inventory_dropback_test.txt demo_inventory_invalid_drop_test.txt demo_inventory_open_bag_test.txt demo_cast_all_spells.txt demo_summon_flood.txt demo_fullscreen_view.txt"
+DEFAULT_SCRIPTS="demo_critter_orbit_cardinal.txt demo_inventory_container_item_click_test.txt demo_inventory_container_torch_use_test.txt demo_inventory_dropback_test.txt demo_inventory_invalid_drop_test.txt demo_inventory_open_bag_test.txt demo_cast_all_spells.txt demo_summon_flood.txt demo_fullscreen_view.txt demo_editor.txt"
 
 if [ "$#" -gt 0 ]; then
   SCRIPTS="$*"

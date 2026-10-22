@@ -95,6 +95,12 @@ extern short g_movement_mode;             /* pending movement command (6/7 jump)
    does not update SDL's own keyboard-state array. Indexed by SDL scancode. */
 static unsigned char g_synth_scancode_held[SDL_NUM_SCANCODES];
 
+/* Whether a key is held, physically or by an injected demo key (the editor flies the camera with these). */
+int uw_scancode_held(int sc)
+{
+    return (sc > 0 && sc < SDL_NUM_SCANCODES) && (SDL_GetKeyboardState(NULL)[sc] || g_synth_scancode_held[sc]);
+}
+
 static SDL_Window *g_win;
 static SDL_Renderer *g_ren;
 static SDL_Texture *g_tex;
