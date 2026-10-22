@@ -82,6 +82,8 @@ static int g_group_scroll = 3;    /* first group shown in the group bar (the def
 static int g_palette_scroll;      /* first row of the group's objects shown in the palette */
 static int g_mode = 2;            /* mode palette: the object mode is the one the screenshot shows selected */
 static const char *g_status;      /* a transient message on the info bar */
+static void draw_menu(void);
+static int menu_open(void);
 
 int uw_editor_active(void) { return g_active; }
 
@@ -557,6 +559,7 @@ int uw_editor_compose(unsigned short *display)
   draw_object_palette();
   draw_object_editor();
   draw_info_bar();
+  draw_menu();
   g_uw_framebuffer = saved;
   {
     /* the debug panel or console (drawn by the game into its own framebuffer) stays on top */
@@ -1057,6 +1060,190 @@ void uw_editor_play(void)
   fprintf(stderr, "[editor] playing from (%.2f,%.2f) of level %d\n", x / 256.0, y / 256.0, DAT_00201b68);
 }
 
+/* ---- the Escape menu ---- */
+
+/* Escape opens a small popup over the editor: Save, Revert, Change level, Play, Exit. Revert always asks; Change level,
+   Play and Exit ask Save / Discard / Cancel when there are unsaved edits. While it is open it takes all the input. The
+   selection, the brush and the Mv slot are kept. */
+enum { MENU_NONE, MENU_MAIN, MENU_LEVELS, MENU_CONFIRM };
+enum { ACT_NONE, ACT_REVERT, ACT_LEVEL, ACT_PLAY, ACT_EXIT };
+static int g_menu = MENU_NONE, g_menu_sel;
+static int g_menu_action = ACT_NONE, g_menu_arg;   /* what a confirm is for */
+static const ed_rect_t R_MENU = { 70, 50, 250, 150 };
+#define MENU_ROW 11
+#define MENU_LEVELS_COUNT 9
+
+static int menu_open(void) { return g_menu != MENU_NONE; }
+
+/* the first open tile found by spiralling out from the middle of the map (a new level needs somewhere to stand) */
+static int find_open_tile(int *ox, int *oy)
+{
+  for (int r = 0; r < 64; r++)
+    for (int dy = -r; dy <= r; dy++)
+      for (int dx = -r; dx <= r; dx++) {
+        if (r && dx > -r && dx < r && dy > -r && dy < r) continue;
+        if (tile_is_open(32 + dx, 32 + dy)) { *ox = 32 + dx; *oy = 32 + dy; return 1; }
+      }
+  return 0;
+}
+
+/* Load another level from the master archive. The player is put on an open tile and the camera over it. */
+static void change_level(int n)
+{
+  int ox, oy;
+  if (n < 1 || n > MENU_LEVELS_COUNT || n == DAT_00201b68) return;
+  if (!load_level_from_archive(n, g_master_ark)) { g_status = "could not load that level"; return; }
+  DAT_00201b68 = (short)n;   /* the level load restores the old number from the player record */
+  if (!find_open_tile(&ox, &oy)) { ox = 32; oy = 32; }
+  set_player_tile_position((uint)ox, (uint)oy, 1);
+  {
+    const uw_tile_t *t = (const uw_tile_t *)tilemap_lookup((short)ox, (short)oy);
+    DAT_0023be90 = (short)(ox * 256 + 128);
+    DAT_0023be92 = (short)(oy * 256 + 128);
+    DAT_0023be94 = (short)((t->floor_height * 8 + 0x16) * 8);
+  }
+  g_sel_slot = 0; g_sel_link = NULL; g_held_slot = 0;
+  g_undo_count = g_redo_count = 0;
+  g_dirty = 0;
+  g_map_pan_x = g_map_pan_y = 0;
+  select_tile(ox, oy);
+  full_dungeon_redraw();
+  set_pending_update_flags(0x7ffe);
+  dirty_rect_union(0, 200, 0, 0x140);
+  fprintf(stderr, "[editor] now editing level %d\n", n);
+}
+
+static void do_action(int action, int arg)
+{
+  g_menu = MENU_NONE;
+  switch (action) {
+    case ACT_REVERT: if (reload_level_from_master()) { g_status = "reverted"; } else g_status = "could not load LEV.ARK"; break;
+    case ACT_LEVEL: change_level(arg); break;
+    case ACT_PLAY: uw_editor_play(); break;
+    case ACT_EXIT: uw_editor_set(0); break;
+    default: break;
+  }
+}
+
+/* Run an action that leaves the level behind, asking first if there are unsaved edits. */
+static void guarded(int action, int arg)
+{
+  if (action == ACT_REVERT || g_dirty) {
+    g_menu = MENU_CONFIRM; g_menu_sel = 0; g_menu_action = action; g_menu_arg = arg;
+  }
+  else do_action(action, arg);
+}
+
+static void menu_choose(int item)
+{
+  if (g_menu == MENU_MAIN) {
+    switch (item) {
+      case 0: g_menu = MENU_NONE; uw_editor_save(); break;
+      case 1: guarded(ACT_REVERT, 0); break;
+      case 2: g_menu = MENU_LEVELS; g_menu_sel = DAT_00201b68 - 1; break;
+      case 3: guarded(ACT_PLAY, 0); break;
+      case 4: guarded(ACT_EXIT, 0); break;
+      default: g_menu = MENU_NONE; break;
+    }
+  }
+  else if (g_menu == MENU_LEVELS) {
+    if (item >= 0 && item < MENU_LEVELS_COUNT) guarded(ACT_LEVEL, item + 1);
+    else g_menu = MENU_MAIN;
+  }
+  else if (g_menu == MENU_CONFIRM) {
+    int action = g_menu_action, arg = g_menu_arg;
+    if (action == ACT_REVERT) {   /* Revert / Cancel */
+      if (item == 0) do_action(action, arg); else g_menu = MENU_NONE;
+    }
+    else if (item == 0) {   /* Save, then carry on */
+      uw_editor_save();
+      if (!g_dirty) do_action(action, arg); else g_menu = MENU_NONE;
+    }
+    else if (item == 1) {   /* Discard: back to the archive, then carry on */
+      reload_level_from_master();
+      do_action(action, arg);
+    }
+    else g_menu = MENU_NONE;
+  }
+}
+
+static int menu_item_count(void)
+{
+  return g_menu == MENU_MAIN ? 6 : g_menu == MENU_LEVELS ? MENU_LEVELS_COUNT + 1 : g_menu_action == ACT_REVERT ? 2 : 3;
+}
+
+void uw_editor_escape(void)
+{
+  if (!g_active) return;
+  if (g_menu == MENU_LEVELS) { g_menu = MENU_MAIN; return; }
+  if (g_menu != MENU_NONE) { g_menu = MENU_NONE; return; }
+  if (g_held_slot) { g_held_slot = 0; g_status = "cancelled"; return; }   /* a pending Move or Copy first */
+  g_menu = MENU_MAIN;
+  g_menu_sel = 0;
+}
+
+int uw_editor_menu_open(void) { return g_active && menu_open(); }
+
+void uw_editor_menu_key(int sym)
+{
+  int n = menu_item_count();
+  switch (sym) {
+    case SDLK_UP: g_menu_sel = (g_menu_sel + n - 1) % n; break;
+    case SDLK_DOWN: g_menu_sel = (g_menu_sel + 1) % n; break;
+    case SDLK_RETURN: case SDLK_KP_ENTER: menu_choose(g_menu_sel); break;
+    case SDLK_ESCAPE: uw_editor_escape(); break;
+    default: break;
+  }
+}
+
+/* Page Up and Page Down change level */
+void uw_editor_page_level(int delta)
+{
+  if (!g_active || menu_open()) return;
+  int n = DAT_00201b68 + delta;
+  if (n >= 1 && n <= MENU_LEVELS_COUNT) guarded(ACT_LEVEL, n);
+}
+
+static void menu_click(int x, int y)
+{
+  int n = menu_item_count();
+  int top = R_MENU.y0 + (g_menu == MENU_CONFIRM ? 30 : 14);
+  if (!in_rect(&R_MENU, x, y)) { g_menu = MENU_NONE; return; }
+  int row = (y - top) / MENU_ROW;
+  if (y >= top && row < n) { g_menu_sel = row; menu_choose(row); }
+}
+
+static void draw_menu(void)
+{
+  static const char *const main_items[6] = { "Save", "Revert", "Change level", "Play", "Exit editor", "Close" };
+  static const char *const revert_items[2] = { "Revert", "Cancel" };
+  static const char *const dirty_items[3] = { "Save", "Discard", "Cancel" };
+  char line[40];
+  if (!menu_open()) return;
+  fill(R_MENU.x0, R_MENU.y0, R_MENU.x1, R_MENU.y1, COL_BLACK);
+  frame(R_MENU.x0, R_MENU.y0, R_MENU.x1, R_MENU.y1, COL_ORANGE);
+  frame(R_MENU.x0 + 2, R_MENU.y0 + 2, R_MENU.x1 - 2, R_MENU.y1 - 2, COL_FRAME);
+  int top = R_MENU.y0 + (g_menu == MENU_CONFIRM ? 30 : 14);
+  if (g_menu == MENU_CONFIRM) {
+    text(g_menu_action == ACT_REVERT ? "Discard your edits and reload?" : "This level has unsaved edits.", R_MENU.x0 + 8, R_MENU.y0 + 8, COL_TEXT);
+    text(g_menu_action == ACT_REVERT ? "from the archive" : "Save them first?", R_MENU.x0 + 8, R_MENU.y0 + 17, COL_TEXT);
+  }
+  else text(g_menu == MENU_MAIN ? "Level editor" : "Change level", R_MENU.x0 + 8, R_MENU.y0 + 6, COL_TEXT);
+  int n = menu_item_count();
+  for (int i = 0; i < n; i++) {
+    const char *label;
+    if (g_menu == MENU_MAIN) label = main_items[i];
+    else if (g_menu == MENU_LEVELS) {
+      if (i < MENU_LEVELS_COUNT) { snprintf(line, sizeof line, "Level %d%s", i + 1, i + 1 == DAT_00201b68 ? "  (current)" : ""); label = line; }
+      else label = "Back";
+    }
+    else label = g_menu_action == ACT_REVERT ? revert_items[i] : dirty_items[i];
+    int y = top + i * MENU_ROW;
+    if (i == g_menu_sel) fill(R_MENU.x0 + 6, y - 1, R_MENU.x1 - 6, y + MENU_ROW - 2, RGB(24, 24, 88));
+    text(label, R_MENU.x0 + 10, y, i == g_menu_sel ? COL_TEXT : COL_ORANGE);
+  }
+}
+
 /* Show: bring the camera next to the selected object's tile, looking at it. */
 static void op_show(void)
 {
@@ -1222,6 +1409,7 @@ void uw_editor_mouse_up(int x, int y, int button)
 
 void uw_editor_click(int x, int y, int button)
 {
+  if (menu_open()) { if (button == SDL_BUTTON_LEFT) menu_click(x, y); return; }
   int tx, ty;
   g_status = NULL;
   if (in_rect(&R_VIEW, x, y)) {
@@ -1240,7 +1428,7 @@ void uw_editor_click(int x, int y, int button)
     }
   }
   else if (in_rect(&R_PALETTE, x, y) && y >= 175 && x >= 156 && x < 172) {
-    uw_editor_play();   /* the orange button below the modes: play from the selected tile */
+    guarded(ACT_PLAY, 0);   /* the orange button below the modes: play from the camera */
   }
   else if (in_rect(&R_PALETTE, x, y) && y < 25) {
     uw_editor_save();   /* the starburst at the top, for now */
@@ -1380,5 +1568,6 @@ void uw_editor_set(int on)
 void uw_editor_toggle(int unused)
 {
   (void)unused;
-  uw_editor_set(!g_active);
+  if (g_active) { if (!menu_open()) guarded(ACT_EXIT, 0); }   /* ask first if there are unsaved edits */
+  else uw_editor_set(1);
 }

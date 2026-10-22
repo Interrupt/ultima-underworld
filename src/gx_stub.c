@@ -434,6 +434,13 @@ void uw_pump_events(void) {
                     uw_editor_save();   /* Ctrl+S saves the level being edited */
                     return;
                 }
+                if (ev.type == SDL_KEYDOWN && uw_editor_active() && !dbgui_visible()) {
+                    /* the editor's own keys: Escape and the menu it opens, Page Up and Page Down change level */
+                    if (uw_editor_menu_open()) { if (!ev.key.repeat || ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN) uw_editor_menu_key((int)ev.key.keysym.sym); return; }
+                    if (ev.key.keysym.sym == SDLK_ESCAPE) { uw_editor_escape(); return; }
+                    if (ev.key.keysym.sym == SDLK_PAGEUP && !ev.key.repeat) { uw_editor_page_level(1); return; }
+                    if (ev.key.keysym.sym == SDLK_PAGEDOWN && !ev.key.repeat) { uw_editor_page_level(-1); return; }
+                }
                 if (ev.type == SDL_KEYDOWN && (ev.key.keysym.mod & KMOD_CTRL) && uw_editor_active() &&
                     (ev.key.keysym.sym == SDLK_z || ev.key.keysym.sym == SDLK_y)) {
                     /* Ctrl+Z undoes, Ctrl+Y or Ctrl+Shift+Z redoes */

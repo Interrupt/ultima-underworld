@@ -27,6 +27,13 @@ void uw_editor_click(int x, int y, int button);
    at the top of the mode palette). The first save makes a one-time copy, LEV.ARK.BAK. Entering the editor reloads the
    level from the archive. */
 void uw_editor_save(void);
+/* The Escape menu: Escape opens it (a pending Move or Copy is cancelled first), and it takes all input while open. Page Up and
+   Page Down change level. */
+void uw_editor_escape(void);
+int uw_editor_menu_open(void);
+void uw_editor_menu_key(int sym);
+void uw_editor_page_level(int delta);
+
 /* Undo and redo the last edit (Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z, and EDITOR undo / redo): each step restores the level arena, the
    scheduler table and the texture map byte for byte. The status bar shows * after the level number while there are unsaved edits. */
 void uw_editor_undo(void);
