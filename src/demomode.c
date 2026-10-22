@@ -616,7 +616,7 @@ static void demo_exec_line(char *p, Uint32 now) {
             /* Print the player's tile so a scripted TELEPORT/REVEAL sweep
                can be correlated with what's on screen. */
             extern uw_mobile_object_t *g_player_object;
-            unsigned short *pl = (unsigned short *)g_player_object;
+            uw_unaligned_word_t *pl = (uw_unaligned_word_t *)g_player_object;
             if (pl)
                 demo_printf("[cmd] player tile = (%d,%d)\n",
                         ((uw_mobile_object_t *)pl)->tile_x,
@@ -805,7 +805,7 @@ static void demo_exec_line(char *p, Uint32 now) {
            tilemap_lookup(row,col)+2 -> resolve_object_link -> +2 shorts -> resolve_object_link ...
            walk object_chain_max_barrier uses) and print each object's raw type/flags words... */
         extern uw_mobile_object_t *g_player_object;
-        unsigned short *pl = (unsigned short *)g_player_object;
+        uw_unaligned_word_t *pl = (uw_unaligned_word_t *)g_player_object;
         if (pl) {
             int row = ((uw_mobile_object_t *)pl)->tile_x;
             int col = ((uw_mobile_object_t *)pl)->tile_y;
@@ -814,8 +814,8 @@ static void demo_exec_line(char *p, Uint32 now) {
             demo_printf("[dumptileobjs] tile=(%d,%d) tile_rec=%p raw_link_field=0x%04x\n",
                     row, col, tile_rec, *link);
             int n = 0;
-            unsigned short *obj;
-            while ((obj = (unsigned short *)resolve_object_link(link)) != NULL) {
+            uw_unaligned_word_t *obj;
+            while ((obj = (uw_unaligned_word_t *)resolve_object_link((uw_link_word_t *)link)) != NULL) {
                 demo_printf("[dumptileobjs]   #%d obj=%p type=0x%03x word0=0x%04x word1=0x%04x\n",
                         n, (void *)obj, ((uw_object_hdr_t *)obj)->object_id,
                         ((uw_object_hdr_t *)obj)->type_flags,

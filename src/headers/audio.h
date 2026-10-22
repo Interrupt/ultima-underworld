@@ -113,7 +113,7 @@ void set_sound_effects_enabled(int enabled);
 void stop_current_audio_handle();
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias);
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias);
-int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias);
+int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias);
 void stop_movement_sound_handle();
 void stop_current_audio_handle_dup();
 uint allocate_and_play_sound_channel(byte sound_id, int module, int resource_id, byte note, uint flags, int extra);

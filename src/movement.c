@@ -267,7 +267,7 @@ void reticle_object_pick(int mode)
 {
   byte bVar1;
   ushort *puVar2;
-  short *psVar3;
+  uw_unaligned_short_t *psVar3;
   int iVar4;
   uint uVar5;
   int iVar6;
@@ -293,7 +293,7 @@ void reticle_object_pick(int mode)
       if (DAT_002049dc != 0) {
         do {
           iVar6 = iVar4 * 6;
-          puVar2 = (ushort *)get_object_record_by_slot_index(*(ushort *)(&DAT_00202c3a + iVar6) >> 6);
+          puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + iVar6) >> 6);
           /* get_object_record_by_slot_index returns NULL for an empty slot (id bits clear).
              Ghidra dropped the guard; with forward movement now working this
              loop runs (via sweep_collision_flags) and hit the NULL deref. */
@@ -368,7 +368,7 @@ LAB_00058a64:
   }
 LAB_00058db4:
   if (DAT_00086998 != -1) {
-    psVar3 = (short *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_00086998 * 6));
+    psVar3 = (uw_unaligned_short_t *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_00086998 * 6));
     /* resolve_object_link returns NULL when the picked slot carries no object link (id bits 6..15
        clear). */
     if (psVar3 == (short *)0x0) {
@@ -918,7 +918,7 @@ void sweep_land_on_surface()
   
   /* The decompile uses a short-pointer view of the movement record.
      Keep word indexing and raw byte offsets distinct (ARM 0x59d20..0x5a33c). */
-  puVar7 = (ushort *)get_object_record_by_slot_index((int)DAT_002049d2);
+  puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)DAT_002049d2);
   uVar2 = g_object_type_props[(((uw_object_hdr_t *)puVar7)->object_id)].size_weight;
   iVar12 = (int)_DAT_000869a1;
   if (iVar12 < 5) {
@@ -1038,7 +1038,7 @@ void sweep_land_on_surface()
   *(undefined1 *)((char *)DAT_00204874 + 0x11) = 0;
   if (DAT_00086998 == -1) {
     if ((int)((uint)DAT_002049d0 + (uint)DAT_002049d8) < (int)*(short *)((char *)g_sweep_foot_pos + 4)) {
-      puVar7 = (ushort *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23));
+      puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23));
       if ((((uw_object_hdr_t *)puVar7)->object_id & 0x1c0) != 0x40) goto LAB_0005a238;
       if ((DAT_002049d6 & 0x10) == 0) {
         if ((DAT_002049d6 & 0x20) == 0) goto LAB_0005a2d0;
@@ -1054,9 +1054,9 @@ void sweep_land_on_surface()
     *(undefined1 *)(DAT_00204874 + 0x28) = uVar3;
   }
   else {
-    psVar9 = (short *)get_object_record_by_slot_index(*(ushort *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
+    psVar9 = (short *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
     if (((g_object_type_props[((int)*psVar9 & 0x1ffU)].flags & 2) != 0) ||
-        (puVar7 = (ushort *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23)),
+        (puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23)),
          (((uw_object_hdr_t *)puVar7)->object_id & 0x1c0) == 0x40)) {
 LAB_0005a2d0:
       *(undefined1 *)(DAT_00204874 + 0x28) = 1;
@@ -1802,7 +1802,7 @@ LAB_0002bb2c:
     if ((uVar1 & 0xf8) == 0x10) {
       DAT_00101924 = 1;
       DAT_00101734 = 0;
-      spawn_scheduled_effect_object((ushort *)DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
+      spawn_scheduled_effect_object((uw_unaligned_word_t *)DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
                    (short)(char)((ushort)_DAT_002048c2 >> 8));
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xcc | 0xc;
       uVar5 = DAT_0010190c->goal_word & 0xfff;
@@ -1998,7 +1998,7 @@ void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
   iVar6 = 0;
   if (DAT_002049dd != 0) {
     do {
-      puVar2 = (ushort *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6));
+      puVar2 = (uw_unaligned_word_t *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6));
       uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
       uVar3 = (uint)(byte)(&DAT_00202c3c)[(iVar6 + DAT_002049de) * 6] +
               ((int)DAT_002049c8 >> 3 & 0xffU) & 0x3f;

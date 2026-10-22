@@ -19,15 +19,15 @@ void *tilemap_lookup(short x, short y) { event(1 + (unsigned)(ushort)x * 256 + (
 void object_list_unlink(ushort *p, uw_object_hdr_t *obj) { (void)p; (void)obj; event(2); }
 void object_list_insert_head(ushort *p, uw_object_hdr_t *obj) { (void)p; (void)obj; event(3); }
 divmod_result ordint_divmod(int d, int n) { return (divmod_result){n/d, n%d}; }
-int play_sound_effect_at_object(int sound, ushort *obj, int bias) { (void)obj; event(100 + sound + (unsigned)bias); return 0; }
-int apply_typed_damage_to_object(ushort *obj, ushort *attacker, int x, short y, byte damage, byte type) {
+int play_sound_effect_at_object(int sound, uw_unaligned_word_t *obj, int bias) { (void)obj; event(100 + sound + (unsigned)bias); return 0; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *obj, uw_unaligned_word_t *attacker, int x, short y, byte damage, byte type) {
     (void)attacker; (void)x; (void)y; event(200 + damage + type * 256u);
     if (scenario == 7) { ((byte *)obj)[8] ^= 0x73; ((byte *)obj)[4] ^= 0x55; }
     return 0;
 }
 long ce_rand(void) { event(4); return scenario == 7 ? 0 : 1; }
-uw_object_hdr_t *reallocate_object_to_arena(ushort *obj) { event(5); memcpy(arena + 64, obj, 8); return (uw_object_hdr_t *)(arena + 64); }
-ushort *settle_mobile_to_immobile(ushort *obj) { event(6); if (scenario == 2) return NULL; memcpy(arena + 128, obj, 8); return (ushort *)(arena + 128); }
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *obj) { event(5); memcpy(arena + 64, obj, 8); return (uw_object_hdr_t *)(arena + 64); }
+ushort *settle_mobile_to_immobile(uw_unaligned_word_t *obj) { event(6); if (scenario == 2) return NULL; memcpy(arena + 128, obj, 8); return (ushort *)(arena + 128); }
 uw_object_hdr_t *settle_dropped_object(void *obj, short x, short y, int mode) {
     (void)x; (void)y; (void)mode; event(7);
     if (scenario == 3) return NULL;

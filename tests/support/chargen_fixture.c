@@ -136,5 +136,5 @@ int DAT_00086db8_backing[256], DAT_0023bc94;
 undefined4 DAT_0023bc9c, DAT_0023bc98, DAT_002020dc;
 undefined4 DAT_002020d0, DAT_002020d4, DAT_002020d8;
 short DAT_000858c4;
-void reduce_item_quality_on_use(ushort *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected quality decay"); }
+void reduce_item_quality_on_use(uw_unaligned_word_t *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected quality decay"); }
 uint calculate_object_weight(uw_object_hdr_t *object) { return 25; }

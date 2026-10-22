@@ -37,7 +37,7 @@ uw_object_hdr_t *alloc_object_slot(int region)
     return spells_fixture.allocation_fails ? NULL
         : (uw_object_hdr_t *)spells_fixture.projectile; /* raw record viewed as a header */
 }
-int check_object_drop_height(ushort *object, ushort *actor)
+int check_object_drop_height(uw_unaligned_word_t *object, ushort *actor)
 {
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor);
@@ -53,7 +53,7 @@ void object_list_insert_head(ushort *head, uw_object_hdr_t *object)
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);
     spells_fixture.links++;
 }
-int play_sound_effect_at_object(int sound, ushort *object, int mode)
+int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode)
 {
     TEST_ASSERT_EQUAL_INT(10, sound);
     TEST_ASSERT_EQUAL_PTR(spells_fixture.projectile, object);

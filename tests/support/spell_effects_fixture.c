@@ -63,7 +63,7 @@ uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
 { return (byte *)link == fx.tile+2 ? raw_object(fx.target) : NULL; }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
 { TEST_ASSERT_EQUAL_INT(1, slot); return &g_player_object->hdr; }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int x, short y, byte damage, byte type)
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int x, short y, byte damage, byte type)
 {
     TEST_ASSERT_EQUAL_PTR(fx.target, target);
     TEST_ASSERT_EQUAL_PTR(g_player_object, attacker);
@@ -101,9 +101,9 @@ uint resolve_skill_gated_unlock_or_use(void *actor, void *target, void *link, us
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor); TEST_ASSERT_EQUAL_PTR(fx.target, target);
     TEST_ASSERT_EQUAL_PTR(fx.target+3, link); TEST_ASSERT_EQUAL_INT(5, mode); fx.unlocks++; return 1;
 }
-int resolve_damage_type_resistance(ushort *object, int damage, uint type)
+int resolve_damage_type_resistance(uw_unaligned_word_t *object, int damage, uint type)
 { TEST_ASSERT_EQUAL_PTR(fx.target, object); (void)damage; (void)type; return fx.resist; }
-int spawn_scheduled_effect_object(ushort *object, int group, int variant, byte a, short b, short x, short y)
+int spawn_scheduled_effect_object(uw_unaligned_word_t *object, int group, int variant, byte a, short b, short x, short y)
 {
     TEST_ASSERT_EQUAL_PTR(fx.target, object);
     TEST_ASSERT_EQUAL_INT(7, group); fx.variant=variant; fx.effects++;

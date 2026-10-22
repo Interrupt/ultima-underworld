@@ -330,7 +330,7 @@ void render_visible_tile_list()
                          ? (char *)g_tile_texptr_out[local_94]
                          : (char *)(intptr_t)piVar14[0x1a],
                        local_70_rect);
-          { char _facetag[32];
+          { char _facetag[64];
             snprintf(_facetag, sizeof(_facetag), "rec%03d_tri%d_tex0x%x", local_94, iVar16, piVar14[0x1e]);
             uw_debug_dump_3d_face(_facetag);
           }
@@ -1412,7 +1412,7 @@ void emit_tile_features(ushort *tile)
     ce_memmove(&DAT_0023b940 + DAT_0023b4e4 * 0x12,&DAT_0023b928,2);
   }
   DAT_0023b928 = 0;
-  puVar5 = (ushort *)resolve_object_link(tile);
+  puVar5 = (uw_unaligned_word_t *)resolve_object_link(tile);
   do {
     sVar3 = (short)iVar13;
     if ((puVar5 == (ushort *)0x0) || (local_30 = (int)(short)iVar16, 0x3b < local_30)) {
@@ -1449,7 +1449,7 @@ void emit_tile_features(ushort *tile)
         iVar15 = 0;
         do {
           cVar8 = (&DAT_0023b8c8)[iVar15];
-          puVar5 = (ushort *)get_object_record_by_slot_index((int)(short)(&DAT_0023b848)[cVar8]);
+          puVar5 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)(short)(&DAT_0023b848)[cVar8]);
           /* Same "get_object_record_by_slot_index can legitimately return NULL for an empty slot"
              case as the fix above -- this loop dereferences puVar5 immediately below (and passes it
              to emit_tile_objects), so skip this index instead of crashing. */
@@ -1594,7 +1594,7 @@ LAB_000657f4:
     /* Ghidra dropped the arg -- advance to the next object in the tile's
        chain via the link field at puVar5+2 (== tile), same as the
        resolve_object_link(tile) call that primes this loop. */
-    puVar5 = (ushort *)resolve_object_link(tile);
+    puVar5 = (uw_unaligned_word_t *)resolve_object_link(tile);
     iVar16 = (local_30 + 1) * 0x10000 >> 0x10;
   } while( true );
 }
@@ -1897,13 +1897,13 @@ void emit_tile_objects(ushort *tile)
           for (_tx = 0; _tx < 0x40; _tx++) {
             int _tidx = _tx + _ty * 0x40;
             ushort *_headp = (ushort *)((char *)DAT_002029cc + _tidx * 4 + 2);
-            ushort *_rec = (ushort *)resolve_object_link(_headp);
+            ushort *_rec = (uw_unaligned_word_t *)resolve_object_link(_headp);
             int _guard = 0;
             while (_rec != NULL && _guard++ < 64) {
               ushort _w = ((uw_object_hdr_t *)_rec)->type_flags;
               int _id = _w & 0x1ff;
               if ((_w & 0x1c0) == 0x80) {
-                ushort *_item = (ushort *)resolve_object_link((ushort *)((char *)_rec + 6));
+                ushort *_item = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)((char *)_rec + 6));
                 char _names[256];
                 _names[0] = '\0';
                 int _n = 0, _guard2 = 0;
@@ -1913,14 +1913,14 @@ void emit_tile_objects(ushort *tile)
                   strncat(_names, (_iname && _iname[0]) ? _iname : "?", sizeof(_names) - strlen(_names) - 2);
                   strncat(_names, ",", sizeof(_names) - strlen(_names) - 1);
                   _n++;
-                  _item = (ushort *)resolve_object_link((ushort *)((char *)_item + 4));
+                  _item = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)((char *)_item + 4));
                 }
                 char *_name = (char *)get_message_string(0x800 | _id);
                 fprintf(_f, "%d\t%d\t0x%03x\t%s\t%d\t%s\n", _tx, _ty, _id,
                         (_name && _name[0]) ? _name : "(unnamed)", _n, _names);
                 _count++;
               }
-              _rec = (ushort *)resolve_object_link((ushort *)((char *)_rec + 4));
+              _rec = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)((char *)_rec + 4));
             }
           }
         }

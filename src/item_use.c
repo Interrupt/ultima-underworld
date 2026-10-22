@@ -221,7 +221,7 @@ int drop_held_object_near_player(void *held_object_ptr, int force)
   DAT_00202a50 = (short)(g_player_object->npc_yhome);
   if ((*(short *)(DAT_00085a6c + 8) == 1) && (iVar4 = compute_drop_aim_from_cursor(), iVar4 != 0)) {
     DAT_00202a54 = 1;
-    DAT_00202a44 = (ushort *)g_player_object;
+    DAT_00202a44 = (uw_unaligned_word_t *)g_player_object;
     DAT_00202a38 = held_object->object_id;
     DAT_00202a48 = 0xf;
     puVar5 = (uw_projectile_object_t *)spawn_object_near_player();
@@ -327,7 +327,7 @@ int drop_object_near_target(void *actor_ptr, void *object_ptr, short mode, uint 
 
 
 // was FUN_0007a990
-void use_light_source(ushort *object, int turn_on)
+void use_light_source(uw_unaligned_word_t *object, int turn_on)
 {
   uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   int iVar3;
@@ -363,7 +363,7 @@ void use_light_source(ushort *object, int turn_on)
           iVar8 = 5;
           iVar6 = 0;
           do {
-            puVar7 = (ushort *)get_equipped_item_at_slot(iVar8);
+            puVar7 = (uw_unaligned_word_t *)get_equipped_item_at_slot(iVar8);
             iVar9 = extraout_r3;
             if (puVar7 == (ushort *)0x0) {
               iVar9 = iVar6 << 0x10;
@@ -406,7 +406,7 @@ LAB_0007ab1c:
 
 
 // was FUN_0007acd4
-int use_food_item(void *actor_ptr, ushort *object, int consume)
+int use_food_item(void *actor_ptr, uw_unaligned_word_t *object, int consume)
 {
   char *actor = (char *)actor_ptr;
   int iVar1;
@@ -637,7 +637,7 @@ LAB_0007b254:
 /* Was `int param_1; undefined4 param_2;` -- both real object pointers (matching
    check_object_combination's own param_1/param_2 types, forwarded to it unchanged just below),
    truncated to 32 bits on this 64-bit host. */
-void try_combine_or_stow_object(void *actor_ptr, ushort *object, int stow)
+void try_combine_or_stow_object(void *actor_ptr, uw_unaligned_word_t *object, int stow)
 {
   char *actor = (char *)actor_ptr;
   char *wptr_60073;
@@ -689,7 +689,7 @@ void try_combine_or_stow_object(void *actor_ptr, ushort *object, int stow)
 /* Was `int param_1` -- every call site passes a real object pointer (g_player_object, the player
    object, at most sites), truncating it to 32 bits on this 64-bit host. Same class as
    handle_object_drop_target's `iVar2` fix just above this function's own callers. */
-ushort *use_object_on_target(ushort *actor, ushort *used_object, int flag)
+ushort *use_object_on_target(uw_unaligned_word_t *actor, uw_unaligned_word_t *used_object, int flag)
 {
   ushort uVar1;
   ushort uVar2;
@@ -796,7 +796,7 @@ ushort *use_object_on_target(ushort *actor, ushort *used_object, int flag)
         goto LAB_00079cb8;
       }
       if (((used_object[2] & 0xffc0) == 0) ||
-         (puVar6 = (ushort *)resolve_object_link(used_object + 2), (*puVar6 & 0x1ff) != 0x12e)) goto LAB_00079cb8;
+         (puVar6 = (uw_unaligned_word_t *)resolve_object_link(used_object + 2), (*puVar6 & 0x1ff) != 0x12e)) goto LAB_00079cb8;
     }
     dispatch_use_special_item_by_type(actor,puVar6,flag);
   }
@@ -855,11 +855,11 @@ bool finish_object_use(void *used_object_ptr, int consume, int force_discard)
 // was FUN_00079dec -- begins holding an object on the cursor for a deferred "use on target"
 // interaction, but only if nothing is already selected (g_selected_object == 0; otherwise a no-op
 // returning NULL). param_1 is an existing object to hold...
-short *begin_holding_object_on_cursor(short *object, uint object_type)
+uw_unaligned_short_t *begin_holding_object_on_cursor(uw_unaligned_short_t *object, uint object_type)
 {
   if (g_selected_object == (char *)0x0) {
-    if (object == (short *)0x0) {
-      object = (short *)spawn_new_object(object_type,0);
+    if (object == (uw_unaligned_short_t *)0x0) {
+      object = (uw_unaligned_short_t *)spawn_new_object(object_type,0);
     }
     else {
       object_type = (int)((uw_object_hdr_t *)object)->object_id;
@@ -869,7 +869,7 @@ short *begin_holding_object_on_cursor(short *object, uint object_type)
     push_cursor_icon(object_type);
   }
   else {
-    object = (short *)0x0;
+    object = (uw_unaligned_short_t *)0x0;
   }
   return object;
 }
@@ -932,7 +932,7 @@ void complete_use_item_on_player(ushort *target, int clicked)
 // was FUN_00079f90 -- arms the "use item on target" prompt for a held item whose type falls in
 // 0x101-0x10e: picks complete_use_reagent_on_player for the specific type 0x101, or
 // complete_use_item_on_player for 0x102-0x10e...
-void arm_use_item_on_player_prompt(ushort *item, int confirmed)
+void arm_use_item_on_player_prompt(uw_unaligned_word_t *item, int confirmed)
 {
   code *pcVar1;
 
@@ -955,7 +955,7 @@ void arm_use_item_on_player_prompt(ushort *item, int confirmed)
 // was FUN_00079ff0 -- the general "use item on target" prompt setup: builds and prints "<item's
 // display name> -- use it on what?" via build_object_display_name, then prompts the player to click
 // a target (push_cursor_icon) and arms the deferred-target-click state...
-void prompt_use_item_on_target(ushort *item, void (*completion)())
+void prompt_use_item_on_target(uw_unaligned_word_t *item, void (*completion)())
 {
   char cVar1;
   short sVar2;
@@ -1017,7 +1017,7 @@ void complete_use_item_on_special_target(ushort *target)
 // was FUN_0007a180 -- arms the "use item on target" prompt with
 // complete_use_item_on_special_target as the completion callback. No
 // callers found by grep in the remaining decompile.
-void arm_use_item_on_special_target_prompt(ushort *item, int confirmed)
+void arm_use_item_on_special_target_prompt(uw_unaligned_word_t *item, int confirmed)
 {
   if (confirmed != 0) {
     prompt_use_item_on_target(item,complete_use_item_on_special_target);
@@ -1095,7 +1095,7 @@ void complete_use_item_on_container(ushort *target)
   refresh_player_equipment_effects();
   if ((*target & 0x1f0) == 0x170) {
     print_scroll_message_by_id(0x9d);
-    use_object_on_target((ushort *)g_player_object,target,0);
+    use_object_on_target((uw_unaligned_word_t *)g_player_object,target,0);
   }
   else {
     print_scroll_message_by_id(0x9e);
@@ -1125,7 +1125,7 @@ void complete_use_item_skill_check(ushort *target, int clicked, int confirmed)
 // was FUN_0007a478 -- item-type dispatcher for use_object_on_target's class-3 branch: types
 // 0xc2-0xc6 arm complete_use_item_on_quest_target (the one-off scripted puzzle); 0xd7 arms
 // complete_use_item_skill_check; 0xd8 sets DAT_0023bc94 and arms complete_use_item_on_container...
-void arm_use_item_on_target_prompt(ushort *item, int confirmed)
+void arm_use_item_on_target_prompt(uw_unaligned_word_t *item, int confirmed)
 {
   ushort uVar1;
   code *pcVar2;
@@ -1182,7 +1182,7 @@ int apply_random_roll_to_matched_object(char *object, short max_roll)
 
 // was FUN_0007a598 -- deferred-target-click completion callback for a single, major scripted quest
 // event: only fires for target item type 0x117.
-void complete_use_item_special_quest_event(ushort *target, int confirmed, int unused)
+void complete_use_item_special_quest_event(uw_unaligned_word_t *target, int confirmed, int unused)
 {
   undefined2 uVar1;
   char *iVar2;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
@@ -1237,7 +1237,7 @@ void complete_use_item_on_flagged_tile(ushort *target, int consume)
 
 // was FUN_0007a7fc -- dispatches by the HELD item's own type (not the target's): type 0x112 either
 // directly triggers complete_use_item_special_quest_event...
-void dispatch_use_held_item_by_type(ushort *target, ushort *item, int confirmed)
+void dispatch_use_held_item_by_type(uw_unaligned_word_t *target, uw_unaligned_word_t *item, int confirmed)
 {
   int uw_ord2005_rem_167 = 0;
   byte bVar1;
@@ -1465,7 +1465,7 @@ void complete_use_item_fill_flask(ushort *target, int clicked, int confirmed)
 // door-texture scheduling (0x122); playing one of 2 musical instruments (0x123/0x124)...
 /* The actor is an object address, forwarded in r3 to the fountain's special-action dispatcher (ARM
    0x7b99c). */
-void dispatch_use_special_item_by_type(ushort *actor, ushort *item, int flag)
+void dispatch_use_special_item_by_type(uw_unaligned_word_t *actor, uw_unaligned_word_t *item, int flag)
 {
   char *held_rec;
   ushort uVar1;
@@ -1575,7 +1575,7 @@ LAB_0007b7e4:
     uVar6 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
     *(char *)(DAT_00086df8 + 0x5f) = (char)uVar6;
     *(char *)(DAT_00086df8 + 0x60) = (char)(uVar6 >> 8);
-    reduce_item_quality_on_use((ushort *)g_player_object,2);
+    reduce_item_quality_on_use((uw_unaligned_word_t *)g_player_object,2);
     finish_object_use(item,flag,1);
     iVar3 = 0xe0;
     goto LAB_0007b9b8;
@@ -1617,7 +1617,7 @@ LAB_0007b8b8:
 // was FUN_0007baf0 -- "read" a book/sign/scroll-like item: type 0x13b (likely a dedicated
 // multi-page book) switches to a reading UI mode (change_game_mode) when the current UI state
 // permits.
-void use_readable_item(ushort *item, int flag)
+void use_readable_item(uw_unaligned_word_t *item, int flag)
 {
   ushort uVar2;
   short sVar3;
@@ -1675,7 +1675,7 @@ void use_readable_item(ushort *item, int flag)
 // was FUN_0007bcdc -- dispatches an interaction with a world object by its own type-id "family"
 // bits (bits 4-5): family 0 handles doors (open/close, or a "locked"/"already open" scroll message
 // for the player); family 1 handles mantra-chant statues...
-void dispatch_world_object_interaction_by_family(ushort *actor, ushort *object)
+void dispatch_world_object_interaction_by_family(uw_unaligned_word_t *actor, uw_unaligned_word_t *object)
 {
   char *wptr_59681;
   char cVar1;
@@ -1799,7 +1799,7 @@ void trigger_object_trap_or_use_action(void *actor_ptr, void *object_ptr, int ac
   
   if (((object != 0) && ((*(byte *)(object + 1) & 0x80) == 0)) &&
      (local_1c = (ushort *)(object + 6), (*local_1c & 0xffc0) != 0)) {
-    puVar1 = (ushort *)find_object_in_chain(&local_1c,0,6,0xffffffff,0xffff);
+    puVar1 = (uw_unaligned_word_t *)find_object_in_chain(&local_1c,0,6,0xffffffff,0xffff);
     if (puVar1 != (ushort *)0x0) {
       if ((((uw_object_hdr_t *)puVar1)->object_id & 0x30) < 0x20) {
         if (((((uw_object_hdr_t *)puVar1)->type_flags & 0x1e00) == 0) && ((short)action == 4)) {
@@ -1927,7 +1927,7 @@ int check_offering_container_puzzle()
   }
   else {
     puVar7 = uw_link_word_ptr(puVar5);
-    while (puVar7 = (ushort *)resolve_object_link(puVar7), puVar7 != (ushort *)0x0) {
+    while (puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar7), puVar7 != (uw_unaligned_word_t *)0x0) {
       bVar3 = false;
       uVar2 = *puVar7;
       iVar8 = 0;
@@ -2120,9 +2120,9 @@ bool place_object_in_equipment_slot(ushort *equip_object, int slot)
   puVar10 = (ushort *)((char *)resolve_object_link(&g_current_container_link) + 6);
   iVar4 = (short)slot * 2;
   pbVar9 = &g_equipped_items + iVar4;
-  puVar5 = (ushort *)resolve_object_link((uw_link_word_t *)pbVar9);
+  puVar5 = (uw_unaligned_word_t *)resolve_object_link((uw_link_word_t *)pbVar9);
   while( true ) {
-    puVar6 = (ushort *)resolve_object_link(puVar10);
+    puVar6 = (uw_unaligned_word_t *)resolve_object_link(puVar10);
     if (puVar5 == puVar6) {
       swap_cursor_and_slot_item(slot,0);
       sVar1 = check_object_fits_in_slot(equip_object,slot);
@@ -2270,7 +2270,7 @@ ushort *find_equipped_item_by_category(int category, int subcategory, int qualit
           if (puVar4 != (uw_object_hdr_t *)0x0) {
 LAB_0004552c:
             *out_slot = uVar6;
-            return (ushort *)puVar4;
+            return (uw_unaligned_word_t *)puVar4;
           }
         }
         iVar7 = (iVar7 + 1) * 0x10000 >> 0x10;
@@ -2371,7 +2371,7 @@ ushort *get_equipped_item_at_widget_slot(short slot)
   /* Was `resolve_object_link(&g_equipped_items + slot * 2); return 0;` -- confirmed via real ARM
      disassembly (0x45708-0x45718: `mov r3,r0,lsl #0x10; ldr r0,[...]; mov r3,r3,asr #0x10; add
      r0,r0,r3,lsl #0x1; b 0x53514` -- a genuine TAIL CALL straight into resolve_object_link)... */
-  return (ushort *)resolve_object_link(SLOT_LINK_PTR(slot));
+  return (uw_unaligned_word_t *)resolve_object_link(SLOT_LINK_PTR(slot));
 }
 
 
@@ -2389,7 +2389,7 @@ void deplete_object_count(ushort *object)
    reduce_object_count, which dereferences it via
    encode_object_slot_index/calculate_object_weight), truncated to 32 bits on this host -- same
    class as many other fixes this session. */
-void decrement_object_count(ushort *object)
+void decrement_object_count(uw_unaligned_word_t *object)
 {
   reduce_object_count(object,1);
 }
@@ -2399,7 +2399,7 @@ void decrement_object_count(ushort *object)
 // was FUN_00045730
 /* Was `undefined4 param_1` -- same truncated-object-pointer bug as decrement_object_count's own
    fix just above it (its only caller here). */
-int reduce_object_count(ushort *stack_object, uint amount)
+int reduce_object_count(uw_unaligned_word_t *stack_object, uint amount)
 {
   short sVar1;
   ushort uVar2;
@@ -2604,11 +2604,11 @@ ushort *extract_matching_object_from_slot(int category, int subcategory, int qua
       iVar4 = calculate_object_weight(puVar3);
       g_player_carry_weight = g_player_carry_weight - (short)iVar4;
       if (g_current_container_record == 0) {
-        return (ushort *)puVar3;
+        return (uw_unaligned_word_t *)puVar3;
       }
       sVar2 = encode_object_slot_index(local_28);
       if ((uint)(*(ushort *)(g_current_container_record + 8) >> 6) != (int)sVar2) {
-        return (ushort *)puVar3;
+        return (uw_unaligned_word_t *)puVar3;
       }
       sVar2 = encode_object_slot_index(puVar3);
       iVar9 = 0x14;
@@ -2634,11 +2634,11 @@ ushort *extract_matching_object_from_slot(int category, int subcategory, int qua
             *(char *)(iVar5 + 10) = (char)iVar9;
             *(char *)(iVar5 + 0xb) = (char)((uint)iVar9 >> 8);
           }
-          return (ushort *)puVar3;
+          return (uw_unaligned_word_t *)puVar3;
         }
         iVar9 = (iVar9 + 1) * 0x10000 >> 0x10;
       } while (iVar9 < 0x1c);
-      return (ushort *)puVar3;
+      return (uw_unaligned_word_t *)puVar3;
     }
   }
   return (ushort *)0x0;
@@ -2850,7 +2850,7 @@ byte *prompt_split_object_stack(byte *object)
 /* Was `undefined4 param_1` -- same 64-bit-pointer-truncated-through-a- 32-bit-typedef-parameter
    bug as place_held_item_in_empty_slot's identical fix just above (and sum_container_weight's,
    elsewhere in this file): param_1 is dereferenced further down... */
-int place_object_in_backpack_slot(ushort *pack_object, short slot)
+int place_object_in_backpack_slot(uw_unaligned_word_t *pack_object, short slot)
 {
   int iVar1;
   short sVar2;
@@ -2941,7 +2941,7 @@ int find_or_assign_object_widget(void *object_ptr)
       if ((uint)(*puVar5 >> 6) == (int)(short)uVar2) {
         return (int)cVar1;
       }
-      puVar3 = (ushort *)resolve_object_link(puVar5);
+      puVar3 = (uw_unaligned_word_t *)resolve_object_link(puVar5);
       if ((((((uw_object_hdr_t *)puVar3)->is_quant == 0) && (g_current_container_record == 0)) ||
            ((((uw_object_hdr_t *)puVar3)->is_quant == 0 && (((*(ushort *)(g_current_container_record + 8) ^ *puVar5) & 0xffc0) != 0)))
           ) && (iVar4 = find_object_by_encoded_slot_in_chain(puVar3 + 3,1,uVar2), iVar4 != 0)) {
@@ -2961,7 +2961,7 @@ int find_or_assign_object_widget(void *object_ptr)
 
 
 // was FUN_000472c4
-uint check_object_fits_in_slot(ushort *object, int slot)
+uint check_object_fits_in_slot(uw_unaligned_word_t *object, int slot)
 {
   char *wptr_31150;
   ushort uVar1;
@@ -3296,7 +3296,7 @@ int handle_backpack_slot_interact(void *object_ptr, uint slot)
   
   iVar1 = (int)(short)slot;
   uVar11 = 0;
-  puVar4 = (ushort *)resolve_object_link(SLOT_LINK_PTR(iVar1));
+  puVar4 = (uw_unaligned_word_t *)resolve_object_link(SLOT_LINK_PTR(iVar1));
   if (((*puVar4 & 0x1c0) == 0x80) && ((*puVar4 & 0x30) == 0)) {
     uVar11 = auto_place_in_container(object,slot);
     refresh_player_equipment_effects();
@@ -3421,7 +3421,7 @@ void handle_object_drop_target(short widget)
   if (7 < iVar2) {
     if (iVar2 < 10) {
       if (iVar2 == 9 - (*(byte *)(DAT_00086df8 + 100) & 1)) {
-        puVar1 = (ushort *)resolve_object_link(SLOT_LINK_PTR((char)(&g_backpack_widget_to_slot)[iVar2]));
+        puVar1 = (uw_unaligned_word_t *)resolve_object_link(SLOT_LINK_PTR((char)(&g_backpack_widget_to_slot)[iVar2]));
         /* Was missing a NULL check -- resolve_object_link legitimately returns 0 for an empty slot
            (its own link word has no object-table bits set, see its own comment), and every fresh
            character's weapon-hand slot IS empty by default (confirmed live). */
@@ -3490,7 +3490,7 @@ void handle_object_drop_target(short widget)
   /* Was reusing `iVar2` (an `int`) for resolve_object_link's real pointer return, truncating it to
      32 bits on this 64-bit host -- same "narrow local for a pointer" idiom already fixed at several
      call sites this session. */
-  puVar2 = (ushort *)resolve_object_link(SLOT_LINK_PTR((char)(&g_backpack_widget_to_slot)[iVar2]));
+  puVar2 = (uw_unaligned_word_t *)resolve_object_link(SLOT_LINK_PTR((char)(&g_backpack_widget_to_slot)[iVar2]));
   if (puVar2 != 0) {
     /* Page 4 of comobj's string data is the base object-name table,
        indexed directly by id (0x800 | id) -- same lookup the
@@ -3500,7 +3500,7 @@ void handle_object_drop_target(short widget)
           (unsigned)(((uw_object_hdr_t *)puVar2)->object_id),
           (unsigned)(((uw_object_hdr_t *)puVar2)->object_id & 0x1f0),
           (_useName && _useName[0]) ? _useName : "(unnamed)");
-    use_object_on_target((ushort *)g_player_object,puVar2,1);
+    use_object_on_target((uw_unaligned_word_t *)g_player_object,puVar2,1);
   }
 LAB_00042a10:
   if ((bVar4) && (g_selected_object == 0)) {

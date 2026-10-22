@@ -74,8 +74,8 @@ static inline uw_link_word_t *uw_tile_link_word_ptr(uw_tile_t *tile) {
 
 
 int reset_burnt_out_item_state(char *tile_link, void *object);
-int apply_object_destruction_effect(ushort *object, ushort *attacker, uint damage_type_mask, int tile_x, short tile_y);
-int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict);
+int apply_object_destruction_effect(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, uint damage_type_mask, int tile_x, short tile_y);
+int find_placement_via_tile_flood_fill(uw_unaligned_word_t *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict);
 int clear_object_temp_flag_callback(uw_object_hdr_t *object);
 void clear_temp_flags_on_all_objects();
 void load_class6_variant_effect_table(int file_handle);
@@ -92,7 +92,7 @@ void free_player_inventory_chain(char *link_field);
 uint calculate_object_weight(uw_object_hdr_t *object);
 uw_object_hdr_t *spawn_object_near_player();
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object, short radius, int skip_roll);
-int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height, short radius);
+int find_object_placement(uw_unaligned_word_t *object, uint tile_x, uint tile_y, short height, short radius);
 int load_object_catalog_data();
 void *get_scanned_object_class_effect_ptr();
 int walk_object_tree(void *object, int (*callback)());
@@ -104,7 +104,7 @@ void free_object_slot(uw_object_hdr_t *object);
 void object_list_insert_head(uw_link_word_t *link_field, uw_object_hdr_t *object);
 void object_list_append_tail(uw_link_word_t *link_field, uw_object_hdr_t *object);
 void object_list_unlink(uw_link_word_t *link_field, uw_object_hdr_t *object);
-ushort *discard_misplaced_object(void *tile_link, ushort *object, int skip_roll);
+ushort *discard_misplaced_object(void *tile_link, uw_unaligned_word_t *object, int skip_roll);
 void free_linked_object_recursive(uw_link_word_t *link_field);
 void unlink_and_free_object(uw_link_word_t *link_field, uw_object_hdr_t *object);
 uw_object_hdr_t *resolve_object_link(uw_link_word_t *link_field);
@@ -122,7 +122,7 @@ int object_or_contents_has_type(void *object, ushort type_id);
 uw_object_hdr_t *find_object_in_world(int object_class, int subclass,
 				      short quality, short *out_x,
 				      short *out_y);
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object);
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *object);
 void compute_object_placement_fields(void *object, uint tile_x, uint tile_y);
 void randomize_settled_snapshot_position(void *snapshot);
 uw_object_hdr_t *settle_dropped_object(void *object, short tile_x,

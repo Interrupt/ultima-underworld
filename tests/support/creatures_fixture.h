@@ -19,18 +19,18 @@ uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
 int drop_object_near_target(void *target, void *object, short distance, uint mode);
 int place_object_in_world(uint x, uint y, int z, void *object, short distance, int mode);
 void free_object_slot(uw_object_hdr_t *object);
-int check_object_drop_height(ushort *object, ushort *source);
+int check_object_drop_height(uw_unaligned_word_t *object, ushort *source);
 int encode_object_slot_index(const uw_object_hdr_t *object);
-int play_sound_effect_at_object(int sound, ushort *object, int mode);
-int spawn_scheduled_effect_object(ushort *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y);
+int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode);
+int spawn_scheduled_effect_object(uw_unaligned_word_t *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y);
 int roll_object_destroy_chance(short base_chance, void *object);
 void print_scroll_message_by_id(uint message_id);
 void set_pending_update_flags(ushort flags);
 void spawn_effect_debris_burst(void *template, uint tile_x, int tile_y);
 void scheduler_relink_entry(void *new_object, void *old_object);
 void set_ambient_bias_without_light(char light_level);
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage);
-ushort *discard_misplaced_object(void *list, ushort *object, int release);
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage);
+ushort *discard_misplaced_object(void *list, uw_unaligned_word_t *object, int release);
 void creatures_fixture_reset(void);
 void creatures_fixture_dispose(void);
 #endif

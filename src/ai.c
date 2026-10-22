@@ -204,7 +204,7 @@ int mobile_object_tick()
     tile_rec = (char *)tilemap_lookup(((uw_projectile_object_t *)DAT_0010190c)->tile_x,
                                       ((uw_projectile_object_t *)DAT_0010190c)->tile_y);
     tile_rec = (char *)discard_misplaced_object(tile_rec + 2,
-                                                (ushort *)DAT_0010190c,
+                                                (uw_unaligned_word_t *)DAT_0010190c,
                                                 0);
     if (tile_rec == 0) {
       return 0;
@@ -215,12 +215,12 @@ int mobile_object_tick()
   if ((g_object_type_props[(((uw_projectile_object_t *)DAT_0010190c)->hdr.object_id)].flags & 8) == 0) {
     DAT_002049a0 = 0;
   }
-  build_object_placement_snapshot((ushort *)DAT_0010190c,
+  build_object_placement_snapshot((uw_unaligned_word_t *)DAT_0010190c,
                                   &DAT_00204920);
   apply_placement_collision_sweep(&DAT_00204920, &DAT_002049a0);
   DAT_0010144c = (ushort)(((uw_projectile_object_t *)DAT_0010190c)->tile_x);
   DAT_00101454 = (undefined2)(((uw_projectile_object_t *)DAT_0010190c)->tile_y);
-  iVar2 = sync_object_tile_position((ushort *)DAT_0010190c,
+  iVar2 = sync_object_tile_position((uw_unaligned_word_t *)DAT_0010190c,
                                     &DAT_00204920);
   if (iVar2 != 0) {
     bVar1 = ((uw_projectile_object_t *)DAT_0010190c)->movement_flags;
@@ -741,17 +741,17 @@ int npc_ai_tick()
     DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0x7f;
   }
   if ((((DAT_0010190c->animation_flags & 0x40) == 0) ||
-       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((ushort *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
-    build_object_placement_snapshot((ushort *)DAT_0010190c,DAT_0010172c);
+       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((uw_unaligned_word_t *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
+    build_object_placement_snapshot((uw_unaligned_word_t *)DAT_0010190c,DAT_0010172c);
     bVar3 = DAT_0010190c->full_heading;
     /* Was `build_collision_height_field_for_object()` -- a dropped argument (K&R declared, relying
        on whatever register-content reuse the real ARM code got for free).
        build_collision_height_field_for_object's own single param is dereferenced the exact same... */
-    DAT_00101414 = build_collision_height_field_for_object((ushort *)DAT_0010190c);
+    DAT_00101414 = build_collision_height_field_for_object((uw_unaligned_word_t *)DAT_0010190c);
     apply_placement_collision_sweep(DAT_0010172c,DAT_00101438);
     DAT_0010144c = (ushort)(DAT_0010190c->npc_xhome);
     DAT_00101454 = (undefined2)(DAT_0010190c->npc_yhome);
-    sync_object_tile_position((ushort *)DAT_0010190c,DAT_0010172c);
+    sync_object_tile_position((uw_unaligned_word_t *)DAT_0010190c,DAT_0010172c);
     if (DAT_0010190c->full_heading != bVar3) {
       DAT_00101430 = 1;
     }
@@ -797,7 +797,7 @@ LAB_00033830:
          Dropping these arguments leaves its final frame in the old tile list. */
       tile_pos = tilemap_lookup(DAT_0010144c,DAT_00101454);
       object_list_unlink((uw_link_word_t *)(tile_pos + 2),&DAT_0010190c->hdr);
-      spawn_creature_death_loot((ushort *)DAT_0010190c);
+      spawn_creature_death_loot((uw_unaligned_word_t *)DAT_0010190c);
       drop_monster_loot(DAT_0010190c,
                         (byte)*(char *)&DAT_00101404->effects_flags >> 5,
                         (byte)*(char *)&DAT_00101404->movement_flags >> 2 & 7);
@@ -1126,7 +1126,7 @@ int roll_object_destroy_chance(short base_chance, void *object_ptr)
 
 
 // was FUN_00054f6c.
-int sync_object_tile_position(ushort *object, void *position_ptr)
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position_ptr)
 {
   ushort *position = (ushort *)position_ptr;
   int uw_ord2005_rem_118 = 0;
@@ -1213,7 +1213,7 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
   if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40) {
     if (DAT_002046c4 < (char *)object) {
       if ((position[10] != 0 || position[8] != 0) || position[5] != 0) {
-        object = (ushort *)reallocate_object_to_arena(object);
+        object = (uw_unaligned_word_t *)reallocate_object_to_arena(object);
       }
     }
     else if ((position[10] == 0 && position[8] == 0) && position[5] == 0) {
@@ -1222,7 +1222,7 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
       if (settled == 0) {
         return 0;
       }
-      object = (ushort *)settle_dropped_object(settled,(int)(short)DAT_0010144c,(int)DAT_00101454,0);
+      object = (uw_unaligned_word_t *)settle_dropped_object(settled,(int)(short)DAT_0010144c,(int)DAT_00101454,0);
       if (object == (ushort *)0x0) {
         return 0;
       }
@@ -1295,7 +1295,7 @@ LAB_0005559c:
 
 
 // was FUN_0005596c.
-ushort *settle_mobile_to_immobile(ushort *object)
+ushort *settle_mobile_to_immobile(uw_unaligned_word_t *object)
 {
   ushort uVar1;
   undefined2 uVar2;
@@ -1428,10 +1428,10 @@ ushort *settle_mobile_to_immobile(ushort *object)
     object_list_insert_head(pbTile,puVar9);
   }
   if ((bVar13 == 9) &&
-     (iVar10 = activate_area_hazard_object((ushort *)puVar9,(int)DAT_0010144c,(int)DAT_00101454,local_2c), iVar10 == 0)) {
-    puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pbTile,(ushort *)puVar9,0);
+     (iVar10 = activate_area_hazard_object((uw_unaligned_word_t *)puVar9,(int)DAT_0010144c,(int)DAT_00101454,local_2c), iVar10 == 0)) {
+    puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pbTile,(uw_unaligned_word_t *)puVar9,0);
   }
-  return (ushort *)puVar9;
+  return (uw_unaligned_word_t *)puVar9;
 }
 
 
@@ -1673,7 +1673,7 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
 // was FUN_000798c4 -- the creature death-loot orchestrator, gated on a "already dropped" flag
 // (param_1[7] bit 0x10, set at the end): points g_despawn_creature_record at this creature's own
 // per-class record in the same table as g_monster_max_stats_table...
-void spawn_creature_death_loot(ushort *creature)
+void spawn_creature_death_loot(uw_unaligned_word_t *creature)
 {
   uw_mobile_object_t *npc = (uw_mobile_object_t *)creature;
   if (!npc->npc_loot_spawned) {
@@ -1690,7 +1690,7 @@ void spawn_creature_death_loot(ushort *creature)
 // was FUN_000816e0 -- morphs a trap/hazard object (class id 0x14 or 0x15) into its "active"
 // counterpart (0x1c2 or 0x1c5 respectively -- 0x1c2 is the same spell-effect id
 // cast_area_spell_effect spawns), schedules it (type 4, delay 0)...
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage)
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage)
 {
   int iVar1;
   ushort uVar2;
@@ -2617,7 +2617,7 @@ void npc_arrival_interaction(void *npc_ptr)
     if (*(char *)&DAT_00101404->door_skill != '\0') {
       DAT_002020a0 = (ushort)DAT_00101424;
       DAT_002020a4 = (ushort)DAT_00101428;
-      use_object_on_target((ushort *)DAT_0010190c,npc,0);
+      use_object_on_target((uw_unaligned_word_t *)DAT_0010190c,npc,0);
     }
     if (((*npc & 0x1f0) == 0x140) && ((*npc & 0xf) < 8)) {
       if (*(char *)&DAT_00101404->door_skill != '\0') {
@@ -2638,7 +2638,7 @@ void npc_arrival_interaction(void *npc_ptr)
            fabricated-remainder bug fixed throughout this session (this port's ordint_divmod never
            populates extraout_r1). ordint_divmod(divisor,dividend).quot here divides the... */
         uw_ord2005_rem_21 = (int)uVar1 % (int)(uint)(DAT_00101404->attacks[0].damage);
-        apply_typed_damage_to_object(npc,(ushort *)DAT_0010190c,DAT_00101424,DAT_00101428,uw_ord2005_rem_21,uVar2);
+        apply_typed_damage_to_object(npc,(uw_unaligned_word_t *)DAT_0010190c,DAT_00101424,DAT_00101428,uw_ord2005_rem_21,uVar2);
       }
     }
   }
@@ -3544,7 +3544,7 @@ int settle_misplaced_mobile_object(char *object)
   if ((iVar5 != 0) && (iVar5 = (uw_object_hdr_t *)settle_mobile_to_immobile((ushort *)object), iVar5 != 0)) {
     object_list_unlink(pbVar8,iVar5);
     DAT_00202c84 = 1;
-    iVar6 = find_object_placement((ushort *)iVar5,(uint)(bVar1 >> 5) + (uint)bVar3 * 8,
+    iVar6 = find_object_placement((uw_unaligned_word_t *)iVar5,(uint)(bVar1 >> 5) + (uint)bVar3 * 8,
                          ((bVar2 & 0x1c) >> 2) + uVar7 * 8,(uint)(*pbVar4 >> 4) << 3,6);
     if (iVar6 == 0) {
       uVar7 = iVar5->position_word & 0xff80;
@@ -3678,10 +3678,10 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
             tile_ptr = tilemap_lookup((&DAT_00101740)[iVar11],(&DAT_00101741)[iVar11]);
             for (puVar7 = (ushort *)((char *)tile_ptr + 2); (*puVar7 & 0xffc0) != 0; puVar7 = puVar7 + 2)
             {
-              puVar7 = (ushort *)resolve_object_link(puVar7);
+              puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar7);
               if ((((*puVar7 & 0x1c0) == 0x180) && ((*puVar7 & 0x30) == 0x20)) &&
                  ((puVar7[3] & 0xffc0) != 0)) {
-                puVar8 = (ushort *)resolve_object_link(puVar7 + 3);
+                puVar8 = (uw_unaligned_word_t *)resolve_object_link(puVar7 + 3);
                 uVar9 = (uint)((uw_object_hdr_t *)puVar8)->type_flags;
                 if ((uVar9 & 0x1c0) == 0x180) {
                   uVar10 = uVar9 & 0x30;
@@ -3876,7 +3876,7 @@ int alert_npc_to_noise_callback(int scan_x, int scan_y, ushort *npc)
 // was FUN_00035cb0 -- makes noise at object param_1 (e.g. a trap triggering, a loud action):
 // resolves the noise type/volume to use (param_2, or if 0 and the object is a container, a
 // class-specific field off the object itself), and if nonzero...
-void emit_noise_alert(ushort *source, byte noise_type)
+void emit_noise_alert(uw_unaligned_word_t *source, byte noise_type)
 {
   byte bVar1;
   uint uVar2;
@@ -4702,7 +4702,7 @@ int tile_pair_los_blocked(byte tile_a_x, byte tile_a_y, byte tile_b_x, byte tile
        before the loop... */
     puVar10 = puVar7 + 1;
     while (((uVar2 & 0xffc0) != 0 && (uVar11 == 0))) {
-      puVar9 = (ushort *)resolve_object_link(puVar10);
+      puVar9 = (uw_unaligned_word_t *)resolve_object_link(puVar10);
       iVar13 = (*puVar9 & 0x1ff) * 0xd;
       if ((g_object_type_props[iVar13 / 0xd].flags & 2) != 0) {
         uVar11 = (int)(((byte)puVar9[1] & 0x7f) + (uint)(byte) g_object_type_props[iVar13 / 0xd].height) >> 3;
@@ -4784,7 +4784,7 @@ LAB_0002c220:
      unchanged on every iteration instead of advancing through the object chain... */
   ushort *puVar_link2 = puVar7 + 1;
   while (((uVar14 & 0xffc0) != 0 && (local_50 == 0))) {
-    puVar10 = (ushort *)resolve_object_link(puVar_link2);
+    puVar10 = (uw_unaligned_word_t *)resolve_object_link(puVar_link2);
     uVar19 = (uint)*puVar10;
     iVar13 = (uVar19 & 0x1ff) * 0xd;
     if (((uVar19 & 0x1c0) != 0x140) || (((*puVar10 & 0x30) != 0 || (7 < (uVar19 & 0xf))))) {
@@ -5024,7 +5024,7 @@ LAB_0002c8cc:
 
 
 // was FUN_00054a00.
-void build_object_placement_snapshot(ushort *object, byte *snapshot)
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot)
 {
   ushort uVar1;
   undefined2 uVar2;

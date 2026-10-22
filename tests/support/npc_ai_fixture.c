@@ -111,13 +111,13 @@ int check_npc_target_alignment(int mode) { (void)mode; return 1; }
 byte tile_is_no_magic(int tile_x, int tile_y) { (void)tile_x; (void)tile_y; return 0; }
 int try_npc_special_ability_no_los(void) { return 0; }
 int try_npc_special_ability_ranged(void) { return 0; }
-void build_object_placement_snapshot(ushort *object, byte *snapshot) { (void)object; (void)snapshot;}
-int build_collision_height_field_for_object(ushort *object) { (void)object; return 0; }
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot) { (void)object; (void)snapshot;}
+int build_collision_height_field_for_object(uw_unaligned_word_t *object) { (void)object; return 0; }
 int apply_placement_collision_sweep(void *snapshot, void *sweep_flags) { (void)snapshot; (void)sweep_flags; return 0; }
-int sync_object_tile_position(ushort *object, void *position) { (void)object; (void)position; return 0; }
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position) { (void)object; (void)position; return 0; }
 int resolve_unique_npc_special_behavior(void *npc, int event_mode) { (void)npc; (void)event_mode; return 1; }
 void object_list_unlink(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object;}
-void spawn_creature_death_loot(ushort *creature) { (void)creature;}
+void spawn_creature_death_loot(uw_unaligned_word_t *creature) { (void)creature;}
 void drop_monster_loot(void *monster, ushort gold_nibble, ushort item_nibble) { (void)monster; (void)gold_nibble; (void)item_nibble;}
 void drop_creature_inventory_on_death(void *creature) { (void)creature;}
 void free_object_slot(uw_object_hdr_t *object) { (void)object;}

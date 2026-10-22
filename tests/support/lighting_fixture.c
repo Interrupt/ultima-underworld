@@ -55,8 +55,8 @@ void update_screen_flicker_effect(int active) {}
 void force_locomotion_state_refresh(void) {}
 void apply_movement_mode_profile(byte mode) {}
 int find_or_assign_object_widget(void *object) { return 5; }
-void decrement_object_count(ushort *object) { TEST_FAIL_MESSAGE("Unexpected auto-equip"); }
-int place_object_in_backpack_slot(ushort *object, short slot) { return 1; }
+void decrement_object_count(uw_unaligned_word_t *object) { TEST_FAIL_MESSAGE("Unexpected auto-equip"); }
+int place_object_in_backpack_slot(uw_unaligned_word_t *object, short slot) { return 1; }
 void redraw_container_icon_slot(void) {}
 void redraw_backpack_slot_widget(short slot) {}
 void print_scroll_message_by_id(uint id) { message = id; }

@@ -10,7 +10,7 @@ void pop_cursor_icon(ushort mode);
 ushort *pick_object_under_cursor(int mode);
 int target_in_range(short actor, void *target, char *range);
 int target_line_of_sight(short actor, void *target);
-int check_object_combination(void *actor, ushort *target, short key_id);
+int check_object_combination(void *actor, uw_unaligned_word_t *target, short key_id);
 void handle_game_view_click_hold(void);
 void interact_use(void);
 void describe_picked_terrain(byte mode, short tile);
@@ -122,7 +122,7 @@ int target_in_range(short actor, void *target, char *range)
 int target_line_of_sight(short actor, void *target)
 { (void)actor; TEST_ASSERT_EQUAL_PTR(picked_target, target); return target_obstructed; }
 
-int check_object_combination(void *actor, ushort *target, short key_id)
+int check_object_combination(void *actor, uw_unaligned_word_t *target, short key_id)
 {
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor);
     TEST_ASSERT_EQUAL_INT(1, key_id);

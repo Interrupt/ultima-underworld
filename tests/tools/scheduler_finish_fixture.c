@@ -46,7 +46,7 @@ int check_object_placement_clearance(short catalog, short slot, short x, short y
     observe(4); argument(catalog); argument(slot); argument(x); argument(y); argument(height);
     assert(check == 1 && limit == 8); ++sweeps; change(4); return mode == 4 || mode == 10 ? 0 : 1;
 }
-void adjust_door_close_animation_delay(ushort *p)
+void adjust_door_close_animation_delay(uw_unaligned_word_t *p)
 {
     assert((void *)p == (void *)object()); observe(5); ++delays; change(5);
 }

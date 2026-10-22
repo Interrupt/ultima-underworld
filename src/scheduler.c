@@ -145,7 +145,7 @@ void scheduler_finish_entry(int entry_slot)
         uVar1 = puVar4->link_word;
         bVar3 = (byte)uVar1;
         puVar4->owner = uVar5 & 0x3f;
-        adjust_door_close_animation_delay((ushort *)puVar4);
+        adjust_door_close_animation_delay((uw_unaligned_word_t *)puVar4);
         return;
       }
       play_positional_sound_effect(0xc,
@@ -403,7 +403,7 @@ void scheduler_tick(int elapsed)
 // was FUN_00081814 -- general "spawn a scheduled effect object" primitive: spawns a new object of
 // type (0x1c0 + param_2, the "group" -- the same 0x1c0 family cast_area_spell_effect/
 // activate_area_hazard_object use for spell/hazard effect ids)...
-int spawn_scheduled_effect_object(ushort *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y)
+int spawn_scheduled_effect_object(uw_unaligned_word_t *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y)
 {
   undefined1 uVar1;
   byte bVar2;

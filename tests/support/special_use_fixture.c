@@ -62,7 +62,7 @@ void apply_targeted_spell_effect(ushort *caster, char effect_index) { (void)cast
 void cast_cone_damage_spell(void *caster, uint spell_variant) { (void)caster; (void)spell_variant; TEST_FAIL_MESSAGE("Unexpected cast_cone_damage_spell"); }
 void cast_targeted_search_effect(void *caster, uint spell_variant) { (void)caster; (void)spell_variant; TEST_FAIL_MESSAGE("Unexpected cast_targeted_search_effect"); }
 void cast_summon_or_spawn_effect(void *caster, char variant) { (void)caster; (void)variant; TEST_FAIL_MESSAGE("Unexpected cast_summon_or_spawn_effect"); }
-void reduce_item_quality_on_use(ushort *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected reduce_item_quality_on_use"); }
+void reduce_item_quality_on_use(uw_unaligned_word_t *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected reduce_item_quality_on_use"); }
 #ifndef UW_TEST_FULL_REST
 void adjust_level7_hazard_value(void *object, char delta) { (void)object; (void)delta; TEST_FAIL_MESSAGE("Unexpected adjust_level7_hazard_value"); }
 #endif
@@ -77,11 +77,11 @@ UNUSED_VOID(refresh_container_view)
 bool finish_object_use(void *used_object, int consume, int force_discard) { (void)used_object; (void)consume; (void)force_discard; TEST_FAIL_MESSAGE("Unexpected finish_object_use"); return false; }
 int spawn_scheduled_door_texture_object(void) {  TEST_FAIL_MESSAGE("Unexpected spawn_scheduled_door_texture_object"); return 0; }
 void play_musical_instrument(short instrument) { (void)instrument; TEST_FAIL_MESSAGE("Unexpected play_musical_instrument"); }
-void arm_use_item_on_special_target_prompt(ushort *item, int confirmed) { (void)item; (void)confirmed; TEST_FAIL_MESSAGE("Unexpected arm_use_item_on_special_target_prompt"); }
+void arm_use_item_on_special_target_prompt(uw_unaligned_word_t *item, int confirmed) { (void)item; (void)confirmed; TEST_FAIL_MESSAGE("Unexpected arm_use_item_on_special_target_prompt"); }
 UNUSED_RESULT(try_climb_wall)
-short *begin_holding_object_on_cursor(short *object, uint object_type) { (void)object; (void)object_type; TEST_FAIL_MESSAGE("Unexpected cursor pickup"); return NULL; }
+uw_unaligned_short_t *begin_holding_object_on_cursor(uw_unaligned_short_t *object, uint object_type) { (void)object; (void)object_type; TEST_FAIL_MESSAGE("Unexpected cursor pickup"); return NULL; }
 void wait_for_click_release(int mode) { (void)mode; TEST_FAIL_MESSAGE("Unexpected wait_for_click_release"); }
-void prompt_use_item_on_target(ushort *object, code *callback) { TEST_FAIL_MESSAGE("Unexpected target prompt"); }
+void prompt_use_item_on_target(uw_unaligned_word_t *object, code *callback) { TEST_FAIL_MESSAGE("Unexpected target prompt"); }
 void complete_use_item_scatter_spawn(short *target, int clicked, int confirmed) { (void)target; (void)clicked; (void)confirmed; TEST_FAIL_MESSAGE("Unexpected complete_use_item_scatter_spawn"); }
 void complete_use_item_fill_flask(ushort *target, int clicked, int confirmed) { (void)target; (void)clicked; (void)confirmed; TEST_FAIL_MESSAGE("Unexpected complete_use_item_fill_flask"); }
 UNUSED_VOID(complete_use_item_repair_object)

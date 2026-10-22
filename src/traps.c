@@ -32,7 +32,7 @@ static char *DAT_0024cfd4;
 // was FUN_0007d0b0 -- the tile trap/link "type" effect dispatcher wrapped by
 // apply_trap_or_link_effect: param_1 is the trap/link record (its low 6 bits, &0x3f, select one of
 // 17 effect types via this switch), param_2/param_3 the tile (x,y) coordinates it fired at.
-int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
+int dispatch_trap_type_effect(uw_unaligned_word_t *trap_record, int tile_x, int tile_y)
 {
   char *stat_ptr;
   char *msg_text;
@@ -132,7 +132,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     if (((uw_object_hdr_t *)trap_record)->is_quant != 0) {
       return 2;
     }
-    puVar12 = (ushort *)resolve_object_link(trap_record + 3);
+    puVar12 = (uw_unaligned_word_t *)resolve_object_link(trap_record + 3);
     if (puVar12 == (ushort *)0x0) {
       return 2;
     }
@@ -195,7 +195,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     return 2;
   case 8:
     local_34 = (uw_link_word_t *)((char *)tilemap_lookup(tile_x,tile_y) + 2);
-    _case8_p1 = find_object_in_chain(&local_34,0,5,0,CONCAT22(uVar20,0xffff));
+    _case8_p1 = find_object_in_chain(&local_34,0,5,0,-1); /* quality is a short: only the low half of the old CONCAT22(.,0xffff) ever reached it */
     DAT_002020a0 = (undefined2)tile_x;
     DAT_002020a4 = sVar3;
     if (_case8_p1 == (uw_object_hdr_t *)0x0) {
@@ -242,7 +242,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
 LAB_0007dbc0:
         /* HACK: was `close_door_object(DAT_0024cff4,iVar16);` -- same truncated-pointer class as
            _case8_p1's own fix a few lines above (see this switch case's top comment). */
-        close_door_object(DAT_0024cff4,(ushort *)_case8_p1);
+        close_door_object(DAT_0024cff4,(uw_unaligned_word_t *)_case8_p1);
         return 2;
       }
       if (uVar4 != 2) {
@@ -404,7 +404,7 @@ LAB_0007d460:
     }
   }
   if (((uw_object_hdr_t *)trap_record)->link != 0) {
-    puVar12 = (ushort *)resolve_object_link(trap_record + 3);
+    puVar12 = (uw_unaligned_word_t *)resolve_object_link(trap_record + 3);
     if ((((uw_object_hdr_t *)puVar12)->object_id & 0x1c0) == 0x180) {
       if ((((uw_object_hdr_t *)puVar12)->object_id & 0x30) < 0x20) {
         uVar4 = dispatch_trap_type_effect(puVar12,tile_x,tile_y);
@@ -592,7 +592,7 @@ void remove_trap_chain_marker(char *link_field, char *trap_object)
   ushort *puVar4;
   char *iVar5;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
 
-  puVar4 = (ushort *)resolve_object_link(uw_link_word_ptr((uw_object_hdr_t *)trap_object));
+  puVar4 = (uw_unaligned_word_t *)resolve_object_link(uw_link_word_ptr((uw_object_hdr_t *)trap_object));
   uVar2 = ((uw_object_hdr_t *)puVar4)->type_flags;
   uVar1 = (uVar2 & 0x1e00) >> 9;
   if ((short)uVar1 == 1) {
@@ -715,7 +715,7 @@ void process_nearby_background_traps(int target_present)
         *(byte *)(pbVar5 + 0xe) = (byte)((ushort)uVar1 >> 8) | 1;
         iVar3 = is_out_of_player_range(target_present,(int)local_14,(int)local_12);
         if (iVar3 != 0) {
-          dispatch_trap_type_effect((ushort *)pObj,(int)local_14,(int)local_12);
+          dispatch_trap_type_effect((uw_unaligned_word_t *)pObj,(int)local_14,(int)local_12);
         }
       }
     }
@@ -824,7 +824,7 @@ LAB_0003987c:
           uVar3 = (uint)(short)uVar10;
           if (uVar3 < uVar11) {
             for (puVar8 = puVar7 + 1; (*puVar8 & 0xffc0) != 0; puVar8 = puVar8 + 2) {
-              puVar8 = (ushort *)resolve_object_link(puVar8);
+              puVar8 = (uw_unaligned_word_t *)resolve_object_link(puVar8);
               if (((*puVar8 & 0x1c0) != 0x180) && ((int)(puVar8[1] & 0x7f) < iVar12 * 8)) {
                 uVar10 = puVar8[1] & 0xff80;
                 *(byte *)(puVar8 + 1) = (byte)uVar10 | (byte)((uVar13 & 0xf) << 3);
@@ -844,7 +844,7 @@ LAB_0003987c:
           }
           else if (uVar11 < uVar3) {
             for (puVar8 = puVar7 + 1; (*puVar8 & 0xffc0) != 0; puVar8 = puVar8 + 2) {
-              puVar8 = (ushort *)resolve_object_link(puVar8);
+              puVar8 = (uw_unaligned_word_t *)resolve_object_link(puVar8);
               uVar10 = 0;  /* was the high 32 bits of the (32-bit-ARM) 64-bit r0:r1 return pair */
               if (((*puVar8 & 0x1c0) != 0x180) && ((puVar8[1] & 0x7f) == uVar3 * 8)) {
                 uVar10 = puVar8[1] & 0xff80;
@@ -916,7 +916,7 @@ int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int u
     if (iVar2 == g_player_object) {
       uVar5 = *(byte *)(DAT_00086df8 + 0x5f) >> 2 & 0xf;
       if ((-uVar5 != iVar3 && (int)uVar5 <= -iVar3) &&
-         (cVar1 = resolve_damage_type_resistance((ushort *)g_player_object,1,0x10), cVar1 != '\0')) {
+         (cVar1 = resolve_damage_type_resistance((uw_unaligned_word_t *)g_player_object,1,0x10), cVar1 != '\0')) {
         uVar5 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
         *(byte *)(DAT_00086df8 + 0x5f) =
              (byte)uVar5 | (byte)(((damage_delta & 0xffff) * -0x10000 >> 0x10 & 0xf) << 2);
@@ -1098,7 +1098,7 @@ void try_combine_shrine_markers(int unused, int tile_x, int tile_y)
 // handler: emits a noise alert of type param_1 centered on the player.
 void emit_player_noise_alert(byte noise_type)
 {
-  emit_noise_alert((ushort *)g_player_object,noise_type);
+  emit_noise_alert((uw_unaligned_word_t *)g_player_object,noise_type);
 }
 
 
@@ -1147,7 +1147,7 @@ void trigger_exploding_book_trap()
     *(byte *)(DAT_00086df8 + 0x66) = (byte)((uint)uVar1 >> 8) | 1;
     *(char *)(DAT_00086df8 + 0x67) = (char)((uint)uVar1 >> 0x10);
     *(char *)(DAT_00086df8 + 0x68) = (char)((uint)uVar1 >> 0x18);
-    reduce_item_quality_on_use((ushort *)g_player_object,3);
+    reduce_item_quality_on_use((uw_unaligned_word_t *)g_player_object,3);
     decrement_object_count(iVar2);
     discard_misplaced_object(0,iVar2,1);
     redraw_container_icon_slot();
@@ -1174,7 +1174,7 @@ void trigger_exploding_book_trap_at_tile(int unused, int tile_x, int tile_y)
     *(byte *)(DAT_00086df8 + 0x66) = (byte)((uint)uVar1 >> 8) | 1;
     *(char *)(DAT_00086df8 + 0x67) = (char)((uint)uVar1 >> 0x10);
     *(char *)(DAT_00086df8 + 0x68) = (char)((uint)uVar1 >> 0x18);
-    reduce_item_quality_on_use((ushort *)g_player_object,3);
+    reduce_item_quality_on_use((uw_unaligned_word_t *)g_player_object,3);
     decrement_object_count(iVar2);
     discard_misplaced_object(0,iVar2,1);
     redraw_container_icon_slot();
@@ -1361,7 +1361,7 @@ uint attempt_pick_lock(ushort *lock, int skill, ushort *out_difficulty)
 // was FUN_0004ac98 -- dispatch_trap_type_effect's case-2 trap handler: spawns a fixed object class
 // (0x14) near the player, aimed from the trap record's own quality bits (+4/+6) and positioned at
 // param_2/ param_3 (the trap's tile coordinates)...
-void spawn_trap_hazard_object(ushort *trap_record, short tile_x, short tile_y)
+void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y)
 {
   DAT_00202a38 = *(byte *)((char *)trap_record + 6) & 0x3f | (*(byte *)((char *)trap_record + 4) & 0x3f) << 5;
   DAT_00202a48 = 0x14;

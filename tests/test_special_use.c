@@ -6,7 +6,7 @@ static void test_level_one_fountain_heals_the_player_using_its_real_effect_recor
 {
     ushort *fountain = special_use_object(667);
     TEST_ASSERT_EQUAL_HEX16(0x12e, fountain[0] & 0x1ff);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, fountain, 0);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, fountain, 0);
     TEST_ASSERT_EQUAL_INT(1, special_use_fixture.dice);
     TEST_ASSERT_EQUAL_INT(16, ((byte *)g_player_object)[8]);
     TEST_ASSERT_EQUAL_INT(1, special_use_fixture.health_refreshes);
@@ -16,7 +16,7 @@ static void test_level_one_fountain_heals_the_player_using_its_real_effect_recor
 static void test_fountain_healing_is_capped_at_player_maximum_health(void)
 {
     ((byte *)g_player_object)[8] = special_use_fixture.attributes[4] - 1;
-    dispatch_use_special_item_by_type((ushort *)g_player_object, special_use_object(667), 0);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, special_use_object(667), 0);
     TEST_ASSERT_EQUAL_INT(special_use_fixture.attributes[4], ((byte *)g_player_object)[8]);
 }
 static void test_tile_special_action_preserves_actor_and_healing_target_addresses(void)
@@ -31,7 +31,7 @@ static void test_bedroll_scans_safe_area_without_losing_callback_address(void)
 {
     ushort *bedroll = special_use_object(640);
     TEST_ASSERT_EQUAL_HEX16(0x121, bedroll[0] & 0x1ff);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, bedroll, 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, bedroll, 1);
     TEST_ASSERT_EQUAL_INT(1, special_use_fixture.rest_checks);
     TEST_ASSERT_EQUAL_INT(0, special_use_fixture.rest_unsafe);
     TEST_ASSERT_EQUAL_INT(10, ((byte *)g_player_object)[8]);
@@ -39,7 +39,7 @@ static void test_bedroll_scans_safe_area_without_losing_callback_address(void)
 static void test_bedroll_detects_nearby_alerted_hostile_monster(void)
 {
     special_use_npc(2, 21, 20, 5, 1);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, special_use_object(640), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, special_use_object(640), 1);
     TEST_ASSERT_EQUAL_INT(1, special_use_fixture.rest_checks);
     TEST_ASSERT_EQUAL_INT(1, special_use_fixture.rest_unsafe);
 }

@@ -6,7 +6,7 @@
 #include "src/headers/uw.h"
 #include "src/headers/level.h"
 
-int dispatch_trap_type_effect(unsigned short *trap_record, int tile_x, int tile_y);
+int dispatch_trap_type_effect(uw_unaligned_word_t *trap_record, int tile_x, int tile_y);
 extern unsigned int DAT_00250720; /* message scroll: clock stamp of the last line added */
 extern unsigned short *DAT_0024cff0;
 

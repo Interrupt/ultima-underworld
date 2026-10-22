@@ -67,7 +67,7 @@ bool accept_character, archive_ok;
 
 char workspace[] = "/tmp/uw-new-game-XXXXXX";
 
-char data_link[512], save_path[512], archive_path[512];
+char data_link[512], save_path[512], archive_path[1024];
 
 undefined DAT_000b78b8_backing[8192];
 

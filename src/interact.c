@@ -66,7 +66,7 @@ void interact_default()
     }
     if ((*g_interact_target & 0x1ff) == 0x1ca) {
       if ((iVar1 != 0) && (iVar2 == 0)) {
-        use_object_on_target((ushort *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
+        use_object_on_target((uw_unaligned_word_t *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
       }
       goto LAB_0003f11c;
     }
@@ -193,7 +193,7 @@ void interact_use()
     }
   }
   else {
-    use_object_on_target((ushort *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
+    use_object_on_target((uw_unaligned_word_t *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
   }
 }
 
@@ -492,7 +492,7 @@ uint resolve_skill_gated_unlock_or_use(void *object_ptr, void *key_item_ptr, voi
       }
       break;
     }
-    lock_link = (ushort *)resolve_object_link(lock_link + 2);
+    lock_link = (uw_unaligned_word_t *)resolve_object_link(lock_link + 2);
     bVar6 = (byte)*lock_link;
   }
   iVar3 = (char *)resolve_object_link(lock_link + 3);
@@ -746,7 +746,7 @@ uint object_chain_max_barrier(char *tile)
 
   uVar2 = 0xffffffff;
   puVar1 = (ushort *)(tile + 2);
-  while (puVar1 = (ushort *)resolve_object_link(puVar1), puVar1 != (ushort *)0x0) {
+  while (puVar1 = (uw_unaligned_word_t *)resolve_object_link(puVar1), puVar1 != (uw_unaligned_word_t *)0x0) {
     if ((*puVar1 & 0x1ff) == 0x164) {
       if ((short)uVar2 < (short)(puVar1[1] & 0x7f)) {
         uVar2 = (int)(short)puVar1[1] & 0x7f;
@@ -904,7 +904,7 @@ ushort *pick_object_under_cursor(int mode)
     puVar3 = (ushort *)0x0;
   }
   else {
-    puVar3 = (ushort *)get_object_record_by_slot_index(iVar2);
+    puVar3 = (uw_unaligned_word_t *)get_object_record_by_slot_index(iVar2);
 
     if(puVar3) {
       DEBUG(INFO, "[pick] found slot=%u -> objid=0x%03x", uVar4,

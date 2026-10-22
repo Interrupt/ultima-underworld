@@ -53,7 +53,7 @@ static void check_post_clock(void) {
 }
 int roll_skill_check(int skill,int difficulty) { check_post_clock(); event(100+skill+(uint)difficulty); return scenario&16?1:0; }
 divmod_result ordint_divmod(int divisor,int dividend) { return (divmod_result){dividend/divisor,dividend%divisor}; }
-int apply_typed_damage_to_object(ushort *target,ushort *attacker,int x,short y,byte damage,byte type) {
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker,int x,short y,byte damage,byte type) {
     check_post_clock(); assert((byte *)target==(byte *)g_player_object); event(200+damage); return 0;
 }
 int play_sound_effect_with_pan(uint sound,byte pan,uint volume) { check_post_clock(); event(300+sound+pan+volume); return 0; }

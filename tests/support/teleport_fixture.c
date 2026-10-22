@@ -139,7 +139,7 @@ int load_level(int level)
     return load_result;
 }
 
-int find_placement_via_tile_flood_fill(ushort *object, short x, short y, short *out_x, short *out_y, int fallback)
+int find_placement_via_tile_flood_fill(uw_unaligned_word_t *object, short x, short y, short *out_x, short *out_y, int fallback)
 {
     TEST_ASSERT_EQUAL_PTR(g_player_object, object);
     TEST_ASSERT_EQUAL_INT(resolved_x, x);

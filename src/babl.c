@@ -403,10 +403,10 @@ int babl_builtin_take_from_npc(char *args)
       /* Was a dropped argument -- spawn_creature_death_loot's own K&R declaration (`void
          spawn_creature_death_loot(args)`) takes the creature object pointer, but every one of
          this file's 4 call sites invoked it with empty parens... */
-      spawn_creature_death_loot((ushort *)DAT_00100674);  /* ai.h still takes the raw word view */
+      spawn_creature_death_loot((uw_unaligned_word_t *)DAT_00100674);  /* ai.h still takes the raw word view */
       iVar8 = *piVar3;
     }
-    puVar9 = (ushort *)resolve_object_link((ushort *)(iVar8 + 6));
+    puVar9 = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)(iVar8 + 6));
     if (puVar9 != (ushort *)0x0) {
       uVar1 = (uint)sVar7;
       do {
@@ -455,7 +455,7 @@ int babl_builtin_take_from_npc(char *args)
           }
           return 1;
         }
-        puVar9 = (ushort *)resolve_object_link(puVar9 + 2);
+        puVar9 = (uw_unaligned_word_t *)resolve_object_link(puVar9 + 2);
       } while (puVar9 != (ushort *)0x0);
     }
   }
@@ -482,8 +482,8 @@ int babl_builtin_take_id_from_npc(char *args)
   piVar2 = (intptr_t *)&DAT_00100674;
   if (DAT_00202948 == 0) {
     iVar8 = (intptr_t)DAT_00100674;
-    for (puVar9 = (ushort *)resolve_object_link((ushort *)(iVar8 + 6)); puVar9 != (ushort *)0x0;
-        puVar9 = (ushort *)resolve_object_link(puVar9 + 2)) {
+    for (puVar9 = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)(iVar8 + 6)); puVar9 != (uw_unaligned_word_t *)0x0;
+        puVar9 = (uw_unaligned_word_t *)resolve_object_link(puVar9 + 2)) {
       sVar5 = encode_object_slot_index((uw_object_hdr_t *)puVar9);
       if (sVar7 == sVar5) {
         object_list_unlink((uw_link_word_t *)(iVar8 + 6),(uw_object_hdr_t *)puVar9);
@@ -887,7 +887,7 @@ int babl_builtin_gronk_door(char *args)
     DAT_002020a4 = babl_read_var_word((int)*(short *)(args + -4));
     sVar3 = babl_read_var_word((int)*(short *)(args + -2));
     if (sVar3 == 0) {
-      close_door_object(0,(ushort *)iVar6);  /* doors.h still takes the raw word view */
+      close_door_object(0,(uw_unaligned_word_t *)iVar6);  /* doors.h still takes the raw word view */
     }
     else if (sVar3 == 1) {
       open_door_object(iVar6);
@@ -2296,7 +2296,7 @@ void start_npc_conversation(int conversation_id, int npc_type)
     if (!DAT_00100674->npc_loot_spawned) {
       /* Dropped argument -- see babl_builtin_take_from_npc's identical
          call for the full explanation; intended arg is DAT_00100674. */
-      spawn_creature_death_loot((ushort *)DAT_00100674);  /* ai.h still takes the raw word view */
+      spawn_creature_death_loot((uw_unaligned_word_t *)DAT_00100674);  /* ai.h still takes the raw word view */
     }
     /* Debug-only static dump of every string in this NPC's own compiled conversation, independent
        of which branches a live playthrough happens to reach -- see bragit-talk-again-investigation. */
@@ -2668,7 +2668,7 @@ int babl_builtin_give_ptr_npc(char *args)
   }
   uVar3 = 0xffffffff;
 LAB_00029efc:
-  iVar4 = reduce_object_count((ushort *)item_rec,uVar3);
+  iVar4 = reduce_object_count((uw_unaligned_word_t *)item_rec,uVar3);
   if (iVar4 == 0) {
     uVar1 = 0;
   }
@@ -2706,7 +2706,7 @@ void babl_builtin_find_inv(char *args)
   if ((sVar3 == 0) && (owner = DAT_00100674, !DAT_00100674->npc_loot_spawned)) {
     /* Dropped argument -- see babl_builtin_take_from_npc's identical
        call for the full explanation; intended arg is DAT_00100674. */
-    spawn_creature_death_loot((ushort *)DAT_00100674);  /* ai.h still takes the raw word view */
+    spawn_creature_death_loot((uw_unaligned_word_t *)DAT_00100674);  /* ai.h still takes the raw word view */
     owner = DAT_00100674;
   }
   local_10 = uw_link_word_ptr(&owner->hdr);  /* byte offset 6 */
@@ -2867,7 +2867,7 @@ int babl_builtin_set_inv_quality(char *args)
 void sync_conv_vars_from_npc(uw_mobile_object_t *npc_object)
 {
   /* raw 16-bit word view of the mobile record, kept from the decompile: npc[N] is byte offset 2*N */
-  ushort *npc = (ushort *)npc_object;
+  ushort *npc = (uw_unaligned_word_t *)npc_object;
   byte bVar1;
   undefined4 uVar2;
   ushort extraout_r1;
@@ -3186,7 +3186,7 @@ void babl_builtin_remove_talker()
 
   iVar1 = (char *)tilemap_lookup(DAT_00100674->npc_xhome,
                        DAT_00100674->npc_yhome);
-  discard_misplaced_object(iVar1 + 2,(ushort *)DAT_00100674,1);  /* objects.h still takes the raw word view */
+  discard_misplaced_object(iVar1 + 2,(uw_unaligned_word_t *)DAT_00100674,1);  /* objects.h still takes the raw word view */
   return;
 }
 
@@ -3468,7 +3468,7 @@ void babl_builtin_setup_to_barter()
   if (!DAT_00100674->npc_loot_spawned) {
     /* Dropped argument -- see babl_builtin_take_from_npc's identical
        call for the full explanation; intended arg is DAT_00100674. */
-    spawn_creature_death_loot((ushort *)DAT_00100674);  /* ai.h still takes the raw word view */
+    spawn_creature_death_loot((uw_unaligned_word_t *)DAT_00100674);  /* ai.h still takes the raw word view */
   }
   /* ARM 0x1b2cc uses a byte offset: the NPC inventory head is at +6. */
   iVar13 = uw_link_word_ptr(&DAT_00100674->hdr);
@@ -3787,7 +3787,7 @@ void handle_barter_slot_click(int is_player_side, int slot, void *counts, void *
       {
         return;
       }
-      iVar3 = check_object_carry_weight((ushort *)obj_rec);
+      iVar3 = check_object_carry_weight((uw_unaligned_word_t *)obj_rec);
       if (iVar3 == 0) {
         if ((split_rec != NULL) && (split_rec != obj_rec)) {
           iVar3 = (obj_rec->link << 6) + (split_rec->link_word & 0xffc0);
@@ -3917,7 +3917,7 @@ void redraw_barter_slot_icon(short side, short slot)
   int iVar3;
   short sVar4;
   undefined2 *puVar5;
-  short *psVar6;
+  uw_object_hdr_t *psVar6;
   char *uVar7;
   ushort uVar8;
   uint uVar9;
@@ -3936,11 +3936,11 @@ void redraw_barter_slot_icon(short side, short slot)
   sVar4 = puVar5[iVar3];
   if (sVar4 == 0) {
     uVar9 = (uint)side;
-    psVar6 = (short *)0;  /* (was `psVar2`, a pointer-typed copy of `side`; unused when the slot is empty) */
+    psVar6 = (uw_object_hdr_t *)0;  /* (was `psVar2`, a pointer-typed copy of `side`; unused when the slot is empty) */
   }
   else {
-    psVar6 = (short *)get_object_record_by_slot_index(sVar4);
-    uVar9 = (int)((uw_object_hdr_t *)psVar6)->object_id;
+    psVar6 = get_object_record_by_slot_index(sVar4);
+    uVar9 = (int)psVar6->object_id;
   }
   puVar10 = &DAT_000845d8;
   iVar1 = iVar3 * 4;
@@ -3957,11 +3957,11 @@ void redraw_barter_slot_icon(short side, short slot)
                  ,0x10,0x10);
   }
   if (sVar4 != 0) {
-    if ((((uw_object_hdr_t *)psVar6)->is_quant == 0) || (((uw_object_hdr_t *)psVar6)->link >= 512)) {
+    if ((psVar6->is_quant == 0) || (psVar6->link >= 512)) {
       uVar8 = 0;
     }
     else {
-      uVar8 = (int)((uw_object_hdr_t *)psVar6)->link;
+      uVar8 = (int)psVar6->link;
     }
     g_blit_transparent_mode = 0;
     if (1 < uVar8) {
@@ -4386,7 +4386,7 @@ int compute_barter_item_value(short is_player_side, int item_id, int mode)
   uint uVar7;
   int iVar8;
   
-  puVar4 = (ushort *)get_object_record_by_slot_index(item_id);
+  puVar4 = (uw_unaligned_word_t *)get_object_record_by_slot_index(item_id);
   if (is_player_side == 0) {
     uVar7 = (uint)((uw_object_hdr_t *)puVar4)->type_flags;
     sVar6 = (short)g_object_type_props[(uVar7 & 0x1ff)].monetary_value;
@@ -4457,7 +4457,7 @@ int collect_included_player_barter_items(void *out_item_ids, void *out_values)
   iVar2 = 0;
   do {
     if ((&DAT_000bbf98)[iVar2] != 0) {
-      puVar1 = (ushort *)get_object_record_by_slot_index((int)(short)(&DAT_000bbfd0)[iVar2]);
+      puVar1 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)(short)(&DAT_000bbfd0)[iVar2]);
       iVar3 = (int)(short)iVar3;
       *(undefined2 *)(out_values + iVar3 * 2) = (&DAT_000bbfd0)[iVar2];
       *(ushort *)(out_item_ids + iVar3 * 2) = ((uw_object_hdr_t *)puVar1)->object_id;
@@ -4568,7 +4568,7 @@ int check_npc_item_preference(short item_id)
   int iVar5;
   int iVar6;
 
-  puVar2 = (ushort *)get_object_record_by_slot_index(item_id);
+  puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(item_id);
   if ((short)g_object_type_props[(((uw_object_hdr_t *)puVar2)->object_id)].monetary_value == 0) {
 LAB_0001dbcc:
     uVar3 = 0xffffffff;

@@ -41,7 +41,7 @@ void release_container_reference(char *container_link)
   ushort uVar1;
   ushort *puVar2;
 
-  puVar2 = (ushort *)get_object_record_by_slot_index(*(ushort *)(container_link + 8) >> 6);
+  puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(container_link + 8) >> 6);
   uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
   if (((uVar1 & 0xf) < 0xc) && ((uVar1 & 1) != 0)) {
     ((uw_object_hdr_t *)puVar2)->type_flags_low = ((char)(uVar1 & 0xf) - 1U ^ (byte)uVar1) & 0xf ^ (byte)uVar1;
@@ -332,7 +332,7 @@ void open_backpack_container(short container_slot)
   
   iVar1 = (int)container_slot;
   puVar13 = (ushort *)(&g_equipped_items + iVar1 * 2);
-  puVar7 = (ushort *)resolve_object_link(puVar13);
+  puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar13);
   uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;
   if (((uVar3 & 0x1c0) == 0x80) && ((uVar3 & 0x30) == 0)) {
     if ((uVar3 & 0xf) == 0xf) {
@@ -478,7 +478,7 @@ void open_backpack_container(short container_slot)
           (&g_backpack_widget_to_slot)[iVar10] = (char)(iVar10 + 8);
         }
         redraw_inventory_widget_range(0xc,0x13);
-        puVar7 = (ushort *)resolve_object_link(&g_current_container_link);
+        puVar7 = (uw_unaligned_word_t *)resolve_object_link(&g_current_container_link);
         uVar3 = ((uw_object_hdr_t *)puVar7)->type_flags;
         if (((uVar3 & 0xf) < 0xc) && ((uVar3 & 1) == 0)) {
           ((uw_object_hdr_t *)puVar7)->type_flags_low = ((char)(uVar3 & 0xf) + 1U ^ (byte)uVar3) & 0xf ^ (byte)uVar3;

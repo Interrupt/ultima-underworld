@@ -343,7 +343,7 @@ int resolve_critter_sprite_tier(short type_idx, int direction, short frame, uint
 // interact_default's own `check_object_carry_weight(g_interact_target)` -- the object being picked
 // up) pass an object pointer, but this function's own recovered signature took none...
 // was FUN_00046358
-bool check_object_carry_weight(ushort *object)
+bool check_object_carry_weight(uw_unaligned_word_t *object)
 {
   short sVar1;
 
@@ -484,7 +484,7 @@ LAB_00048b58:
 // was FUN_0004b288 -- validity gate for spawn_object_near_player's freshly-copied object (param_1)
 // placed near param_2's position: runs the same
 // collision_build_height_field/collision_height_envelope machinery settle_dropped_object uses...
-int check_object_drop_height(ushort *object, ushort *reference)
+int check_object_drop_height(uw_unaligned_word_t *object, ushort *reference)
 {
   byte bVar1;
   ushort uVar2;
@@ -572,7 +572,7 @@ LAB_0004b4d4:
 
 
 // was FUN_0007bf38
-int check_object_combination(void *actor_ptr, ushort *object, short count)
+int check_object_combination(void *actor_ptr, uw_unaligned_word_t *object, short count)
 {
   char *actor = (char *)actor_ptr;
   ushort uVar1;
@@ -653,7 +653,7 @@ void dispatch_tile_special_action(uint tile_type, void *actor, void *target)
 // was FUN_00074028 -- execute_spell_effect's "reduce item durability" handler (its own case 9):
 // only applies if the target object's quality bits match 0x40 (same food/potion-shaped flag
 // apply_healing_effect gates on) and its quality/charge field...
-void reduce_item_quality_on_use(ushort *object, char dice_count)
+void reduce_item_quality_on_use(uw_unaligned_word_t *object, char dice_count)
 {
   byte bVar1;
   char cVar2;
@@ -926,7 +926,7 @@ void damage_all_objects_at_tile(int tile_x, short tile_y, char damage_tier, byte
         iVar3 = resolve_object_link(uw_chain_word_ptr(iVar2));
         uVar1 = roll_dice_sum((&DAT_0008762c)[bVar5],(&DAT_00087630)[bVar5]);
         uVar4 = get_object_record_by_slot_index(attacker_slot);
-        apply_typed_damage_to_object((ushort *)iVar2,uVar4,tile_x,(int)tile_y,uVar1,(&DAT_00087634)[bVar5]);
+        apply_typed_damage_to_object((uw_unaligned_word_t *)iVar2,uVar4,tile_x,(int)tile_y,uVar1,(&DAT_00087634)[bVar5]);
         iVar2 = iVar3;
       } while (iVar3 != 0);
     }
@@ -1079,7 +1079,7 @@ int resolve_object_variant_or_special_link(void *object_ptr, void *out_class_ptr
   uVar2 = *object;
   if ((uVar2 & 0x1c0) != 0x180) {
     if (((uVar2 & 0x8000) == 0) && (local_20 = object + 3, (*local_20 & 0xffc0) != 0)) {
-      object = (ushort *)find_object_in_chain(&local_20,0,4,2,0);
+      object = (uw_unaligned_word_t *)find_object_in_chain(&local_20,0,4,2,0);
       if (object == (ushort *)0x0) {
         return 0;
       }
@@ -1603,7 +1603,7 @@ LAB_00048e80:
 // was FUN_00049008 -- "look" handler for inscribed objects (class range 0x160, dispatched from
 // object_actions.c's look-description builder): terrain-plaque text for class 4, a gravestone
 // epitaph looked up by index in grave.dat for class 5...
-void look_at_inscribed_object(ushort *inscribed_object, short look_mode)
+void look_at_inscribed_object(uw_unaligned_word_t *inscribed_object, short look_mode)
 {
   char stack0xffdc3238_buf [256];
   char *stack0xffdc3238_ptr;

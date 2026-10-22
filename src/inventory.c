@@ -515,7 +515,7 @@ joined_r0x00048308:
           auStack_54[iVar6] = 1;
           if (iVar6 < 0x15) {
             if ((*(ushort *)(&g_equipped_items + (char)(&g_backpack_widget_to_slot)[iVar6] * 2) & 0xffc0) != 0) {
-              puVar7 = (ushort *)resolve_object_link((ushort *)(&g_equipped_items + (char)(&g_backpack_widget_to_slot)[iVar6] * 2));
+              puVar7 = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)(&g_equipped_items + (char)(&g_backpack_widget_to_slot)[iVar6] * 2));
               if (puVar7 == 0) goto skip_slot_draw_iVar6;
               draw_sprite_by_id(((uw_object_hdr_t *)puVar7)->object_id,
                                 (int)(short)(&g_inv_hotspot_draw_x)[iVar6 * 7],
@@ -558,7 +558,7 @@ joined_r0x00048308:
       restore_captured_grtile_backdrop(DAT_00202938);
       local_2c = 1;
       if ((*(ushort *)(&g_equipped_items + DAT_00085c4c * 2) & 0xffc0) != 0) {
-        puVar7 = (ushort *)resolve_object_link((ushort *)(&g_equipped_items + DAT_00085c4c * 2));
+        puVar7 = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)(&g_equipped_items + DAT_00085c4c * 2));
         draw_sprite_by_id(((uw_object_hdr_t *)puVar7)->object_id,
                           (int)_DAT_00085bf0,
                           (int)CONCAT11(DAT_00085bf3,DAT_00085bf2),
@@ -595,7 +595,7 @@ void redraw_lit_light_source_widgets()
     uint id;
 
     if ((*link & 0xffc0) == 0) continue;
-    object = (ushort *)resolve_object_link(link);
+    object = (uw_unaligned_word_t *)resolve_object_link(link);
     if (object == 0) continue;
     id = *object & 0x1ff;
     if ((id & 0x1f0) == 0x90 && (id & 0xf) >= 4 && (id & 0xf) < 8) redraw_inventory_widget(widget);

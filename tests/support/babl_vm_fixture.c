@@ -143,7 +143,7 @@ void poll_input_bindings(void *input)
     }
 }
 void redraw_barter_slot_icon(short side, short slot) {}
-void spawn_creature_death_loot(ushort *object)
+void spawn_creature_death_loot(uw_unaligned_word_t *object)
 {
     TEST_ASSERT_EQUAL_PTR(DAT_00100674, object);
     babl_loot_calls++;

@@ -6,7 +6,7 @@ void tearDown(void) { sleep_fixture_dispose(); }
 static void test_sleep_using_level_one_bedroll_runs_from_use_through_waking_up(void)
 {
     uint before = sleep_game_time();
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_EQUAL_UINT(before + 7 * 0xe1000, sleep_game_time());
     TEST_ASSERT_EQUAL_INT(27, ((byte *)g_player_object)[8]);
     TEST_ASSERT_EQUAL_INT(76, (byte)DAT_00086df8[0x39]);
@@ -28,8 +28,8 @@ static void test_sleep_can_be_used_again_without_losing_player_or_world_links(vo
 {
     uint before = sleep_game_time();
     ushort *bedroll = sleep_bedroll();
-    dispatch_use_special_item_by_type((ushort *)g_player_object, bedroll, 1);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, bedroll, 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, bedroll, 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, bedroll, 1);
     TEST_ASSERT_EQUAL_UINT(before + 14 * 0xe1000, sleep_game_time());
     TEST_ASSERT_EQUAL_INT(30, ((byte *)g_player_object)[8]);
     TEST_ASSERT_EQUAL_INT(52, (byte)DAT_00086df8[0x39]);
@@ -43,7 +43,7 @@ static void test_interrupted_sleep_advances_partial_time_and_wakes_player_alive(
 {
     uint before = sleep_game_time();
     sleep_fixture.interrupted = 1;
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_EQUAL_UINT(before + 2 * 0xe1000, sleep_game_time());
     TEST_ASSERT_EQUAL_INT(10, ((byte *)g_player_object)[8]);
     TEST_ASSERT_EQUAL_INT(88, (byte)DAT_00086df8[0x39]);
@@ -58,7 +58,7 @@ static void test_hostile_monster_prevents_sleep_before_time_or_cleanup_advances(
 {
     uint before = sleep_game_time();
     special_use_npc(2, 19, 5, 5, 1);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_EQUAL_UINT(before, sleep_game_time());
     TEST_ASSERT_EQUAL_INT(0, sleep_fixture.sleeps);
     TEST_ASSERT_EQUAL_INT(0, sleep_fixture.wakes);
@@ -71,7 +71,7 @@ static void test_sleep_cleanup_frees_distant_objects_and_preserves_nearby_object
 {
     ushort *bedroll = sleep_bedroll();
     sleep_fixture_cleanup_chain();
-    dispatch_use_special_item_by_type((ushort *)g_player_object, bedroll, 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, bedroll, 1);
     TEST_ASSERT_EQUAL_INT(3, (DAT_0020469c - (char *)sleep_fixture.static_free) / 2);
     TEST_ASSERT_EQUAL_INT(700, sleep_fixture.static_free[1]);
     TEST_ASSERT_EQUAL_INT(701, sleep_fixture.static_free[2]);
@@ -112,7 +112,7 @@ static void test_full_sleep_burns_equipped_torch_fuel_for_all_elapsed_hours(void
 {
     sleep_fixture.torch[0] = 0x8094;
     sleep_fixture.torch[2] = 63;
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     /* The real torch period is 10. Two hours burn 37 units, then the
        remaining five hours exhaust the 26 units left in the torch. */
     TEST_ASSERT_EQUAL_HEX16(0x90, sleep_fixture.torch[0] & 0x1ff);
@@ -127,7 +127,7 @@ static void test_interrupted_sleep_only_burns_fuel_for_its_elapsed_hours(void)
     sleep_fixture.torch[0] = 0x8094;
     sleep_fixture.torch[2] = 63;
     sleep_fixture.interrupted = 1;
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_EQUAL_HEX16(0x94, sleep_fixture.torch[0] & 0x1ff);
     TEST_ASSERT_EQUAL_INT(26, sleep_fixture.torch[2] & 0x3f);
     TEST_ASSERT_EQUAL_INT(0, sleep_fixture.light_slot_redraws);
@@ -138,7 +138,7 @@ static void test_interrupted_sleep_only_burns_fuel_for_its_elapsed_hours(void)
 static void test_sleep_checks_spawn_trap_near_reported_position_and_wakes_up(void)
 {
     ushort *npc = sleep_fixture_spawn_trap(1);
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_BITS_HIGH(1, ((byte *)npc)[14]);
     TEST_ASSERT_EQUAL_INT(0, sleep_fixture.spawn_attempts);
     TEST_ASSERT_EQUAL_INT(1, sleep_fixture.wakes);
@@ -150,7 +150,7 @@ static void test_unblocked_spawn_scan_ignores_player_and_its_own_marked_template
     ushort *npc = sleep_fixture_spawn_trap(0);
     object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 4)), (uw_object_hdr_t *)npc);
     ((byte *)g_player_object)[14] |= 1;
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_BITS_HIGH(1, ((byte *)npc)[14]);
     TEST_ASSERT_EQUAL_INT(1, sleep_fixture.spawn_attempts);
     TEST_ASSERT_EQUAL_INT(1, sleep_fixture.wakes);
@@ -177,7 +177,7 @@ static void test_sleep_at_reported_level_one_tile_runs_real_background_traps(voi
     DAT_002020a4 = DAT_0023c3d8 = 4;
     object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 4)), &g_player_object->hdr);
     uint before = sleep_game_time();
-    dispatch_use_special_item_by_type((ushort *)g_player_object, sleep_bedroll(), 1);
+    dispatch_use_special_item_by_type((uw_unaligned_word_t *)g_player_object, sleep_bedroll(), 1);
     TEST_ASSERT_EQUAL_UINT(before + 7 * 0xe1000, sleep_game_time());
     TEST_ASSERT_EQUAL_INT(1, sleep_fixture.wakes);
     TEST_ASSERT_EQUAL_INT(1, sleep_fixture.snapshot_count);

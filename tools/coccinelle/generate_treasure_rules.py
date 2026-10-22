@@ -89,7 +89,8 @@ ORIGINALS = {'spawn_creature_death_loot': 'void spawn_creature_death_loot(ushort
                                  '    }\n'
                                  '  }\n'
                                  '}'}
-REPLACEMENTS = {'spawn_creature_death_loot': [('  if (!((uw_mobile_object_t *)creature)->npc_loot_spawned)',
+REPLACEMENTS = {'spawn_creature_death_loot': [('void spawn_creature_death_loot(ushort *creature)','void spawn_creature_death_loot(uw_unaligned_word_t *creature)'),
+    ('  if (!((uw_mobile_object_t *)creature)->npc_loot_spawned)',
                                 '  uw_mobile_object_t *npc = (uw_mobile_object_t *)creature;\n'
                                 '  if (!npc->npc_loot_spawned)'),
                                ('g_despawn_creature_record = &DAT_001007d0 +\n'

@@ -100,7 +100,7 @@ void load_last_attacker_record();
 void save_last_attacker_record();
 void clear_last_attacker_record();
 int alert_npc_to_noise_callback(int scan_x, int scan_y, ushort *npc);
-void emit_noise_alert(ushort *source, byte noise_type);
+void emit_noise_alert(uw_unaligned_word_t *source, byte noise_type);
 int resolve_unique_npc_special_behavior(void *npc, int event_mode);
 int load_critter_association_tables(int file_handle);
 void flush_pending_critter_resource_slots();
@@ -112,14 +112,14 @@ void spawn_creature_treasure_drop(void *creature);
 void spawn_creature_special_item_drop(void *creature);
 void spawn_creature_equipment_drop(void *creature);
 void spawn_creature_misc_item_drop(void *creature);
-void spawn_creature_death_loot(ushort *creature);
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage);
+void spawn_creature_death_loot(uw_unaligned_word_t *creature);
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage);
 int mobile_object_tick(); // was FUN_0002b47c
 int npc_ai_tick(); // was FUN_00032d38
 int object_tick_is_due(short period, int phase); // was FUN_0003495c
 void tick_mobile_objects(char elapsed); // was FUN_000349bc
-void build_object_placement_snapshot(ushort *object, byte *snapshot); // was FUN_00054a00
-int sync_object_tile_position(ushort *object, void *position); // was FUN_00054f6c
-ushort *settle_mobile_to_immobile(ushort *object); // was FUN_0005596c
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot); // was FUN_00054a00
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position); // was FUN_00054f6c
+ushort *settle_mobile_to_immobile(uw_unaligned_word_t *object); // was FUN_0005596c
 
 #endif

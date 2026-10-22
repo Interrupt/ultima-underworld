@@ -787,7 +787,7 @@ void fire_ranged_weapon(short weapon_type)
     DAT_00202a48 = (ushort)(byte) g_ranged_type_props[(short)cVar3].projectile_speed;
     DAT_00202a38 = cVar3 + 0x10;
     DAT_00202a4c = (ushort)(g_player_object->npc_xhome);
-    DAT_00202a44 = (ushort *)g_player_object; /* word view of the projectile source record */
+    DAT_00202a44 = (uw_unaligned_word_t *)g_player_object; /* word view of the projectile source record */
     DAT_00202a50 = (undefined2)(g_player_object->npc_yhome);
     DAT_00202a54 = 1;
     compute_drop_aim_from_cursor();

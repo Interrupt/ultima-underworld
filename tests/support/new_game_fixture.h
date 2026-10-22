@@ -24,7 +24,7 @@ extern char s__DATA_lev_ark_00085734[];
 extern char s__SAVE0_lev_ark_000842fc[];
 extern bool accept_character, archive_ok;
 extern char workspace[];
-extern char data_link[512], save_path[512], archive_path[512];
+extern char data_link[512], save_path[512], archive_path[1024];
 extern undefined DAT_000b78b8_backing[8192];
 extern int scheduler_result;
 extern int character_calls, saves, seeds, opens, closes;

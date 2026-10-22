@@ -32,7 +32,7 @@ static char DAT_00202c1c;
 
 // was FUN_0002b7a0. Builds the collision_build_height_field scratch buffer (DAT_00202c6c, a local
 // 24-byte struct) for param_1, then returns a combined height/step-limit field.
-int build_collision_height_field_for_object(ushort *object)
+int build_collision_height_field_for_object(uw_unaligned_word_t *object)
 {
   uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
   undefined2 slot_index;
@@ -320,7 +320,7 @@ void collision_height_envelope(int mode, int collision)
   if (*(short *)(DAT_00202c6c + 10) != 0) {
     /* Ghidra dropped get_object_record_by_slot_index's argument -- it's the object-slot id this
        branch just tested non-zero (classic `if ((id=..)!=0) rec=f(id)`)... */
-    puVar6 = (ushort *)get_object_record_by_slot_index((int)*(short *)(DAT_00202c6c + 10));
+    puVar6 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)(DAT_00202c6c + 10));
     if (puVar6 != (ushort *)0x0 && (*puVar6 & 0x1c0) == 0x40) {
       local_3c = 1;
     }
@@ -392,7 +392,7 @@ void collision_height_envelope(int mode, int collision)
             sVar8 = (short)iVar10;
             if (0x3f < sVar8) break;
             if ((uint)(uVar3 >> 6) != (int)*(short *)(pbVar13 + 10)) {
-              puVar7 = (ushort *)resolve_object_link(puVar6);
+              puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar6);
               /* resolve_object_link can now return NULL for an out-of-range link (see its own
                  comment) where this loop's `while ((uVar3 & 0xffc0) != 0)` condition alone used to
                  guarantee success... */

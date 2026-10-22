@@ -130,7 +130,7 @@ LAB_0004b06c:
       if (((uw_object_hdr_t *)DAT_00202a44 == &g_player_object->hdr) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {
         puVar6->hdr.zpos = ((char)DAT_00202a3c * '\x02' - (*(byte *)(DAT_00086df8 + 0xb9) >> 3)) + g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height + (bVar1 & 0x7f);
       }
-      iVar8 = check_object_drop_height((ushort *)puVar6, DAT_00202a44);
+      iVar8 = check_object_drop_height((uw_unaligned_word_t *)puVar6, DAT_00202a44);
       if (iVar8 == 0) {
         free_object_slot(&puVar6->hdr);
         goto LAB_0004b06c;
@@ -165,7 +165,7 @@ LAB_0004b06c:
           (unsigned)(puVar6->hdr.object_id), puVar6->tile_x,
           puVar6->tile_y);
     object_list_insert_head(uw_tile_link_word_ptr(pbTile), &puVar6->hdr);
-    play_sound_effect_at_object(10, (ushort *)puVar6, 0);
+    play_sound_effect_at_object(10, (uw_unaligned_word_t *)puVar6, 0);
     /* The original FUN_0004ad10 returns the mobile object here.
        mobile_object_tick integrates its flight and sync_object_tile_position
        converts it to an immobile item only once its velocity reaches zero. */
@@ -469,7 +469,7 @@ int reset_burnt_out_item_state(char *tile_link, void *object_ptr)
 // tile param_4/param_5: doors get their contents discarded...
 /* ARM 0x3803c forwards the damaging actor's address to the door callback.
    Keep it pointer-sized rather than truncating it through undefined4. */
-int apply_object_destruction_effect(ushort *object, ushort *attacker, uint damage_type_mask, int tile_x, short tile_y)
+int apply_object_destruction_effect(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, uint damage_type_mask, int tile_x, short tile_y)
 {
   /* The record is read below as a raw word array (object[0] type word, object[3] link word);
      the typed view is the same address for the object-API calls. */
@@ -560,7 +560,7 @@ LAB_00038100:
 
 // was FUN_00038d4c -- searches outward from tile (param_2,param_3) via a double-buffered BFS
 // flood-fill (local_80/local_58, each a 10-entry x/y coordinate-pair frontier list)...
-int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict)
+int find_placement_via_tile_flood_fill(uw_unaligned_word_t *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict)
 {
   int iVar1;
   int iVar2;
@@ -657,7 +657,7 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
           tile_object = resolve_object_link(tile_link_cursor);
           if ((g_object_type_props[tile_object->object_id].height != '\0') ||
               (iVar12 = object_ptr_in_arena(tile_object), iVar12 != 0)) {
-            discard_misplaced_object(pbVar10 + 2,(ushort *)tile_object,0);
+            discard_misplaced_object(pbVar10 + 2,(uw_unaligned_word_t *)tile_object,0);
           }
         }
       }
@@ -1193,7 +1193,7 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
 /* Was `int param_1` -- a real object-record pointer (drop_held_object_ near_player passes
    pDropTile+2, a resolve_object_link-style address) truncated to 32 bits on this 64-bit host, same
    class as several other fixes this session. */
-ushort *discard_misplaced_object(void *tile_link_ptr, ushort *object, int skip_roll)
+ushort *discard_misplaced_object(void *tile_link_ptr, uw_unaligned_word_t *object, int skip_roll)
 {
   uw_link_word_t *tile_link = (uw_link_word_t *)tile_link_ptr;
   uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
@@ -1815,7 +1815,7 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 // was FUN_00055610 -- the "spawn and replace" mechanism: allocate a fresh low-region object slot
 // (alloc_object_slot(1), same allocator spawn_object_near_player uses -- the only region
 // emit_tile_objects's object_ptr_in_arena gate treats as renderable)...
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object_words)
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *object_words)
 {
   uw_object_hdr_t *object = (uw_object_hdr_t *)object_words;
   uw_tile_t *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
@@ -1848,7 +1848,7 @@ uw_object_hdr_t *reallocate_object_to_arena(ushort *object_words)
 
 
 // was FUN_00052450
-int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height, short radius)
+int find_object_placement(uw_unaligned_word_t *object, uint tile_x, uint tile_y, short height, short radius)
 {
   ushort uVar1;
   undefined4 uVar2;

@@ -57,7 +57,7 @@ static ushort *dbgui_door_lock_object(ushort *door)
 {
   ushort *chain = door + 3;
   if ((*door & 0x8000) != 0 || (*chain & 0xffc0) == 0) return 0;
-  return (ushort *)find_object_in_chain(&chain,0,4,0,0xf);
+  return (uw_unaligned_word_t *)find_object_in_chain(&chain,0,4,0,0xf);
 }
 
 /* Opens the inspected door whether or not it is locked -- the lock is only ever consulted by the
@@ -508,7 +508,7 @@ int dbgui_spawn_object(int id, int *tile_x, int *tile_y)
   obj->xpos = x & 7;
   obj->ypos = y & 7;
   obj->zpos = height & 0x7f;
-  if (find_object_placement((ushort *)obj, (short)x, (short)y, (short)height, 2) == 0) {
+  if (find_object_placement((uw_unaligned_word_t *)obj, (short)x, (short)y, (short)height, 2) == 0) {
     free_object_slot(obj);
     return 0;
   }
@@ -545,7 +545,7 @@ int dbgui_all_runes(void)
 {
   int slot, result = 0, have_bag = 0;
   for (slot = 0xb; slot < 0x13 && !have_bag; slot++) {
-    ushort *o = (ushort *)resolve_object_link(&SLOT_LINK(slot));
+    ushort *o = (uw_unaligned_word_t *)resolve_object_link(&SLOT_LINK(slot));
     if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
   }
   if (!have_bag) result = dbgui_give_object(0x8f, 1) >= 0 ? 1 : -2;

@@ -824,7 +824,7 @@ int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias)
 // test_play_sound_effect_at_object_does_not_truncate_the_object_pointer,
 // which pins the exact decoded pan/volume for known bytes at those
 // offsets.
-int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias)
+int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias)
 {
   undefined4 uVar1;
   const char *record = (const char *)object;

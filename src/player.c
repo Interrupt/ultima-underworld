@@ -385,7 +385,7 @@ void commit_player_move()
         uVar3 = (uint)sVar1;
       }
       if (3 < (short)uVar3) {
-        apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)uVar3,0);
+        apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,(char)uVar3,0);
       }
       if ((1 < (short)uVar3) || ((DAT_002048a8 & 0x10) != 0)) {
         play_sound_effect_with_pan(0xf,0x40,((uVar3 & 0xff) + 0x31) * 4);
@@ -665,7 +665,7 @@ void refresh_player_equipment_effects()
   } while (iVar4 < 4);
   iVar4 = 0;
   do {
-    equipped = (ushort *)get_equipped_item_at_slot(iVar4);
+    equipped = (uw_unaligned_word_t *)get_equipped_item_at_slot(iVar4);
     if (equipped != 0) {
       cVar3 = compute_object_weight(equipped);
       DAT_0023be74[(char)(&DAT_00086da8)[iVar4]] =
@@ -673,7 +673,7 @@ void refresh_player_equipment_effects()
     }
     iVar4 = (iVar4 + 1) * 0x10000 >> 0x10;
   } while (iVar4 < 5);
-  puVar6 = (ushort *)get_equipped_item_at_slot((*(byte *)(DAT_00086df8 + 100) & 1) + 7);
+  puVar6 = (uw_unaligned_word_t *)get_equipped_item_at_slot((*(byte *)(DAT_00086df8 + 100) & 1) + 7);
   if ((((puVar6 != (ushort *)0x0) && (uVar11 = *puVar6, (uVar11 & 0x1c0) == 0)) &&
       ((uVar11 & 0x30) == 0x30)) && ((10 < (uVar11 & 0xf) && ((uVar11 & 0xf) < 0x10)))) {
     cVar3 = compute_object_weight(puVar6);
@@ -726,7 +726,7 @@ LAB_000669a8:
     if (!bVar12) {
       /* Was get_equipped_item_at_slot(iVar4) -- scanning raw equip slots 0-3, which never hold a
          light source. */
-      puVar6 = (ushort *)get_equipped_item_at_slot((int)(char)(&g_light_source_slots)[iVar4]);
+      puVar6 = (uw_unaligned_word_t *)get_equipped_item_at_slot((int)(char)(&g_light_source_slots)[iVar4]);
     }
     g_scratch_object_ptr = (uw_object_hdr_t *)puVar6;
     if ((((puVar6 != (ushort *)0x0) && ((*puVar6 & 0x1f0) == 0x90)) &&
@@ -1039,7 +1039,7 @@ LAB_00066290:
   case 8:
     break;
   case 9:
-    reduce_item_quality_on_use((ushort *)g_player_object,1);  /* ARM passes only r0 here (r1 is stale); 1 matches the join path's value */
+    reduce_item_quality_on_use((uw_unaligned_word_t *)g_player_object,1);  /* ARM passes only r0 here (r1 is stale); 1 matches the join path's value */
     break;
   case 10:
     break;
@@ -1324,7 +1324,7 @@ void trigger_view_transition()
     uVar5 = ce_rand();
     uw_ord2005_rem_126 = ((int)(uVar5)) % (5);
     if (uw_ord2005_rem_126 == 0) {
-      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,1,8);
+      apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,1,8);
     }
   }
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 8) != 0) {
@@ -2413,7 +2413,7 @@ void apply_rest_status_effects()
   undefined1 uVar2;
 
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 3) != 0) {
-    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,0xff,0);
+    apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,0xff,0);
   }
   refresh_player_equipment_effects();
   settle_movement_to_rest();
@@ -2421,10 +2421,10 @@ void apply_rest_status_effects()
     uVar1 = ce_rand();
     uVar2 = 0x10;
     uw_ord2005_rem_144 = ((int)(uVar1)) % (6);
-    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,uw_ord2005_rem_144 * '\n' + '\f',uVar2);
+    apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,uw_ord2005_rem_144 * '\n' + '\f',uVar2);
   }
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 3) != 0) {
-    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,0xff,0);
+    apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,0xff,0);
   }
   return;
 }
@@ -2480,7 +2480,7 @@ LAB_0007158c:
     decay_equipped_light_sources(iVar8 * 0xb4,0);
     if ((*(ushort *)(DAT_00086df8 + 0x5f) & 0x3c) != 0) {
       uVar7 = *(ushort *)(DAT_00086df8 + 0x5f) >> 2 & 0xf;
-      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)((int)((uVar7 + 1) * uVar7) >> 1),0x10);
+      apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,(char)((int)((uVar7 + 1) * uVar7) >> 1),0x10);
       uVar7 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
       *(char *)(DAT_00086df8 + 0x5f) = (char)uVar7;
       *(char *)(DAT_00086df8 + 0x60) = (char)(uVar7 >> 8);
@@ -2522,7 +2522,7 @@ LAB_0007158c:
         }
         if (*(char *)(DAT_00086df8 + 0x39) == '\0') {
           print_scroll_message_by_id(0x11);
-          apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,2,0);
+          apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,2,0);
         }
         else {
           adjust_player_hp(g_player_object,(((short)iVar4 + 1) * (int)sVar3 * 0x1000000 >> 0x18) + -1);
@@ -3609,7 +3609,7 @@ void update_player_tick_effects()
       bVar1 = (byte)uVar3;
       *(byte *)(player_rec + 0x5f) = ((bVar1 & 0xfc) - 1 ^ bVar1) & 0x3c ^ bVar1;
       *(char *)(DAT_00086df8 + 0x60) = (char)(uVar3 >> 8);
-      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)((uVar3 & 0x3c) >> 2),0x10);
+      apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,(char)((uVar3 & 0x3c) >> 2),0x10);
       player_rec = DAT_00086df8;
     }
     sVar5 = roll_skill_check(*(undefined1 *)(player_rec + 0x28),10);
@@ -3740,7 +3740,7 @@ void apply_drowning_hazard()
       weapon_overlay_flash_once(0xc6);
       set_pending_update_flags(2);
       uVar1 = roll_dice_sum(2,-(int)iVar3 + 4);
-      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,uVar1,0);
+      apply_typed_damage_to_object((uw_unaligned_word_t *)g_player_object,0,0,0,uVar1,0);
     }
   }
   return;
@@ -3772,9 +3772,9 @@ int dungeon_view_anim_tick()
     if (DAT_00201c9c != (code *)0x0) {
       (*DAT_00201c9c)();
     }
-    iVar1 = find_placement_via_tile_flood_fill((ushort *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,0);
+    iVar1 = find_placement_via_tile_flood_fill((uw_unaligned_word_t *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,0);
     if ((iVar1 == 0) &&
-       (iVar1 = find_placement_via_tile_flood_fill((ushort *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,1)
+       (iVar1 = find_placement_via_tile_flood_fill((uw_unaligned_word_t *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,1)
        , iVar1 == 0)) {
       DAT_00201c90 = 0;
       g_player_object->npc_hp = 0;

@@ -9,17 +9,17 @@ void set_pending_update_flags(ushort flags);
 long ce_rand(void);
 int encode_object_slot_index(const uw_object_hdr_t *object);
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit);
-void adjust_door_close_animation_delay(ushort *object);
+void adjust_door_close_animation_delay(uw_unaligned_word_t *object);
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias);
 int scheduler_advance_effect(short entry_slot, int elapsed);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot);
-void build_object_placement_snapshot(ushort *object, byte *snapshot);
-int build_collision_height_field_for_object(ushort *object);
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot);
+int build_collision_height_field_for_object(uw_unaligned_word_t *object);
 int apply_placement_collision_sweep(void *snapshot, void *sweep_flags);
-int sync_object_tile_position(ushort *object, void *position);
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position);
 void npc_ai_default_tick(void);
 int resolve_unique_npc_special_behavior(void *npc, int event_mode);
-void spawn_creature_death_loot(ushort *creature);
+void spawn_creature_death_loot(uw_unaligned_word_t *creature);
 void drop_creature_inventory_on_death(void *creature);
 int compute_vertical_aim_offset(short has_target, int target);
 void spawn_npc_thrown_weapon(void *attacker, short launch_offset, short launch_flags);
@@ -147,7 +147,7 @@ int encode_object_slot_index(const uw_object_hdr_t *object)
 
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit) { (void)catalog_type; (void)ignore_slot; (void)position_x; (void)position_y; (void)height; (void)check_mode; (void)step_limit; TEST_FAIL_MESSAGE("Unexpected door sweep"); return 0; }
 
-void adjust_door_close_animation_delay(ushort *object) { (void)object; }
+void adjust_door_close_animation_delay(uw_unaligned_word_t *object) { (void)object; }
 
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias) { (void)sound_id; (void)world_x; (void)world_y; (void)volume_bias; return 0; }
 
@@ -155,19 +155,19 @@ int scheduler_advance_effect(short entry_slot, int elapsed) { (void)entry_slot; 
 
 uw_object_hdr_t *get_object_record_by_slot_index(short slot) { TEST_ASSERT_EQUAL_INT(1, slot); return &scheduler_mobile_object(1)->hdr; }
 
-void build_object_placement_snapshot(ushort *object, byte *snapshot) { (void)object; (void)snapshot;}
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot) { (void)object; (void)snapshot;}
 
-int build_collision_height_field_for_object(ushort *object) { (void)object; return 0; }
+int build_collision_height_field_for_object(uw_unaligned_word_t *object) { (void)object; return 0; }
 
 int apply_placement_collision_sweep(void *snapshot, void *sweep_flags) { (void)snapshot; (void)sweep_flags; return 0; }
 
-int sync_object_tile_position(ushort *object, void *position) { (void)object; (void)position; return 0; }
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position) { (void)object; (void)position; return 0; }
 
 void npc_ai_default_tick(void) { TEST_FAIL_MESSAGE("Unexpected live NPC behavior"); }
 
 int resolve_unique_npc_special_behavior(void *npc, int event_mode) { (void)npc; (void)event_mode; return 1; }
 
-void spawn_creature_death_loot(ushort *creature) { (void)creature;}
+void spawn_creature_death_loot(uw_unaligned_word_t *creature) { (void)creature;}
 
 void drop_creature_inventory_on_death(void *creature) { (void)creature;}
 

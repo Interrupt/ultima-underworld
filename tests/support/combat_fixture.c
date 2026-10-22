@@ -267,7 +267,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte type, short critica
 void set_movement_animation_timer(byte timer_id, byte ticks) { TEST_FAIL_MESSAGE("Unexpected player hit animation"); }
 #endif
 
-int spawn_scheduled_effect_object(ushort *target, int type, int mode, byte intensity, short height, short x, short y)
+int spawn_scheduled_effect_object(uw_unaligned_word_t *target, int type, int mode, byte intensity, short height, short x, short y)
 {
     TEST_ASSERT_EQUAL_PTR(expected_effect_target, target);
     TEST_ASSERT_LESS_THAN_INT(2, effects);
@@ -301,7 +301,7 @@ void trigger_object_trap_or_use_action(void *actor, void *target, int action, in
     TEST_ASSERT_EQUAL_INT(10, y);
     door_triggers++;
 }
-int play_sound_effect_at_object(int sound, ushort *object, int mode)
+int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode)
 {
     TEST_ASSERT_EQUAL_INT(4, sound);
     TEST_ASSERT_EQUAL_PTR(wall_effect, object);
@@ -311,7 +311,7 @@ int play_sound_effect_at_object(int sound, ushort *object, int mode)
 }
 
 /* Other destruction branches must not run for a door. */
-void try_combine_or_stow_object(void *actor, ushort *object, int stow) { (void)actor; (void)object; (void)stow; TEST_FAIL_MESSAGE("Unexpected container combination"); }
+void try_combine_or_stow_object(void *actor, uw_unaligned_word_t *object, int stow) { (void)actor; (void)object; (void)stow; TEST_FAIL_MESSAGE("Unexpected container combination"); }
 #ifndef UW_TEST_NPC_COMBAT
 uint rand_below(int limit) { (void)limit; TEST_FAIL_MESSAGE("Unexpected random destruction"); return 0; }
 #endif
@@ -321,7 +321,7 @@ int reset_burnt_out_item_state(char *tile_link, void *object) { (void)tile_link;
 void free_linked_object_recursive(uw_link_word_t *link_field) { (void)link_field; TEST_FAIL_MESSAGE("Unexpected recursive cleanup"); }
 uw_object_hdr_t *settle_dropped_object(void *object, short tile_x,
 				       short tile_y, int force) { (void)object; (void)tile_x; (void)tile_y; (void)force; TEST_FAIL_MESSAGE("Unexpected settling"); return 0; }
-void adjust_door_close_animation_delay(ushort *door) { (void)door; TEST_FAIL_MESSAGE("Unexpected closing door"); }
+void adjust_door_close_animation_delay(uw_unaligned_word_t *door) { (void)door; TEST_FAIL_MESSAGE("Unexpected closing door"); }
 uw_object_hdr_t *find_object_in_chain(uw_link_word_t **head, int recurse,
                                       int category, int family, short subtype)
 {
@@ -440,7 +440,7 @@ void load_real_monster_data(void)
 }
 
 ushort *object_at(unsigned slot)
-{ return (ushort *)mobile_object(slot); }
+{ return (uw_unaligned_word_t *)mobile_object(slot); }
 
 void candidate(unsigned index, unsigned slot, short displacement)
 {

@@ -57,12 +57,12 @@ void collision_height_envelope(int unused, int mode)
 }
 void collision_build_height_field(uint step_limit) {}
 void sort_collision_candidates(void) { TEST_FAIL_MESSAGE("Empty world has no object contacts"); }
-int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 1; }
+int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 1; }
 int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
-ushort *discard_misplaced_object(void *list, ushort *object, int destroy)
+ushort *discard_misplaced_object(void *list, uw_unaligned_word_t *object, int destroy)
 { return NULL; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; return 1; }
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected ground drop"); return NULL; }
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected ground drop"); return NULL; }
 uw_object_hdr_t *settle_dropped_object(void *object, short tile_x,
 				       short tile_y, int force) { (void)object; (void)tile_x; (void)tile_y; (void)force; TEST_FAIL_MESSAGE("Unexpected ground drop"); return NULL; }
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit) { (void)catalog_type; (void)ignore_slot; (void)position_x; (void)position_y; (void)height; (void)check_mode; (void)step_limit; TEST_FAIL_MESSAGE("Unexpected ground drop"); return 0; }

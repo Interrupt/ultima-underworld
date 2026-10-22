@@ -312,7 +312,7 @@ uw_object_hdr_t *resolve_object_link(ushort *link)
 }
 void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (ushort *)object_;
+    ushort *object = (uw_unaligned_word_t *)object_;
     int slot = encode_object_slot_index(object_);
     while (*head >> 6 && *head >> 6 != slot) head = babl_items[*head >> 6] + 2;
     TEST_ASSERT_EQUAL_INT_MESSAGE(slot, *head >> 6, "Unlinked object is not in the list");
@@ -321,7 +321,7 @@ void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 }
 void object_list_insert_head(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (ushort *)object_;
+    ushort *object = (uw_unaligned_word_t *)object_;
     object[2] = (object[2] & 0x3f) | (*head & ~0x3f);
     *head = (*head & 0x3f) | (encode_object_slot_index(object_) << 6);
 }
@@ -334,7 +334,7 @@ int drop_object_near_target(void *owner, void *object, short radius, uint flags)
     return 1;
 }
 void free_object_slot(uw_object_hdr_t *object) { memset(object, 0, 8); }
-void spawn_creature_death_loot(ushort *object) { ((byte *)object)[14] |= 0x10; }
+void spawn_creature_death_loot(uw_unaligned_word_t *object) { ((byte *)object)[14] |= 0x10; }
 void npc_set_goal_for_object(uw_mobile_object_t *object, int goal, int target)
 {
     ushort *packed = (ushort *)((byte *)object + 11);

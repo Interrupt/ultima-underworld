@@ -7,7 +7,7 @@ int message_scroll_print_wrapped(char *text);
 void debug_print(char *format, ...);
 ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot);
 void set_pending_update_flags(ushort flags);
-void spawn_trap_hazard_object(ushort *trap_record, short tile_x, short tile_y);
+void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot_index);
 uw_object_hdr_t *find_object_in_chain(ushort **link_cursor, int recurse,
 				      int object_class, int subclass,
@@ -16,7 +16,7 @@ uw_object_hdr_t *alloc_object_slot(int region);
 int apply_area_terrain_effect(short tile_x, int tile_y, short wall_texture, short height_value, short height_adjust, short floor_texture, short width, short height_extent, short mode);
 int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int unused_a, int unused_b);
 int check_object_area_for_spawn_block(ushort *object);
-void close_door_object(void *actor, ushort *door);
+void close_door_object(void *actor, uw_unaligned_word_t *door);
 int dispatch_trap_special_or_tile_action(byte context_x, byte context_y, void *tile_x, void *tile_y, ushort action_id, byte argument);
 int encode_object_slot_index(const uw_object_hdr_t *object);
 void free_object_slot(uw_object_hdr_t *object);
@@ -77,7 +77,7 @@ ushort *find_equipped_item_by_category(int category, int subcategory, int qualit
 
 void set_pending_update_flags(ushort flags) { (void)flags; TEST_FAIL_MESSAGE("Unexpected set_pending_update_flags in text trap"); }
 
-void spawn_trap_hazard_object(ushort *trap_record, short tile_x, short tile_y) { (void)trap_record; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected spawn_trap_hazard_object in text trap"); }
+void spawn_trap_hazard_object(uw_unaligned_word_t *trap_record, short tile_x, short tile_y) { (void)trap_record; (void)tile_x; (void)tile_y; TEST_FAIL_MESSAGE("Unexpected spawn_trap_hazard_object in text trap"); }
 
 uw_object_hdr_t *get_object_record_by_slot_index(short slot_index) { (void)slot_index; TEST_FAIL_MESSAGE("Unexpected get_object_record_by_slot_index in text trap"); return 0; }
 
@@ -99,7 +99,7 @@ int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int u
 
 int check_object_area_for_spawn_block(ushort *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected check_object_area_for_spawn_block in text trap"); return 0; }
 
-void close_door_object(void *actor, ushort *door) { (void)actor; (void)door; TEST_FAIL_MESSAGE("Unexpected close_door_object in text trap"); }
+void close_door_object(void *actor, uw_unaligned_word_t *door) { (void)actor; (void)door; TEST_FAIL_MESSAGE("Unexpected close_door_object in text trap"); }
 
 int dispatch_trap_special_or_tile_action(byte context_x, byte context_y, void *tile_x, void *tile_y, ushort action_id, byte argument) { (void)context_x; (void)context_y; (void)tile_x; (void)tile_y; (void)action_id; (void)argument; TEST_FAIL_MESSAGE("Unexpected dispatch_trap_special_or_tile_action in text trap"); return 0; }
 

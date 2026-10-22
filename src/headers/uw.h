@@ -405,12 +405,14 @@ _Static_assert(sizeof(uw_object_hdr_t) == 8, "UW1 object header layout");
 _Static_assert(sizeof(uw_mobile_object_t) == 27, "UW1 mobile slot layout");
 _Static_assert(sizeof(uw_projectile_object_t) == 27, "UW1 projectile slot layout");
 
-/* Address of a 16-bit chain/link word. Mobile objects are 27 bytes, so half of them sit at odd
+/* Address of a 16-bit word inside an object record (uw_unaligned_word_t), in particular a chain/link word (uw_link_word_t). Mobile objects are 27 bytes, so half of them sit at odd
    addresses and a word inside one is genuinely unaligned: the chain primitives therefore take this
    align-1 type instead of a plain ushort *. Form the address with uw_chain_word_ptr/uw_link_word_ptr
    rather than &obj->chain_word, which clang flags (-Waddress-of-packed-member) because it cannot
    know the pointer will only be used for unaligned-safe access. */
-typedef ushort uw_link_word_t __attribute__((aligned(1)));
+typedef ushort uw_unaligned_word_t __attribute__((aligned(1)));
+typedef uw_unaligned_word_t uw_link_word_t;
+typedef short uw_unaligned_short_t __attribute__((aligned(1)));
 
 static inline uw_link_word_t *uw_chain_word_ptr(const uw_object_hdr_t *object) {
     return (uw_link_word_t *)&object->chain_word;
