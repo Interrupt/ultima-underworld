@@ -271,6 +271,34 @@ WAIT 10
 SDLCLICK 330 130
 WAIT 10
 EDITOR validate
+# cut / copy and paste: drag a rectangle on the map, Copy, Cut, then paste it elsewhere in paste mode; undo
+SDLCLICK 330 226
+WAIT 10
+SDLDOWN 490 100
+WAIT 5
+SDLMOVE 520 130
+WAIT 5
+SDLUP 520 130
+WAIT 20
+SDLCLICK 20 330
+WAIT 10
+SDLCLICK 330 258
+WAIT 10
+SDLMOVE 560 140
+WAIT 10
+SDLCLICK 560 140
+WAIT 30
+EDITOR undo
+WAIT 20
+SDLCLICK 330 226
+WAIT 10
+SDLCLICK 110 330
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
 # undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
 EDITOR selftest
 WAIT 10

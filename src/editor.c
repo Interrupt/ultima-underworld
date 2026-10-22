@@ -89,6 +89,7 @@ static const char *g_status;      /* a transient message on the info bar */
 static void draw_menu(void);
 static void draw_mode(void);
 static void draw_fill_overlay(void);
+static void draw_cc_overlay(void);
 static int menu_open(void);
 
 int uw_editor_active(void) { return g_active; }
@@ -801,6 +802,7 @@ int uw_editor_compose(unsigned short *display)
   draw_palette_pane();
   draw_mode();
   draw_fill_overlay();
+  draw_cc_overlay();
   draw_info_bar();
   draw_menu();
   g_uw_framebuffer = saved;
@@ -2408,6 +2410,160 @@ static int find_mode_click(int x, int y, int button)
   return 0;
 }
 
+/* ---- cut, copy and paste of tile regions ---- */
+
+/* Cut / Copy mode: drag a rectangle on the map, then Copy or Cut (Cut copies and then makes the region solid). Paste mode: click a tile and
+   the clipboard's region goes there with its top left on that tile, after an undo step, then the tile checks run on it. A region is the tiles
+   only (type, height, door and no-magic flags, both texture slots), not the objects on them. */
+static int g_cc_has_rect, g_cc_dragging;
+static int g_cc_x0, g_cc_y0, g_cc_x1, g_cc_y1;     /* the selected rectangle, corners in any order */
+static uw_tile_t g_clip[64 * 64];
+static int g_clip_w, g_clip_h;
+static int g_paste_hover_x = -1, g_paste_hover_y = -1;
+
+static void cc_bounds(int *x0, int *y0, int *x1, int *y1)
+{
+  *x0 = g_cc_x0 < g_cc_x1 ? g_cc_x0 : g_cc_x1; *x1 = g_cc_x0 < g_cc_x1 ? g_cc_x1 : g_cc_x0;
+  *y0 = g_cc_y0 < g_cc_y1 ? g_cc_y0 : g_cc_y1; *y1 = g_cc_y0 < g_cc_y1 ? g_cc_y1 : g_cc_y0;
+}
+
+static void cc_copy(void)
+{
+  int x0, y0, x1, y1;
+  if (!g_cc_has_rect) { g_status = "drag a rectangle first"; return; }
+  cc_bounds(&x0, &y0, &x1, &y1);
+  g_clip_w = x1 - x0 + 1;
+  g_clip_h = y1 - y0 + 1;
+  for (int j = 0; j < g_clip_h; j++)
+    for (int i = 0; i < g_clip_w; i++) {
+      g_clip[j * 64 + i] = *tile_at(x0 + i, y0 + j);
+      g_clip[j * 64 + i].obj_head = 0;   /* the objects stay where they are */
+    }
+  static char msg[40];
+  snprintf(msg, sizeof msg, "copied %d x %d tiles", g_clip_w, g_clip_h);
+  g_status = msg;
+}
+
+static void cc_cut(void)
+{
+  int x0, y0, x1, y1;
+  if (!g_cc_has_rect) { g_status = "drag a rectangle first"; return; }
+  cc_copy();
+  cc_bounds(&x0, &y0, &x1, &y1);
+  checkpoint();
+  for (int ty = y0; ty <= y1; ty++)
+    for (int tx = x0; tx <= x1; tx++) {
+      uw_tile_t *t = tile_at(tx, ty);
+      t->tile_type = 0; t->floor_height = 0; t->door_bit = 0; t->no_magic = 0;
+    }
+  tiles_changed(x0, y0, x1, y1);
+  static char msg[40];
+  snprintf(msg, sizeof msg, "cut %d x %d tiles", g_clip_w, g_clip_h);
+  g_status = msg;
+}
+
+static void paste_at(int tx, int ty)
+{
+  if (!g_clip_w) { g_status = "nothing copied"; return; }
+  checkpoint();
+  int x1 = tx, y1 = ty;
+  for (int j = 0; j < g_clip_h; j++)
+    for (int i = 0; i < g_clip_w; i++) {
+      uw_tile_t *d = tile_at(tx + i, ty + j);
+      if (!d) continue;
+      const uw_tile_t *c = &g_clip[j * 64 + i];
+      d->tile_type = c->tile_type; d->floor_height = c->floor_height; d->door_bit = c->door_bit; d->no_magic = c->no_magic;
+      d->floor_tex = c->floor_tex; d->wall_tex = c->wall_tex;
+      x1 = tx + i; y1 = ty + j;
+    }
+  tiles_changed(tx, ty, x1, y1);   /* the checks run on the destination */
+  static char msg[48];
+  snprintf(msg, sizeof msg, "pasted %d x %d tiles%s", g_clip_w, g_clip_h, g_tile_warning[0] ? " (check the warnings)" : "");
+  g_status = msg;
+}
+
+static void cc_press(int tx, int ty)
+{
+  if (!tile_at(tx, ty)) return;
+  g_cc_dragging = 1; g_cc_has_rect = 1;
+  g_cc_x0 = g_cc_x1 = tx; g_cc_y0 = g_cc_y1 = ty;
+  select_tile(tx, ty);
+}
+
+static void draw_outline_on_map(int x0, int y0, int x1, int y1, unsigned short c)
+{
+  int camx, camy, camz, sx0, sy0, sx1, sy1;
+  camera(&camx, &camy, &camz);
+  map_tile_origin(x0, y1, camx >> 8, camy >> 8, &sx0, &sy0);
+  map_tile_origin(x1, y0, camx >> 8, camy >> 8, &sx1, &sy1);
+  for (int x = sx0; x <= sx1 + MAP_TILE - 1; x++) if (x >= R_MAP.x0 && x < R_MAP.x1) { if (sy0 >= R_MAP.y0 && sy0 < R_MAP.y1) put(x, sy0, c); if (sy1 + MAP_TILE - 1 >= R_MAP.y0 && sy1 + MAP_TILE - 1 < R_MAP.y1) put(x, sy1 + MAP_TILE - 1, c); }
+  for (int y = sy0; y <= sy1 + MAP_TILE - 1; y++) if (y >= R_MAP.y0 && y < R_MAP.y1) { if (sx0 >= R_MAP.x0 && sx0 < R_MAP.x1) put(sx0, y, c); if (sx1 + MAP_TILE - 1 >= R_MAP.x0 && sx1 + MAP_TILE - 1 < R_MAP.x1) put(sx1 + MAP_TILE - 1, y, c); }
+}
+
+static void draw_cc_overlay(void)
+{
+  if (g_mode == M_CUTCOPY && g_cc_has_rect) {
+    int x0, y0, x1, y1;
+    cc_bounds(&x0, &y0, &x1, &y1);
+    draw_outline_on_map(x0, y0, x1, y1, RGB(255, 255, 0));
+  }
+  if (g_mode == M_PASTE && g_clip_w && g_paste_hover_x >= 0)
+    draw_outline_on_map(g_paste_hover_x, g_paste_hover_y, g_paste_hover_x + g_clip_w - 1 < 63 ? g_paste_hover_x + g_clip_w - 1 : 63,
+                        g_paste_hover_y + g_clip_h - 1 < 63 ? g_paste_hover_y + g_clip_h - 1 : 63, RGB(255, 255, 255));
+}
+
+/* a small picture of the clipboard: its tiles by type and height */
+static void draw_clip_preview(int x0, int y0, int w, int h)
+{
+  frame(x0 - 1, y0 - 1, x0 + w + 1, y0 + h + 1, COL_FRAME);
+  fill(x0, y0, x0 + w, y0 + h, COL_BLACK);
+  if (!g_clip_w) return;
+  int scale = w / (g_clip_w > g_clip_h ? g_clip_w : g_clip_h);
+  if (scale < 1) scale = 1;
+  for (int j = 0; j < g_clip_h; j++)
+    for (int i = 0; i < g_clip_w; i++)
+      if (i * scale < w && j * scale < h)
+        fill(x0 + i * scale, y0 + (g_clip_h - 1 - j) * scale, x0 + i * scale + scale, y0 + (g_clip_h - 1 - j) * scale + scale, tile_colour(&g_clip[j * 64 + i]));
+}
+
+static void draw_cutcopy_mode(int paste)
+{
+  char line[48];
+  frame(0, 126, 150, 190, COL_FRAME);
+  text(paste ? "Paste" : "Cut / Copy", 4, 128, COL_TEXT);
+  if (!paste) {
+    int x0, y0, x1, y1;
+    if (g_cc_has_rect) { cc_bounds(&x0, &y0, &x1, &y1); snprintf(line, sizeof line, "%d,%d to %d,%d  (%dx%d)", x0, y0, x1, y1, x1 - x0 + 1, y1 - y0 + 1); }
+    else snprintf(line, sizeof line, "drag a rectangle on the map");
+    text(line, 4, 140, COL_ORANGE);
+    frame(4, 160, 44, 170, COL_ORANGE); text("Copy", 14, 161, COL_ORANGE);
+    frame(52, 160, 92, 170, COL_ORANGE); text("Cut", 64, 161, COL_ORANGE);
+  }
+  else {
+    if (g_clip_w) snprintf(line, sizeof line, "%d x %d tiles copied", g_clip_w, g_clip_h);
+    else snprintf(line, sizeof line, "nothing copied yet");
+    text(line, 4, 140, COL_ORANGE);
+    text("click a tile: top left goes there", 4, 152, COL_FRAME);
+  }
+  frame(R_FIND_LIST.x0, R_FIND_LIST.y0, R_FIND_LIST.x1, R_FIND_LIST.y1, COL_FRAME);
+  text("Clipboard", R_FIND_LIST.x0 + 6, R_FIND_LIST.y0 + 4, COL_TEXT);
+  draw_clip_preview(R_FIND_LIST.x0 + 8, R_FIND_LIST.y0 + 14, 48, 48);
+  if (g_tile_warning[0]) text(g_tile_warning, R_FIND_LIST.x0 + 64, R_FIND_LIST.y0 + 14, RGB(255, 140, 140));
+}
+
+static void draw_cutcopy(void) { draw_cutcopy_mode(0); }
+static void draw_paste(void) { draw_cutcopy_mode(1); }
+
+static int cutcopy_click(int x, int y, int button)
+{
+  (void)button;
+  if (y >= 160 && y < 171) {
+    if (x >= 4 && x < 44) { cc_copy(); return 1; }
+    if (x >= 52 && x < 92) { cc_cut(); return 1; }
+  }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -2752,6 +2908,40 @@ void uw_editor_selftest(void)
       g_found_count = 0; g_found_cur = -1;
       g_selftest_checks += 8;
     }
+  }
+
+  /* cut, copy and paste of a tile region: the clipboard has the tiles (not the objects), paste puts them with the top left at the clicked tile,
+     cut makes the region solid, and each is one undo step */
+  {
+    int x0 = tx > 1 ? tx - 1 : 0, y0 = ty > 1 ? ty - 1 : 0;
+    g_cc_has_rect = 1; g_cc_x0 = x0; g_cc_y0 = y0; g_cc_x1 = x0 + 2; g_cc_y1 = y0 + 2;
+    cc_copy();
+    if (g_clip_w != 3 || g_clip_h != 3) { fprintf(stderr, "[editor] selftest FAILED: copied %d x %d\n", g_clip_w, g_clip_h); abort(); }
+    for (int j = 0; j < 3; j++)
+      for (int i = 0; i < 3; i++) {
+        const uw_tile_t *src = tile_at(x0 + i, y0 + j), *c = &g_clip[j * 64 + i];
+        if (c->tile_type != src->tile_type || c->floor_height != src->floor_height || c->floor_tex != src->floor_tex || c->wall_tex != src->wall_tex || c->obj_head != 0) {
+          fprintf(stderr, "[editor] selftest FAILED: the clipboard differs from the region\n"); abort();
+        }
+      }
+    int px = x0 + 8 < 60 ? x0 + 8 : x0 - 8, py = y0;
+    snapshot_take(&before);
+    paste_at(px, py);
+    for (int j = 0; j < 3; j++)
+      for (int i = 0; i < 3; i++) {
+        const uw_tile_t *d = tile_at(px + i, py + j), *c = &g_clip[j * 64 + i];
+        if (d->tile_type != c->tile_type || d->floor_height != c->floor_height || d->floor_tex != c->floor_tex || d->wall_tex != c->wall_tex) {
+          fprintf(stderr, "[editor] selftest FAILED: a pasted tile differs\n"); abort();
+        }
+      }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a paste");
+    cc_cut();
+    for (int j = 0; j < 3; j++) for (int i = 0; i < 3; i++) if (tile_at(x0 + i, y0 + j)->tile_type != 0) { fprintf(stderr, "[editor] selftest FAILED: cut left an open tile\n"); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a cut");
+    g_cc_has_rect = 0;
+    g_selftest_checks += 4;
   }
 
   /* leave the level as the test found it: undo everything */
@@ -3262,6 +3452,8 @@ static void draw_mode(void)
     case M_TEXTURE: draw_texture_mode(); break;
     case M_FILL: draw_fill_mode(); break;
     case M_FIND: draw_find_mode(); break;
+    case M_CUTCOPY: draw_cutcopy(); break;
+    case M_PASTE: draw_paste(); break;
     default: draw_mode_placeholder(); break;
   }
 }
@@ -3274,12 +3466,20 @@ static int mode_click(int x, int y, int button)
     case M_TEXTURE: return texture_mode_click(x, y, button);
     case M_FILL: return fill_mode_click(x, y, button);
     case M_FIND: return find_mode_click(x, y, button);
+    case M_CUTCOPY: return cutcopy_click(x, y, button);
     default: return 0;
   }
 }
 
 void uw_editor_mouse_motion(int x, int y)
 {
+  if (g_cc_dragging || g_mode == M_PASTE) {
+    int tx = -1, ty = -1;
+    if (in_rect(&R_MAP, x, y) && map_tile_at(x, y, &tx, &ty) && tile_at(tx, ty)) {
+      if (g_cc_dragging) { g_cc_x1 = tx; g_cc_y1 = ty; }
+      g_paste_hover_x = tx; g_paste_hover_y = ty;
+    }
+  }
   if (g_mode == M_FILL) {   /* the preview of the fill under the pointer */
     int fx = -1, fy = -1;
     if (in_rect(&R_MAP, x, y)) map_tile_at(x, y, &fx, &fy);
@@ -3315,6 +3515,7 @@ void uw_editor_mouse_up(int x, int y, int button)
   if (button == SDL_BUTTON_LEFT && g_stroke) tile_mode_release();
   if (button == SDL_BUTTON_LEFT && g_tex_stroke) texture_mode_release();
   if (button == SDL_BUTTON_LEFT && g_fill_rect) fill_mode_release();
+  if (button == SDL_BUTTON_LEFT && g_cc_dragging) g_cc_dragging = 0;
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -3354,6 +3555,12 @@ void uw_editor_click(int x, int y, int button)
     }
     else if (g_mode == M_FILL) {
       if (map_tile_at(x, y, &tx, &ty)) fill_mode_press(tx, ty);
+    }
+    else if (g_mode == M_CUTCOPY) {
+      if (map_tile_at(x, y, &tx, &ty)) cc_press(tx, ty);
+    }
+    else if (g_mode == M_PASTE) {
+      if (map_tile_at(x, y, &tx, &ty)) paste_at(tx, ty);
     }
     else if (map_tile_at(x, y, &tx, &ty)) {
       if (apply_target(tx, ty)) ;
