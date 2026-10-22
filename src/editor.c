@@ -217,6 +217,38 @@ static void map_tile_origin(int tx, int ty, int cam_tx, int cam_ty, int *sx, int
   *sy = MAP_ORIGIN_Y - (ty - cam_ty) * MAP_TILE + g_map_pan_y;   /* tile y grows upwards on screen, as in the automap */
 }
 
+/* The angled tiles. The mode palette's swatches (BUTTONS.GR frames 33 to 42, 8x8) draw each tile type, so a diagonal tile's map pixels come
+   from its swatch: where the swatch is the solid colour the pixel is wall, elsewhere it is floor shaded by height; a slope takes its swatch's
+   gradient, scaled by the height. */
+static const unsigned char *tile_swatch(int type)
+{
+  static unsigned char pixels[10][64];
+  static int have[10];
+  if (type < 0 || type > 9) return NULL;
+  if (!have[type]) {
+    static unsigned char record[0x400];
+    memset(record, 0, sizeof record);
+    decode_gr_entry_to_buffer((char *)"buttons", 33 + type, record);
+    const unsigned char *p = record[0] == 4 ? record + 5
+        : (const unsigned char *)decompress_gr_bitmap((char *)record + 4, &DAT_00202520 + record[3] * 0x10, record[0]);
+    if (p && record[1] == 8 && record[2] == 8) memcpy(pixels[type], p, 64);
+    have[type] = 1;
+  }
+  return pixels[type];
+}
+
+static unsigned short tile_pixel(const uw_tile_t *t, unsigned short flat, int x, int y)
+{
+  if (t->tile_type < 2 || t->tile_type > 9) return flat;
+  const unsigned char *sw = tile_swatch(t->tile_type), *solid = tile_swatch(0);
+  unsigned char p = sw[(y * 8 / MAP_TILE) * 8 + x * 8 / MAP_TILE];
+  if (t->tile_type <= 5) return p == solid[0] ? RGB(124, 64, 16) : flat;   /* a diagonal: wall on one side of the line */
+  /* a slope: the swatch's gradient, darker or lighter with the floor height */
+  unsigned short c = (unsigned short)(&g_palette_rgb565)[p];
+  int r = ((c >> 11) & 31) * (60 + t->floor_height * 12) / 255, g = ((c >> 5) & 63) * (60 + t->floor_height * 12) / 255, b = (c & 31) * (60 + t->floor_height * 12) / 255;
+  return (unsigned short)(((r > 31 ? 31 : r) << 11) | ((g > 63 ? 63 : g) << 5) | (b > 31 ? 31 : b));
+}
+
 static void draw_map_pane(void)
 {
   int camx, camy, camz;
@@ -232,7 +264,8 @@ static void draw_map_pane(void)
       unsigned short c = t ? tile_colour(t) : COL_BLACK;
       for (int y = 0; y < MAP_TILE; y++)
         for (int x = 0; x < MAP_TILE; x++)
-          if (sx + x >= R_MAP.x0 && sx + x < R_MAP.x1 && sy + y >= R_MAP.y0 && sy + y < R_MAP.y1) put(sx + x, sy + y, c);
+          if (sx + x >= R_MAP.x0 && sx + x < R_MAP.x1 && sy + y >= R_MAP.y0 && sy + y < R_MAP.y1)
+            put(sx + x, sy + y, t ? tile_pixel(t, c, x, y) : c);
     }
   /* objects: a dot for each, red for critters */
   for (int ty = 0; ty < 64; ty++)
