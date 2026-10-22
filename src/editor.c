@@ -57,7 +57,10 @@ static unsigned short g_screen[ED_W * ED_H];
 /* What is selected: a tile (clicked on the map) and an object on it or in a container (from the strip). */
 static int g_sel_tx = -1, g_sel_ty = -1;
 static int g_sel_slot;            /* object slot index, 0 == none */
-static int g_palette_brush = 0;   /* index into the object palette's page */
+static int g_palette_brush = 0xc0;   /* the object id the palette has picked to place */
+static int g_group = 6;           /* the selected object group (decor, as in the screenshot) */
+static int g_group_scroll = 3;    /* first group shown in the group bar (the default group is in view) */
+static int g_palette_scroll;      /* first row of the group's objects shown in the palette */
 static int g_mode = 2;            /* mode palette: the object mode is the one the screenshot shows selected */
 static const char *g_status;      /* a transient message on the info bar */
 
@@ -234,34 +237,90 @@ static void draw_palette_pane(void)
   sprite("buttons", 16, 157, 176);
 }
 
-#define STRIP_MAX 6
-#define STRIP_CELL 17
+/* The group bar above the palette: the object groups, each shown by a representative icon; the selected group's
+   objects fill the palette below. The bar and the palette scroll. The groups are by object id range (a guess from
+   the object classes; the original's are not known), and the icon is the object in the group that shows it best. */
+typedef struct { int first, count, icon; } ed_group_t;
+static const ed_group_t g_groups[] = {
+  { 0x00, 0x20, 0x00 },   /* weapons */
+  { 0x20, 0x20, 0x20 },   /* armour */
+  { 0x40, 0x40, 0x40 },   /* critters */
+  { 0x80, 0x10, 0x80 },   /* containers */
+  { 0x90, 0x10, 0x90 },   /* lights, wands */
+  { 0xa0, 0x20, 0xa0 },   /* treasure, food */
+  { 0xc0, 0x20, 0xc2 },   /* decor: scenery, bones, plants, debris */
+  { 0xe0, 0x20, 0xe0 },   /* runes, bits */
+  { 0x100, 0x40, 0x100 }, /* keys, books, scrolls */
+  { 0x140, 0x40, 0x157 }, /* special objects, shrines */
+  { 0x180, 0x40, 0x180 }, /* traps */
+  { 0x1c0, 0x40, 0x1c0 }, /* triggers */
+};
+#define GROUP_COUNT ((int)(sizeof g_groups / sizeof g_groups[0]))
+#define GROUPS_SHOWN 5
+#define GROUP_CELL 18
+#define GROUP_X0 (R_STRIP.x0 + 8)
+#define PAL_COLS 8
+#define PAL_ROWS 2
+#define PAL_CELL_W 17
+#define PAL_CELL_H 19
+
+static int palette_rows(void)
+{
+  return (g_groups[g_group].count + PAL_COLS - 1) / PAL_COLS;
+}
+
+static void clamp_scrolls(void)
+{
+  int max_group = GROUP_COUNT - GROUPS_SHOWN, max_row = palette_rows() - PAL_ROWS;
+  if (g_group_scroll > max_group) g_group_scroll = max_group;
+  if (g_group_scroll < 0) g_group_scroll = 0;
+  if (max_row < 0) max_row = 0;
+  if (g_palette_scroll > max_row) g_palette_scroll = max_row;
+  if (g_palette_scroll < 0) g_palette_scroll = 0;
+}
+
+/* a small triangle: dir 0 left, 1 right, 2 up, 3 down */
+static void arrow(int x, int y, int dir, unsigned short c)
+{
+  for (int i = 0; i < 4; i++)
+    for (int j = -i; j <= i; j++) {
+      int a = 3 - i;
+      switch (dir) {
+        case 0: put(x + a, y + 3 + j, c); break;
+        case 1: put(x + 3 - a, y + 3 + j, c); break;
+        case 2: put(x + 3 + j, y + a, c); break;
+        default: put(x + 3 + j, y + 3 - a, c); break;
+      }
+    }
+}
 
 static void draw_strip_pane(void)
 {
   frame(R_STRIP.x0, R_STRIP.y0, R_STRIP.x1, R_STRIP.y1, COL_FRAME);
   fill(R_STRIP.x0 + 1, R_STRIP.y0 + 1, R_STRIP.x1 - 1, R_STRIP.y1 - 1, COL_BLACK);
-  int slot = tile_head(g_sel_tx, g_sel_ty);
-  for (int i = 0; i < STRIP_MAX && slot; i++) {
-    const uw_object_hdr_t *o = object_at(slot);
-    if (!o) break;
-    int x = R_STRIP.x0 + 3 + i * STRIP_CELL, y = R_STRIP.y0 + 3;
-    sprite("objects", o->object_id, x, y);
-    if (slot == g_sel_slot) frame(x - 2, y - 2, x + 16, y + 17, COL_BLUE);
-    slot = o->next;
+  arrow(R_STRIP.x0 + 2, R_STRIP.y0 + 8, 0, g_group_scroll > 0 ? COL_TEXT : COL_FRAME);
+  arrow(R_STRIP.x1 - 6, R_STRIP.y0 + 8, 1, g_group_scroll < GROUP_COUNT - GROUPS_SHOWN ? COL_TEXT : COL_FRAME);
+  for (int i = 0; i < GROUPS_SHOWN && g_group_scroll + i < GROUP_COUNT; i++) {
+    int g = g_group_scroll + i, x = GROUP_X0 + i * GROUP_CELL, y = R_STRIP.y0 + 3;
+    sprite("objects", g_groups[g].icon, x, y);
+    if (g == g_group) frame(x - 2, y - 2, x + 16, y + 17, COL_BLUE);
   }
 }
 
 static void draw_object_palette(void)
 {
+  const ed_group_t *g = &g_groups[g_group];
   fill(R_OBJPAL.x0, R_OBJPAL.y0, R_OBJPAL.x1, R_OBJPAL.y1, COL_BLACK);
   frame(R_OBJPAL.x0, R_OBJPAL.y0, R_OBJPAL.x1, R_OBJPAL.y1, COL_FRAME);
-  /* the scenery page of the palette: OBJECTS.GR frames 0xC0.. in a grid of 16px cells */
-  for (int i = 0; i < 16; i++) {
-    int x = R_OBJPAL.x0 + 4 + (i % 8) * 17, y = R_OBJPAL.y0 + 3 + (i / 8) * 19;
-    sprite("objects", 0xc0 + i, x, y);
-    if (i == g_palette_brush) frame(x - 2, y - 2, x + 16, y + 17, COL_BLUE);
+  for (int i = 0; i < PAL_COLS * PAL_ROWS; i++) {
+    int n = (g_palette_scroll * PAL_COLS) + i;
+    int x = R_OBJPAL.x0 + 4 + (i % PAL_COLS) * PAL_CELL_W, y = R_OBJPAL.y0 + 3 + (i / PAL_COLS) * PAL_CELL_H;
+    if (n >= g->count) break;
+    sprite("objects", g->first + n, x, y);
+    if (g->first + n == g_palette_brush) frame(x - 2, y - 2, x + 16, y + 17, COL_BLUE);
   }
+  arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y0 + 3, 2, g_palette_scroll > 0 ? COL_TEXT : COL_FRAME);
+  arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y1 - 8, 3, g_palette_scroll < palette_rows() - PAL_ROWS ? COL_TEXT : COL_FRAME);
 }
 
 /* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "My:" box,
@@ -431,21 +490,37 @@ void uw_editor_click(int x, int y, int button)
     if (y >= 26 && i < 8 && x >= 156 && x < 172) g_mode = i;
   }
   else if (in_rect(&R_STRIP, x, y)) {
-    int slot = tile_head(g_sel_tx, g_sel_ty);
-    for (int i = 0; i < STRIP_MAX && slot; i++) {
-      const uw_object_hdr_t *o = object_at(slot);
-      if (!o) break;
-      if (x >= R_STRIP.x0 + 1 + i * STRIP_CELL && x < R_STRIP.x0 + 1 + (i + 1) * STRIP_CELL) { g_sel_slot = slot; break; }
-      slot = o->next;
+    if (x < GROUP_X0 - 1) g_group_scroll--;
+    else if (x >= GROUP_X0 + GROUPS_SHOWN * GROUP_CELL) g_group_scroll++;
+    else {
+      int g = g_group_scroll + (x - GROUP_X0) / GROUP_CELL;
+      if (g < GROUP_COUNT) { g_group = g; g_palette_scroll = 0; g_palette_brush = g_groups[g].first; }
     }
+    clamp_scrolls();
   }
   else if (in_rect(&R_OBJPAL, x, y)) {
-    int col = (x - R_OBJPAL.x0 - 2) / 17, row = (y - R_OBJPAL.y0 - 1) / 19;
-    if (col >= 0 && col < 8 && row >= 0 && row < 2) g_palette_brush = row * 8 + col;
+    if (x >= R_OBJPAL.x1 - 9) {
+      g_palette_scroll += y < (R_OBJPAL.y0 + R_OBJPAL.y1) / 2 ? -1 : 1;
+      clamp_scrolls();
+    }
+    else {
+      int col = (x - R_OBJPAL.x0 - 2) / PAL_CELL_W, row = (y - R_OBJPAL.y0 - 1) / PAL_CELL_H;
+      int n = (g_palette_scroll + row) * PAL_COLS + col;
+      if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count)
+        g_palette_brush = g_groups[g_group].first + n;
+    }
   }
   else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + 7 * BUTTON_H) {
     button_pressed((y - BUTTON_Y) / BUTTON_H);
   }
+}
+
+/* The mouse wheel over the group bar or the palette scrolls it. */
+void uw_editor_wheel(int x, int y, int dy)
+{
+  if (in_rect(&R_STRIP, x, y)) g_group_scroll -= dy;
+  else if (in_rect(&R_OBJPAL, x, y)) g_palette_scroll -= dy;
+  clamp_scrolls();
 }
 
 /* The free camera: arrows turn and move, A/D strafe, Q/E change height. It stays out of solid tiles so the

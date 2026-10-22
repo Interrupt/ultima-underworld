@@ -551,6 +551,9 @@ void uw_pump_events(void) {
                 }
                 return;
             }
+            case SDL_MOUSEWHEEL:
+                if (uw_editor_active()) uw_editor_wheel(g_mouse_x, g_mouse_y, ev.wheel.y);
+                return;
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEMOTION: {

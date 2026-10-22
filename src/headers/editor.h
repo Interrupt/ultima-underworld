@@ -16,6 +16,9 @@ void uw_editor_tick(void);
 /* A mouse button pressed at a screen point (the 320x200 editor screen). */
 void uw_editor_click(int x, int y, int button);
 
+/* The mouse wheel turned (dy > 0 is up) with the pointer at a screen point. */
+void uw_editor_wheel(int x, int y, int dy);
+
 /* Builds the editor screen into `display` (320-wide landscape RGB565). Returns nonzero if it did. */
 int uw_editor_compose(unsigned short *display);
 
