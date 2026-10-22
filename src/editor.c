@@ -1298,6 +1298,348 @@ static int floor_under_view_point(int scene_x, int scene_y, int *hit_x, int *hit
   return 1;
 }
 
+/* ---- tile and terrain mode ---- */
+
+/* The brush: a tile type and a floor height, the door and no-magic flags, and a scope saying which of those a stroke sets. Strokes
+   paint tiles on the map or the 3D floor: a click, a drag, a Shift-drag for a rectangle; Ctrl-click is an eyedropper that copies a tile
+   into the brush. One undo step per stroke. */
+enum { SC_TYPE = 1, SC_HEIGHT = 2, SC_FLAGS = 4 };
+static int g_brush_type = 1, g_brush_height, g_brush_door, g_brush_nomagic, g_brush_scope = SC_TYPE | SC_HEIGHT;
+static int g_stroke;                         /* 0 none, 1 painting freehand, 2 dragging a rectangle */
+static int g_stroke_x0, g_stroke_y0, g_stroke_x1, g_stroke_y1;
+static char g_tile_warning[72];              /* what the last stroke left inconsistent */
+static const char *const g_tile_type_names[10] = { "solid", "open", "diag SE", "diag SW", "diag NE", "diag NW", "slope N", "slope S", "slope E", "slope W" };
+
+static uw_tile_t *tile_at(int tx, int ty)
+{
+  return tx >= 0 && tx < 64 && ty >= 0 && ty < 64 ? (uw_tile_t *)tilemap_lookup((short)tx, (short)ty) : NULL;
+}
+
+static int tile_object_count(int tx, int ty)
+{
+  int n = 0;
+  for (int slot = tile_head(tx, ty); slot && n < 1024; n++) {
+    const uw_object_hdr_t *o = object_at(slot);
+    if (!o) break;
+    slot = o->next;
+  }
+  return n;
+}
+
+static int is_door_object(const uw_object_hdr_t *o)
+{
+  return (o->object_id & 0x1f0) == 0x140;   /* doors */
+}
+
+static int tile_has_door_object(int tx, int ty)
+{
+  for (int slot = tile_head(tx, ty), n = 0; slot && n < 1024; n++) {
+    const uw_object_hdr_t *o = object_at(slot);
+    if (!o) break;
+    if (is_door_object(o)) return 1;
+    slot = o->next;
+  }
+  return 0;
+}
+
+/* Set a tile from the brush; returns nonzero if it changed. */
+static int paint_tile(int tx, int ty)
+{
+  uw_tile_t *t = tile_at(tx, ty);
+  if (!t) return 0;
+  uw_tile_t before = *t;
+  if (g_brush_scope & SC_TYPE) t->tile_type = (unsigned)g_brush_type;
+  if (g_brush_scope & SC_HEIGHT) t->floor_height = (unsigned)g_brush_height;
+  if (g_brush_scope & SC_FLAGS) { t->door_bit = (unsigned)g_brush_door; t->no_magic = (unsigned)g_brush_nomagic; }
+  return memcmp(&before, t, sizeof before) != 0;
+}
+
+static void note_warning(const char *text_in)
+{
+  snprintf(g_tile_warning, sizeof g_tile_warning, "%s", text_in);
+}
+
+/* The consistency checks after a stroke over a region (and the tiles around it): warn, never block. Returns the number of problems. */
+static int tile_checks(int x0, int y0, int x1, int y1)
+{
+  int on_solid = 0, below_floor = 0, door_flag = 0, diag_solid = 0, slope_flat = 0, cam_solid = 0;
+  g_tile_warning[0] = 0;
+  for (int ty = y0 - 1; ty <= y1 + 1; ty++)
+    for (int tx = x0 - 1; tx <= x1 + 1; tx++) {
+      const uw_tile_t *t = tile_at(tx, ty);
+      if (!t) continue;
+      int n = tile_object_count(tx, ty);
+      if (t->tile_type == 0 && n) on_solid += n;
+      for (int slot = tile_head(tx, ty), k = 0; slot && t->tile_type != 0 && k < 1024; k++) {
+        const uw_object_hdr_t *o = object_at(slot);
+        if (!o) break;
+        if (o->zpos < (unsigned)t->floor_height * 8 && !slot_is_mobile(o)) below_floor++;
+        slot = o->next;
+      }
+      if (t->tile_type != 0 && t->door_bit != (unsigned)tile_has_door_object(tx, ty)) door_flag++;
+      if (t->tile_type >= 2 && t->tile_type <= 5) {   /* a diagonal needs an open neighbour on its open side */
+        static const int open_dx[4][2] = { { 1, 0 }, { -1, 0 }, { 1, 0 }, { -1, 0 } }, open_dy[4][2] = { { 0, -1 }, { 0, -1 }, { 0, 1 }, { 0, 1 } };
+        int k = t->tile_type - 2;
+        if (!tile_is_open(tx + open_dx[k][0], ty) && !tile_is_open(tx, ty + open_dy[k][1])) diag_solid++;
+      }
+      if (t->tile_type >= 6 && t->tile_type <= 9) {   /* a slope should climb to something: its two ends differ in height */
+        static const int dx[4] = { 0, 0, 1, -1 }, dy[4] = { 1, -1, 0, 0 };
+        int k = t->tile_type - 6;
+        const uw_tile_t *a = tile_at(tx + dx[k], ty + dy[k]), *b = tile_at(tx - dx[k], ty - dy[k]);
+        if (a && b && a->tile_type != 0 && b->tile_type != 0 && a->floor_height == b->floor_height) slope_flat++;
+      }
+    }
+  {
+    int x, y, z;
+    camera(&x, &y, &z);
+    cam_solid = !tile_is_open(x >> 8, y >> 8);
+  }
+  int total = on_solid + below_floor + door_flag + diag_solid + slope_flat + cam_solid;
+  char line[72];
+  line[0] = 0;
+  if (on_solid) snprintf(line + strlen(line), sizeof line - strlen(line), "%d on solid ", on_solid);
+  if (below_floor) snprintf(line + strlen(line), sizeof line - strlen(line), "%d below floor ", below_floor);
+  if (door_flag) snprintf(line + strlen(line), sizeof line - strlen(line), "%d door flag ", door_flag);
+  if (diag_solid) snprintf(line + strlen(line), sizeof line - strlen(line), "%d diag ", diag_solid);
+  if (slope_flat) snprintf(line + strlen(line), sizeof line - strlen(line), "%d flat slope ", slope_flat);
+  if (cam_solid) snprintf(line + strlen(line), sizeof line - strlen(line), "camera in wall ");
+  note_warning(line);
+  return total;
+}
+
+/* Offer to fix them (the Fix button): lift objects that are below a raised floor, and move objects off a solid tile to the nearest open one. */
+static void fix_tile_problems(int x0, int y0, int x1, int y1)
+{
+  checkpoint();
+  for (int ty = y0 - 1; ty <= y1 + 1; ty++)
+    for (int tx = x0 - 1; tx <= x1 + 1; tx++) {
+      uw_tile_t *t = tile_at(tx, ty);
+      if (!t) continue;
+      if (t->tile_type != 0) {
+        for (int slot = tile_head(tx, ty), k = 0; slot && k < 1024; k++) {
+          uw_object_hdr_t *o = object_at(slot);
+          if (!o) break;
+          if (o->zpos < (unsigned)t->floor_height * 8 && !slot_is_mobile(o)) o->zpos = (unsigned)t->floor_height * 8;
+          slot = o->next;
+        }
+        continue;
+      }
+      /* a solid tile: its objects go to an open neighbour */
+      static const int dx[4] = { 1, -1, 0, 0 }, dy[4] = { 0, 0, 1, -1 };
+      int to = -1;
+      for (int k = 0; k < 4 && to < 0; k++) if (tile_is_open(tx + dx[k], ty + dy[k])) to = k;
+      for (int guard = 0; to >= 0 && tile_head(tx, ty) && guard < 1024; guard++) {
+        uw_object_hdr_t *o = object_at(tile_head(tx, ty));
+        if (!o || is_player(o)) break;
+        object_list_unlink(tile_link(tx, ty), o);
+        put_on_tile(o, tx + dx[to], ty + dy[to], -1, -1);
+      }
+    }
+  tile_checks(x0, y0, x1, y1);
+  set_pending_update_flags(0x7ffe);
+  full_dungeon_redraw();
+}
+
+/* The renderer builds a tile's geometry from the tile word each frame, so a redraw is all a changed tile needs; the path cache and the
+   visibility pass start from the new map. */
+static void tiles_changed(int x0, int y0, int x1, int y1)
+{
+  tile_checks(x0, y0, x1, y1);
+  reset_npc_path_cache();
+  set_pending_update_flags(0x7ffe);
+  full_dungeon_redraw();
+  dirty_rect_union(0, 200, 0, 0x140);
+}
+
+static void paint_region(int x0, int y0, int x1, int y1)
+{
+  int lo_x = x0 < x1 ? x0 : x1, hi_x = x0 < x1 ? x1 : x0, lo_y = y0 < y1 ? y0 : y1, hi_y = y0 < y1 ? y1 : y0;
+  for (int ty = lo_y; ty <= hi_y; ty++)
+    for (int tx = lo_x; tx <= hi_x; tx++) paint_tile(tx, ty);
+  tiles_changed(lo_x, lo_y, hi_x, hi_y);
+}
+
+static int key_ctrl(void) { return uw_scancode_held(SDL_SCANCODE_LCTRL) || uw_scancode_held(SDL_SCANCODE_RCTRL); }
+static int key_shift(void) { return uw_scancode_held(SDL_SCANCODE_LSHIFT) || uw_scancode_held(SDL_SCANCODE_RSHIFT); }
+
+/* A press on a tile of the map or the 3D floor in tile mode: the eyedropper, a rectangle's start, or the start of a freehand stroke. */
+static void tile_mode_press(int tx, int ty)
+{
+  uw_tile_t *t = tile_at(tx, ty);
+  if (!t) return;
+  select_tile(tx, ty);
+  if (key_ctrl()) {   /* eyedropper: the tile becomes the brush */
+    g_brush_type = t->tile_type; g_brush_height = t->floor_height; g_brush_door = t->door_bit; g_brush_nomagic = t->no_magic;
+    g_status = "brush picked";
+  }
+  else if (key_shift()) { g_stroke = 2; g_stroke_x0 = g_stroke_x1 = tx; g_stroke_y0 = g_stroke_y1 = ty; }
+  else {
+    checkpoint();
+    g_stroke = 1;
+    g_stroke_x0 = g_stroke_x1 = tx; g_stroke_y0 = g_stroke_y1 = ty;
+    paint_tile(tx, ty);
+    tiles_changed(tx, ty, tx, ty);
+  }
+}
+
+static void tile_mode_drag(int tx, int ty)
+{
+  if (g_stroke == 1 && (tx != g_stroke_x1 || ty != g_stroke_y1) && tile_at(tx, ty)) {
+    g_stroke_x1 = tx; g_stroke_y1 = ty;
+    paint_tile(tx, ty);
+    tiles_changed(tx, ty, tx, ty);
+  }
+  else if (g_stroke == 2 && tile_at(tx, ty)) { g_stroke_x1 = tx; g_stroke_y1 = ty; }
+}
+
+static void tile_mode_release(void)
+{
+  if (g_stroke == 2) {
+    checkpoint();
+    paint_region(g_stroke_x0, g_stroke_y0, g_stroke_x1, g_stroke_y1);
+  }
+  g_stroke = 0;
+}
+
+/* Raise or lower the selected tile's floor by steps (the panel's buttons). */
+static void tile_step_height(int delta)
+{
+  uw_tile_t *t = tile_at(g_sel_tx, g_sel_ty);
+  if (!t) { g_status = "select a tile"; return; }
+  int h = (int)t->floor_height + delta;
+  if (h < 0 || h > 15) { g_status = "floor height is 0 to 15"; return; }
+  checkpoint();
+  t->floor_height = (unsigned)h;
+  tiles_changed(g_sel_tx, g_sel_ty, g_sel_tx, g_sel_ty);
+}
+
+/* ---- the panels ---- */
+
+static const ed_rect_t R_TILE_PAL = { 174, 119, 320, 190 };
+#define TILE_ICON 16
+#define TILE_ICON_X0 (R_TILE_PAL.x0 + 6)
+#define TILE_ICON_Y0 (R_TILE_PAL.y0 + 6)
+
+/* a BUTTONS.GR swatch drawn at twice its size */
+static void sprite_2x(const char *resource, int index, int x, int y)
+{
+  static unsigned char record[0x10000];
+  memset(record, 0, sizeof record);
+  decode_gr_entry_to_buffer((char *)resource, index, record);
+  int w = record[1], h = record[2];
+  const unsigned char *pixels = record[0] == 4 ? record + 5
+      : (const unsigned char *)decompress_gr_bitmap((char *)record + 4, &DAT_00202520 + record[3] * 0x10, record[0]);
+  if (!pixels || !w || !h) return;
+  for (int j = 0; j < h; j++)
+    for (int i = 0; i < w; i++)
+      if (pixels[j * w + i]) {
+        unsigned short c = (unsigned short)(&g_palette_rgb565)[pixels[j * w + i]];
+        put(x + i * 2, y + j * 2, c); put(x + i * 2 + 1, y + j * 2, c); put(x + i * 2, y + j * 2 + 1, c); put(x + i * 2 + 1, y + j * 2 + 1, c);
+      }
+}
+
+static void checkbox(int x, int y, const char *label, int on, unsigned short c)
+{
+  frame(x, y, x + 7, y + 7, c);
+  if (on) fill(x + 2, y + 2, x + 5, y + 5, COL_TEXT);
+  text(label, x + 10, y, c);
+}
+
+static void draw_tile_mode(void)
+{
+  char line[64];
+  const uw_tile_t *t = tile_at(g_sel_tx, g_sel_ty);
+  /* palette: one icon per tile type (BUTTONS.GR frames 33 to 42), the brush's framed */
+  frame(R_TILE_PAL.x0, R_TILE_PAL.y0, R_TILE_PAL.x1, R_TILE_PAL.y1, COL_FRAME);
+  for (int i = 0; i < 10; i++) {
+    int x = TILE_ICON_X0 + (i % 5) * 26, y = TILE_ICON_Y0 + (i / 5) * 24;
+    sprite_2x("buttons", 33 + i, x, y);
+    if (i == g_brush_type) frame(x - 2, y - 2, x + TILE_ICON + 2, y + TILE_ICON + 2, COL_BLUE);
+  }
+  snprintf(line, sizeof line, "brush: %s", g_tile_type_names[g_brush_type]);
+  text(line, R_TILE_PAL.x0 + 6, R_TILE_PAL.y0 + 56, COL_TEXT);
+  /* panel */
+  frame(0, 126, 150, 190, COL_FRAME);
+  if (t) {
+    snprintf(line, sizeof line, "Tile %d,%d  %s", g_sel_tx, g_sel_ty, g_tile_type_names[t->tile_type < 10 ? t->tile_type : 0]);
+    text(line, 4, 128, COL_TEXT);
+    snprintf(line, sizeof line, "h%d%s%s  fl%d wl%d  %d obj", t->floor_height, t->door_bit ? " door" : "", t->no_magic ? " nomag" : "", t->floor_tex, t->wall_tex, tile_object_count(g_sel_tx, g_sel_ty));
+    text(line, 4, 135, COL_ORANGE);
+  }
+  else text("select a tile", 4, 128, COL_FRAME);
+  /* brush: height, scope, flags */
+  snprintf(line, sizeof line, "Height %d", g_brush_height);
+  text(line, 4, 145, COL_ORANGE);
+  arrow_small(50, 145, 0, COL_BLUE); arrow_small(66, 145, 1, COL_BLUE);
+  checkbox(4, 155, "Type", g_brush_scope & SC_TYPE, COL_ORANGE);
+  checkbox(40, 155, "Height", g_brush_scope & SC_HEIGHT, COL_ORANGE);
+  checkbox(86, 155, "Flags", g_brush_scope & SC_FLAGS, COL_ORANGE);
+  checkbox(4, 165, "Door", g_brush_door, COL_BLUE);
+  checkbox(40, 165, "NoMagic", g_brush_nomagic, COL_BLUE);
+  /* buttons */
+  frame(4, 177, 34, 186, COL_ORANGE); text("Raise", 7, 178, COL_ORANGE);
+  frame(38, 177, 68, 186, COL_ORANGE); text("Lower", 41, 178, COL_ORANGE);
+  frame(72, 177, 98, 186, COL_ORANGE); text("Fix", 79, 178, COL_ORANGE);
+  /* side view: the floor heights along the row of the selected tile, nine tiles wide */
+  if (t) {
+    for (int i = -4; i <= 4; i++) {
+      const uw_tile_t *n = tile_at(g_sel_tx + i, g_sel_ty);
+      int x = 112 + (i + 4) * 4;
+      int bar = n && n->tile_type != 0 ? n->floor_height * 2 + 1 : 0;
+      fill(x, 160 - bar, x + 3, 161, i == 0 ? COL_TEXT : (n && n->tile_type == 0 ? RGB(124, 64, 16) : RGB(0, 150, 0)));
+    }
+    text("side", 112, 163, COL_FRAME);
+  }
+  if (g_tile_warning[0]) text(g_tile_warning, 4, 118, RGB(255, 140, 140));
+  /* a rectangle being dragged shows on the map */
+  if (g_stroke == 2) {
+    int camx, camy, camz;
+    camera(&camx, &camy, &camz);
+    int lo_x = g_stroke_x0 < g_stroke_x1 ? g_stroke_x0 : g_stroke_x1, hi_x = g_stroke_x0 < g_stroke_x1 ? g_stroke_x1 : g_stroke_x0;
+    int lo_y = g_stroke_y0 < g_stroke_y1 ? g_stroke_y0 : g_stroke_y1, hi_y = g_stroke_y0 < g_stroke_y1 ? g_stroke_y1 : g_stroke_y0;
+    int sx0, sy0, sx1, sy1;
+    map_tile_origin(lo_x, hi_y, camx >> 8, camy >> 8, &sx0, &sy0);
+    map_tile_origin(hi_x, lo_y, camx >> 8, camy >> 8, &sx1, &sy1);
+    for (int x = sx0; x <= sx1 + MAP_TILE; x++) { if (x >= R_MAP.x0 && x < R_MAP.x1) { put(x, sy0, COL_TEXT); put(x, sy1 + MAP_TILE, COL_TEXT); } }
+    for (int y = sy0; y <= sy1 + MAP_TILE; y++) { if (y >= R_MAP.y0 && y < R_MAP.y1) { put(sx0, y, COL_TEXT); put(sx1 + MAP_TILE, y, COL_TEXT); } }
+  }
+}
+
+static int tile_mode_click(int x, int y, int button)
+{
+  (void)button;
+  if (in_rect(&R_TILE_PAL, x, y)) {
+    for (int i = 0; i < 10; i++) {
+      int ix = TILE_ICON_X0 + (i % 5) * 26, iy = TILE_ICON_Y0 + (i / 5) * 24;
+      if (x >= ix - 2 && x < ix + TILE_ICON + 2 && y >= iy - 2 && y < iy + TILE_ICON + 2) { g_brush_type = i; return 1; }
+    }
+    return 1;
+  }
+  if (x >= 4 && x < 100 && y >= 145 && y < 152) {   /* height */
+    if (x < 58) g_brush_height = g_brush_height > 0 ? g_brush_height - 1 : 0;
+    else if (x >= 62) g_brush_height = g_brush_height < 15 ? g_brush_height + 1 : 15;
+    return 1;
+  }
+  if (y >= 155 && y < 163) {
+    if (x >= 4 && x < 38) g_brush_scope ^= SC_TYPE;
+    else if (x >= 40 && x < 84) g_brush_scope ^= SC_HEIGHT;
+    else if (x >= 86 && x < 130) g_brush_scope ^= SC_FLAGS;
+    return 1;
+  }
+  if (y >= 165 && y < 173) {
+    if (x >= 4 && x < 38) g_brush_door = !g_brush_door;
+    else if (x >= 40 && x < 90) g_brush_nomagic = !g_brush_nomagic;
+    return 1;
+  }
+  if (y >= 177 && y < 187) {
+    if (x >= 4 && x < 34) tile_step_height(1);
+    else if (x >= 38 && x < 68) tile_step_height(-1);
+    else if (x >= 72 && x < 98) { if (g_sel_tx >= 0) fix_tile_problems(g_sel_tx, g_sel_ty, g_sel_tx, g_sel_ty); }
+    return 1;
+  }
+  return 0;
+}
+
 static int g_selftest_checks;
 
 /* The 3D view's ray cast: from an open tile with a solid tile to its east, looking east it must hit that tile's west face, looking
@@ -1489,6 +1831,34 @@ void uw_editor_selftest(void)
   }
 
   selftest_picking();
+
+  /* tile painting: a stroke over a region (type and height, then flags), undone byte for byte; objects left on a tile that became solid are
+     warned about, and Fix moves them off it */
+  {
+    int px = tx, py = ty;
+    int ox = tile_is_open(px + 1, py) ? px + 1 : px - 1;
+    op_place(0xc2, ox, py, 3, 3);   /* an object on the tile that is about to become solid */
+    snapshot_take(&before);
+    g_brush_type = 0; g_brush_scope = SC_TYPE;
+    checkpoint();
+    paint_region(ox, py, ox, py);
+    snapshot_take(&after);
+    if (memcmp(&before, &after, sizeof before) == 0) { fprintf(stderr, "[editor] selftest FAILED: painting changed nothing\n"); abort(); }
+    if (strstr(g_tile_warning, "on solid") == NULL) { fprintf(stderr, "[editor] selftest FAILED: no warning for an object on a solid tile (%s)\n", g_tile_warning); abort(); }
+    fix_tile_problems(ox, py, ox, py);
+    if (tile_head(ox, py)) { fprintf(stderr, "[editor] selftest FAILED: Fix left objects on the solid tile\n"); abort(); }
+    uw_editor_validate();
+    uw_editor_undo(); uw_editor_undo();
+    selftest_expect(&before, "undoing a paint stroke and a fix");
+    g_brush_type = 1; g_brush_height = 3; g_brush_scope = SC_TYPE | SC_HEIGHT | SC_FLAGS; g_brush_door = 0;
+    snapshot_take(&before);
+    checkpoint();
+    paint_region(ox, py, ox + 1 < 64 ? ox + 1 : ox, py + 1);   /* a rectangle of both */
+    uw_editor_undo();
+    selftest_expect(&before, "undoing a rectangle stroke");
+    g_brush_scope = SC_TYPE | SC_HEIGHT;
+    g_selftest_checks += 3;
+  }
 
   /* leave the level as the test found it: undo everything */
   while (g_undo_count) uw_editor_undo();
@@ -1996,6 +2366,7 @@ static void draw_mode(void)
 {
   switch (g_mode) {
     case M_OBJECT: draw_object_mode(); break;
+    case M_TILE: draw_tile_mode(); break;
     default: draw_mode_placeholder(); break;
   }
 }
@@ -2004,12 +2375,23 @@ static int mode_click(int x, int y, int button)
 {
   switch (g_mode) {
     case M_OBJECT: return object_mode_click(x, y, button);
+    case M_TILE: return tile_mode_click(x, y, button);
     default: return 0;
   }
 }
 
 void uw_editor_mouse_motion(int x, int y)
 {
+  if (g_stroke) {   /* painting: the tile under the pointer, on the map or on the 3D view */
+    int tx = -1, ty = -1;
+    if (in_rect(&R_MAP, x, y)) map_tile_at(x, y, &tx, &ty);
+    else if (in_rect(&R_VIEW, x, y)) {
+      ed_hit_t hit;
+      int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) { tx = hit.tx; ty = hit.ty; }
+    }
+    if (tx >= 0) tile_mode_drag(tx, ty);
+  }
   if (!g_map_dragging) return;
   g_map_pan_x += x - g_map_drag_x;
   g_map_pan_y += y - g_map_drag_y;
@@ -2021,6 +2403,7 @@ void uw_editor_mouse_up(int x, int y, int button)
 {
   (void)x; (void)y;
   if (button == SDL_BUTTON_RIGHT) g_map_dragging = 0;
+  if (button == SDL_BUTTON_LEFT && g_stroke) tile_mode_release();
 }
 
 void uw_editor_click(int x, int y, int button)
@@ -2029,13 +2412,21 @@ void uw_editor_click(int x, int y, int button)
   int tx, ty;
   g_status = NULL;
   if (in_rect(&R_VIEW, x, y)) {
-    pick_in_view(x, y);
+    if (g_mode == M_TILE) {   /* paint the floor or wall under the click */
+      ed_hit_t hit;
+      int w = R_VIEW.x1 - R_VIEW.x0, h = R_VIEW.y1 - R_VIEW.y0, sw = ED_H * w / h, sx0 = (ED_W - sw) / 2;
+      if (view_ray_hit(sx0 + (x - R_VIEW.x0) * sw / w, (y - R_VIEW.y0) * ED_H / h, &hit) && hit.kind != HIT_CEILING) tile_mode_press(hit.tx, hit.ty);
+    }
+    else pick_in_view(x, y);
   }
   else if (in_rect(&R_MAP, x, y)) {
     if (button == SDL_BUTTON_RIGHT) {
       g_map_dragging = 1;   /* a right drag pans the map; a right click does nothing else */
       g_map_drag_x = x;
       g_map_drag_y = y;
+    }
+    else if (g_mode == M_TILE) {
+      if (map_tile_at(x, y, &tx, &ty)) tile_mode_press(tx, ty);
     }
     else if (map_tile_at(x, y, &tx, &ty)) {
       if (apply_target(tx, ty)) ;
