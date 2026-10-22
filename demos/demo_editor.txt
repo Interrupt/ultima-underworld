@@ -61,8 +61,24 @@ EDITOR validate
 SDLCLICK 260 372
 WAIT 20
 EDITOR validate
-SDLCLICK 260 318
+# Place new objects from the palette: arm an icon, left click tiles on the map (a right click selects instead).
+# First a decor object, then (after scrolling the group bar) a critter.
+SDLCLICK 372 320
 WAIT 10
+SDLCLICK 514 106
+WAIT 20
+EDITOR validate
+SDLCLICK 396 260
+WAIT 5
+SDLCLICK 422 260
+WAIT 5
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 514 118
+WAIT 20
+EDITOR validate
+SDLCLICK 372 320
+WAIT 5
 SDLCLICK 140 160
 WAIT 10
 SDLKEYDOWN e
@@ -89,19 +105,15 @@ SDLCLICK 240 262
 WAIT 5
 SDLCLICK 240 280
 WAIT 5
-# the group bar: pick a group, scroll the bar both ways, scroll the palette
-SDLCLICK 420 262
+# the group bar and palette scroll arrows
+SDLCLICK 590 260
 WAIT 5
-SDLCLICK 598 262
+SDLCLICK 630 364
 WAIT 5
-SDLCLICK 372 262
+SDLCLICK 630 306
 WAIT 5
-SDLCLICK 372 262
-WAIT 5
-SDLCLICK 610 330
-WAIT 5
-SDLCLICK 610 372
-WAIT 5
+SDLCLICK 260 318
+WAIT 10
 EDITOR off
 WAIT 20
 EDITOR on

@@ -17,6 +17,7 @@
 #include "headers/interact.h"
 #include "headers/automap.h"
 #include "headers/objects.h"
+#include "headers/ai.h"
 #include "headers/traps.h"
 
 #include <SDL.h>
@@ -64,6 +65,7 @@ static ushort *g_sel_link;        /* the link field that holds the selected obje
 static int g_held_slot;           /* Move or Copy in progress: the object picked up, 0 == none ("Mv:" box) */
 static int g_held_copy;           /* the held object is copied, not moved, when it is put down */
 static int g_palette_brush = 0xc0;   /* the object id the palette has picked to place */
+static int g_brush_armed;         /* map clicks place the brush object (a right click still selects) */
 static int g_group = 6;           /* the selected object group (decor, as in the screenshot) */
 static int g_group_scroll = 3;    /* first group shown in the group bar (the default group is in view) */
 static int g_palette_scroll;      /* first row of the group's objects shown in the palette */
@@ -323,7 +325,7 @@ static void draw_object_palette(void)
     int x = R_OBJPAL.x0 + 4 + (i % PAL_COLS) * PAL_CELL_W, y = R_OBJPAL.y0 + 3 + (i / PAL_COLS) * PAL_CELL_H;
     if (n >= g->count) break;
     sprite("objects", g->first + n, x, y);
-    if (g->first + n == g_palette_brush) frame(x - 2, y - 2, x + 16, y + 17, COL_BLUE);
+    if (g->first + n == g_palette_brush) frame(x - 2, y - 2, x + 16, y + 17, g_brush_armed ? COL_ORANGE : COL_BLUE);
   }
   arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y0 + 3, 2, g_palette_scroll > 0 ? COL_TEXT : COL_FRAME);
   arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y1 - 8, 3, g_palette_scroll < palette_rows() - PAL_ROWS ? COL_TEXT : COL_FRAME);
@@ -428,6 +430,8 @@ static int in_rect(const ed_rect_t *r, int x, int y)
 }
 
 /* The map pane's tile under a screen point; the same mapping draw_map_pane uses. */
+static int g_map_click_sub_x = 4, g_map_click_sub_y = 4;   /* set by map_tile_at */
+
 static int map_tile_at(int px, int py, int *tx, int *ty)
 {
   int camx, camy, camz;
@@ -437,6 +441,9 @@ static int map_tile_at(int px, int py, int *tx, int *ty)
   int left = (camx >> 8) - tiles_w / 2, bottom = (camy >> 8) - tiles_h / 2;
   *tx = left + (px - R_MAP.x0) / MAP_TILE;
   *ty = bottom + (R_MAP.y1 - 1 - py) / MAP_TILE;
+  /* where in the tile the point is, in the object's eighths (y grows up the screen) */
+  g_map_click_sub_x = (px - R_MAP.x0) % MAP_TILE * 8 / MAP_TILE;
+  g_map_click_sub_y = 7 - (R_MAP.y1 - 1 - py) % MAP_TILE * 8 / MAP_TILE;
   return *tx >= 0 && *tx < 64 && *ty >= 0 && *ty < 64;
 }
 
@@ -558,6 +565,34 @@ static void put_on_tile(uw_object_hdr_t *o, int tx, int ty)
   }
 }
 
+/* A free object slot to allocate from. alloc_object_slot makes room by deleting objects across the level when its
+   list is empty, so check first. */
+static int have_free_slot(int mobile)
+{
+  return mobile ? DAT_002046a8 >= DAT_002046a4 : DAT_0020469c >= DAT_002046bc;
+}
+
+/* Create a new object of the palette's type on a tile at a sub-tile position, standing on the floor. */
+static void op_place(int id, int tx, int ty, int sub_x, int sub_y)
+{
+  int mobile = (id & 0x1c0) == 0x40;
+  if (!tile_is_open(tx, ty)) { g_status = "that tile is solid"; return; }
+  if (!have_free_slot(mobile)) { g_status = "no free object slots"; return; }
+  uw_object_hdr_t *o = spawn_new_object((uint)id, mobile ? 1 : 0);
+  if (!o) { g_status = "no free object slots"; return; }
+  if (mobile) {
+    /* a mobile slot is reused with whatever its last object left in it */
+    memset((char *)o + sizeof(uw_object_hdr_t), 0, sizeof(uw_mobile_object_t) - sizeof(uw_object_hdr_t));
+    ((uw_mobile_object_t *)o)->npc_hp = g_monster_type_props[id & 0x3f].max_hp;
+  }
+  o->xpos = (unsigned)sub_x & 7;
+  o->ypos = (unsigned)sub_y & 7;
+  put_on_tile(o, tx, ty);
+  select_object_on_tile(tx, ty, o);
+  g_status = "placed";
+  uw_editor_validate();
+}
+
 static void op_delete(void)
 {
   uw_object_hdr_t *o = object_at(g_sel_slot);
@@ -596,7 +631,7 @@ static void op_put_down(int tx, int ty)
     /* a copy takes a slot of its own; check the free list first, because allocating from an empty one makes the
        game delete objects far from the player */
     int mobile = g_held_slot < 0x100;
-    if (mobile ? !(DAT_002046a8 >= DAT_002046a4) : !(DAT_0020469c >= DAT_002046bc)) { g_status = "no free object slots"; return; }
+    if (!have_free_slot(mobile)) { g_status = "no free object slots"; return; }
     uw_object_hdr_t *copy = alloc_object_slot(mobile ? 1 : 0);
     if (!copy) { g_status = "no free object slots"; return; }
     memcpy(copy, src, mobile ? sizeof(uw_mobile_object_t) : sizeof(uw_object_hdr_t));
@@ -667,13 +702,17 @@ static void pick_in_view(int px, int py)
 void uw_editor_click(int x, int y, int button)
 {
   int tx, ty;
-  (void)button;
   g_status = NULL;
   if (in_rect(&R_VIEW, x, y)) {
     pick_in_view(x, y);
   }
   else if (in_rect(&R_MAP, x, y)) {
-    if (map_tile_at(x, y, &tx, &ty)) { if (g_held_slot) op_put_down(tx, ty); else select_tile(tx, ty); }
+    if (map_tile_at(x, y, &tx, &ty)) {
+      if (button == SDL_BUTTON_RIGHT) select_tile(tx, ty);   /* a right click always selects */
+      else if (g_held_slot) op_put_down(tx, ty);
+      else if (g_brush_armed) op_place(g_palette_brush, tx, ty, g_map_click_sub_x, g_map_click_sub_y);
+      else select_tile(tx, ty);
+    }
   }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;
@@ -696,8 +735,13 @@ void uw_editor_click(int x, int y, int button)
     else {
       int col = (x - R_OBJPAL.x0 - 2) / PAL_CELL_W, row = (y - R_OBJPAL.y0 - 1) / PAL_CELL_H;
       int n = (g_palette_scroll + row) * PAL_COLS + col;
-      if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count)
-        g_palette_brush = g_groups[g_group].first + n;
+      if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
+        int id = g_groups[g_group].first + n;
+        /* the picked icon is armed for placing; picking the armed one again puts the brush away */
+        g_brush_armed = !(g_brush_armed && id == g_palette_brush);
+        g_palette_brush = id;
+        g_status = g_brush_armed ? "left click a tile to place" : NULL;
+      }
     }
   }
   else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + 7 * BUTTON_H) {
