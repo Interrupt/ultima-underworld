@@ -22,6 +22,18 @@ No original editor data survives: the editor code is `#ifdef`'d out of the binar
 
 The screen has five regions: 3D view (top-left), top-down tile map (top-right), a mode column down the middle, a per-mode editor panel (bottom-left) and a per-mode palette (bottom-right). The status bar along the bottom shows camera position, level and tile.
 
+**Resolution (confirmed).** The original editor ran at **320x200**. The surviving screenshot is 1000x625, a 3.125x nearest-neighbour upscale: the edges in its UI band step 3,3,3,3... pixels (averaging 3.125), and the 8x8 position grid's lines are 18.75 px apart, which is 6 native pixels. So the layout below is in native pixels and fits inside the game's own 320x240 framebuffer; no larger canvas is needed.
+
+| Region | Native rect (x0,y0)-(x1,y1) |
+| --- | --- |
+| 3D view | (0,0)-(148,124) |
+| Mode column | (153,0)-(175,200): the starburst at the top, eight 14x14 mode buttons from y=26 every 16 px, the orange button at the bottom |
+| Tile map | (176,0)-(320,116) |
+| Object-group bar | (194,119)-(299,141) |
+| Selected-object editor | (0,126)-(150,190) |
+| Object palette | (174,148)-(320,190) |
+| Status bar | (0,192)-(320,200) |
+
 ### Mode column (top to bottom)
 
 | Icon | Our reading | Confidence |
@@ -64,11 +76,11 @@ The brush for placing objects. The top row is category tabs (the selected one is
 
 ## Architecture and codebase constraints
 
-The editor runs as an overlay on dungeon mode, composites a 640x400 UI canvas with the game's 320x200 3D scene, and freezes simulation while active.
+The editor runs as an overlay on dungeon mode and freezes simulation while active. Its screen is the original's native 320x200: the game's 3D scene is rendered into its own buffer and scaled into the 3D pane, and the editor's other panels are drawn around it.
 
 ### Constraints found in the code
 
-- **Framebuffer is fixed at 320x240 RGB565** (`g_uw_framebuffer`). `0x140` strides and 200/240 clamps run through graphics, text, bitmap, tmap and the pick buffer, so the editor UI cannot live inside it.
+- **Framebuffer is fixed at 320x240 RGB565** (`g_uw_framebuffer`). `0x140` strides and 200/240 clamps run through graphics, text, bitmap, tmap and the pick buffer. The original editor's 320x200 screen fits inside it, so the editor draws its panels with the game's own primitives into a separate 320x200 buffer instead of needing a larger canvas.
 - **The 3D view rect is defined in about eight places**: `configure_dungeon_viewport`, the static clip in `render_visible_tile_list`, projection cx/cy/scale in tmap.c and again in `raster_textured_span`, the clear in `render_dungeon_view`, the dirty rect in `render_dungeon_frame_timed`, the weapon overlay and the debug pick blit. `fullscreen_view.c` already overrides all of them.
 - **Free camera survives** because the Far Sight spell uses it: `DAT_0023b82c = 0` makes `update_current_view_from_subject` read `DAT_0023be90/92/94` and `DAT_0023bf00`. Pitch still comes from the player's `DAT_0023beb4`, and a camera in a solid or off-map tile renders nothing.
 - **Picking finds objects only** (up to 191 per frame); walls and floors report a texture, not a tile.
@@ -81,7 +93,7 @@ The editor runs as an overlay on dungeon mode, composites a 640x400 UI canvas wi
 - **Overlay, not a mode-table row.** 3D rendering is gated on dungeon mode, and the debug UI already proves the overlay pattern in `uw_pump_events`.
 - **New files**: `src/editor.c`, `src/editor_draw.c`, `src/editor_ops.c`, added to both `CMakeLists.txt` and `build.zig`.
 - **Pause** with an early return in `movement_pacing_handler`, keeping `DAT_0023bf54` updated.
-- **Two surfaces**: render 3D through the fullscreen path into its own buffer; the editor owns a 640x400 canvas; `GXEndDraw` copies both, the scene into the 3D pane's rect. Clicks in the pane map back to 320x200 for picking.
+- **Two surfaces**: render 3D through the fullscreen path into its own 320x200 scene buffer; the editor owns a 320x200 screen buffer it draws the other panels into (the game's sprite and text decoders, with `g_uw_framebuffer` redirected to it); `GXEndDraw` presents that screen with the scene scaled into the 3D pane's rect (cropped at the sides to keep its aspect). Clicks in the pane map back to scene coordinates for picking.
 - **Own drawing layer** that reuses the GR and font decoders but not the 320-stride blitters.
 - **Safety layer first**: a chain validator (`VALIDATE`), whole-arena undo snapshots (0x7c08 + 0x180 + 0x7a bytes), and `ed_alloc` / `ed_delete` wrappers that never reach the despawn or sibling-wipe paths and refuse the player slot.
 
@@ -90,11 +102,11 @@ The editor runs as an overlay on dungeon mode, composites a 640x400 UI canvas wi
 The editor always works on the master `DATA\lev.ark`, never on save slots, and reloads the level fresh from it on every entry.
 
 1. Start the game and load into a level. The editor needs a loaded level, so it cannot be entered from the main menu (a later "Edit level" menu option could load one and jump straight in).
-2. Press **L** (also `EDITOR on|off` in the console). Check that L is unbound in the game first. The original entry point is gone, so this choice is ours.
+2. Press **F9** in the dungeon view (also the `--editor` startup option, and `editor` in the console: bare `editor` toggles, `editor on|off` sets it). L is not used: the game binds it to a movement command. The original entry point is gone, so these choices are ours.
 3. The current level is reloaded from `DATA\lev.ark`, discarding play-session state. Confirm the first time, since it throws away the current session's changes to that level.
 4. Edit, then save with Ctrl+S or the menu.
 5. **Play** (the orange button) saves if requested, then switches to the normal game with the full HUD, placing the player at the editor camera's tile if it is open.
-6. Press **L** during play to return. The level reloads from the archive again so nothing done while playing leaks into the edit. Escape keeps its normal game-menu job during play.
+6. Press **F9** (or type `editor`) during play to return. The level reloads from the archive again so nothing done while playing leaks into the edit. Escape keeps its normal game-menu job during play.
 
 **Level switching** uses its own path that reads and writes the master archive. The game's stairs path writes save slots, so reusing it unchanged would put edits in the wrong file.
 
@@ -112,7 +124,7 @@ Selection, brush and Mv slot are all kept while the menu is open. If an action i
 | Revert | none | Reload the level from the archive, discarding unsaved edits (always confirms) |
 | Change level | Page Up / Page Down | Pick a level; clears selection and Mv, since they belong to the old level; camera resets to an open tile |
 | Play | orange button | Save prompt if dirty, then normal game at the camera's tile |
-| Exit editor | L | Return to the game, same rules as Play |
+| Exit editor | F9 | Return to the game, same rules as Play |
 
 There is no Open: UW keeps every level in one archive, so opening means picking a level. A dirty flag drives a Save / Discard / Cancel prompt on Change level, Play and Exit, and an unsaved marker in the status bar. Saving uses a generalised `commit_level_to_save_slot` that keeps its player-strip step.
 
@@ -227,7 +239,7 @@ Cut and copy work on rectangular regions of tiles on the map, since object mode 
 Build the safety layer first, then a usable inspect-and-tweak object editor, then the painting tools.
 
 1. **Phase 0, safety**: VALIDATE, arena-snapshot undo, `ed_alloc` / `ed_delete`.
-2. **Phase 1, shell**: L toggle, archive reload on entry, simulation pause, free camera (with editor pitch), 640x400 composite, status bar.
+2. **Phase 1, shell**: F9 toggle, `--editor` and the console command, archive reload on entry, simulation pause, free camera (with editor pitch), 320x200 composite, status bar.
 3. **Phase 2, object navigation**: Head/Next/Link/Back cursor, 3D picking, Show.
 4. **Phase 3, object editing**: Item, Comm, Class and critter pages; Move/Copy via Mv; Delete; Replace with brush; trap Set Target; editor markers.
 5. **Phase 4, map pane**: top-down renderer with height colours, object dots, camera cone.
@@ -250,4 +262,3 @@ Build the safety layer first, then a usable inspect-and-tweak object editor, the
 - Whether the owner field matches an individual NPC or a faction.
 - Which quality/owner bits hold a trigger's target tile.
 - Which caches must be invalidated after tile geometry changes.
-- Whether **L** is already bound in the game.
