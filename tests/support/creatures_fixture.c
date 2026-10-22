@@ -9,7 +9,7 @@ void DEBUG_impl(DebugLevel level, const char *file, int line, const char *fmt, .
    fixtures; sprite association, loot rolls, object creation and links are real. */
 ushort arena[0x4000];
 byte original_goblin[27], page_header[2];
-ushort *goblin;
+uw_unaligned_word_t *goblin;
 char *DAT_002046b8, *DAT_002046c4, *g_despawn_creature_record;
 uw_monster_type_props_t g_monster_type_props[64];
 uw_object_type_props_t g_object_type_props[512];
@@ -18,7 +18,7 @@ uw_ranged_type_props_t g_ranged_type_props[16];
 short DAT_00201b68, DAT_0010144c, DAT_00101454;
 undefined2 DAT_002020a0, DAT_002020a4;
 uw_mobile_object_t *g_player_object;
-ushort *DAT_00202a44;
+uw_unaligned_word_t *DAT_00202a44;
 char *DAT_00086df8;
 short DAT_00202a38, DAT_00202a3c, DAT_00202a40;
 ushort DAT_00202a48, DAT_00202a4c, DAT_00202a50, DAT_00202a54;
@@ -96,7 +96,7 @@ int place_object_in_world(uint x, uint y, int z, void *object, short distance, i
 { record_placement(object); return 1; }
 
 void free_object_slot(uw_object_hdr_t *object) {}
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *source) { return 1; }
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *source) { return 1; }
 int encode_object_slot_index(const uw_object_hdr_t *object) { (void)object; return 225; }
 int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode) { return 1; }
 int spawn_scheduled_effect_object(uw_unaligned_word_t *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y) { (void)source_object; (void)effect_group; (void)delay; (void)animation_offset; (void)heading_adjust; (void)tile_x; (void)tile_y; return 0; }

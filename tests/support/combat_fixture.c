@@ -439,7 +439,7 @@ void load_real_monster_data(void)
     monster_data = NULL;
 }
 
-ushort *object_at(unsigned slot)
+uw_unaligned_word_t *object_at(unsigned slot)
 { return (uw_unaligned_word_t *)mobile_object(slot); }
 
 void candidate(unsigned index, unsigned slot, short displacement)

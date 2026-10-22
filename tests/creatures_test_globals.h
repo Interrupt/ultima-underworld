@@ -10,7 +10,7 @@ extern uw_ranged_type_props_t g_ranged_type_props[16];
 extern short DAT_00201b68, DAT_0010144c, DAT_00101454;
 extern undefined2 DAT_002020a0, DAT_002020a4;
 extern uw_mobile_object_t *g_player_object;
-extern ushort *DAT_00202a44;
+extern uw_unaligned_word_t *DAT_00202a44;
 extern char *DAT_00086df8;
 extern short DAT_00202a38, DAT_00202a3c, DAT_00202a40;
 extern ushort DAT_00202a48, DAT_00202a4c, DAT_00202a50, DAT_00202a54;

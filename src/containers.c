@@ -39,7 +39,7 @@ static char s_is_empty__0008790c[] = " is empty.\n";
 void release_container_reference(char *container_link)
 {
   ushort uVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
 
   puVar2 = (uw_unaligned_word_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(container_link + 8) >> 6);
   uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
@@ -317,7 +317,7 @@ void open_backpack_container(short container_slot)
   short sVar4;
   byte bVar5;
   undefined4 *puVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   undefined4 uVar8;
   undefined4 *puVar9;
   int iVar10;

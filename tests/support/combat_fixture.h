@@ -70,7 +70,7 @@ extern void (*const g_hud_panel_handlers_table[13])(void);
 int spawn_scheduled_effect_object(uw_unaligned_word_t *target, int type, int mode, byte intensity, short height, short x, short y);
 extern FILE *monster_data;
 void load_real_monster_data(void);
-ushort *object_at(unsigned slot);
+uw_unaligned_word_t *object_at(unsigned slot);
 void candidate(unsigned index, unsigned slot, short displacement);
 void combat_fixture_reset(void);
 void combat_fixture_dispose(void);

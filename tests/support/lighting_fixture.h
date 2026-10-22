@@ -4,7 +4,7 @@
 #include "../lighting_test_globals.h"
 uw_object_hdr_t *get_equipped_item_at_slot(short slot);
 void *get_scanned_object_class_effect_ptr(void);
-int compute_object_weight(ushort *object);
+int compute_object_weight(uw_unaligned_word_t *object);
 void request_weapon_swing_graphic(char category);
 void reset_player_derived_state(void);
 int is_valid_equipment_slot_item(ushort id, short slot);

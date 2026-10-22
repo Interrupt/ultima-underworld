@@ -296,8 +296,8 @@ void collision_height_envelope(int mode, int collision)
   char *iVar5;  /* was int -- holds the void* tilemap_lookup returns (a real 64-bit tile-array pointer); truncated
    to 32 bits it made `*(ushort *)(iVar5 + ...)` a wild deref -- the crash the first time a keyboard
    forward step actually dispatched. */
-  ushort *puVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar6;
+  uw_unaligned_word_t *puVar7;
   short sVar8;
   int iVar9;
   int iVar10;
@@ -505,7 +505,7 @@ bool collision_classify_corner_wall(uint corner, uint step_limit)
 
 // was FUN_00051658 -- appends object param_1 to the small (max 9) collision candidate list at
 // DAT_00202c38 if its bounding box...
-void collision_add_candidate_object(ushort *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised)
+void collision_add_candidate_object(uw_unaligned_word_t *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised)
 {
   undefined1 uVar1;
   ushort object_word;

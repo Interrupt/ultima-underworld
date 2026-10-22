@@ -41,7 +41,7 @@ extern short DAT_00202a38;
 extern short DAT_00202a3c;
 extern short DAT_00202a40;
 /* FUN_0004ad10 reads word 1 (position) and word 12 (heading). */
-extern ushort * DAT_00202a44;
+extern uw_unaligned_word_t * DAT_00202a44;
 extern ushort DAT_00202a48;
 extern ushort DAT_00202a4c;
 extern undefined2 DAT_00202a50;

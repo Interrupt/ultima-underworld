@@ -28,7 +28,7 @@ int dispatch_quest_event_code(void *trap_record, int tile_x, int tile_y);
 int create_scripted_trap_pair_at_tile(int tile_x, int tile_y, uint code);
 void remove_trap_chain_marker(char *link_field, char *trap_object);
 void free_trap_class_object(void *link_field, void *trap_object);
-int check_object_area_for_spawn_block(ushort *object);
+int check_object_area_for_spawn_block(uw_unaligned_word_t *object);
 int is_out_of_player_range(int target_present, short tile_x, short tile_y);
 void process_nearby_background_traps(int target_present);
 void tick_ambient_doors_and_scheduler(int target_present);

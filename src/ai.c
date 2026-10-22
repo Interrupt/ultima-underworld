@@ -1295,7 +1295,7 @@ LAB_0005559c:
 
 
 // was FUN_0005596c.
-ushort *settle_mobile_to_immobile(uw_unaligned_word_t *object)
+uw_unaligned_word_t *settle_mobile_to_immobile(uw_unaligned_word_t *object)
 {
   ushort uVar1;
   undefined2 uVar2;
@@ -3633,8 +3633,8 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
   ushort uVar4;
   short sVar5;
   undefined4 uVar6;
-  ushort *puVar7;
-  ushort *puVar8;
+  uw_unaligned_word_t *puVar7;
+  uw_unaligned_word_t *puVar8;
   uint uVar9;
   int extraout_r1;
   uint extraout_r1_00;
@@ -4137,7 +4137,7 @@ void spawn_npc_thrown_weapon(void *attacker_ptr, short launch_offset, short laun
   DAT_00202a50 = (undefined2)((*(ushort *)(attacker + 0x16) & 0x3f0) >> 4);
   DAT_00202a54 = 1;
   DAT_00202a40 = 0;
-  DAT_00202a44 = (ushort *)attacker;
+  DAT_00202a44 = (uw_unaligned_word_t *)attacker;
   DAT_00202a48 = launch_flags;
   spawn_object_near_player();
 }
@@ -4613,8 +4613,8 @@ int tile_pair_los_blocked(byte tile_a_x, byte tile_a_y, byte tile_b_x, byte tile
   bool bVar6;
   ushort *puVar7;
   byte *pbVar8;
-  ushort *puVar9;
-  ushort *puVar10;
+  uw_unaligned_word_t *puVar9;
+  uw_unaligned_word_t *puVar10;
   uint extraout_r1;
   uint uVar11;
   uint uVar12;

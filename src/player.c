@@ -641,8 +641,8 @@ void refresh_player_equipment_effects()
   char cVar3;
   int iVar4;
   int iVar5;
-  ushort *equipped;
-  ushort *puVar6;
+  uw_unaligned_word_t *equipped;
+  uw_unaligned_word_t *puVar6;
   uw_light_type_props_t *iVar7; /* Was `int` -- truncated the 64-bit pointer get_scanned_object_class_effect_ptr
                   returns (see its own comment); made a real crash once
                   that return value stopped being a hardcoded 0. */
@@ -1241,7 +1241,7 @@ void apply_equipment_effect_penalties(uint effect_mask)
 // those protection values. Keep the existing function name for its callers.
 
 // was FUN_0006674c
-int compute_object_weight(ushort *object)
+int compute_object_weight(uw_unaligned_word_t *object)
 {
   ushort uVar1;
   int iVar2;

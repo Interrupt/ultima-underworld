@@ -19,9 +19,9 @@ extern char s_UNNAMED_00084f24[];
 extern char *DAT_00202098;
 
 
-int objects_are_combinable(ushort *object_a, ushort *object_b);
+int objects_are_combinable(ushort *object_a, uw_unaligned_word_t *object_b);
 void *spawn_combined_object(short combination_index);
-bool is_object_consumed_in_combination(ushort *object, short combination_index);
+bool is_object_consumed_in_combination(uw_unaligned_word_t *object, short combination_index);
 int check_offering_container_puzzle();
 int try_climb_wall();
 void use_lockpick_on_object(ushort *lock, int skill, int show_prompt);
@@ -36,7 +36,7 @@ ushort *find_equipped_item_by_category(int category, int subcategory, int qualit
 uw_object_hdr_t *find_object_in_link_chain(int category, int subcategory, int quality, uw_object_hdr_t **chain);
 ushort *resolve_clicked_inventory_item(short zone);
 ushort *get_equipped_item_at_widget_slot(short slot);
-void deplete_object_count(ushort *object);
+void deplete_object_count(uw_unaligned_word_t *object);
 void decrement_object_count(uw_unaligned_word_t *object);
 int reduce_object_count(uw_unaligned_word_t *stack_object, uint amount);
 ushort *extract_clicked_backpack_item(int category, int subcategory, int quality, short slot);

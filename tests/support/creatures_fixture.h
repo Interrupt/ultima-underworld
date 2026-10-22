@@ -19,7 +19,7 @@ uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
 int drop_object_near_target(void *target, void *object, short distance, uint mode);
 int place_object_in_world(uint x, uint y, int z, void *object, short distance, int mode);
 void free_object_slot(uw_object_hdr_t *object);
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *source);
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *source);
 int encode_object_slot_index(const uw_object_hdr_t *object);
 int play_sound_effect_at_object(int sound, uw_unaligned_word_t *object, int mode);
 int spawn_scheduled_effect_object(uw_unaligned_word_t *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y);

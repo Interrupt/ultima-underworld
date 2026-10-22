@@ -89,7 +89,7 @@ void collision_height_envelope(int mode, int collision)
             record[1]=bridge_heights[i]-2; /* underside */
             *(ushort *)(record+2)=(300+i)<<6;
             *(short *)(record+4)=0; /* same tile */
-            ushort *bridge=(uw_unaligned_word_t *)get_object_record_by_slot_index(300+i);
+            uw_unaligned_word_t *bridge=(uw_unaligned_word_t *)get_object_record_by_slot_index(300+i);
             bridge[0]=0x164;
             bridge[1]=bridge_heights[i]-2;
         }
@@ -97,7 +97,7 @@ void collision_height_envelope(int mode, int collision)
     }
 }
 void resolve_wall_slide_corner(void) { DAT_002049da=9; }
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *reference) { (void)object; (void)reference; return 1; }
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *reference) { (void)object; (void)reference; return 1; }
 int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
 int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 0; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; return 0; }

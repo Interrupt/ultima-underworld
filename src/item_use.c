@@ -334,7 +334,7 @@ void use_light_source(uw_unaligned_word_t *object, int turn_on)
   ushort uVar4;
   undefined4 uVar5;
   int iVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   int iVar8;
   int extraout_r3;
   int iVar9;
@@ -696,7 +696,7 @@ ushort *use_object_on_target(uw_unaligned_word_t *actor, uw_unaligned_word_t *us
   ushort uVar3;
   int iVar4;
   undefined2 *puVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar6;
   uint uVar7;
   undefined4 in_stack_ffffffe4;
   undefined2 uVar8;
@@ -1794,7 +1794,7 @@ void trigger_object_trap_or_use_action(void *actor_ptr, void *object_ptr, int ac
 {
   char *actor = (char *)actor_ptr;
   char *object = (char *)object_ptr;
-  ushort *puVar1;
+  uw_unaligned_word_t *puVar1;
   ushort *local_1c;
   
   if (((object != 0) && ((*(byte *)(object + 1) & 0x80) == 0)) &&
@@ -1818,7 +1818,7 @@ void trigger_object_trap_or_use_action(void *actor_ptr, void *object_ptr, int ac
 // was FUN_0002805c -- checks if two objects are combinable: searches the combat/combination data
 // table (&DAT_00100630, loaded by load_combat_data_file, 10 entries) for an unordered match of the
 // two object ids, returning the combination index or -1 if none matches.
-int objects_are_combinable(ushort *object_a, ushort *object_b)
+int objects_are_combinable(ushort *object_a, uw_unaligned_word_t *object_b)
 {
   ushort uVar1;
   ushort uVar2;
@@ -1884,7 +1884,7 @@ void *spawn_combined_object(short combination_index)
 // was FUN_00028254 -- checks whether object param_1 is the "consumed" ingredient half of
 // combination index param_2: picks whichever of the combination table's two id slots matches
 // param_1's own id, and returns that slot's own high bit (its "consumed" flag).
-bool is_object_consumed_in_combination(ushort *object, short combination_index)
+bool is_object_consumed_in_combination(uw_unaligned_word_t *object, short combination_index)
 {
   ushort *puVar1;
 
@@ -1908,7 +1908,7 @@ int check_offering_container_puzzle()
   short sVar4;
   uw_object_hdr_t *puVar5;
   undefined4 uVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   int iVar8;
   uint uVar9;
   undefined1 auStack_30 [4];
@@ -2106,8 +2106,8 @@ bool place_object_in_equipment_slot(ushort *equip_object, int slot)
   short sVar2;
   short sVar3;
   int iVar4;
-  ushort *puVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar5;
+  uw_unaligned_word_t *puVar6;
   uint uVar7;
   int iVar8;
   char *pbVar9;
@@ -2216,7 +2216,7 @@ int objects_can_stack(const uw_object_hdr_t *object_a,
 // was FUN_000452dc -- searches equipped items (g_equipped_items, slots 0-0xa quickly, 0-0x12 if
 // param_4 isn't 1) for the first one matching category/subcategory/quality filters param_1/param_2/
 // param_3 (each <0 = any), returning its slot index via param_5...
-ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot_ptr)
+uw_unaligned_word_t *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot_ptr)
 {
   ushort *out_slot = (ushort *)out_slot_ptr;
   short sVar1;
@@ -2366,7 +2366,7 @@ ushort *resolve_clicked_inventory_item(short zone)
 // was FUN_00045708 -- resolves the equipped-item link for slot
 // param_1. Confirmed used by resolve_clicked_inventory_item for the
 // "direct equipped-slot" click case.
-ushort *get_equipped_item_at_widget_slot(short slot)
+uw_unaligned_word_t *get_equipped_item_at_widget_slot(short slot)
 {
   /* Was `resolve_object_link(&g_equipped_items + slot * 2); return 0;` -- confirmed via real ARM
      disassembly (0x45708-0x45718: `mov r3,r0,lsl #0x10; ldr r0,[...]; mov r3,r3,asr #0x10; add
@@ -2377,7 +2377,7 @@ ushort *get_equipped_item_at_widget_slot(short slot)
 
 
 // was FUN_00045720
-void deplete_object_count(ushort *object)
+void deplete_object_count(uw_unaligned_word_t *object)
 {
   reduce_object_count(object,0xffffffff);
 }
@@ -2503,7 +2503,7 @@ static ushort *extract_backpack_item_count(int category, int subcategory, int qu
 
 
 
-ushort *extract_clicked_backpack_item(int category, int subcategory, int quality, short slot)
+uw_unaligned_word_t *extract_clicked_backpack_item(int category, int subcategory, int quality, short slot)
 {
   return extract_backpack_item_count(category,subcategory,quality,slot,0);
 }
@@ -2514,7 +2514,7 @@ ushort *extract_clicked_backpack_item(int category, int subcategory, int quality
 // ammunition. The decompile showed the two as identical because the extra argument (how many to take)
 // was lost: with 0 the whole stack was extracted and then fired as a single projectile, so shooting a
 // stack of arrows used the entire stack up. Take exactly one, leaving the rest in the slot.
-ushort *extract_ammo_and_refresh(int category, int subcategory, int quality, short slot)
+uw_unaligned_word_t *extract_ammo_and_refresh(int category, int subcategory, int quality, short slot)
 {
   return extract_backpack_item_count(category,subcategory,quality,slot,1);
 }
@@ -2524,7 +2524,7 @@ ushort *extract_ammo_and_refresh(int category, int subcategory, int quality, sho
 // was FUN_00045b20 -- thin wrapper: extracts the object matching param_1/param_2/param_3
 // (category/subcategory/quality, <0 = any) from slot param_4 via extract_matching_object_from_slot,
 // then refreshes carry-weight/UI state via refresh_player_equipment_effects().
-ushort *extract_and_refresh_slot_item(int category, int subcategory, int quality, short slot, ushort flag)
+uw_unaligned_word_t *extract_and_refresh_slot_item(int category, int subcategory, int quality, short slot, ushort flag)
 {
   ushort *uVar1;
 
@@ -2538,7 +2538,7 @@ ushort *extract_and_refresh_slot_item(int category, int subcategory, int quality
 // was FUN_00045b48 -- finds the first object matching the category/ subcategory/quality filters
 // (param_1/param_2/param_3, <0 = any) in inventory slot param_4 (searched directly, or via
 // find_object_in_link_chain for nested containers)...
-ushort *extract_matching_object_from_slot(int category, int subcategory, int quality, short slot, ushort flag)
+uw_unaligned_word_t *extract_matching_object_from_slot(int category, int subcategory, int quality, short slot, ushort flag)
 {
   ushort uVar1;
   short sVar2;
@@ -2927,7 +2927,7 @@ int find_or_assign_object_widget(void *object_ptr)
   uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   char cVar1;
   undefined4 uVar2;
-  ushort *puVar3;
+  uw_unaligned_word_t *puVar3;
   uw_object_hdr_t *iVar4;
   ushort *puVar5;
   int iVar6;
@@ -3283,7 +3283,7 @@ int handle_backpack_slot_interact(void *object_ptr, uint slot)
   int iVar1;
   byte bVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_unaligned_word_t *puVar4;
   int iVar5;
   char *container_rec;
   undefined4 uVar6;
@@ -3410,9 +3410,9 @@ int handle_backpack_slot_interact(void *object_ptr, uint slot)
 // was FUN_00042870
 void handle_object_drop_target(short widget)
 {
-  ushort *puVar1;
+  uw_unaligned_word_t *puVar1;
   int iVar2;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   ushort uVar3;
   bool bVar4;
 

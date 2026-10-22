@@ -156,7 +156,7 @@ int apply_equipped_item_effect(byte opcode, byte magnitude, ushort *scratch, int
 void compute_light_source_colors(byte *out_colors);
 void update_level7_floor_hazard_state(uint active);
 void apply_equipment_effect_penalties(uint effect_mask);
-int compute_object_weight(ushort *object);
+int compute_object_weight(uw_unaligned_word_t *object);
 void refresh_player_equipment_effects();
 void trigger_view_transition();
 void set_movement_animation_timer(byte timer_id, byte ticks);

@@ -71,7 +71,7 @@ int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_
 bool apply_object_durability_damage(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, short damage, int tile_x, short tile_y);
 int is_valid_equipment_slot_item(ushort object_word, short slot);
 int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short reaction_mode, int report_flag);
-int apply_object_collision_scatter(ushort *striker, ushort *object);
+int apply_object_collision_scatter(uw_unaligned_word_t *striker, uw_unaligned_word_t *object);
 void apply_trap_type_damage_effect(void *trap_object, uw_unaligned_word_t *target);
 int resolve_collision_candidate_interaction(short candidate_index, int mover_slot);
 

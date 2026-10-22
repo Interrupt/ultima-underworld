@@ -266,7 +266,7 @@ void sweep_init_position()
 void reticle_object_pick(int mode)
 {
   byte bVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   uw_unaligned_short_t *psVar3;
   int iVar4;
   uint uVar5;
@@ -908,9 +908,9 @@ void sweep_land_on_surface()
   short sVar4;
   undefined2 uVar5;
   short sVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   uint uVar8;
-  short *psVar9;
+  uw_unaligned_short_t *psVar9;
   short sVar10;
   uint uVar11;
   int iVar12;
@@ -940,7 +940,7 @@ void sweep_land_on_surface()
   // PHYSICS: floor/ceiling collision -- snap the foot exactly onto the surface
   // and zero the vertical sub-unit accumulator so gravity restarts from rest
   *(short *)((char *)g_sweep_foot_pos + 4) = _DAT_0008699b;
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   DAT_00086984 = 0;
   // BUG FIX (confirmed live: landing in water made no splash). Both landing
   // sounds below test this word -- the object's downward velocity -- and the
@@ -982,7 +982,7 @@ void sweep_land_on_surface()
   uVar8 = ordint_divmod(10,((int)sVar4 ^ uVar8) - uVar8).quot;
   play_positional_sound_effect(0xf,(int)*psVar9 >> 5,(int)psVar9[1] >> 5,(uVar11 & 0xff) + (uVar8 & 0xff) + -0x28);
   uVar8 = resolve_collision_candidate_interaction((int)DAT_00086998,(int)DAT_002049d2);
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   if ((uVar8 & 0x18) != 0) {
     if ((uVar8 & 0x10) != 0) {
       sweep_kill_velocity();
@@ -1020,7 +1020,7 @@ void sweep_land_on_surface()
   pbVar1 = (byte *)(DAT_00204874 + 0x16);
   *(char *)(DAT_00204874 + 10) = (char)((uint)*pbVar1 * (int)sVar10);
   *(char *)((char *)DAT_00204874 + 0xb) = (char)((uint)*pbVar1 * (int)sVar10 >> 8);
-  psVar9 = (short *)DAT_00204874;
+  psVar9 = (uw_unaligned_short_t *)DAT_00204874;
   if (*(byte *)(DAT_00204874 + 0x16) == 0) {
     sVar10 = 0;
   }
@@ -1054,7 +1054,7 @@ void sweep_land_on_surface()
     *(undefined1 *)(DAT_00204874 + 0x28) = uVar3;
   }
   else {
-    psVar9 = (short *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
+    psVar9 = (uw_unaligned_short_t *)get_object_record_by_slot_index(*(uw_unaligned_word_t *)(&DAT_00202c3a + DAT_00086998 * 6) >> 6);
     if (((g_object_type_props[((int)*psVar9 & 0x1ffU)].flags & 2) != 0) ||
         (puVar7 = (uw_unaligned_word_t *)get_object_record_by_slot_index((int)*(short *)((char *)DAT_00204874 + 0x23)),
          (((uw_object_hdr_t *)puVar7)->object_id & 0x1c0) == 0x40)) {
@@ -1989,7 +1989,7 @@ LAB_0002caa4:
 void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
 {
   ushort uVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   uint uVar3;
   void *uVar4;
   int iVar5;

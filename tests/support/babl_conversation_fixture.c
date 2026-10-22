@@ -312,7 +312,7 @@ uw_object_hdr_t *resolve_object_link(ushort *link)
 }
 void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (uw_unaligned_word_t *)object_;
+    uw_unaligned_word_t *object = (uw_unaligned_word_t *)object_;
     int slot = encode_object_slot_index(object_);
     while (*head >> 6 && *head >> 6 != slot) head = babl_items[*head >> 6] + 2;
     TEST_ASSERT_EQUAL_INT_MESSAGE(slot, *head >> 6, "Unlinked object is not in the list");
@@ -321,7 +321,7 @@ void object_list_unlink(ushort *head, uw_object_hdr_t *object_)
 }
 void object_list_insert_head(ushort *head, uw_object_hdr_t *object_)
 {
-    ushort *object = (uw_unaligned_word_t *)object_;
+    uw_unaligned_word_t *object = (uw_unaligned_word_t *)object_;
     object[2] = (object[2] & 0x3f) | (*head & ~0x3f);
     *head = (*head & 0x3f) | (encode_object_slot_index(object_) << 6);
 }

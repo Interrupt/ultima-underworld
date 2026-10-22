@@ -35,7 +35,7 @@ void describe_object_owner(ushort *object, short mode);
 void print_object_flavor_text(ushort *object, short mode);
 void describe_special_object_property(ushort *object, short mode);
 int identify_mushroom_type(ushort *object, const uw_object_type_props_t *properties);
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *reference);
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *reference);
 void check_scheduled_object_location_callback();
 void dispatch_tile_special_action(uint tile_type, void *actor, void *target);
 void reduce_item_quality_on_use(uw_unaligned_word_t *object, char dice_count);

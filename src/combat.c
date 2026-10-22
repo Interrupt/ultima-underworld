@@ -909,7 +909,7 @@ int resolve_melee_swing_hit()
   short sVar3;
   int iVar4;
   int iVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar6;
   uint uVar7;
   /* Same "6 independent locals treated as one contiguous record via DAT_00202c6c" bug already fixed
      in resolve_collision_candidate_interaction's own sibling collision-envelope caller (see its own
@@ -996,7 +996,7 @@ int resolve_weapon_hit_skill_check(short hit_flag, int target_slot)
 {
   int uw_ord2005_rem_6 = 0;
   byte bVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   int iVar3;
   undefined4 uVar4;
   byte *pbVar5;
@@ -1070,8 +1070,8 @@ void apply_melee_damage(byte hit_type)
   short sVar3;
   ushort uVar4;
   ushort uVar5;
-  ushort *puVar6;
-  ushort *uVar7; /* ARM 0x26b58..0x26b80 forwards the attacker pointer in r1. */
+  uw_unaligned_word_t *puVar6;
+  uw_unaligned_word_t *uVar7; /* ARM 0x26b58..0x26b80 forwards the attacker pointer in r1. */
   short extraout_r1;
   int extraout_r1_00;
   ushort uVar8;
@@ -1257,7 +1257,7 @@ int play_weapon_impact_sound(short result)
   ushort uVar3;
   void *uVar4;
   undefined4 uVar5;
-  ushort *puVar6;
+  uw_unaligned_word_t *puVar6;
   byte bVar7;
 
   if (result == 0) {
@@ -1381,7 +1381,7 @@ int resolve_equipped_weapon_attack(char * *out_attack_data, char * *out_weapon_o
   uint uVar1;
   ushort uVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_unaligned_word_t *puVar4;
   int iVar5;
 
   *out_attack_data = 0;
@@ -2237,7 +2237,7 @@ int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short 
 // was FUN_0005448c -- default collision outcome for object param_2 when nothing else handles it
 // (param_1, the object that struck it, is unused): takes a position snapshot, and if the snapshot's
 // velocity-like field is nonzero...
-int apply_object_collision_scatter(ushort *striker, ushort *object)
+int apply_object_collision_scatter(uw_unaligned_word_t *striker, uw_unaligned_word_t *object)
 {
   undefined2 uVar1;
   short sVar2;
@@ -2329,8 +2329,8 @@ int resolve_collision_candidate_interaction(short candidate_index, int mover_slo
   int iVar1;
   ushort uVar2;
   ushort uVar3;
-  ushort *puVar4;
-  ushort *puVar5;
+  uw_unaligned_word_t *puVar4;
+  uw_unaligned_word_t *puVar5;
   undefined4 uVar7;
   ushort uVar8;
   byte bVar9;

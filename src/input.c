@@ -1414,7 +1414,7 @@ int begin_directional_move(short direction)
   int iVar8;
   int iVar9;
   uint uVar10;
-  ushort *uVar11;
+  uw_unaligned_word_t *uVar11;
   ushort local_44;
   ushort local_42;
   uint local_40;

@@ -444,7 +444,7 @@ uint resolve_skill_gated_unlock_or_use(void *object_ptr, void *key_item_ptr, voi
 {
   ushort *object = (ushort *)object_ptr;
   ushort *key_item = (ushort *)key_item_ptr;
-  ushort *lock_link = (ushort *)lock_link_ptr;
+  uw_unaligned_word_t *lock_link = (ushort *)lock_link_ptr;
   ushort uVar1;
   short sVar2;
   char *iVar3;  /* was `int` -- truncated resolve_object_link's real `void *` return */
@@ -741,7 +741,7 @@ int target_in_range(short range_squared, void *actor_ptr, char *target)
 /* was int -- truncated the tile-record pointer target_line_of_sight passes */
 uint object_chain_max_barrier(char *tile)
 {
-  ushort *puVar1;
+  uw_unaligned_word_t *puVar1;
   uint uVar2;
 
   uVar2 = 0xffffffff;
@@ -866,7 +866,7 @@ ushort *pick_object_under_cursor(int mode)
 {
   byte bVar1;
   int iVar2;
-  ushort *puVar3;
+  uw_unaligned_word_t *puVar3;
   uint uVar4;
   /* render_dungeon_view_frame() re-renders the HUD+3D view in "pick" mode so the per-pixel
      object/texture id buffer DAT_0023cca0 this function reads below is fresh for the current cursor

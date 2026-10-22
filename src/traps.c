@@ -55,7 +55,7 @@ int dispatch_trap_type_effect(uw_unaligned_word_t *trap_record, int tile_x, int 
      64-bit pointer on this host. */
   uw_object_hdr_t *_case8_p1;
   uw_object_hdr_t *_case8_p2;
-  ushort *puVar12;
+  uw_unaligned_word_t *puVar12;
   undefined2 uVar13;
   uint uVar14;
   char *puVar15;
@@ -589,7 +589,7 @@ void remove_trap_chain_marker(char *link_field, char *trap_object)
   uint uVar1;
   ushort uVar2;
   byte bVar3;
-  ushort *puVar4;
+  uw_unaligned_word_t *puVar4;
   char *iVar5;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
 
   puVar4 = (uw_unaligned_word_t *)resolve_object_link(uw_link_word_ptr((uw_object_hdr_t *)trap_object));
@@ -647,7 +647,7 @@ int detect_spawn_blocking_object_callback(int scan_x, int scan_y, char *object)
 
 // was FUN_0007e694 -- checks the spawn template's surrounding NPCs. Called by
 // dispatch_trap_type_effect's case 7, which aborts the spawn on a nonzero result.
-int check_object_area_for_spawn_block(ushort *object)
+int check_object_area_for_spawn_block(uw_unaligned_word_t *object)
 {
   DAT_0024cff8 = 0;
   DAT_0024cfd4 = (char *)object;
@@ -785,7 +785,7 @@ int apply_area_terrain_effect(short tile_x, int tile_y, short wall_texture, shor
   ushort uVar5;
   byte bVar6;
   ushort *puVar7;
-  ushort *puVar8;
+  uw_unaligned_word_t *puVar8;
   int iVar9;
   uint uVar10;
   uint extraout_r1;

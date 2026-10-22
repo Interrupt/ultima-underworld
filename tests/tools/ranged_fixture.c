@@ -5,7 +5,7 @@ static _Alignas(8) byte records[2][48], player[40];
 uw_mobile_object_t *g_player_object = (uw_mobile_object_t *)(player + 4);
 uw_ranged_type_props_t g_ranged_type_props[16];
 uw_object_type_props_t g_object_type_props[512];
-ushort *DAT_00202a44;
+uw_unaligned_word_t *DAT_00202a44;
 short DAT_00202a38;
 ushort DAT_00202a48, DAT_00202a4c, DAT_00202a50, DAT_00202a54;
 static unsigned seed, mode, mutation, aims, spawns, extracts, frees, messages, sounds;

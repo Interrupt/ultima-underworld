@@ -40,6 +40,6 @@ void apply_model_position_offset(char *model, int offset_x, int offset_y, int of
 void scale_model_part_offsets(void *model_block, int scale_x, int scale_y, int scale_z);
 void load_3d_object_models();
 void emit_catalog_object(byte catalog, void *obj, char heading, short frame_or_texid);
-void emit_anim_object_frames(uint door_type, ushort *obj);
+void emit_anim_object_frames(uint door_type, uw_unaligned_word_t *obj);
 
 #endif

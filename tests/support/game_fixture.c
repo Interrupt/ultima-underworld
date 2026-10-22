@@ -1,7 +1,7 @@
 #include "game_fixture.h"
 #include "src/headers/chargen.h"
 
-void uw_test_create_character(char *record, char *attributes, ushort *object)
+void uw_test_create_character(char *record, char *attributes, uw_unaligned_word_t *object)
 {
     memset(record, 0, UW_TEST_CHARACTER_SIZE);
     memset(attributes, 0, UW_TEST_CHARACTER_SIZE);

@@ -112,7 +112,7 @@ void render_visible_tile_list();
 void *get_texture_page(short page_index);
 void walk_visible_tiles();
 void process_visible_tile_cell(byte *cell);
-void emit_tile_objects(ushort *tile);
+void emit_tile_objects(uw_unaligned_word_t *tile);
 void update_wall_partition_phase(char phase);
 void sort_feature_pairs_by_depth(short first, int last);
 void init_feature_sort_order(short count);

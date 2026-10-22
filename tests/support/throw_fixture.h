@@ -18,7 +18,7 @@ void angle_to_screen_delta(uint heading, void *x, void *y);
 void collision_build_height_field(uint step_limit);
 void collision_height_envelope(int mode, int collision);
 void resolve_wall_slide_corner(void);
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *reference);
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *reference);
 int object_ptr_in_arena(const uw_object_hdr_t *object);
 int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias);
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias);

@@ -45,7 +45,7 @@ void *get_scanned_object_class_effect_ptr(void)
 {
     return torch_effect;
 }
-int compute_object_weight(ushort *object) { (void)object; return 0; }
+int compute_object_weight(uw_unaligned_word_t *object) { (void)object; return 0; }
 void request_weapon_swing_graphic(char category) {}
 void reset_player_derived_state(void) {}
 void load_shading_level_config(char record);

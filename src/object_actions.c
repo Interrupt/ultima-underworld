@@ -484,7 +484,7 @@ LAB_00048b58:
 // was FUN_0004b288 -- validity gate for spawn_object_near_player's freshly-copied object (param_1)
 // placed near param_2's position: runs the same
 // collision_build_height_field/collision_height_envelope machinery settle_dropped_object uses...
-int check_object_drop_height(uw_unaligned_word_t *object, ushort *reference)
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *reference)
 {
   byte bVar1;
   ushort uVar2;
@@ -1065,7 +1065,7 @@ void print_scroll_message_concat(uint id_a, uint id_b, uint id_c)
 // items.
 int resolve_object_variant_or_special_link(void *object_ptr, void *out_class_ptr, void *out_value_ptr, void *out_flag_ptr)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_unaligned_word_t *object = (ushort *)object_ptr;
   ushort *out_class = (ushort *)out_class_ptr;
   ushort *out_value = (ushort *)out_value_ptr;
   uint *out_flag = (uint *)out_flag_ptr;

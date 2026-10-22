@@ -1338,7 +1338,7 @@ void emit_tile_features(ushort *tile)
   short sVar3;
   char *puVar4;  /* was `undefined4 uVar4` -- truncated get_object_record_by_slot_index's real pointer before
    forwarding it into resolve_billboard_corner_offset, which dereferences it (offset+2/+3). */
-  ushort *puVar5;
+  uw_unaligned_word_t *puVar5;
   ushort *puVar6;
   int iVar7;
   char cVar8;
@@ -1649,7 +1649,7 @@ void *get_texture_page(short page_index)
 
 
 // was FUN_00060aa0
-void emit_tile_objects(ushort *tile)
+void emit_tile_objects(uw_unaligned_word_t *tile)
 {
   byte bVar1;
   char cVar2;
@@ -1851,7 +1851,7 @@ void emit_tile_objects(ushort *tile)
             int _slot = (_head & 0xffc0) != 0 ? _head >> 6 : 0;
             int _guard = 0;
             while (_slot != 0 && _guard++ < 64) {
-              ushort *_rec = _slot < 0x100 ? (ushort *)((intptr_t)_slot * 0x1b + (intptr_t)DAT_002046b8)
+              uw_unaligned_word_t *_rec = _slot < 0x100 ? (ushort *)((intptr_t)_slot * 0x1b + (intptr_t)DAT_002046b8)
                                             : (ushort *)((intptr_t)DAT_002046c4 + (intptr_t)(_slot - 0x100) * 8);
               ushort _w = ((uw_object_hdr_t *)_rec)->type_flags;
               int _id = _w & 0x1ff;
@@ -1897,13 +1897,13 @@ void emit_tile_objects(ushort *tile)
           for (_tx = 0; _tx < 0x40; _tx++) {
             int _tidx = _tx + _ty * 0x40;
             ushort *_headp = (ushort *)((char *)DAT_002029cc + _tidx * 4 + 2);
-            ushort *_rec = (uw_unaligned_word_t *)resolve_object_link(_headp);
+            uw_unaligned_word_t *_rec = (uw_unaligned_word_t *)resolve_object_link(_headp);
             int _guard = 0;
             while (_rec != NULL && _guard++ < 64) {
               ushort _w = ((uw_object_hdr_t *)_rec)->type_flags;
               int _id = _w & 0x1ff;
               if ((_w & 0x1c0) == 0x80) {
-                ushort *_item = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)((char *)_rec + 6));
+                uw_unaligned_word_t *_item = (uw_unaligned_word_t *)resolve_object_link((uw_unaligned_word_t *)((char *)_rec + 6));
                 char _names[256];
                 _names[0] = '\0';
                 int _n = 0, _guard2 = 0;

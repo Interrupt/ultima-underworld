@@ -50,7 +50,7 @@ ushort DAT_00202a48;
 short DAT_00202a38;
 ushort DAT_00202a4c;
 /* FUN_0004ad10 reads word 1 (position) and word 12 (heading). */
-ushort *DAT_00202a44;
+uw_unaligned_word_t *DAT_00202a44;
 undefined2 DAT_00202a50;
 undefined2 DAT_00202a54;
 static char s__DATA_comobj_dat_00086894[] = "\\DATA\\comobj.dat";

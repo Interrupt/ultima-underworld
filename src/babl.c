@@ -389,7 +389,7 @@ int babl_builtin_take_from_npc(char *args)
   undefined2 uVar6;
   short sVar7;
   intptr_t iVar8;
-  ushort *puVar9;
+  uw_unaligned_word_t *puVar9;
   intptr_t iVar10;
   undefined4 uVar11;
   bool bVar12;
@@ -473,7 +473,7 @@ int babl_builtin_take_id_from_npc(char *args)
   undefined2 uVar6;
   short sVar7;
   intptr_t iVar8;
-  ushort *puVar9;
+  uw_unaligned_word_t *puVar9;
   intptr_t iVar10;
   undefined4 uVar11;
 
@@ -2867,7 +2867,7 @@ int babl_builtin_set_inv_quality(char *args)
 void sync_conv_vars_from_npc(uw_mobile_object_t *npc_object)
 {
   /* raw 16-bit word view of the mobile record, kept from the decompile: npc[N] is byte offset 2*N */
-  ushort *npc = (uw_unaligned_word_t *)npc_object;
+  uw_unaligned_word_t *npc = (uw_unaligned_word_t *)npc_object;
   byte bVar1;
   undefined4 uVar2;
   ushort extraout_r1;
@@ -4380,7 +4380,7 @@ int compute_barter_item_value(short is_player_side, int item_id, int mode)
   int iVar1;
   short sVar2;
   ushort uVar3;
-  ushort *puVar4;
+  uw_unaligned_word_t *puVar4;
   undefined4 uVar5;
   short sVar6;
   uint uVar7;
@@ -4449,7 +4449,7 @@ int randomize_value_pct(short value, short min_pct, short max_pct)
 // were found.
 int collect_included_player_barter_items(void *out_item_ids, void *out_values)
 {
-  ushort *puVar1;
+  uw_unaligned_word_t *puVar1;
   int iVar2;
   int iVar3;
   
@@ -4562,7 +4562,7 @@ int remove_item_from_npc_inventory_by_id(short item_id)
 int check_npc_item_preference(short item_id)
 {
   ushort uVar1;
-  ushort *puVar2;
+  uw_unaligned_word_t *puVar2;
   undefined4 uVar3;
   uint uVar4;
   int iVar5;

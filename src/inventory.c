@@ -485,7 +485,7 @@ void redraw_inventory_widget_range(int first_widget, short last_widget)
   ushort uVar4;
   bool bVar5;
   int iVar6;
-  ushort *puVar7;
+  uw_unaligned_word_t *puVar7;
   char *count_text;
   char auStack_60 [12];
   /* Was `ushort auStack_54 [20]` (matching the real ARM binary's own stack layout exactly,
@@ -591,7 +591,7 @@ void redraw_lit_light_source_widgets()
   for (widget = 6; widget <= 0x14; widget++) {
     int slot = widget == 0x14 ? (int)(unsigned char)DAT_00085c4c : (int)(char)(&g_backpack_widget_to_slot)[widget];
     ushort *link = (ushort *)(&g_equipped_items + slot * 2);
-    ushort *object;
+    uw_unaligned_word_t *object;
     uint id;
 
     if ((*link & 0xffc0) == 0) continue;

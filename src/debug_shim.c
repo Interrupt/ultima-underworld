@@ -545,7 +545,7 @@ int dbgui_all_runes(void)
 {
   int slot, result = 0, have_bag = 0;
   for (slot = 0xb; slot < 0x13 && !have_bag; slot++) {
-    ushort *o = (uw_unaligned_word_t *)resolve_object_link(&SLOT_LINK(slot));
+    uw_unaligned_word_t *o = (uw_unaligned_word_t *)resolve_object_link(&SLOT_LINK(slot));
     if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
   }
   if (!have_bag) result = dbgui_give_object(0x8f, 1) >= 0 ? 1 : -2;

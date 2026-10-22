@@ -37,7 +37,7 @@ void *get_scanned_object_class_effect_ptr(void)
 {
     return light_records + (g_scratch_object_ptr->type_flags & 15) * 2;
 }
-int compute_object_weight(ushort *object) { (void)object; return 0; }
+int compute_object_weight(uw_unaligned_word_t *object) { (void)object; return 0; }
 void request_weapon_swing_graphic(char category) {}
 void reset_player_derived_state(void) {}
 int is_valid_equipment_slot_item(ushort id, short slot) { return 0; }

@@ -1679,7 +1679,7 @@ LAB_000640ec:
 // WARNING: Removing unreachable block (ram,0x000647ac)
 
 // was FUN_00064384
-void emit_anim_object_frames(uint door_type, ushort *obj)
+void emit_anim_object_frames(uint door_type, uw_unaligned_word_t *obj)
 {
   short sVar1;
   int iVar3;
