@@ -13,17 +13,19 @@ short click[16];
 char character[256];
 ushort *thrown;
 int freed, allocations;
-short world_x(ushort *object)
-{ return (object[0xb] >> 10) * 8 + (object[1] >> 13); }
-short world_y(ushort *object)
-{ return (object[0xb] >> 4 & 63) * 8 + (object[1] >> 10 & 7); }
+/* Objects are passed both as raw word records (thrown) and as the mobile
+   player record, so these read the mobile record's words 1 and 0xb. */
+short world_x(const void *record)
+{ const ushort *object = record; return (object[0xb] >> 10) * 8 + (object[1] >> 13); }
+short world_y(const void *record)
+{ const ushort *object = record; return (object[0xb] >> 4 & 63) * 8 + (object[1] >> 10 & 7); }
 short fine(ushort *object, int offset)
 { short value; memcpy(&value, (byte *)object + offset, 2); return value; }
 uw_object_hdr_t *alloc_object_slot(int mobile)
 {
     TEST_ASSERT_EQUAL_INT(1, mobile);
     allocations++;
-    return thrown;
+    return (uw_object_hdr_t *)thrown;
 }
 void free_object_slot(uw_object_hdr_t *object)
 {
@@ -37,8 +39,8 @@ void *tilemap_lookup(short x, short y)
     TEST_ASSERT_TRUE(x >= 0 && x < 64 && y >= 0 && y < 64);
     return (byte *)arena + (y * 64 + x) * 4;
 }
-uw_object_hdr_t *resolve_object_link(ushort *head_)
-{ ushort *head = (ushort *)head_; return (*head >> 6) ? DAT_002046b8 + (*head >> 6) * 27 : NULL; }
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *head)
+{ return (*head >> 6) ? (uw_object_hdr_t *)(DAT_002046b8 + (*head >> 6) * 27) : NULL; }
 void heading_to_sine_cosine(uint heading, short *sine, short *cosine)
 {
     double radians = (heading >> 8 & 255) * (2.0 * M_PI / 256.0);
@@ -64,7 +66,7 @@ uw_object_hdr_t *reallocate_object_to_arena(ushort *object) { (void)object; TEST
 uw_object_hdr_t *settle_dropped_object(void *object, short tile_x,
 				       short tile_y, int force) { (void)object; (void)tile_x; (void)tile_y; (void)force; TEST_FAIL_MESSAGE("Unexpected ground drop"); return NULL; }
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit) { (void)catalog_type; (void)ignore_slot; (void)position_x; (void)position_y; (void)height; (void)check_mode; (void)step_limit; TEST_FAIL_MESSAGE("Unexpected ground drop"); return 0; }
-void object_list_append_tail(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Unexpected ground drop"); }
+void object_list_append_tail(uw_link_word_t *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Unexpected ground drop"); }
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias) { (void)sound_id; (void)world_x; (void)world_y; (void)volume_bias; return 1; }
 void print_scroll_message_by_id(uint message_id) { (void)message_id;}
 void set_ambient_bias_without_light(char light_level) { (void)light_level;}

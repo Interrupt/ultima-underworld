@@ -152,6 +152,9 @@ def changes():
         f'{a}ypos = (bVar9 >> 2) & 7;')
     add(EFFECT,'adjust_zpos',f'{a}position_word_low = bVar9 & 0x7f ^ (byte)uVar3;\n{a}position_word_high = (byte)(char)((ushort)uVar3 >> 8);',
         f'{a}zpos = (bVar9 ^ (byte)uVar3) & 0x7f;')
+    # iVar8 + 2 is the tile's object-chain head word (tile word 1).
+    add(EFFECT,'tile_chain_head','object_list_append_tail(iVar8 + 2,iVar5);',
+        'object_list_append_tail((uw_link_word_t *)(iVar8 + 2), iVar5);')
     return result
 
 
@@ -184,7 +187,7 @@ def generate():
                 patch.extend('- '+line if line else '-' for line in old[i:j])
                 patch.extend('+ '+line if line else '+' for line in new[k:l])
         rules.append(f'@{function}_exact disable paren, optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@\n'
-            'typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t;\n@@\n'+'\n'.join(patch)+'\n')
+            'typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t, uw_link_word_t;\n@@\n'+'\n'.join(patch)+'\n')
     return ''.join(rules)
 
 

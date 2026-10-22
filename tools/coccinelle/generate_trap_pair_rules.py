@@ -120,6 +120,17 @@ uVar7 = uVar7 & 0x380;
         ('second_flags', f'''{b}type_flags_low = (byte)(char)uVar11;
 {b}type_flags_high = (byte)(uVar11 >> 8) | 0xe2;''',
          f'{b}flags_res = 1;\n{b}enchanted = 0;\n{b}is_quant = 1;'),
+        # Both slots are object records and pbVar6 + 2 is the tile's object-chain head word.
+        ('first_slot_type', 'ushort *puVar4;', 'uw_object_hdr_t *puVar4;'),
+        ('second_slot_type', 'ushort *puVar5;', 'uw_object_hdr_t *puVar5;'),
+        ('first_alloc', 'puVar4 = (ushort *)alloc_object_slot(0);', 'puVar4 = alloc_object_slot(0);'),
+        ('first_null', 'if (puVar4 != (ushort *)0x0) {', 'if (puVar4 != (uw_object_hdr_t *)0x0) {'),
+        ('second_alloc', 'puVar5 = (ushort *)alloc_object_slot(0);', 'puVar5 = alloc_object_slot(0);'),
+        ('second_null', 'if (puVar5 != (ushort *)0x0) {', 'if (puVar5 != (uw_object_hdr_t *)0x0) {'),
+        ('first_insert', 'object_list_insert_head(pbVar6 + 2,puVar4);',
+         'object_list_insert_head((uw_link_word_t *)(pbVar6 + 2), puVar4);'),
+        ('second_insert', 'object_list_insert_head(pbVar6 + 2,puVar5);',
+         'object_list_insert_head((uw_link_word_t *)(pbVar6 + 2), puVar5);'),
     ]
 
 
@@ -132,7 +143,7 @@ def generate():
         final,count = pattern.subn(lambda m: m[1] + after.replace('\n','\n'+m[1]), final)
         assert count == 1, key
     return ('@trap_pair_exact disable optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@\n'
-            'typedef byte, ushort, uint, uw_object_hdr_t;\n@@\n'
+            'typedef byte, ushort, uint, uw_object_hdr_t, uw_link_word_t;\n@@\n'
             + '\n'.join('- '+line if line else '-' for line in ORIGINAL.splitlines()) + '\n'
             + '\n'.join('+ '+line if line else '+' for line in final.splitlines()) + '\n')
 

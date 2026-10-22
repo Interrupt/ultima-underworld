@@ -166,7 +166,7 @@ REPLACEMENTS = {'spawn_creature_equipment_drop': [('byte *pbVar4;', 'uw_object_h
 def converted(name):
     result = ORIGINALS[name]
     result = result.replace('char *creature = (char *)creature_ptr;', 'uw_object_hdr_t *creature = (uw_object_hdr_t *)creature_ptr;')
-    result = result.replace('object_list_insert_head(creature + 6,', 'object_list_insert_head(&creature->link_word,')
+    result = result.replace('object_list_insert_head(creature + 6,', 'object_list_insert_head(uw_link_word_ptr(creature),')
     for before, after in REPLACEMENTS[name]:
         assert result.count(before) == 1, before
         result = result.replace(before, after)

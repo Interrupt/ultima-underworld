@@ -28,16 +28,16 @@ void scheduler_despawn_entry(short entry_index)
 {
   /* ARM 0x809a4 keeps the resolved object pointer in r5 and forwards
      it to both object_list_unlink and free_object_slot. */
-  void *uVar1;
+  uw_object_hdr_t *uVar1;
   int iVar2;
   
   iVar2 = entry_index * 6;
-  uVar1 = resolve_object_link(&DAT_00250778 + iVar2);
+  uVar1 = resolve_object_link((uw_link_word_t *)(&DAT_00250778 + iVar2));
   /* was folded into `int iVar2` (reused above as an index) -- truncated
      tilemap_lookup's real `void *` return */
   {
-    char *_tile2 = (char *)tilemap_lookup((&DAT_0025077c)[iVar2],(&DAT_0025077d)[iVar2]);
-    object_list_unlink(_tile2 + 2,uVar1);
+    void *_tile2 = tilemap_lookup((&DAT_0025077c)[iVar2],(&DAT_0025077d)[iVar2]);
+    object_list_unlink((uw_link_word_t *)((char *)_tile2 + 2),uVar1);
   }
   free_object_slot(uVar1);
 }
@@ -101,7 +101,7 @@ void scheduler_finish_entry(int entry_slot)
   bool bVar11;
   
   iVar9 = (short)entry_slot * 6;
-  puVar4 = resolve_object_link(&DAT_00250778 + iVar9);
+  puVar4 = resolve_object_link((uw_link_word_t *)(&DAT_00250778 + iVar9));
   /* HACK: resolve_object_link legitimately returns NULL (every other resolve_object_link call site
      in this file guards for it -- e.g. scheduler_add_entry's own identical fix a little above this
      function). */
@@ -194,8 +194,8 @@ void scheduler_finish_entry(int entry_slot)
 // object-link field.
 void scheduler_relink_entry(void *new_object_ptr, void *old_object_ptr)
 {
-  char *new_object = (char *)new_object_ptr;
-  char *old_object = (char *)old_object_ptr;
+  uw_object_hdr_t *new_object = (uw_object_hdr_t *)new_object_ptr;
+  uw_object_hdr_t *old_object = (uw_object_hdr_t *)old_object_ptr;
   short sVar1;
   uint uVar2;
   int iVar3;
@@ -237,7 +237,7 @@ uint scheduler_add_entry(uint object_link, int delay, byte animation_offset, byt
     (&DAT_0025077b)[iVar4] = (char)((uint)delay >> 8);
     (&DAT_0025077c)[iVar4] = tile_x;
     (&DAT_0025077d)[iVar4] = tile_y;
-    pbVar3 = (byte *)resolve_object_link((ushort *)(&DAT_00250778 + iVar4)); /* confirmed via ARM disassembly, 0x80f50 */
+    pbVar3 = (byte *)resolve_object_link((uw_link_word_t *)(&DAT_00250778 + iVar4)); /* confirmed via ARM disassembly, 0x80f50 */
     /* resolve_object_link legitimately returns NULL (every other one of this file's 140+ call sites
        guards for it -- e.g. the `!= (ushort*)0x0` checks throughout this file). */
     if (pbVar3 != (byte *)0x0) {
@@ -285,7 +285,7 @@ void scheduler_step_entry(int entry_slot, int elapsed)
   ushort uVar7;
   ushort uVar8;
   
-  puVar4 = resolve_object_link(&DAT_00250778 + (short)entry_slot * 6);
+  puVar4 = resolve_object_link((uw_link_word_t *)(&DAT_00250778 + (short)entry_slot * 6));
   /* HACK: same unguarded-NULL class as scheduler_finish_entry's identical fix --
      see its own comment. A stale queue entry resolves to NULL here too. */
   if (puVar4 == NULL) {
@@ -451,7 +451,7 @@ LAB_00081980:
     return 0;
   }
   iVar8 = (char *)tilemap_lookup((int)tile_x,(int)tile_y);
-  object_list_append_tail(iVar8 + 2,iVar5);
+  object_list_append_tail((uw_link_word_t *)(iVar8 + 2), iVar5);
   return 1;
 }
 
@@ -461,7 +461,7 @@ LAB_00081980:
 // encode_object_slot_index()'s last result...
 /* the object/link record whose slot index is searched for (ARM 0x819f0: r0 passes straight into
    encode_object_slot_index) */
-int scheduler_find_entry(char *object)
+int scheduler_find_entry(const uw_object_hdr_t *object)
 {
   short sVar1;
   int iVar2;
@@ -489,7 +489,7 @@ int scheduler_find_entry(char *object)
 // was FUN_00081a84: reads scheduler_find_entry's result's delay field.
 int scheduler_get_delay(void *object_ptr)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   short sVar1;
   int iVar2;
 
@@ -508,7 +508,7 @@ int scheduler_get_delay(void *object_ptr)
 // was FUN_00081abc: re-arms scheduler_find_entry's result's delay field.
 void scheduler_set_delay(void *object_ptr, int delay)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   short sVar1;
   int iVar2;
   
@@ -527,7 +527,7 @@ void scheduler_set_delay(void *object_ptr, int delay)
 int scheduler_advance_effect(short entry_slot, int elapsed)
 {
   byte bVar1;
-  ushort *puVar2;
+  uw_object_hdr_t *puVar2;
   undefined4 uVar3;
   int iVar4;
   uint uVar5;
@@ -543,32 +543,32 @@ int scheduler_advance_effect(short entry_slot, int elapsed)
   /* HACK: adds the NULL guard every other resolve_object_link call site in this file has (this one
      had none at all -- a stale queue entry resolving to NULL would dereference puVar2 below
      unconditionally). */
-  puVar2 = (ushort *)resolve_object_link(&DAT_00250778 + iVar8);
-  if (puVar2 == (ushort *)0x0) {
+  puVar2 = resolve_object_link((uw_link_word_t *)(&DAT_00250778 + iVar8));
+  if (puVar2 == (uw_object_hdr_t *)0x0) {
     return 0;
   }
-  uVar7 = (ushort)(byte)((uw_object_hdr_t *)puVar2)->link_word;
+  uVar7 = (ushort)(byte)puVar2->link_word;
   DAT_0010144c = (ushort)(byte)(&DAT_0025077c)[iVar8];
-  uVar9 = ((uw_object_hdr_t *)puVar2)->zpos;
+  uVar9 = puVar2->zpos;
   DAT_00101454 = (ushort)(byte)(&DAT_0025077d)[iVar8];
   if ((uVar7 & 7) != 6) {
     uVar9 = uVar9 - 0x18;
   }
   uVar3 = encode_object_slot_index(puVar2);
   iVar4 = check_object_placement_clearance((uVar7 & 0x30) + (uVar7 & 0xf) + 0x140,uVar3,
-                       (uint)(((uw_object_hdr_t *)puVar2)->xpos) + (short)DAT_0010144c * 8,
-                       (((uw_object_hdr_t *)puVar2)->ypos) + (short)DAT_00101454 * 8,
+                       (uint)(puVar2->xpos) + (short)DAT_0010144c * 8,
+                       (puVar2->ypos) + (short)DAT_00101454 * 8,
                        uVar9,1,
                        8);
   if (iVar4 == 0) {
-    uVar5 = (uint)((uw_object_hdr_t *)puVar2)->type_flags;
+    uVar5 = (uint)puVar2->type_flags;
     if ((((uVar5 & 0x1c0) == 0x140) && ((uVar5 & 7) == 6)) ||
-       (((uVar5 & 0x1c0) == 0x1c0 && ((((uw_object_hdr_t *)puVar2)->owner & 0x7) == 6)))) {
+       (((uVar5 & 0x1c0) == 0x1c0 && ((puVar2->owner & 0x7) == 6)))) {
       iVar10 = 4;
     }
     bVar1 = (byte)((uVar5 & 0xefff) >> 8);
-    ((uw_object_hdr_t *)puVar2)->type_flags_low = (byte)(char)(uVar5 & 0xefff);
-    ((uw_object_hdr_t *)puVar2)->type_flags_high =
+    puVar2->type_flags_low = (byte)(char)(uVar5 & 0xefff);
+    puVar2->type_flags_high =
         ((byte)(((uVar5 & 0xe00) + (elapsed + 1) * -0x200) >> 8) ^ bVar1) & 0x1e ^ bVar1;
     iVar6 = scheduler_get_delay(puVar2);
     iVar4 = (int)(short)iVar6;

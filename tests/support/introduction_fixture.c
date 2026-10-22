@@ -3,7 +3,8 @@
 #include "src/headers/file_io.h"
 
 /* Use the actual introduction bytecode and STRINGS.PAK decoder. */
-undefined1 DAT_0023c698_backing[1024], DAT_00101968_backing[260];
+char DAT_0023c698_backing[1024];
+char DAT_00101968_backing[260];
 undefined4 DAT_0024bf98;
 unsigned short *DAT_0024cfb8;
 char *DAT_0024cfa8;
@@ -15,7 +16,7 @@ char *g_bfa2_real_ptrs[263168];
 undefined2 DAT_000890b0_backing[256];
 char font_header[12], font_glyphs[0x1080];
 char *DAT_000879b0 = font_header, *DAT_000890a4 = font_glyphs;
-char *g_font_glyph_data_base;
+byte *g_font_glyph_data_base;
 ushort g_font_line_height;
 short g_font_row_stride, DAT_000a85b8;
 undefined2 DAT_000a85b0;

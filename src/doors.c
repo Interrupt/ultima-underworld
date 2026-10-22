@@ -264,7 +264,7 @@ void schedule_door_open_animation(ushort *door)
   /* HACK: was a bare `encode_object_slot_index();` -- dropped argument, same class as
      scheduler_tick's own `scheduler_finish_entry();` fix just above (see its comment).
      encode_object_slot_index's real signature takes the object pointer it encodes... */
-  slot_index = encode_object_slot_index((char *)door);
+  slot_index = encode_object_slot_index((uw_object_hdr_t *)door);
   scheduler_add_entry(slot_index, animation_type, 0, (undefined1)DAT_002020a0, (char)DAT_002020a4);
 }
 

@@ -21,7 +21,7 @@ short DAT_00201b68;
 
 undefined1 DAT_000fb860_backing[32];
 
-undefined1 DAT_000fb8f0_backing[1680];
+char DAT_000fb8f0_backing[1680];
 
 int random_values[64], random_count, random_index;
 

@@ -95,7 +95,10 @@ REPLACEMENTS = [('undefined2 *puVar5;', 'uw_object_hdr_t *puVar5;'),
   '((uw_object_hdr_t *)puVar5)->is_quant = 1;'),
  ('((uw_object_hdr_t *)puVar5)->link_word_low = ((uw_object_hdr_t *)puVar5)->owner;\n'
   '        ((uw_object_hdr_t *)puVar5)->link_word_high = 0xb0;',
-  '((uw_object_hdr_t *)puVar5)->link = 0x2c0;')]
+  '((uw_object_hdr_t *)puVar5)->link = 0x2c0;'),
+ ('char *local_11c;  /* was `int` -- same truncation, derived from iVar6 */',
+  'uw_link_word_t *local_11c;  /* was `int` -- same truncation, derived from iVar6 (tile word 1) */'),
+ ('local_11c = iVar6 + 2;', 'local_11c = (uw_link_word_t *)(iVar6 + 2);')]
 
 def converted():
     result = ORIGINAL

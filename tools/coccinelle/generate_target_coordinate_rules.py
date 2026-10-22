@@ -267,7 +267,9 @@ REPLACEMENTS = {'detect_npc_wander_proximity': [('*(ushort *)DAT_00101400 & 0x1f
                                  ('(uVar3 & 0x7f)', '(puVar7->hdr.zpos)')],
  'compute_vertical_aim_offset': [('*(byte *)(DAT_00101400 + 2)',
                                   '((uw_object_hdr_t *)DAT_00101400)->position_word_low')],
- 'refresh_npc_target_delta': [('uint uVar4;', 'uint uVar4;\n  /* The eight-bit goal slot resolves only mobile records; use shared fields. */\n  uw_mobile_object_t *target_object;'),
+ 'refresh_npc_target_delta': [('DAT_00101400 = get_object_record_by_slot_index(',
+                               'DAT_00101400 = (char *)get_object_record_by_slot_index('),
+                              ('uint uVar4;', 'uint uVar4;\n  /* The eight-bit goal slot resolves only mobile records; use shared fields. */\n  uw_mobile_object_t *target_object;'),
                               ('  if ((DAT_00101400 == 0)',
                                '  target_object = (uw_mobile_object_t *)DAT_00101400;\n'
                                '  if ((DAT_00101400 == 0)'),

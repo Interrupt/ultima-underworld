@@ -6,7 +6,7 @@
  * header is self-contained for any caller. */
 #include "uw.h"
 
-extern undefined DAT_00085ce0_backing[32];
+extern char DAT_00085ce0_backing[32];
 #define DAT_00085ce0 DAT_00085ce0_backing[0]
 extern char s_You_read_the_00085ce8[];
 /* Globals defined in uw.c but also used by functions that now live in
@@ -33,7 +33,7 @@ void redraw_backpack_slot_widget(short slot);
 int place_object_in_backpack_slot(ushort *pack_object, short slot);
 int find_or_assign_object_widget(void *object);
 ushort *find_equipped_item_by_category(int category, int subcategory, int quality, short full_scan, void *out_slot);
-char *find_object_in_link_chain(int category, int subcategory, int quality, char **chain);
+uw_object_hdr_t *find_object_in_link_chain(int category, int subcategory, int quality, uw_object_hdr_t **chain);
 ushort *resolve_clicked_inventory_item(short zone);
 ushort *get_equipped_item_at_widget_slot(short slot);
 void deplete_object_count(ushort *object);

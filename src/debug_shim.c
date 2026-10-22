@@ -478,7 +478,7 @@ void dbgui_object_name(int id, char *out, size_t n)
   out[0] = 0;
   if (!name || !*name) return;
   snprintf(copy, sizeof copy, "%s", name);
-  snprintf(out, n, "%s", (const char *)format_object_display_name((byte *)copy, 1, 0));
+  snprintf(out, n, "%s", format_object_display_name(copy, 1, 0));
 }
 
 /* Create a fresh object of type `id`; critters live in the 27-byte mobile table, everything else in
@@ -545,7 +545,7 @@ int dbgui_all_runes(void)
 {
   int slot, result = 0, have_bag = 0;
   for (slot = 0xb; slot < 0x13 && !have_bag; slot++) {
-    ushort *o = (ushort *)resolve_object_link(&g_equipped_items + slot * 2);
+    ushort *o = (ushort *)resolve_object_link(&SLOT_LINK(slot));
     if (o && (*o & 0x1ff) == 0x8f) have_bag = 1;
   }
   if (!have_bag) result = dbgui_give_object(0x8f, 1) >= 0 ? 1 : -2;

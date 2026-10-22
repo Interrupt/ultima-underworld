@@ -152,37 +152,41 @@ void spawn_creature_death_loot(ushort *object)
 short *DAT_00085a6c;
 char *DAT_000879b0;
 int DAT_00250718;
-undefined s_scroll_newline_0008522c_backing[8192] = "\n";
+char s_scroll_newline_0008522c_backing[8192] = "\n";
 ushort babl_items[12][4];
 ushort *babl_dropped[8], *babl_drop_owner[8];
 int babl_drop_count, babl_loot_calls;
+/* babl_items are raw 8-byte object records; this is the single boundary
+ * where one is viewed as a game object header. */
+static uw_object_hdr_t *babl_item(unsigned slot)
+{ return (uw_object_hdr_t *)babl_items[slot]; }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
 {
     TEST_ASSERT_GREATER_THAN_INT(0, slot);
     TEST_ASSERT_LESS_THAN_INT(12, slot);
-    return babl_items[slot];
+    return babl_item(slot);
 }
 int encode_object_slot_index(const uw_object_hdr_t *object_) { char *object = (char *)object_; return (int)((object - (char *)babl_items[0]) / 8); }
-uw_object_hdr_t *resolve_object_link(ushort *link_)
-{ ushort *link = (ushort *)link_;
-    if (link == (ushort *)((char *)DAT_00100674 + 6)) return *link ? babl_items[*link] : NULL;
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{
+    if (link == (uw_link_word_t *)((char *)DAT_00100674 + 6)) return *link ? babl_item(*link) : NULL;
     for (int i = 1; i < 12; i++)
-        if (link == babl_items[i] + 2) return *link ? babl_items[*link] : NULL;
+        if (link == babl_items[i] + 2) return *link ? babl_item(*link) : NULL;
     TEST_FAIL_MESSAGE("Inventory link must address the NPC byte offset 6 or an object's link word");
     return NULL;
 }
-void object_list_unlink(ushort *head_, uw_object_hdr_t *object_)
+void object_list_unlink(uw_link_word_t *head_, uw_object_hdr_t *object_)
 { byte *head = (byte *)head_; byte *object = (byte *)object_;
     TEST_ASSERT_EQUAL_PTR((char *)DAT_00100674 + 6, head);
     while (*head && (byte *)babl_items[*head] != object) head = (byte *)(babl_items[*head] + 2);
     TEST_ASSERT_NOT_EQUAL(0, *head);
     *head = object[2]; object[2] = 0;
 }
-void object_list_insert_head(ushort *head_, uw_object_hdr_t *object_)
+void object_list_insert_head(uw_link_word_t *head_, uw_object_hdr_t *object_)
 { byte *head = (byte *)head_; char *object = (char *)object_;
     TEST_ASSERT_EQUAL_PTR((char *)DAT_00100674 + 6, head);
     object[2] = *head;
-    *head = encode_object_slot_index(object);
+    *head = encode_object_slot_index(object_);
 }
 int drop_object_near_target(void *owner, void *object, short radius, uint flags)
 {

@@ -220,7 +220,8 @@ void blit_object_sprite_by_frame(short frame, int x, int y, int width, int heigh
 {
   char cVar1;
   char cVar2;
-  char *pcVar3;
+  /* The .GR entry header/pixels are raw bytes; cVar1/cVar2 keep the original signed-char reads. */
+  byte *pcVar3;
   char *iVar4;
 
   /* g_grtile_registry is a flat pointer array -- see its declaration comment; iVar4 is dereferenced
@@ -234,8 +235,8 @@ void blit_object_sprite_by_frame(short frame, int x, int y, int width, int heigh
   }
   if ((int)frame < (int)(uint)DAT_00202738) {
     /* argument dropped by Ghidra here; frame matches the lookup right above */
-    pcVar3 = (char *)lookup_grtile_by_id(frame);
-    if (pcVar3 != (char *)0x0) {
+    pcVar3 = (byte *)lookup_grtile_by_id(frame);
+    if (pcVar3 != (byte *)0x0) {
       cVar1 = pcVar3[1];
       cVar2 = pcVar3[2];
       if (*pcVar3 == '\x04') {
@@ -245,7 +246,7 @@ void blit_object_sprite_by_frame(short frame, int x, int y, int width, int heigh
         /* Same dropped 3rd argument (the .GR entry's compression mode, 6/8/0xa) already root-caused
            and fixed in decode_tile_object_billboard_texture's identical call (see
            object-rendering-findings.txt's "MILESTONE: objects render" section) -- without it... */
-        pcVar3 = (char *)decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,*pcVar3);
+        pcVar3 = decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,*pcVar3);
       }
       bitmap_blit_to_framebuffer(x,y,pcVar3,cVar2,cVar1,0,0,0);
     }
@@ -755,7 +756,7 @@ int decode_tile_object_billboard_texture(short frame, uint unused)
 {
   byte bVar1;
   byte bVar2;
-  char *pcVar3;
+  byte *pcVar3;
   void *buf;
   int iVar5;
   int resolved;
@@ -768,7 +769,7 @@ int decode_tile_object_billboard_texture(short frame, uint unused)
   } else {
     resolved = resolve_sprite_id_to_frame(frame);
   }
-  pcVar3 = (char *)lookup_grtile_by_id(resolved);
+  pcVar3 = (byte *)lookup_grtile_by_id(resolved);
   bVar1 = pcVar3[1];
   bVar2 = pcVar3[2];
   if (*pcVar3 == '\x04') {
@@ -778,7 +779,7 @@ int decode_tile_object_billboard_texture(short frame, uint unused)
     /* Ghidra dropped decompress_gr_bitmap's 3rd arg, the .GR entry's compression mode (*pcVar3 --
        6/8/0xa RLE variants). Without it the decoder took its param_3==0 path and produced an
        all-zero (fully transparent) bitmap, so every object billboard sampled nothing. */
-    pcVar3 = (char *)decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,
+    pcVar3 = decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,
                                   *pcVar3);
   }
   iVar5 = (int)(short)(ushort)bVar2 * (int)(short)(ushort)bVar1;

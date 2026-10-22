@@ -56,12 +56,17 @@ int decode_critter_sprite_page(int page, int tier, short direction, short palett
     palette_used = palette;
     return 1;
 }
+/* Objects live as raw records inside the map arena; this is the single
+ * boundary where a record address is viewed as a game object header. */
+static uw_object_hdr_t *as_object(void *record)
+{ return (uw_object_hdr_t *)record; }
+
 uw_object_hdr_t *alloc_object_slot(int mobile)
 {
-    if (mobile) return projectile;
+    if (mobile) return as_object(projectile);
     TEST_ASSERT_LESS_THAN_UINT(16, spawned);
     drops[spawned] = (ushort *)(DAT_002046c4 + (1000 - spawned - 256) * 8);
-    return drops[spawned++];
+    return as_object(drops[spawned++]);
 }
 void *tilemap_lookup(short x, short y)
 {
@@ -69,11 +74,11 @@ void *tilemap_lookup(short x, short y)
     TEST_ASSERT_EQUAL_INT(28, y);
     return (byte *)arena + (y * 64 + x) * 4;
 }
-uw_object_hdr_t *resolve_object_link(ushort *link_)
-{ ushort *link = (ushort *)link_;
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{
     unsigned slot = *link >> 6;
-    return !slot ? NULL : slot < 256 ? DAT_002046b8 + slot * 27
-        : DAT_002046c4 + (slot - 256) * 8;
+    return !slot ? NULL : slot < 256 ? as_object(DAT_002046b8 + slot * 27)
+        : as_object(DAT_002046c4 + (slot - 256) * 8);
 }
 int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
 void record_placement(ushort *object)
@@ -111,7 +116,7 @@ void creatures_fixture_reset(void)
     DAT_002046b8 = (char *)arena + 0x4000;
     DAT_002046c4 = (char *)arena + 0x5b00;
     ushort *tile = (ushort *)((byte *)arena + (28 * 64 + 36) * 4);
-    goblin = resolve_object_link(tile + 1);
+    goblin = (ushort *)resolve_object_link(tile + 1); /* raw word view for the tests */
     TEST_ASSERT_NOT_NULL(goblin);
     TEST_ASSERT_EQUAL_UINT16(0x4d, goblin[0] & 0x1ff);
     memcpy(original_goblin, goblin, sizeof original_goblin);

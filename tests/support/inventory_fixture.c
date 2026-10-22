@@ -36,19 +36,24 @@ char *g_current_container_record;
 
 ushort *DAT_002046b4;
 
-uw_object_hdr_t *resolve_object_link(ushort *link_)
-{ ushort *link = (ushort *)link_;
+/* objects are raw 8-byte records; this is the single boundary where one is
+ * viewed as a game object header. */
+static uw_object_hdr_t *object_record(unsigned slot)
+{ return (uw_object_hdr_t *)objects[slot]; }
+
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{
     unsigned slot = *link >> 6;
     if (slot == 0) return NULL;
     TEST_ASSERT_LESS_THAN_UINT(5, slot);
-    return objects[slot];
+    return object_record(slot);
 }
 
 int encode_object_slot_index(const uw_object_hdr_t *object)
 {
     if (object == NULL) return 0;
     for (int i = 1; i < 5; i++)
-        if (object == objects[i]) return i;
+        if (object == object_record(i)) return i;
     TEST_FAIL_MESSAGE("Lookup must pass the actual object pointer to slot encoding");
     return 0;
 }
@@ -80,7 +85,7 @@ short DAT_000858c4, DAT_002020ac;
 
 code *DAT_002020b8;
 
-undefined1 DAT_000878ec_backing[64];
+char DAT_000878ec_backing[64];
 
 char s_UNNAMED_00084f24[] = "UNNAMED";
 

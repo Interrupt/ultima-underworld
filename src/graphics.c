@@ -293,7 +293,7 @@ void rect_fill_or_save_restore(ushort left, uint top, short right, short bottom)
 // WARNING: Globals starting with '_' overlap smaller symbols at the same address
 
 // was FUN_00011e5c
-void bitmap_blit_to_framebuffer(ushort x, ushort y, char *pixels, short height, short width, short src_x, short src_y, byte transparent)
+void bitmap_blit_to_framebuffer(ushort x, ushort y, void *pixels, short height, short width, short src_x, short src_y, byte transparent)
 {
   short sVar1;
   int iVar2;
@@ -527,7 +527,7 @@ void screen_backup_restore_rect(uint left, uint top, uint right, uint bottom)
 // was FUN_000122d4
 /* 768-byte palette buffer to install first, or 0 to keep the current palette passed through to
    apply_palette_buffer/reinstall_active_palette */
-void fade_in(ushort *framebuffer, char *palette, int palette_flag)
+void fade_in(ushort *framebuffer, void *palette, int palette_flag)
 {
   int iVar1;
   ushort uVar2;
@@ -600,7 +600,7 @@ void fade_in(ushort *framebuffer, char *palette, int palette_flag)
 // was FUN_00012444
 /* 768-byte palette buffer to install first, or 0 to keep the current palette passed through to
    apply_palette_buffer/reinstall_active_palette */
-void fade_out(ushort *framebuffer, char *palette, int palette_flag)
+void fade_out(ushort *framebuffer, void *palette, int palette_flag)
 {
   int iVar1;
   ushort uVar2;
@@ -776,10 +776,10 @@ void set_ambient_bias_without_light(char light_level)
 // was expand_pals_bytes -- expand PALS.DAT 6-bit channel bytes (param_2) to 8-bit into
 // param_1; param_3!=0 copies unscaled
 // was FUN_00022abc
-void expand_pals_bytes(char *out_rgb8, char *pals_6bit, int copy_unscaled)
+void expand_pals_bytes(byte *out_rgb8, byte *pals_6bit, int copy_unscaled)
 {
-  char *pcVar1;
-  char *pcVar2;
+  byte *pcVar1;
+  byte *pcVar2;
   int iVar3;
 
   /* out_rgb8 was declared `int` despite every caller passing a real pointer (e.g. load_pals_bank:
@@ -1519,11 +1519,11 @@ int load_bmp_resource_to_rgb565(int module, short resource_name, ushort *out_pix
           } while (local_64c != 0);
         }
       }
-      DeleteObject((long)iVar1);
+      DeleteObject((intptr_t)iVar1);
       cpp_operator_delete(pbVar2);
       return 1;
     }
-    DeleteObject((long)iVar1);
+    DeleteObject((intptr_t)iVar1);
   }
   return 0;
 }
@@ -1557,7 +1557,7 @@ void apply_palette_buffer(void *palette, int flag)
 // was FUN_00040f64 -- fades the active palette down to black over param_2 steps (frame-paced via
 // read_realtime_clock_units, at least 10 clock units apart), re-applying the dimmed palette via
 // apply_palette_buffer each step; param_2==0 instead snaps straight to black.
-void fade_active_palette_to_black(char *palette, short steps)
+void fade_active_palette_to_black(byte *palette, short steps)
 {
   int iVar1;
   char *iVar2;

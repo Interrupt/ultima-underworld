@@ -65,7 +65,7 @@ extern undefined4 DAT_0024cfc8;
    tmap.c (update_wall_partition_phase) -- extern'd here so both
    translation units see the same storage. */
 extern char s_font5x6p_sys_0008430c[];
-extern undefined s_scroll_newline_0008522c_backing[8192];
+extern char s_scroll_newline_0008522c_backing[8192];
 #define s_scroll_newline_0008522c s_scroll_newline_0008522c_backing[0]
 extern short DAT_00201c94;
 extern undefined4 DAT_002028d8;

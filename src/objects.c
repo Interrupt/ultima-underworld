@@ -87,7 +87,7 @@ uw_object_hdr_t *spawn_object_near_player()
   uw_projectile_object_t *puVar6;
   uint uVar7;
   int iVar8;
-  char *pbTile;
+  uw_tile_t *pbTile;
   ushort uVar9;
 
   puVar6 = (uw_projectile_object_t *)alloc_object_slot(1);
@@ -127,7 +127,7 @@ LAB_0004b06c:
                             (uint)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height * 5).quot;
       puVar6->hdr.zpos = cVar4 + (char)DAT_00202a3c * '\x02' + (bVar1 & 0x7f);
       bVar3 = puVar6->hdr.position_word_low;
-      if ((DAT_00202a44 == g_player_object) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {
+      if (((uw_object_hdr_t *)DAT_00202a44 == &g_player_object->hdr) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {
         puVar6->hdr.zpos = ((char)DAT_00202a3c * '\x02' - (*(byte *)(DAT_00086df8 + 0xb9) >> 3)) + g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height + (bVar1 & 0x7f);
       }
       iVar8 = check_object_drop_height((ushort *)puVar6, DAT_00202a44);
@@ -144,7 +144,7 @@ LAB_0004b06c:
       puVar6->precise_y = (ushort)iVar8;
       iVar8 = (puVar6->hdr.zpos) << 3;
       puVar6->precise_z = (ushort)iVar8;
-      if (((((uw_object_hdr_t *)DAT_00202a44)->object_id & 0x1c0) == 0x40) && (sVar5 = encode_object_slot_index(DAT_00202a44), 0xff < sVar5)) {
+      if (((((uw_object_hdr_t *)DAT_00202a44)->object_id & 0x1c0) == 0x40) && (sVar5 = encode_object_slot_index((uw_object_hdr_t *)DAT_00202a44), 0xff < sVar5)) {
         sVar5 = 0;
       }
       puVar6->source_slot = (byte)(char)sVar5;
@@ -160,11 +160,11 @@ LAB_0004b06c:
     /* Was `iVar8 = tilemap_lookup(...); object_list_insert_head(iVar8 + 2,...)` -- tilemap_lookup
        returns a real 64-bit tile-record pointer, but iVar8 is `int` (used throughout this function
        for genuine small integer scratch math, so not safe to widen wholesale)... */
-    pbTile = (char *)tilemap_lookup(puVar6->tile_x,puVar6->tile_y);
+    pbTile = (uw_tile_t *)tilemap_lookup(puVar6->tile_x,puVar6->tile_y);
     DEBUG(INFO, "[throw] object id=0x%03x spawned at tile=(%d,%d)\n",
           (unsigned)(puVar6->hdr.object_id), puVar6->tile_x,
           puVar6->tile_y);
-    object_list_insert_head(pbTile + 2, &puVar6->hdr);
+    object_list_insert_head(uw_tile_link_word_ptr(pbTile), &puVar6->hdr);
     play_sound_effect_at_object(10, (ushort *)puVar6, 0);
     /* The original FUN_0004ad10 returns the mobile object here.
        mobile_object_tick integrates its flight and sync_object_tile_position
@@ -235,10 +235,10 @@ void free_object_slot(uw_object_hdr_t *object_ptr)
     *(short *)DAT_0020469c = (short)((int)(object - DAT_002046c4) >> 3) + 0x100;
   }
 }
-void object_list_insert_head(ushort *link_field_ptr,
+void object_list_insert_head(uw_link_word_t *link_field_ptr,
                              uw_object_hdr_t *object_ptr)
 {
-  ushort *link_field = link_field_ptr;
+  uw_link_word_t *link_field = link_field_ptr;
   uw_object_hdr_t *object = object_ptr;
   undefined2 uVar1;
   short sVar3;
@@ -258,10 +258,10 @@ void object_list_insert_head(ushort *link_field_ptr,
 // was FUN_000531a0
 /* Object-record pointer -- was `uint`, truncating it (same class as object_list_insert_head
    above). */
-void object_list_append_tail(ushort *link_field_ptr,
+void object_list_append_tail(uw_link_word_t *link_field_ptr,
                              uw_object_hdr_t *object_ptr)
 {
-  ushort *link_field = link_field_ptr;
+  uw_link_word_t *link_field = link_field_ptr;
   uw_object_hdr_t *object = object_ptr;
   short sVar1;
   uw_object_hdr_t *pbVar2;
@@ -271,7 +271,7 @@ void object_list_append_tail(ushort *link_field_ptr,
       tile/object-chain-walk bug as object_list_unlink (see there), just never exercised yet (this
       walks a different list, e.g. a container's contents, to append object at its tail). */
   while (pbVar2 = resolve_object_link(link_field), pbVar2 != 0) {
-    link_field = &pbVar2->chain_word;
+    link_field = uw_chain_word_ptr(pbVar2);
   }
   object->next = 0;
   if ((char *)object < DAT_002046c4) {
@@ -286,9 +286,9 @@ void object_list_append_tail(ushort *link_field_ptr,
 /* param_2 was `int`, and the local holding resolve_object_link's return value was `int iVar4` --
    both truncating real pointers on this 64-bit host. */
 // was FUN_00053274
-void object_list_unlink(ushort *link_field_ptr, uw_object_hdr_t *object_ptr)
+void object_list_unlink(uw_link_word_t *link_field_ptr, uw_object_hdr_t *object_ptr)
 {
-  ushort *link_field = link_field_ptr;
+  uw_link_word_t *link_field = link_field_ptr;
   uw_object_hdr_t *object = object_ptr;
   short sVar1;
   undefined2 uVar2;
@@ -309,7 +309,7 @@ void object_list_unlink(ushort *link_field_ptr, uw_object_hdr_t *object_ptr)
       }
       if (pbVar4 == object)
         break;
-      link_field = &pbVar4->chain_word;
+      link_field = uw_chain_word_ptr(pbVar4);
     }
     uVar2 = object->chain_word;
     *link_field = (*link_field & 0x3f) | (uVar2 & 0xffc0);
@@ -321,9 +321,9 @@ void object_list_unlink(ushort *link_field_ptr, uw_object_hdr_t *object_ptr)
 // wielded weapon)...
 /* was `undefined4` -- truncated the real object-record pointer (passed straight to
    resolve_object_link), latent until that call started actually using it */
-void free_linked_object_recursive(ushort *link_field_ptr)
+void free_linked_object_recursive(uw_link_word_t *link_field_ptr)
 {
-  ushort *link_field = link_field_ptr;
+  uw_link_word_t *link_field = link_field_ptr;
   uw_object_hdr_t *puVar1;
 
   puVar1 = resolve_object_link(link_field);/* confirmed via ARM disassembly, 0x533e4 */
@@ -333,11 +333,11 @@ void free_linked_object_recursive(ushort *link_field_ptr)
     }
     else {
       if (puVar1->next != 0) {
-        free_linked_object_recursive(&puVar1->chain_word);/* ARM 0x5342c: add r0,r4,#4 */
+        free_linked_object_recursive(uw_chain_word_ptr(puVar1));/* ARM 0x5342c: add r0,r4,#4 */
       }
       if (puVar1->is_quant == 0) {
         if (puVar1->link != 0) {
-          free_linked_object_recursive(&puVar1->link_word);/* ARM 0x53470: add r0,r4,#6 */
+          free_linked_object_recursive(uw_link_word_ptr(puVar1));/* ARM 0x53470: add r0,r4,#6 */
         }
       }
       object_list_unlink(link_field, puVar1);
@@ -351,16 +351,16 @@ void free_linked_object_recursive(ushort *link_field_ptr)
 /* Was `int param_1; int param_2;` -- both real object-record pointers (param_2 is dereferenced
    directly; both are forwarded to object_list_unlink/free_object_slot, which already declare
    pointer params), truncated to 32 bits on this host... */
-void unlink_and_free_object(ushort *link_field_ptr,
+void unlink_and_free_object(uw_link_word_t *link_field_ptr,
                             uw_object_hdr_t *object_ptr)
 {
-  ushort *link_field = link_field_ptr;
+  uw_link_word_t *link_field = link_field_ptr;
   uw_object_hdr_t *object = object_ptr;
   /* Dropped argument: free_linked_object_recursive takes the address of a link field to recursively
       free (its own declared link_field) -- here that's object's own "contains" field (+6, this file's
       standard container-contents offset) -- but it was called bare... */
   if ((object->is_quant == 0) && (object->link != 0)) {
-    free_linked_object_recursive(&object->link_word);
+    free_linked_object_recursive(uw_link_word_ptr(object));
   }
   if (link_field != 0) {
     object_list_unlink(link_field, object);
@@ -374,9 +374,9 @@ void unlink_and_free_object(ushort *link_field_ptr,
 /* Was `int`, truncating the same DAT_002046b8/DAT_002046c4 object-record
    pointer arithmetic as get_object_record_by_slot_index above (fixed earlier this session)
    -- same fix. */
-uw_object_hdr_t *resolve_object_link(ushort *link_field_ptr)
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link_field_ptr)
 {
-  ushort *link_field = (ushort *)link_field_ptr;
+  uw_link_word_t *link_field = (uw_link_word_t *)link_field_ptr;
   ushort uVar1;
 
   /* ARM FUN_00053514 accepts any valid link-word address, including
@@ -471,7 +471,10 @@ int reset_burnt_out_item_state(char *tile_link, void *object_ptr)
    Keep it pointer-sized rather than truncating it through undefined4. */
 int apply_object_destruction_effect(ushort *object, ushort *attacker, uint damage_type_mask, int tile_x, short tile_y)
 {
-  ushort *settled;
+  /* The record is read below as a raw word array (object[0] type word, object[3] link word);
+     the typed view is the same address for the object-API calls. */
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object;
+  uw_object_hdr_t *settled;
   ushort uVar1;
   short sVar2;
   int iVar3;
@@ -493,20 +496,20 @@ LAB_000382ac:
         DAT_002020a0 = sVar2;
         close_door_object(attacker,object);
       }
-      discard_container_contents(object,1);
+      discard_container_contents(record,1);
 LAB_00038100:
       uVar6 = 0xffffffff;
     }
     else if (((uVar1 & 0x1ff) == 0x15d) || ((uVar1 & 0x1ff) == 0x15b)) {
       DAT_002020a4 = tile_y;
       DAT_002020a0 = sVar2;
-      discard_container_contents(object,0);
+      discard_container_contents(record,0);
       try_combine_or_stow_object(0,object,0);
     }
     else if ((uVar1 & 0x1f0) == 0x80) {
       iVar3 = roll_object_destroy_chance(10,object);
       if (iVar3 == 0) goto LAB_00038100;
-      try_empty_container(object,0);
+      try_empty_container(record,0);
     }
     else {
       if ((damage_type_mask & 8) != 0) {
@@ -530,7 +533,7 @@ LAB_00038100:
         }
       }
       if (((*object & 0x8000) == 0) && ((object[3] & 0xffc0) != 0)) {
-        free_linked_object_recursive(object + 3);
+        free_linked_object_recursive(uw_link_word_ptr(record));
       }
     }
     if ((short)uVar6 < -1) {
@@ -570,10 +573,12 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
   int iVar9;
   byte *pbVar10;
   ushort *puVar11;
+  uw_link_word_t *tile_link_cursor;
+  uw_object_hdr_t *tile_object;
   int iVar12;
   undefined4 uVar13;
   int iVar14;
-  char *pcVar15;
+  undefined1 *pcVar15;
   uint uVar16;
   ushort uVar17;
   char cVar18;
@@ -647,11 +652,12 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
       cVar7 = local_a4[local_a8 * 2];
       pbVar10 = (byte *)tilemap_lookup((int)cVar7,(int)cVar21);
       if (strict != 0) {
-        for (puVar11 = (ushort *)(pbVar10 + 2); (*puVar11 & 0xffc0) != 0; puVar11 = puVar11 + 2) {
-          puVar11 = (ushort *)resolve_object_link(puVar11);
-          if ((g_object_type_props[(*puVar11 & 0x1ff)].height != '\0') ||
-              (iVar12 = object_ptr_in_arena(puVar11), iVar12 != 0)) {
-            discard_misplaced_object(pbVar10 + 2,puVar11,0);
+        for (tile_link_cursor = uw_tile_link_word_ptr((uw_tile_t *)pbVar10); (*tile_link_cursor & 0xffc0) != 0;
+             tile_link_cursor = uw_chain_word_ptr(tile_object)) {
+          tile_object = resolve_object_link(tile_link_cursor);
+          if ((g_object_type_props[tile_object->object_id].height != '\0') ||
+              (iVar12 = object_ptr_in_arena(tile_object), iVar12 != 0)) {
+            discard_misplaced_object(pbVar10 + 2,(ushort *)tile_object,0);
           }
         }
       }
@@ -659,7 +665,7 @@ int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_
       if (((&DAT_000878d0)[*pbVar10 & 0xf] & 0x20) == 0) {
         cVar18 = '\0';
       }
-      uVar13 = encode_object_slot_index(object);
+      uVar13 = encode_object_slot_index((uw_object_hdr_t *)object);
       iVar12 = (int)(short)cVar21;
       iVar2 = (int)(short)cVar7;
       iVar14 = check_object_placement_clearance(*object & 0x1ff,uVar13,((iVar2 << 0x13) >> 0x10) + 3,
@@ -813,7 +819,7 @@ LAB_00039638:
 // was FUN_0003ae00 -- object-tree-walk callback (via
 // walk_object_tree/clear_temp_flags_on_all_objects): for a non-arena object (object_ptr_in_arena)
 // whose class isn't a door (0x140) or other special type (0x180)...
-int clear_object_temp_flag_callback(ushort *object)
+int clear_object_temp_flag_callback(uw_object_hdr_t *object)
 {
   ushort uVar1;
   int iVar2;
@@ -821,11 +827,11 @@ int clear_object_temp_flag_callback(ushort *object)
 
   iVar2 = object_ptr_in_arena(object);
   if (iVar2 == 0) {
-    uVar3 = ((uw_object_hdr_t *)object)->object_id & 0x1c0;
+    uVar3 = object->object_id & 0x1c0;
     if (((uVar3 != 0x140) && (uVar3 != 0x180)) &&
-       ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {
-      uVar1 = ((uw_object_hdr_t *)object)->position_word;
-      ((uw_object_hdr_t *)object)->position_word = (ushort)(uVar1 & 0xfdff);
+       ((g_object_type_props[object->object_id].class_flags & 3) != 2)) {
+      uVar1 = object->position_word;
+      object->position_word = (ushort)(uVar1 & 0xfdff);
     }
   }
   return 0;
@@ -839,21 +845,21 @@ int clear_object_temp_flag_callback(ushort *object)
 void clear_temp_flags_on_all_objects()
 {
   void *contents;
-  char *tile_cursor;
+  uw_tile_t *tile_cursor;
   int column;
   int row;
 
   row = 0;
-  tile_cursor = DAT_002029cc;
+  tile_cursor = (uw_tile_t *)DAT_002029cc;
   do {
     column = 0;
     do {
-      if ((*(ushort *)(tile_cursor + 2) & 0xffc0) != 0) {
-        contents = resolve_object_link(tile_cursor + 2);
+      if ((*uw_tile_link_word_ptr(tile_cursor) & 0xffc0) != 0) {
+        contents = resolve_object_link(uw_tile_link_word_ptr(tile_cursor));
         walk_object_tree(contents,clear_object_temp_flag_callback);
       }
       column = (column + 1) * 0x10000 >> 0x10;
-      tile_cursor = tile_cursor + 4;
+      tile_cursor = tile_cursor + 1; /* one 4-byte tile record */
     } while (column < 0x40);
     row = row + 1;
   } while (row * 0x10000 >> 0x10 < 0x40);
@@ -872,19 +878,19 @@ void free_player_inventory_chain(char *link_field)
 {
   /* Was `int iVar1;` -- truncated resolve_object_link's real 64-bit `void *` return to 32 bits on
      this recompile (harmless on the original 32-bit ARM binary). */
-  char *iVar1;
+  uw_object_hdr_t *iVar1;
 
-  iVar1 = resolve_object_link(link_field);
+  iVar1 = resolve_object_link((uw_link_word_t *)link_field);
   if (iVar1 != 0) {
-    if (((uw_object_hdr_t *)iVar1)->is_quant == 0) {
-      if (((uw_object_hdr_t *)iVar1)->link != 0) {
-        free_player_inventory_chain(iVar1 + 6); /* was called with no argument; confirmed via ARM disassembly, 0x44500 */
+    if (iVar1->is_quant == 0) {
+      if (iVar1->link != 0) {
+        free_player_inventory_chain((char *)iVar1 + 6); /* was called with no argument; confirmed via ARM disassembly, 0x44500 */
       }
     }
-    if (((uw_object_hdr_t *)iVar1)->next != 0) {
-      free_player_inventory_chain(iVar1 + 4); /* was called with no argument; confirmed via ARM disassembly, 0x4451c */
+    if (iVar1->next != 0) {
+      free_player_inventory_chain((char *)iVar1 + 4); /* was called with no argument; confirmed via ARM disassembly, 0x4451c */
     }
-    object_list_unlink(link_field,iVar1);
+    object_list_unlink((uw_link_word_t *)link_field,iVar1);
     free_object_slot(iVar1);
   }
 }
@@ -897,14 +903,14 @@ uint calculate_object_weight(uw_object_hdr_t *object)
 {
   uint uVar2;
   int iVar3;
-  ushort local_8 [2];
+  short local_8 [2];  /* sum_container_weight's running total */
   iVar3 = (object->object_id) * 0xd;
   if ((!object->is_quant) || ((object->link & 0x200) != 0)) {
     local_8[0] = g_object_type_props[iVar3 / 0xd].unit_weight;
-    uVar2 = (uint)local_8[0];
+    uVar2 = (uint)(ushort)local_8[0];
     if (!object->is_quant) {
       if (object->link != 0) {
-        sum_container_weight(&object->link_word,local_8);
+        sum_container_weight(uw_link_word_ptr(object),local_8);
         uVar2 = (uint)(short)local_8[0];
       }
     }
@@ -945,7 +951,7 @@ int load_object_catalog_data()
   local_13c[6] = (code *)&load_class6_variant_effect_table;
   local_13c[7] = (code *)&load_class7_variant_effect_table;
   ce_memset(acStack_11c,0,0x104);
-  pcVar7 = &DAT_0023cca8;
+  pcVar7 = (char *)&DAT_0023cca8;
     stack0xffdc323c_ptr = stack0xffdc323c_buf;
   pcVar2 = pcVar7;
     stack0xffdc323c_ptr = acStack_11c;
@@ -1106,9 +1112,9 @@ int object_exceeds_size_threshold(void *object_ptr)
 
 // was FUN_00052d24 -- if link param_2 points to a real object, resolves it and rolls
 // roll_object_destroy_chance(param_1, object).
-int should_destroy_linked_object(int base_chance, ushort *link_field)
+int should_destroy_linked_object(int base_chance, uw_link_word_t *link_field)
 {
-  char *pcVar1;
+  uw_object_hdr_t *pcVar1;
 
   if ((*link_field & 0xffc0) != 0) {
     /* ARM 0x52d54..0x52d64 forwards the object address in r1
@@ -1129,12 +1135,12 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
   ushort uVar2;
   ushort uVar3;
   int iVar4;
-  char *pcVar4;
+  uw_object_hdr_t *pcVar4;
   void *pvVar5;
   uint uVar6;
   int iVar7;
   int iVar8;
-  char *iVar9;
+  uw_tile_t *iVar9;
   int iVar10;
   ushort local_3c [2];
   int local_38;
@@ -1146,7 +1152,7 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
   uVar2 = g_player_object->tile_word;
   local_38 = (int)(short)(uVar2 >> 10);
   local_30 = 10 - (short)keep_rows;
-  iVar9 = DAT_002029cc;
+  iVar9 = (uw_tile_t *)DAT_002029cc;
   do {
     uVar6 = (short)((uVar2 & 0x3f0) >> 4) - iVar7;
     uVar1 = (int)uVar6 >> 0x1f;
@@ -1155,16 +1161,16 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
     do {
       uVar1 = (local_38 - iVar8) >> 0x1f;
       if (local_30 < (int)(local_34 + ((local_38 - iVar8 ^ uVar1) - uVar1))) {
-        for (local_3c[0] = *(ushort *)(iVar9 + 2); (local_3c[0] & 0xffc0) != 0;
+        for (local_3c[0] = *uw_tile_link_word_ptr(iVar9); (local_3c[0] & 0xffc0) != 0;
             local_3c[0] = local_3c[0] & 0x3f | uVar3 & 0xffc0) {
           /* ARM 0x52e5c..0x52e68 reads +4/+5 from the resolved
              record address. Preserve the native pointer here. */
           pcVar4 = resolve_object_link(local_3c);
-          uVar3 = ((uw_object_hdr_t *)pcVar4)->chain_word;
+          uVar3 = pcVar4->chain_word;
           iVar4 = should_destroy_linked_object(keep_rows,local_3c);
           if (iVar4 != 0) {
             pvVar5 = get_object_record_by_slot_index(local_3c[0] >> 6);
-            unlink_and_free_object((ushort *)(iVar9 + 2),pvVar5);
+            unlink_and_free_object(uw_tile_link_word_ptr(iVar9),pvVar5);
             iVar10 = iVar10 + 1;
             if ((int)max_destroyed <= iVar10 * 0x10000 >> 0x10) {
               return;
@@ -1173,7 +1179,7 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
         }
       }
       iVar8 = (iVar8 + 1) * 0x10000 >> 0x10;
-      iVar9 = iVar9 + 4;
+      iVar9 = iVar9 + 1; /* one 4-byte tile record */
     } while (iVar8 < 0x40);
     iVar7 = (iVar7 + 1) * 0x10000 >> 0x10;
   } while (iVar7 < 0x40);
@@ -1189,7 +1195,8 @@ void despawn_objects_outside_radius(int keep_rows, short max_destroyed)
    class as several other fixes this session. */
 ushort *discard_misplaced_object(void *tile_link_ptr, ushort *object, int skip_roll)
 {
-  char *tile_link = (char *)tile_link_ptr;
+  uw_link_word_t *tile_link = (uw_link_word_t *)tile_link_ptr;
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
   ushort uVar1;
   int iVar2;
   ushort local_10 [2];
@@ -1198,7 +1205,7 @@ ushort *discard_misplaced_object(void *tile_link_ptr, ushort *object, int skip_r
      dereferences its second parameter -- but it was called here with only the literal 10, leaving
      the real argument (object, the object being placed) as leftover-register garbage. */
   if ((skip_roll != 0) || (iVar2 = roll_object_destroy_chance(10,(char *)object), iVar2 != 0)) {
-    uVar1 = encode_object_slot_index(object);
+    uVar1 = encode_object_slot_index(record);
     local_10[0] = local_10[0] & 0x3f | uVar1 << 6;
     if ((*object & 0x1c0) == 0x1c0) {
       scheduler_remove_entry(uVar1 & 0x3ff);
@@ -1207,7 +1214,7 @@ ushort *discard_misplaced_object(void *tile_link_ptr, ushort *object, int skip_r
       free_linked_object_recursive(local_10);
     }
     else {
-      unlink_and_free_object(tile_link,object);
+      unlink_and_free_object(tile_link,record);
     }
     object = (ushort *)0x0;
   }
@@ -1254,10 +1261,10 @@ uw_object_hdr_t *get_object_record_by_slot_index(short slot_index)
 // was FUN_00053644 -- recursively searches the chain/contents rooted at link param_1 for an object
 // whose encode_object_slot_index() matches target slot param_3 (param_2 is always passed 1, a
 // recurse- into-contents flag like find_object_in_chain's)...
-uw_object_hdr_t *find_object_by_encoded_slot_in_chain(ushort *link_field_ptr,
+uw_object_hdr_t *find_object_by_encoded_slot_in_chain(uw_link_word_t *link_field_ptr,
                                                       int recurse, int slot)
 {
-  ushort *link_field = (ushort *)link_field_ptr;
+  uw_link_word_t *link_field = (uw_link_word_t *)link_field_ptr;
   ushort *puVar1;
   short sVar2;
   uw_object_hdr_t *iVar3;
@@ -1273,10 +1280,10 @@ LAB_00053720:
     iVar3 = resolve_object_link(link_field);
     while ((sVar2 = encode_object_slot_index(iVar3), iVar4 = iVar3, puVar1 = link_field, sVar2 != (short)slot &&
             (((iVar3->is_quant != 0 || (iVar3->link == 0)) ||
-              (iVar4 = find_object_by_encoded_slot_in_chain(&iVar3->link_word,recurse,slot), puVar1 = DAT_002046b4,
+              (iVar4 = find_object_by_encoded_slot_in_chain(uw_link_word_ptr(iVar3),recurse,slot), puVar1 = DAT_002046b4,
                iVar4 == 0))))) {
       if (iVar3->next == 0) goto LAB_00053720;
-      iVar3 = resolve_object_link(&iVar3->chain_word);
+      iVar3 = resolve_object_link(uw_chain_word_ptr(iVar3));
     }
   }
   DAT_002046b4 = puVar1;
@@ -1337,15 +1344,15 @@ void active_mobile_list_remove(char slot)
 // was FUN_000537d0 -- searches the object chain starting at *param_1 for one matching class param_3
 // (>>6&7 of the type word), subclass param_4 (>>4&3), and quality param_5 (&0xf), each -1/0xffff
 // ("wildcard") skipping that check...
-uw_object_hdr_t *find_object_in_chain(ushort **link_cursor_ptr, int recurse,
+uw_object_hdr_t *find_object_in_chain(uw_link_word_t **link_cursor_ptr, int recurse,
                                       int object_class, int subclass,
                                       short quality)
 {
-  ushort **link_cursor = (ushort **)link_cursor_ptr;
+  uw_link_word_t **link_cursor = (uw_link_word_t **)link_cursor_ptr;
   uw_object_hdr_t *puVar1;
   uw_object_hdr_t *puVar2;
   uint uVar3;
-  ushort *local_28;
+  uw_link_word_t *local_28;
   
   puVar1 = resolve_object_link(*link_cursor);
   if (puVar1 != NULL) {
@@ -1363,13 +1370,13 @@ uw_object_hdr_t *find_object_in_chain(ushort **link_cursor_ptr, int recurse,
         }
       }
       if ((((recurse != 0) && ((uVar3 & 0x8000) == 0)) && (puVar1->link != 0)) &&
-          (local_28 = &puVar1->link_word,
+          (local_28 = uw_link_word_ptr(puVar1),
            puVar2 = find_object_in_chain(&local_28, recurse, object_class, subclass, quality),
            puVar2 != NULL)) {
         *link_cursor = local_28;
         return puVar2;
       }
-      puVar1 = resolve_object_link(&puVar1->chain_word);
+      puVar1 = resolve_object_link(uw_chain_word_ptr(puVar1));
     } while (puVar1 != NULL);
   }
   return NULL;
@@ -1381,17 +1388,17 @@ uw_object_hdr_t *find_object_in_chain(ushort **link_cursor_ptr, int recurse,
 // for that type (decoded into class/subclass/quality) among its contents.
 int object_or_contents_has_type(void *object_ptr, ushort type_id)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   undefined4 uVar1;
-  ushort *found;
-  ushort *local_8;
+  uw_object_hdr_t *found;
+  uw_link_word_t *local_8;
   
-  if ((*object & 0x1ff) == (int)(short)type_id) {
+  if ((object->type_flags & 0x1ff) == (int)(short)type_id) {
     uVar1 = 1;
   }
   else {
-    if ((*object & 0x8000) == 0) {
-      local_8 = object + 3;
+    if ((object->type_flags & 0x8000) == 0) {
+      local_8 = uw_link_word_ptr(object);
       found = find_object_in_chain(&local_8,1,(int)(short)type_id >> 6,(short)type_id >> 4 & 3,type_id & 0xf
                           );
       if (found != 0) {
@@ -1487,6 +1494,7 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
                                        short tile_y, int force)
 {
   ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object_ptr; /* same record, typed for the object API */
   int uw_ord2005_rem_119 = 0;
   bool bVar1;
   ushort uVar2;
@@ -1494,9 +1502,9 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   char cVar4;
   byte bVar5;
   undefined2 uVar6;
-  short *psVar7;
+  uw_object_hdr_t *psVar7;
   uint uVar8;
-  ushort *puVar9;
+  uw_object_hdr_t *puVar9;
   undefined4 uVar10;
   char extraout_r1;
   int iVar11;
@@ -1504,21 +1512,21 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   /* iVar12 is reused throughout this function as a plain int (bitfield math, array indices) -- real
      uses, left alone -- but the one use at LAB_000564d8 held tilemap_lookup's real 64-bit pointer
      return... */
-  char *pDropTile;
+  uw_tile_t *pDropTile;
   undefined1 local_4c [24];
 
   DAT_002046d4 = 0;
   DAT_002046ec = 0;
   DAT_00202c6c = local_4c;
   bVar1 = false;
-  uVar6 = encode_object_slot_index(object);
+  uVar6 = encode_object_slot_index(record);
   DAT_00202c6c[10] = (char)uVar6;
   DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
   iVar12 = (*object & 0x1ff) * 0xd;
   bVar5 = g_object_type_props[iVar12 / 0xd].flags;
   do {
     if ((bVar5 & 8) != 0) {
-      return object;
+      return record;
     }
     DAT_00202c6c[8] = g_object_type_props[iVar12 / 0xd].collision_radius;
     DAT_00202c6c[9] = g_object_type_props[iVar12 / 0xd].height;
@@ -1547,8 +1555,8 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
         if ((cVar4 < 0) ||
            ((ushort)(byte)(&DAT_00202c38)[cVar4 * 6] != *(ushort *)(DAT_00202c6c + 4))) break;
         DAT_00086998 = cVar4;
-        psVar7 = (short *)resolve_object_link(&DAT_00202c3a + cVar4 * 6);
-        uVar8 = (int)((uw_object_hdr_t *)psVar7)->object_id;
+        psVar7 = resolve_object_link(collision_candidate_link_ptr(cVar4));
+        uVar8 = (int)psVar7->object_id;
         DAT_00086999 = (undefined1)uVar8;
         DAT_0008699a = (undefined1)(uVar8 >> 8);
         if ((g_object_type_props[(short)uVar8].flags & 2) == 2) {
@@ -1569,31 +1577,31 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
       cVar4 = '\x01';
 LAB_000564d0:
       if (cVar4 == '\0') {
-        return object;
+        return record;
       }
 LAB_000564d8:
-      pDropTile = (char *)tilemap_lookup((int)tile_x,(int)tile_y);
-      puVar9 = (ushort *)discard_misplaced_object(pDropTile + 2,object,0);
+      pDropTile = (uw_tile_t *)tilemap_lookup((int)tile_x,(int)tile_y);
+      puVar9 = (uw_object_hdr_t *)discard_misplaced_object(uw_tile_link_word_ptr(pDropTile),object,0);
       return puVar9;
     }
     if ((uVar2 & 7) == 5) goto LAB_000564d8;
     if ((uVar2 & 7) == 6) {
       if ((g_object_type_props[(*object & 0x1ff)].quality_flags & 0xc) == 0xc) {
-        return object;
+        return record;
       }
       cVar4 = resolve_damage_type_resistance(object,1,8);
       goto LAB_000564d0;
     }
     if ((uVar2 & 8) != 0) {
-      return object;
+      return record;
     }
     if (DAT_002046ec != 0) {
-      return object;
+      return record;
     }
     if (iVar12 == 0) {
       DAT_0010144c = tile_x;
       DAT_00101454 = tile_y;
-      puVar9 = (ushort *)reallocate_object_to_arena(object);
+      puVar9 = reallocate_object_to_arena(object);
       DAT_0010144c = uVar6;
       DAT_00101454 = uVar3;
       if (DAT_002046d4 != 0) {
@@ -1613,7 +1621,7 @@ LAB_000564d8:
     }
     DAT_00202c6c = local_4c;
     bVar1 = true;
-    uVar6 = encode_object_slot_index(object);
+    uVar6 = encode_object_slot_index(record);
     DAT_00202c6c[10] = (char)uVar6;
     DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
     iVar12 = (*object & 0x1ff) * 0xd;
@@ -1735,13 +1743,14 @@ void *class2_variant_effect_table_lookup()
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr, short radius, int skip_roll)
 {
   char *object = (char *)object_ptr;
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object_ptr; /* same record, typed for the object API */
   int iVar1;
   uint uVar2;
-  
+
   iVar1 = find_object_placement((ushort *)object,tile_x,tile_y,height,radius);
   if (iVar1 == 0) {
     if ((skip_roll == 0) && (iVar1 = roll_object_destroy_chance(10,object), iVar1 != 0)) {
-      unlink_and_free_object(0,object);
+      unlink_and_free_object(0,record);
       return 0;
     }
     uVar2 = *(ushort *)(object + 2) & 0x3ff;
@@ -1750,8 +1759,8 @@ int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr
          (byte)(uVar2 >> 8) | (byte)(((tile_y & 7 | (tile_x & 0x1fff) << 3) << 10) >> 8);
     /* was folded into `int iVar1` (reused above for unrelated int
        values) -- truncated tilemap_lookup's real `void *` return */
-    char *_tile1 = (char *)tilemap_lookup((int)(short)tile_x >> 3,(int)(short)tile_y >> 3);
-    object_list_insert_head(_tile1 + 2,object);
+    uw_tile_t *_tile1 = (uw_tile_t *)tilemap_lookup((int)(short)tile_x >> 3,(int)(short)tile_y >> 3);
+    object_list_insert_head(uw_tile_link_word_ptr(_tile1),record);
   }
   return 1;
 }
@@ -1806,32 +1815,33 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 // was FUN_00055610 -- the "spawn and replace" mechanism: allocate a fresh low-region object slot
 // (alloc_object_slot(1), same allocator spawn_object_near_player uses -- the only region
 // emit_tile_objects's object_ptr_in_arena gate treats as renderable)...
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
+uw_object_hdr_t *reallocate_object_to_arena(ushort *object_words)
 {
-  char *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
-  ushort *puVar2;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_words;
+  uw_tile_t *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
+  uw_object_hdr_t *puVar2;
 
-  iVar1 = (char *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
-  puVar2 = (ushort *)alloc_object_slot(1);
-  if (puVar2 == (ushort *)0x0) {
-    puVar2 = (ushort *)0x0;
+  iVar1 = (uw_tile_t *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
+  puVar2 = alloc_object_slot(1);
+  if (puVar2 == NULL) {
+    puVar2 = NULL;
   }
   else {
-    ((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;
-    ((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;
-    ((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;
-    ((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;
+    puVar2->type_flags = object->type_flags;
+    puVar2->position_word = object->position_word;
+    puVar2->chain_word = object->chain_word;
+    puVar2->link_word = object->link_word;
     compute_object_placement_fields(puVar2,(int)DAT_0010144c,(int)DAT_00101454);
-    ((uw_mobile_object_t *)puVar2)->hit_points = ((uw_object_hdr_t *)object)->quality;
-    if (((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {
-      ((uw_projectile_object_t *)puVar2)->original_heading = ((uw_object_hdr_t *)object)->heading;
+    ((uw_mobile_object_t *)puVar2)->hit_points = object->quality;
+    if (((object->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(object->object_id)].class_flags & 3) != 2)) {
+      ((uw_projectile_object_t *)puVar2)->original_heading = object->heading;
     }
-    if ((((uw_object_hdr_t *)puVar2)->object_id & 0x1c0) == 0x1c0) {
+    if ((puVar2->object_id & 0x1c0) == 0x1c0) {
       scheduler_relink_entry(puVar2,object);
     }
-    object_list_unlink(iVar1 + 2,object);
+    object_list_unlink(uw_tile_link_word_ptr(iVar1),object);
     free_object_slot(object);
-    object_list_insert_head(iVar1 + 2,puVar2);
+    object_list_insert_head(uw_tile_link_word_ptr(iVar1),puVar2);
   }
   return puVar2;
 }
@@ -1846,9 +1856,10 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
   uint uVar4;
   int iVar5;
   uint uVar6;
-  char *pTile;  /* was reuse of `iVar5` (int) -- truncated
+  uw_tile_t *pTile;  /* was reuse of `iVar5` (int) -- truncated
                    tilemap_lookup's real pointer; iVar5 itself stays int
                    for its other, unrelated uses in this function */
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
 
   bVar3 = 0;
   while( true ) {
@@ -1860,7 +1871,7 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
       uVar2 = ce_rand();
       uVar6 = (ordint_divmod(iVar5,(int)uVar2).rem - (int)radius) + tile_y;
     }
-    uVar2 = encode_object_slot_index(object);
+    uVar2 = encode_object_slot_index(record);
     iVar5 = check_object_placement_clearance(*object & 0x1ff,uVar2,uVar4,uVar6,height,1,0);
     if (iVar5 != 0) break;
     bVar3 = bVar3 + 1;
@@ -1868,14 +1879,14 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
       return 0;
     }
   }
-  pTile = (char *)tilemap_lookup((int)uVar4 >> 3,(int)uVar6 >> 3);
+  pTile = (uw_tile_t *)tilemap_lookup((int)uVar4 >> 3,(int)uVar6 >> 3);
   uVar1 = object[1];
   bVar3 = (byte)(uVar1 & 0x3ff);
   *(byte *)(object + 1) = (bVar3 ^ (byte)height) & 0x7f ^ bVar3;
   *(byte *)((char *)object + 3) =
        (byte)((uVar1 & 0x3ff) >> 8) | (byte)(((uVar6 & 7 | (uVar4 & 0x1fff) << 3) << 10) >> 8);
-  object_list_append_tail(pTile + 2,object);
-  iVar5 = object_ptr_in_arena(object);
+  object_list_append_tail(uw_tile_link_word_ptr(pTile),record);
+  iVar5 = object_ptr_in_arena(record);
   if (iVar5 == 0) {
     settle_dropped_object(object,(int)uVar4 >> 3,(int)uVar6 >> 3,1);
   }

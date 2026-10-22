@@ -26,7 +26,7 @@ int DAT_000db448;   /* camera pitch angle; 0 keeps the near-tile ray widening in
 /* Exercise the actual equipment light scan; unrelated HUD/equipment
    services do nothing in this visibility fixture. */
 static char character[256], derived[32];
-static ushort torch[4];
+static uw_object_hdr_t torch;
 static byte torch_effect[2];
 static int torch_equipped;
 char *DAT_00086df8 = character, *DAT_0023be74 = derived;
@@ -39,7 +39,7 @@ unsigned char DAT_00085ac8_backing[16] = {5,6,7,8};
 int visibility_light_config_record, visibility_ambient_strength;
 uw_object_hdr_t *get_equipped_item_at_slot(short slot)
 {
-    return torch_equipped && slot == 5 ? torch : NULL;
+    return torch_equipped && slot == 5 ? &torch : NULL;
 }
 void *get_scanned_object_class_effect_ptr(void)
 {
@@ -67,7 +67,7 @@ void load_shading_level_config(char record)
 }
 void equip_visibility_test_torch(int equipped)
 {
-    torch[0] = 0x94; /* lit torch in the original eligible slot */
+    torch.type_flags = 0x94; /* lit torch in the original eligible slot */
     /* OBJECTS.DAT: header, armor tables, monster table, carry weights,
        then two bytes per light variant. Variant 4 is the lit torch. */
     if (equipped)

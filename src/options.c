@@ -186,7 +186,7 @@ void options_init(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     const char *arg = argv[i];
     const char *name;
-    char *eq;
+    const char *eq;
     char namebuf[96];
     const char *value = NULL;
     const struct opt_desc *d;

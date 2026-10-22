@@ -10,7 +10,7 @@ extern char * g_open_container_list;
 /* Globals defined in uw.c but also used by functions that now live in
    containers.c (the open-container/backpack view stack) -- extern'd
    here so both translation units see the same storage. */
-extern undefined1 DAT_00085c88_backing[128];
+extern char DAT_00085c88_backing[128];
 #define DAT_00085c88 DAT_00085c88_backing[0]
 
 
@@ -25,9 +25,9 @@ void refresh_container_view();
 void repopulate_container_grid_slots();
 void open_backpack_container(short container_slot);
 int auto_place_in_container(void *object, short slot);
-void sum_container_weight(ushort *link_field, short *total_weight);
-void encode_equipped_item_index(ushort *item_link, ushort *out_index);
-void decode_equipped_item_index(ushort *saved_index, ushort *out_link);
+void sum_container_weight(uw_link_word_t *link_field, short *total_weight);
+void encode_equipped_item_index(uw_link_word_t *item_link, uw_link_word_t *out_index);
+void decode_equipped_item_index(uw_link_word_t *saved_index, uw_link_word_t *out_link);
 int place_rune_in_bag(uw_object_hdr_t *rune_object);
 uw_object_hdr_t *get_equipped_item_at_slot(short slot);
 void reset_equipment_and_container_state();

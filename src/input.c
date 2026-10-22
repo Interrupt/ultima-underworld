@@ -395,7 +395,7 @@ void unregister_key_binding(short binding_id)
   short sVar6;
   short *psVar7;
   short *psVar8;
-  short *psVar9;
+  undefined2 *psVar9; /* points at the undefined2 count DAT_0020288c / DAT_00202898 */
   int iVar10;
   
   if (binding_id == 0) {
@@ -516,11 +516,14 @@ void poll_input_bindings(void *input_state_ptr)
   int iVar4;
   short local_28;
   short local_26;
+  ushort click_x, click_y; /* get_click_position writes ushorts; the hit tests below compare signed */
 
   uVar1 = peek_input_event();
   if (-1 < (short)uVar1) {
     if ((short)uVar1 < 4) {
-      get_click_position(&local_28,&local_26);
+      get_click_position(&click_x,&click_y);
+      local_28 = (short)click_x;
+      local_26 = (short)click_y;
       input_state[6] = (char)uVar1;
       input_state[7] = (char)((uint)uVar1 >> 8);
       /* The mouse-button-state field of the DAT_00085a6c struct is at BYTE offset 12: every reader
@@ -528,7 +531,9 @@ void poll_input_bindings(void *input_state_ptr)
          *)(DAT_00085a6c + 6)`, which is byte 12 because DAT_00085a6c is typed `short *`... */
       input_state[12] = (char)uVar1;
       input_state[13] = (char)((uint)uVar1 >> 8);
-      get_click_position(&local_28,&local_26);
+      get_click_position(&click_x,&click_y);
+      local_28 = (short)click_x;
+      local_26 = (short)click_y;
       input_state[4] = 1;
       input_state[5] = 0;
       iVar4 = DAT_00202898 + -1;
@@ -1027,7 +1032,7 @@ extern int g_text_input_active;
 int handle_keyboard_message(int window, int message, uint wparam)
 {
   ushort uVar1;
-  undefined4 *puVar2;
+  int *puVar2; /* -> the int flags DAT_000876c8 / DAT_0024af60 */
   undefined4 uVar3;
   
   if (message == 7) {
@@ -1457,11 +1462,12 @@ LAB_0003c940:
       iVar8 = (int)DAT_00202080;
       iVar7 = iVar9 * 0x10000 >> 0x10;
       if (iVar7 != iVar8) {
+        /* tile word 1 (byte offset 2 of each 4-byte tile): obj_head, the same layout as a link word */
         if (iVar8 != -1) {
-          object_list_unlink(DAT_002029cc + iVar8 * 4 + 2,g_player_object);
+          object_list_unlink((uw_link_word_t *)(DAT_002029cc + iVar8 * 4 + 2),&g_player_object->hdr);
         }
         DAT_00202080 = (short)iVar9;
-        object_list_insert_head(DAT_002029cc + iVar7 * 4 + 2,g_player_object);
+        object_list_insert_head((uw_link_word_t *)(DAT_002029cc + iVar7 * 4 + 2),&g_player_object->hdr);
         uVar6 = DAT_00204880 & 0x3f00;
         uVar5 = g_player_object->tile_word & 0x3ff;
         g_player_object->tile_x = (uVar6 >> 8) & 0x3f;
@@ -1510,7 +1516,8 @@ LAB_0003c940:
       iVar7 = (int)(short)*(char *)(DAT_00202c6c + 0xb);
       if (iVar7 < (int)(iVar8 + (uint)*(byte *)((char *)DAT_00202c6c + 0x15))) {
         do {
-          uVar11 = (ushort *)resolve_object_link(&DAT_00202c3a + iVar7 * 6);
+          /* 6-byte collision candidate records; the first word is the object's link word */
+          uVar11 = (ushort *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + iVar7 * 6));
           /* Was `iVar8 = (int)((ulonglong)uVar11 >> 0x20);` -- a leftover from the original 32-bit
              ARM ABI, where resolve_object_link's caller apparently re-read some other value out of
              r1 right after the call (Ghidra folded it into a fake 64-bit return value, r0:r1). */
@@ -1654,7 +1661,7 @@ int register_click_region(int left, int bottom, int right, int top, short arg, s
 // (keycode + mode-mask match) and invoke its handler.
 /* Was `int`, truncating the real pointer poll_input_bindings passes through (its own param_1, e.g.
    DAT_00085a6c). */
-void dispatch_key_binding(char *input_state, short key_code)
+void dispatch_key_binding(byte *input_state, short key_code)
 {
   /* Was `int`; both double as a plain loop index (iVar2 only) and a real pointer into the
      DAT_0020289c keybinding table (iVar1 always, iVar2 once more on the match path just before it

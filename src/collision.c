@@ -34,23 +34,24 @@ static char DAT_00202c1c;
 // 24-byte struct) for param_1, then returns a combined height/step-limit field.
 int build_collision_height_field_for_object(ushort *object)
 {
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object; /* same record, typed for the object API */
   undefined2 slot_index;
   int field;
   undefined1 height_scratch [24];
   
   DAT_00202c6c = height_scratch;
-  slot_index = encode_object_slot_index(object);
+  slot_index = encode_object_slot_index(record);
   DAT_00202c6c[10] = (char)slot_index;
   DAT_00202c6c[0xb] = (char)((ushort)slot_index >> 8);
-  DAT_00202c6c[8] = g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].collision_radius;
-  DAT_00202c6c[9] = g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].height;
-  field = ((((uw_mobile_object_t *)object)->tile_x << 3)) + (uint)(((uw_object_hdr_t *)object)->xpos);
+  DAT_00202c6c[8] = g_object_type_props[(record->object_id)].collision_radius;
+  DAT_00202c6c[9] = g_object_type_props[(record->object_id)].height;
+  field = ((((uw_mobile_object_t *)object)->tile_x << 3)) + (uint)(record->xpos);
   *DAT_00202c6c = (char)field;
   DAT_00202c6c[1] = (char)((uint)field >> 8);
-  field = (((uw_object_hdr_t *)object)->ypos) + ((((uw_mobile_object_t *)object)->tile_y << 3));
+  field = (record->ypos) + ((((uw_mobile_object_t *)object)->tile_y << 3));
   DAT_00202c6c[2] = (char)field;
   DAT_00202c6c[3] = (char)((uint)field >> 8);
-  DAT_00202c6c[4] = ((uw_object_hdr_t *)object)->zpos;
+  DAT_00202c6c[4] = record->zpos;
   DAT_00202c6c[5] = 0;
   collision_build_height_field(8);
   return (int)(short)(*(ushort *)(DAT_00202c6c + 0xe) | *(ushort *)(DAT_00202c6c + 0xc));
@@ -92,7 +93,7 @@ bool collision_corner_flags(uint step_limit)
   undefined1 sampled_height;
   uint sampled_height_wide;
   ushort corner_flags;
-  int sample_blocked;
+  uint sample_blocked;
   
   *(byte *)(DAT_00202c6c + 0xc) = (byte)(DAT_00202c78 >> 8) & 3;
   *(undefined1 *)(DAT_00202c6c + 0xd) = 0;
@@ -467,12 +468,12 @@ LAB_00050b18:
 // collision_build_height_field: samples its floor height, derives a wall-type/offset code...
 bool collision_classify_corner_wall(uint corner, uint step_limit)
 {
-  char *scratch;
+  byte *scratch;
   byte floor_height;
   uint floor_height_wide;
   undefined2 wall_flags;
   int corner_offset;
-  int sample_blocked;
+  uint sample_blocked;
 
   floor_height = collision_sample_floor_height(corner,&sample_blocked);
   scratch = DAT_00202c6c;
@@ -636,7 +637,7 @@ void sort_collision_candidates()
   uint uVar2;
   int iVar3;
   int iVar4;
-  char *iVar5;
+  byte *iVar5;
   int iVar6;
   int iVar7;
   
@@ -702,9 +703,9 @@ void sort_collision_candidates()
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit)
 {
   byte bVar1;
-  char *uVar2;
+  byte *uVar2;
   undefined4 uVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   uint uVar5;
   int iVar6;
   short sVar7;
@@ -776,11 +777,11 @@ int check_object_placement_clearance(short catalog_type, short ignore_slot, shor
           } while (iVar6 < *(char *)(DAT_00202c6c + 0x16));
         }
         if (-1 < sVar7) {
-          puVar4 = (ushort *)resolve_object_link(&DAT_00202c3a + sVar7 * 6);
+          puVar4 = resolve_object_link(collision_candidate_link_ptr(sVar7));
           /* Was an unguarded `*puVar4` -- resolve_object_link legitimately returns NULL when the
              candidate slot (&DAT_00202c3a + sVar7*6) has no object linked there at all... */
-          if ((puVar4 != (ushort *)0x0) &&
-             ((g_object_type_props[(((uw_object_hdr_t *)puVar4)->object_id)].flags & 2) == 0)) {
+          if ((puVar4 != NULL) &&
+             ((g_object_type_props[(puVar4->object_id)].flags & 2) == 0)) {
             DAT_00202c6c = uVar2;
             return 0;
           }

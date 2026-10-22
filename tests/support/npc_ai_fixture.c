@@ -7,6 +7,10 @@
 ushort npc[32], player[32], tile[4];
 char character[256];
 uw_mobile_object_t *g_player_object = (uw_mobile_object_t *)player;
+/* npc/player are raw word records; this is the single boundary where they are
+ * viewed as the game's mobile object records. */
+static uw_mobile_object_t *const npc_object = (uw_mobile_object_t *)npc;
+static uw_mobile_object_t *const player_object = (uw_mobile_object_t *)player;
 uw_mobile_object_t *DAT_0010190c;
 char *DAT_00086df8 = character;
 uw_monster_type_props_t g_monster_type_props[64];
@@ -17,7 +21,8 @@ undefined1 DAT_00204980_backing[32];
 undefined2 DAT_00204990_backing[16], DAT_002049b0_backing[16];
 uw_ranged_type_props_t g_ranged_type_props[16];
 
-char *DAT_00101400, *DAT_00101438;
+char *DAT_00101400;
+byte *DAT_00101438;
 uw_monster_type_props_t *DAT_00101404;
 void *DAT_0010172c;
 char DAT_00101408, DAT_00101410, DAT_0010143c, DAT_0010173c;
@@ -53,8 +58,8 @@ long ce_rand(void)
     /* Alternate deterministic rolls: permit noticing and melee selection. */
     return random_index++ % 2 ? 1 : 0;
 }
-int encode_object_slot_index(const uw_object_hdr_t *object) { return object == player ? 1 : 2; }
-uw_object_hdr_t *get_object_record_by_slot_index(short slot) { return slot == 1 ? player : slot == 2 ? npc : NULL; }
+int encode_object_slot_index(const uw_object_hdr_t *object) { return object == &player_object->hdr ? 1 : 2; }
+uw_object_hdr_t *get_object_record_by_slot_index(short slot) { return slot == 1 ? &player_object->hdr : slot == 2 ? &npc_object->hdr : NULL; }
 void *tilemap_lookup(short x, short y) { return tile; }
 int los_calls, los_from_z, los_to_z;
 int check_fine_line_of_sight(uint from_x, uint from_y, uint from_z, short to_x, short to_y, short to_z)
@@ -72,7 +77,7 @@ undefined4 DAT_00101440;
 byte DAT_00101450;
 char *DAT_00101904;
 int walk_using_cached_path(byte *cache_record) { (void)cache_record; return 0; }
-int advance_cached_path_step(char *record) { (void)record; return 0; }
+int advance_cached_path_step(byte *record) { (void)record; return 0; }
 void save_walk_path_to_cache_slot(byte *record) { (void)record;}
 int creature_find_path_to_tile(int start_x, char start_y, byte size_class, char goal_x, char goal_y, char goal_sub_x, byte goal_sub_y) { (void)start_x; (void)start_y; (void)size_class; (void)goal_x; (void)goal_y; (void)goal_sub_x; (void)goal_sub_y; return 0; }
 void set_npc_altitude_state(byte tile_x, byte tile_y) { (void)tile_x; (void)tile_y;}
@@ -172,7 +177,7 @@ void npc_ai_fixture_reset(void)
     npc_bytes()[0xb] = 0; /* idle goal; attitude zero is hostile */
     npc_bytes()[0x15] = 0x20;
     npc_bytes()[0x14] = 1;
-    DAT_0010190c = npc;
+    DAT_0010190c = npc_object;
     DAT_00101404 = &g_monster_type_props[(8 * 0x30) / 0x30];
     DAT_00101918 = DAT_001013f8 = 10;
     DAT_00101938 = DAT_0010193c = 10;

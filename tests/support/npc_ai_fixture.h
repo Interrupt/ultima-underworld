@@ -9,7 +9,7 @@ uw_object_hdr_t *get_object_record_by_slot_index(short slot);
 void *tilemap_lookup(short x, short y);
 int check_fine_line_of_sight(uint from_x, uint from_y, uint from_z, short to_x, short to_y, short to_z);
 int walk_using_cached_path(byte *cache_record);
-int advance_cached_path_step(char *record);
+int advance_cached_path_step(byte *record);
 void save_walk_path_to_cache_slot(byte *record);
 int creature_find_path_to_tile(int start_x, char start_y, byte size_class, char goal_x, char goal_y, char goal_sub_x, byte goal_sub_y);
 void set_npc_altitude_state(byte tile_x, byte tile_y);

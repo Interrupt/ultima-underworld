@@ -128,8 +128,8 @@ LAB_00073c90:
 int force_unlock_target_object(int unused_a, int unused_b, ushort *object)
 {
   undefined1 uVar1;
-  ushort *iVar2;
-  ushort *local_14;
+  uw_object_hdr_t *iVar2;
+  uw_link_word_t *local_14;
   
   if (((((*object & 0x8000) == 0) && (local_14 = object + 3, (*local_14 & 0xffc0) != 0)) &&
       ((*object & 0x1c0) != 0x180)) && (iVar2 = find_object_in_chain(&local_14,0,6,2,3), iVar2 != 0)) {
@@ -151,13 +151,13 @@ int cast_single_tile_spell_effect(uint tile_x, int tile_y, void *unused, void *c
 {
   int uw_ord2005_rem_153 = 0;
   short sVar1;
-  char *uVar2;  /* was `undefined4` -- truncated spawn_and_prime_spell_effect_object's pointer */
+  uw_object_hdr_t *uVar2;  /* was `undefined4` -- truncated spawn_and_prime_spell_effect_object's pointer */
   undefined4 uVar3;
   undefined4 uVar4;
   uint extraout_r1;
   undefined1 uVar5;
 
-  uVar2 = (char *)spawn_and_prime_spell_effect_object(0x1c5,caster);
+  uVar2 = (uw_object_hdr_t *)spawn_and_prime_spell_effect_object(0x1c5,caster);
   damage_all_objects_at_tile(tile_x,tile_y,2,damage);
   uVar3 = ce_rand();
   uVar4 = encode_object_slot_index(uVar2);
@@ -180,10 +180,10 @@ int cast_single_tile_spell_effect(uint tile_x, int tile_y, void *unused, void *c
 int cast_area_spell_effect(uint tile_x, int tile_y, void *unused, void *caster, byte damage)
 {
   short sVar1;
-  char *uVar2;  /* was `undefined4` -- truncated spawn_and_prime_spell_effect_object's pointer */
+  uw_object_hdr_t *uVar2;  /* was `undefined4` -- truncated spawn_and_prime_spell_effect_object's pointer */
   undefined4 uVar3;
 
-  uVar2 = (char *)spawn_and_prime_spell_effect_object(0x1c2,caster);
+  uVar2 = (uw_object_hdr_t *)spawn_and_prime_spell_effect_object(0x1c2,caster);
   damage_all_objects_at_tile(tile_x,tile_y,1,damage);
   damage_all_objects_at_tile(tile_x + 1,tile_y,1,damage);
   damage_all_objects_at_tile(tile_x - 1,tile_y,1,damage);
@@ -510,7 +510,7 @@ void cast_summon_or_spawn_effect(void *caster, char variant)
       uVar7 = pObj->position_word;
       bVar1 = (byte)uVar7;
       pObj->zpos = (byte)local_30 & 0x7f;
-      object_list_insert_head(pbVar5 + 2,pObj);
+      object_list_insert_head((uw_link_word_t *)(pbVar5 + 2),pObj);
       if (variant == '\x04') {
         return;
       }
@@ -639,7 +639,7 @@ void apply_targeted_spell_effect(ushort *caster, char effect_index)
   auStack_d[3] = 4;
   auStack_d[4] = 6;
   iVar1 = spawn_object_near_actor(caster,auStack_d[effect_index]);
-  if (caster == g_player_object) {
+  if (caster == (ushort *)g_player_object) {
     if (iVar1 == 0) {
       print_scroll_message_by_id(0xff);
     }
@@ -702,7 +702,7 @@ void dispatch_player_command(ushort *actor, int unused, char command)
   undefined4 uVar3;
   uint uVar4;
   
-  if (actor != g_player_object) {
+  if (actor != (ushort *)g_player_object) {
     return;
   }
   switch((int)command) {
@@ -827,7 +827,7 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
   byte bVar1;
   undefined1 uVar2;
   undefined4 uVar3;
-  char *iVar4;  /* was `int` -- truncated spawn_new_object's real pointer */
+  uw_object_hdr_t *iVar4;  /* was `int` -- truncated spawn_new_object's real pointer */
   int iVar5;
   char extraout_r1;
   short extraout_r1_00;
@@ -835,10 +835,10 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
 
   uVar3 = ce_rand();
   uw_ord2005_rem_157 = ((int)(uVar3)) % (3);
-  iVar4 = (char *)spawn_new_object(uw_ord2005_rem_157 + 0x154,0);
-  uVar6 = ((uw_object_hdr_t *)iVar4)->position_word & 0xffee;
-  ((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;
-  ((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);
+  iVar4 = spawn_new_object(uw_ord2005_rem_157 + 0x154,0);
+  uVar6 = iVar4->position_word & 0xffee;
+  iVar4->position_word_low = (byte)uVar6 | 0x6e;
+  iVar4->position_word_high = (byte)(char)(uVar6 >> 8);
   iVar5 = place_object_in_world(tile_x * 8 + 3,tile_y * 8 + 3,0x6e,iVar4,0,0);
   if ((iVar5 != 0) && (iVar5 = object_ptr_in_arena(iVar4), iVar5 != 0)) {
     bVar1 = ce_rand();
@@ -861,7 +861,7 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
 // position, falling back to the current tile if the actor is outside the live object arena.
 bool spawn_object_near_actor(ushort *actor, short height_offset)
 {
-  ushort *puVar1; /* ARM 0x4a678 tests the returned object pointer for NULL. */
+  uw_object_hdr_t *puVar1; /* ARM 0x4a678 tests the returned object pointer for NULL. */
   
   DAT_00202a38 = height_offset + 0x10;
   DAT_00202a48 = (ushort)(byte) g_ranged_type_props[height_offset].projectile_speed;
@@ -869,7 +869,7 @@ bool spawn_object_near_actor(ushort *actor, short height_offset)
   DAT_00202a50 = (ushort)((actor[11] & 0x3f0) >> 4);
   DAT_00202a54 = 1;
   DAT_00202a44 = actor;
-  if (actor == g_player_object) {
+  if (actor == (ushort *)g_player_object) {
     compute_drop_aim_from_cursor();
   }
   else {

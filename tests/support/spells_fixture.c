@@ -28,13 +28,14 @@ void push_cursor_icon(int icon)
 { TEST_ASSERT_EQUAL_HEX16(0x1075, icon); spells_fixture.cursor_pushes++; }
 void pop_cursor_icon(ushort mode)
 { TEST_ASSERT_EQUAL_INT(3, mode); spells_fixture.cursor_pops++; }
-void get_mouse_position(ushort *x, ushort *y)
+void get_mouse_position(short *x, short *y)
 { *x=spells_fixture.mouse_x; *y=spells_fixture.mouse_y; }
 uw_object_hdr_t *alloc_object_slot(int region)
 {
     TEST_ASSERT_EQUAL_INT(1, region);
     spells_fixture.allocations++;
-    return spells_fixture.allocation_fails ? NULL : spells_fixture.projectile;
+    return spells_fixture.allocation_fails ? NULL
+        : (uw_object_hdr_t *)spells_fixture.projectile; /* raw record viewed as a header */
 }
 int check_object_drop_height(ushort *object, ushort *actor)
 {

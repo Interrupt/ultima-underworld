@@ -111,8 +111,9 @@ ushort DAT_002020a0, DAT_002020a4;
 
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
 {
-    if (slot == 1) return movement_fixture.player;
-    if (slot == 300) return movement_fixture.door;
+    /* player/door point at raw records in the arena; view them as headers. */
+    if (slot == 1) return (uw_object_hdr_t *)movement_fixture.player;
+    if (slot == 300) return (uw_object_hdr_t *)movement_fixture.door;
     return NULL;
 }
 char *DAT_002046c4 = (char *)movement_fixture.object_arena + 0x5b00;

@@ -38,7 +38,7 @@ extern char level_message[16];
 uint combat_player_experience(void);
 void combat_set_player_experience(uint xp, byte level);
 void combat_create_character(void);
-extern ushort *expected_effect_target;
+extern const void *expected_effect_target;
 extern uw_mobile_object_t *g_player_object;
 extern char *DAT_0023be74;
 extern uw_monster_type_props_t *DAT_00101404;

@@ -21,7 +21,7 @@ static undefined4 DAT_002028a0_backing[16];
 #define DAT_002028a0 DAT_002028a0_backing[0]
 /* Sizing pass: its only use (empty_container_into_world's caller) is a read-only copy-until-NUL
    into a local scratch buffer -- a short message-prefix string, not indexed. */
- undefined1 DAT_00085c88_backing[128] = "The ";
+ char DAT_00085c88_backing[128] = "The ";
 /* Ghidra rendered the embedded space as an underscore, dropped the
    leading space and trailing newline. Real bytes at 0x8790c (ARM
    UU.exe .data): " is empty.\n". */
@@ -199,14 +199,16 @@ void refresh_container_view()
   /* ARM FUN_00042d70 keeps this object/link address in r0 while following
      contents (+6) and hidden objects' sibling links (+4). Ghidra's int
      truncates the pointer on 64-bit hosts; keep the original traversal. */
-  char *iVar2;
-  
+  uw_object_hdr_t *iVar2;
+  uw_link_word_t *link_cursor;
+
   decrement_cursor_hide_depth();
   redraw_inventory_widget_range(0xc,0x13);
   iVar2 = resolve_object_link(&g_current_container_link);
-  iVar2 = iVar2 + 6;
-  while ((iVar2 = resolve_object_link(iVar2), iVar2 != 0 && ((*(byte *)(iVar2 + 1) & 0x40) != 0))) {
-    iVar2 = iVar2 + 4;
+  link_cursor = uw_link_word_ptr(iVar2);
+  /* byte 1 bit 6 of the type word = bit 14, invisible */
+  while ((iVar2 = resolve_object_link(link_cursor), iVar2 != 0 && (iVar2->invisible != 0))) {
+    link_cursor = uw_chain_word_ptr(iVar2);
   }
   sVar1 = encode_object_slot_index(iVar2);
   DAT_002029a0 = (uint)((uint)(GRID_FIRST_SLOT >> 6) != (int)sVar1);
@@ -225,8 +227,8 @@ void repopulate_container_grid_slots()
   byte bVar2;
   /* Was `int iVar3;`/`int iVar5;` for the parts of this function where they hold real
      resolve_object_link() pointers... */
-  char *pContents;
-  char *_pMatch;
+  uw_object_hdr_t *pContents;
+  uw_object_hdr_t *_pMatch;
   uint uVar4;
   int iVar5;
   int iVar6;
@@ -236,11 +238,11 @@ void repopulate_container_grid_slots()
     if ((*(ushort *)(&g_equipped_items + iVar6 * 2) & 0xffc0) != 0) break;
     iVar6 = (iVar6 + 1) * 0x10000 >> 0x10;
   } while (iVar6 < 0x1c);
-  pContents = (char *)resolve_object_link(&g_current_container_link);
-  pContents = (char *)resolve_object_link((ushort *)(pContents + 6));
+  pContents = resolve_object_link(&g_current_container_link);
+  pContents = resolve_object_link(uw_link_word_ptr(pContents));
   if ((short)iVar6 < 0x1c) {
     do {
-      _pMatch = (char *)resolve_object_link(&g_equipped_items + (short)iVar6 * 2);
+      _pMatch = resolve_object_link(&SLOT_LINK((short)iVar6));
       if (pContents == _pMatch) {
         iVar6 = 0x14;
         do {
@@ -249,21 +251,21 @@ void repopulate_container_grid_slots()
           (&g_equipped_items)[iVar5] = (&g_equipped_items)[iVar5] & 0x3f | (byte)((uVar4 & 0x3ff) << 6);
           (&DAT_00202951)[iVar5] = (char)((uVar4 << 0x16) >> 0x18);
           if (pContents != 0) {
-            if (((uw_object_hdr_t *)pContents)->invisible != 0) {
+            if (pContents->invisible != 0) {
               iVar6 = ((short)iVar6 + -1) * 0x10000 >> 0x10;
             }
-            pContents = (char *)resolve_object_link((ushort *)(pContents + 4));
+            pContents = resolve_object_link(uw_chain_word_ptr(pContents));
           }
           iVar6 = iVar6 + 1;
         } while (iVar6 * 0x10000 >> 0x10 < 0x1c);
         return;
       }
-      pContents = (char *)resolve_object_link((ushort *)(pContents + 4));
+      pContents = resolve_object_link(uw_chain_word_ptr(pContents));
     } while (pContents != 0);
     /* User QA: "closing a nested container [is] stuck on [the child's] contents" -- confirmed the
        real bug here. */
-    pContents = (char *)resolve_object_link(&g_current_container_link);
-    pContents = (char *)resolve_object_link((ushort *)(pContents + 6));
+    pContents = resolve_object_link(&g_current_container_link);
+    pContents = resolve_object_link(uw_link_word_ptr(pContents));
   }
   iVar6 = 0x14;
   do {
@@ -272,10 +274,10 @@ void repopulate_container_grid_slots()
     (&g_equipped_items)[iVar5] = (&g_equipped_items)[iVar5] & 0x3f | (byte)((uVar4 & 0x3ff) << 6);
     (&DAT_00202951)[iVar5] = (char)((uVar4 << 0x16) >> 0x18);
     if (pContents != 0) {
-      if (((uw_object_hdr_t *)pContents)->invisible != 0) {
+      if (pContents->invisible != 0) {
         iVar6 = ((short)iVar6 + -1) * 0x10000 >> 0x10;
       }
-      pContents = (char *)resolve_object_link((ushort *)(pContents + 4));
+      pContents = resolve_object_link(uw_chain_word_ptr(pContents));
     }
     iVar6 = iVar6 + 1;
   } while (iVar6 * 0x10000 >> 0x10 < 0x1c);
@@ -295,10 +297,10 @@ void repopulate_container_grid_slots()
            (&g_equipped_items)[iVar5 * 2] & 0x3f | (byte)((uVar4 & 0x3ff) << 6);
       (&DAT_00202951)[iVar5 * 2] = (char)((uVar4 << 0x16) >> 0x18);
       if (pContents != 0) {
-        if (((uw_object_hdr_t *)pContents)->invisible != 0) {
+        if (pContents->invisible != 0) {
           iVar6 = (iVar5 + -1) * 0x10000 >> 0x10;
         }
-        pContents = (char *)resolve_object_link((ushort *)(pContents + 4));
+        pContents = resolve_object_link(uw_chain_word_ptr(pContents));
       }
     }
   }
@@ -325,8 +327,8 @@ void open_backpack_container(short container_slot)
   /* iVar10/iVar11 are reused elsewhere in this function as plain int loop counters (0xc..0x13 etc)
      -- real uses, left alone -- but the container-open sequence below also stored real 64-bit
      resolve_object_link() pointers into them... */
-  ushort *puVar14;
-  ushort *puVar15;
+  uw_object_hdr_t *puVar14;
+  uw_object_hdr_t *puVar15;
   
   iVar1 = (int)container_slot;
   puVar13 = (ushort *)(&g_equipped_items + iVar1 * 2);
@@ -451,9 +453,9 @@ void open_backpack_container(short container_slot)
            (ushort*)(g_current_container_record+2)) & 0x3f ^
            (ushort*)(g_current_container_record+2)`... */
         g_current_container_link = uVar3;
-        puVar14 = (ushort *)resolve_object_link(&g_current_container_link);
-        puVar15 = (ushort *)resolve_object_link((ushort *)((char *)puVar14 + 6));
-        sum_container_weight((ushort *)((char *)puVar14 + 6),(short *)((char *)g_current_container_record + 10));
+        puVar14 = resolve_object_link(&g_current_container_link);
+        puVar15 = resolve_object_link(uw_link_word_ptr(puVar14));
+        sum_container_weight(uw_link_word_ptr(puVar14),(short *)((char *)g_current_container_record + 10));
         iVar10 = 0x14;
         do {
           uVar12 = encode_object_slot_index(puVar15);
@@ -462,10 +464,10 @@ void open_backpack_container(short container_slot)
                (&g_equipped_items)[iVar2 * 2] & 0x3f | (byte)((uVar12 & 0x3ff) << 6);
           (&DAT_00202951)[iVar2 * 2] = (char)((uVar12 << 0x16) >> 0x18);
           if (puVar15 != NULL) {
-            if (((uw_object_hdr_t *)puVar15)->invisible != 0) {
+            if (puVar15->invisible != 0) {
               iVar10 = (iVar2 + -1) * 0x10000 >> 0x10;
             }
-            puVar15 = (ushort *)resolve_object_link((ushort *)((char *)puVar15 + 4));
+            puVar15 = resolve_object_link(uw_chain_word_ptr(puVar15));
           }
           iVar10 = iVar10 + 1;
         } while (iVar10 * 0x10000 >> 0x10 < 0x1c);
@@ -521,18 +523,18 @@ void scroll_container_grid_up()
 void scroll_container_grid_down()
 {
   short sVar1;
-  char *iVar2;
-  char *iVar3;
-  char *iVar4;
+  uw_object_hdr_t *iVar2;
+  uw_object_hdr_t *iVar3;
+  uw_object_hdr_t *iVar4;
   int iVar5;
 
   if ((g_open_container_list != 0) && (DAT_002029a0 != 0)) {
     /* Was `resolve_object_link(g_current_container_record + 8)` -- a tracking record lives outside
        the level's object arena resolve_object_link bounds-checks against... */
     g_current_container_link = *(undefined2 *)(g_current_container_record + 8);
-    iVar2 = (char *)resolve_object_link(&g_current_container_link);
-    iVar3 = (char *)resolve_object_link((ushort *)(iVar2 + 6));
-    iVar4 = (char *)resolve_object_link(&GRID_FIRST_SLOT);
+    iVar2 = resolve_object_link(&g_current_container_link);
+    iVar3 = resolve_object_link(uw_link_word_ptr(iVar2));
+    iVar4 = resolve_object_link(&GRID_FIRST_SLOT);
     iVar2 = iVar3;
     if (iVar3 != iVar4) {
       do {
@@ -540,7 +542,7 @@ void scroll_container_grid_down()
         iVar5 = 0;
         iVar2 = iVar3;
         do {
-          iVar2 = (char *)resolve_object_link((ushort *)(iVar2 + 4));
+          iVar2 = resolve_object_link(uw_chain_word_ptr(iVar2));
           if (iVar2 == 0) {
             return;
           }
@@ -565,12 +567,14 @@ LAB_00043700:
 int auto_place_in_container(void *object_ptr, short slot)
 {
   ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *record = (uw_object_hdr_t *)object_ptr; /* same record, typed for the object API */
   byte bVar1;
   ushort uVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   undefined4 uVar5;
-  ushort *puVar6;
+  uw_object_hdr_t *puVar6;
+  uw_link_word_t *stack_link;
   uint uVar7;
   int iVar8;
   char *iVar9;
@@ -602,7 +606,7 @@ LAB_000438ac:
         iVar10 = (iVar10 + 1) * 0x10000 >> 0x10;
       } while (iVar10 < 0x13);
       local_28 = (short)iVar10;
-      puVar4 = g_player_object;
+      puVar4 = &g_player_object->hdr;
       if (0x12 < local_28) goto LAB_000438ac;
 LAB_0004386c:
       iVar9 = 0;
@@ -615,11 +619,11 @@ LAB_0004386c:
            dereference) -- it only accepts globals... */
         _parentLink = g_current_container_link;
         g_current_container_link = *(ushort *)(iVar9 + 8);
-        puVar4 = (ushort *)resolve_object_link(&g_current_container_link);
+        puVar4 = resolve_object_link(&g_current_container_link);
         g_current_container_link = _parentLink;
       }
       else {
-        puVar4 = (ushort *)resolve_object_link(&g_equipped_items + iVar10 * 2);
+        puVar4 = resolve_object_link(&SLOT_LINK(iVar10));
         iVar9 = g_current_container_record;
         if (iVar10 < 0x14) {
           local_28 = 0;
@@ -628,18 +632,18 @@ LAB_0004386c:
       }
       local_28 = 0;
     }
-    if ((((uw_object_hdr_t *)puVar4)->object_id) == 0x8f) {
+    if ((puVar4->object_id) == 0x8f) {
       /* Real ARM binary calls place_rune_in_bag() with 0 args here too (confirmed via Ghidra
          decompile of the real auto_place_in_container at 0x43734) -- same "leftover register"
          reliance already found 3 times this session... */
-      iVar10 = place_rune_in_bag(object);
+      iVar10 = place_rune_in_bag(record);
       if (iVar10 == 0) {
         print_scroll_message_by_id(0xf7);
         goto LAB_000438ac;
       }
     }
     else {
-      iVar10 = calculate_object_weight((uw_object_hdr_t *)object);
+      iVar10 = calculate_object_weight(record);
       g_player_carry_weight = g_player_carry_weight + (short)iVar10;
       /* Legacy truncated "prev" walk -- same fix as place_object_in_backpack_slot's sibling copy
          (search "still broken for genuine container nesting"). */
@@ -648,16 +652,16 @@ LAB_0004386c:
         *(char *)(iVar9 + 10) = (char)iVar8;
         *(char *)(iVar9 + 0xb) = (char)((uint)iVar8 >> 8);
       }
-      puVar6 = puVar4 + 3;
-      while (puVar6 = (ushort *)resolve_object_link(puVar6), puVar6 != (ushort *)0x0) {
-        iVar10 = objects_can_stack(object,puVar6);
+      stack_link = uw_link_word_ptr(puVar4);
+      while (puVar6 = resolve_object_link(stack_link), puVar6 != NULL) {
+        iVar10 = objects_can_stack(record,puVar6);
         if (iVar10 != 0) {
-          uVar2 = *puVar6;
+          uVar2 = puVar6->type_flags;
           if ((uVar2 & 0x8000) == 0) {
-            *(char *)puVar6 = (char)uVar2;
-            *(byte *)((char *)puVar6 + 1) = (byte)(uVar2 >> 8) | 0x80;
-            *(byte *)(puVar6 + 3) = (byte)puVar6[3] & 0x3f | 0x40;
-            *(undefined1 *)((char *)puVar6 + 7) = 0;
+            puVar6->type_flags_low = (char)uVar2;
+            puVar6->type_flags_high = (byte)(uVar2 >> 8) | 0x80;
+            puVar6->link_word_low = (byte)puVar6->link_word & 0x3f | 0x40;
+            puVar6->link_word_high = 0;
           }
           bVar1 = (byte)*object;
           bVar11 = (*object & 0x8000) != 0;
@@ -671,24 +675,24 @@ LAB_0004386c:
           if (!bVar11) {
             uVar7 = 1;
           }
-          iVar10 = ((ushort)puVar6[3] & 0xffc0) +
+          iVar10 = ((ushort)puVar6->link_word & 0xffc0) +
                    uVar7 * 0x40;
-          bVar1 = (byte)puVar6[2];
-          *(byte *)(puVar6 + 3) = (byte)iVar10 ^ (byte)puVar6[3] & 0x3f;
-          *(char *)((char *)puVar6 + 7) = (char)((uint)iVar10 >> 8);
-          *(byte *)(puVar6 + 2) =
+          bVar1 = (byte)puVar6->chain_word;
+          puVar6->link_word_low = (byte)iVar10 ^ (byte)puVar6->link_word & 0x3f;
+          puVar6->link_word_high = (char)((uint)iVar10 >> 8);
+          puVar6->chain_word_low =
                (bVar1 ^ (byte)((int)(((byte)object[2] & 0x3f) +
-                                    (((uw_object_hdr_t *)puVar6)->quality)) >> 1)
+                                    (puVar6->quality)) >> 1)
                ) & 0x3f ^ bVar1;
-          *(undefined1 *)((char *)puVar6 + 5) = *(undefined1 *)((char *)puVar6 + 5);
-          free_object_slot(object);
+          puVar6->chain_word_high = puVar6->chain_word_high;
+          free_object_slot(record);
           goto LAB_000439a0;
         }
-        puVar6 = puVar6 + 2;
+        stack_link = uw_chain_word_ptr(puVar6);
       }
-      object_list_append_tail(puVar4 + 3,object);
+      object_list_append_tail(uw_link_word_ptr(puVar4),record);
       if (bVar11) {
-        uVar7 = encode_object_slot_index(object);
+        uVar7 = encode_object_slot_index(record);
         iVar10 = (int)local_28;
         (&g_equipped_items)[iVar10 * 2] =
              (&g_equipped_items)[iVar10 * 2] & 0x3f | (byte)((uVar7 & 0x3ff) << 6);
@@ -726,7 +730,7 @@ LAB_000439a0:
 /* was `undefined4` -- truncated the real object-record pointer (passed straight to
    resolve_object_link, and to itself recursively as `puVar2+2`), latent until that call started
    actually using its argument */
-void sum_container_weight(ushort *link_field, short *total_weight)
+void sum_container_weight(uw_link_word_t *link_field, short *total_weight)
 {
   ushort uVar1;
   uw_object_hdr_t *puVar2;
@@ -743,9 +747,9 @@ void sum_container_weight(ushort *link_field, short *total_weight)
       uVar1 = puVar2->link;
     }
     *total_weight = (g_object_type_props[(puVar2->object_id)].unit_weight) * uVar1 + *total_weight;
-    sum_container_weight(&puVar2->chain_word,total_weight);
+    sum_container_weight(uw_chain_word_ptr(puVar2),total_weight);
     if (puVar2->is_quant != 0) break;
-    puVar2 = resolve_object_link(&puVar2->link_word);
+    puVar2 = resolve_object_link(uw_link_word_ptr(puVar2));
   }
 }
 
@@ -754,12 +758,12 @@ void sum_container_weight(ushort *link_field, short *total_weight)
 /* Same pointer-truncation bug class as alloc_save_record_slot/save_record_slot_from_index just
    below (their own comment has the full writeup) -- iVar4 was `int`... */
 // was FUN_000441d8
-void encode_equipped_item_index(ushort *item_link, ushort *out_index)
+void encode_equipped_item_index(uw_link_word_t *item_link, uw_link_word_t *out_index)
 {
   int iVar1;
   undefined2 uVar2;
   byte bVar3;
-  char *iVar4;
+  byte *iVar4;
   int iVar5;
 
   iVar5 = 0;
@@ -780,12 +784,12 @@ void encode_equipped_item_index(ushort *item_link, ushort *out_index)
 
 
 // was FUN_000442dc
-void decode_equipped_item_index(ushort *saved_index, ushort *out_link)
+void decode_equipped_item_index(uw_link_word_t *saved_index, uw_link_word_t *out_link)
 {
   int iVar1;
   undefined2 uVar2;
   byte bVar3;
-  char *iVar4;
+  byte *iVar4;
   int iVar5;
   
   iVar4 = g_save_equip_table_ptr;
@@ -811,7 +815,7 @@ void decode_equipped_item_index(ushort *saved_index, ushort *out_link)
 // was FUN_00045054
 uw_object_hdr_t *get_equipped_item_at_slot(short slot)
 {
-  return resolve_object_link(&g_equipped_items + slot * 2);
+  return resolve_object_link(&SLOT_LINK(slot));
 }
 
 
@@ -823,27 +827,28 @@ uw_object_hdr_t *get_equipped_item_at_slot(short slot)
 int empty_container_into_world(void *container_ptr, short clear_flag)
 {
   ushort *container = (ushort *)container_ptr;
+  uw_object_hdr_t *record = (uw_object_hdr_t *)container_ptr; /* same record, typed for the object API */
   ushort uVar1;
   ushort uVar2;
   byte bVar3;
   /* Was `int iVar4;` -- truncated resolve_object_link's real 64-bit pointer return, then handed
      straight to place_object_in_world's own param_4 (already `char *`, fixed in an earlier pass --
      see its own comment) as a garbage-high-bits address. */
-  char *iVar4;
+  uw_object_hdr_t *iVar4;
   int iVar5;
   undefined4 uVar6;
   uint uVar7;
   uint uVar8;
-  char *pNextLink;
+  uw_object_hdr_t *pNextLink;
 
   if ((container[3] & 0xffc0) == 0) {
     uVar6 = 0;
   }
   else {
-    iVar4 = resolve_object_link(container + 3);
+    iVar4 = resolve_object_link(uw_link_word_ptr(record));
     *(byte *)(container + 3) = (byte)container[3] & 0x3f;
     *(undefined1 *)((char *)container + 7) = 0;
-    iVar5 = object_ptr_in_arena(container);
+    iVar5 = object_ptr_in_arena(record);
     if (iVar5 == 0) {
       uVar7 = (uint)DAT_002020a0;
       uVar8 = (uint)DAT_002020a4;
@@ -854,7 +859,7 @@ int empty_container_into_world(void *container_ptr, short clear_flag)
     }
     uVar1 = container[1];
     while (iVar4 != 0) {
-      pNextLink = resolve_object_link(iVar4 + 4);
+      pNextLink = resolve_object_link(uw_chain_word_ptr(iVar4));
       if ((clear_flag != 0) && (g_object_type_props[*container & 0x1ff].can_have_owner)) {
         uVar2 = container[3];
         bVar3 = (byte)uVar2;
@@ -883,17 +888,20 @@ void try_empty_container(uw_object_hdr_t *container, int owned_by_player)
   int iVar2;
   char *pcVar3;
   byte bVar4;
-  char acStack_85ce4 [547976];
   char acStack_5c [80];
-  
+
+
   bVar4 = 0;
   if (g_object_type_props[container->object_id].can_have_owner) {
     bVar4 = container->owner;
   }
   iVar2 = empty_container_into_world(container,bVar4);
   if ((iVar2 == 0) && (owned_by_player != 0)) {
+    /* Ghidra couldn't correlate this copy loop's destination with a real stack slot (see
+       fix_stack_copy_loops.py) and invented a 0x85c88-byte acStack_85ce4 for it; the "The " prefix
+       is really copied into acStack_5c, which the ce_strlen/build_object_display_name below extend. */
     pcVar3 = &DAT_00085c88;
-    wptr_60040 = acStack_85ce4;
+    wptr_60040 = acStack_5c;
     do {
       cVar1 = *pcVar3;
       *wptr_60040 = cVar1; wptr_60040 = wptr_60040 + 1;
@@ -918,11 +926,11 @@ int discard_container_contents(uw_object_hdr_t *container, int remove_all)
 {
   uw_object_hdr_t *puVar1; /* ARM 0x37fcc keeps the found object address in r4. */
   undefined4 uVar2;
-  ushort *local_18;
+  uw_link_word_t *local_18;
 
   uVar2 = 0;
   if ((((container->is_quant << 7)) == 0) &&
-      (local_18 = &container->link_word, (*local_18 & 0xffc0) != 0)) {
+      (local_18 = uw_link_word_ptr(container), (*local_18 & 0xffc0) != 0)) {
     puVar1 = find_object_in_chain(&local_18,1,4,0,0xf);
     while (puVar1 != 0) {
       object_list_unlink(local_18,puVar1);

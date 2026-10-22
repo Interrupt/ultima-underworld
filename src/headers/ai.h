@@ -12,7 +12,7 @@ extern short DAT_00100608;
 /* Globals defined in uw.c but also used by functions that now live in
    ai.c (NPC AI) -- extern'd here so both translation units see the
    same storage. */
-extern undefined DAT_00084f20_backing[128];
+extern char DAT_00084f20_backing[128];
 
 #define DAT_00084f20 DAT_00084f20_backing[0]
 /* UW1 OBJECTS.DAT critter rows, loaded without native expansion. */
@@ -22,7 +22,7 @@ extern uw_monster_type_props_t g_monster_type_props[64];
 extern undefined4 DAT_001013fc;
 extern ushort DAT_00101414;
 extern ushort DAT_0010141c;
-extern char * DAT_00101438;
+extern byte * DAT_00101438;
 extern undefined4 DAT_00101560;
 extern void * DAT_0010172c;
 extern char * DAT_00101904;
@@ -61,7 +61,7 @@ int record_line_walk_step(byte x, byte y);
 int pop_pending_path_cache_slot(byte *out_slot);
 void reset_npc_path_cache();
 void save_walk_path_to_cache_slot(byte *record);
-int advance_cached_path_step(char *record);
+int advance_cached_path_step(byte *record);
 int check_path_cache_position_match(int cache_flag, short tile_x, short tile_y, short sub_x, short sub_y, short expected_sub_x, short expected_sub_y);
 int walk_using_cached_path(byte *cache_record);
 void handle_blocked_cached_path(byte *cache_record);

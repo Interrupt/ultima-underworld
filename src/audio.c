@@ -74,7 +74,7 @@ static undefined1 DAT_00086810_backing[32] = {
 /* Sizing pass: init_all_sound_channel_slots's own comment already
    says it -- "16 hardware sound-channel slots (0x1a/26-byte
    records)" -- 16*26=416 bytes real need. */
-static undefined1 DAT_00202a58_backing[512];
+static char DAT_00202a58_backing[512];
 /* Per-music-track duration table, indexed by the current track byte
    (DAT_0023c3a8) at a 4-byte stride; real shipped tracks (data/SOUND/
    UW*.MOD) top out at track 15. Sibling of DAT_000873e0 below, same
@@ -297,7 +297,7 @@ static undefined4 DAT_00087458 = 1;
    path fragment per its usage context. Real content confirmed via
    direct Ghidra memory export of UU.exe: "\VOC00.WAV". Sized
    generously for a path component; down from 32768. */
-static undefined1 DAT_00087520_backing[256] = "\\VOC00.WAV";
+static char DAT_00087520_backing[256] = "\\VOC00.WAV";
 #define DAT_00087520 DAT_00087520_backing[0]
 static short DAT_002506f0;
 static undefined2 DAT_002029c8;
@@ -330,7 +330,7 @@ int play_music_track(byte track_number, int flags)
   /* Was declared as just 2 bytes -- Ghidra only recovered the first access, but this is filled from
      the 9-byte "uw00.mod\0" template right below and local_12e/local_12d (now folded in as direct
      indexed writes) patch the two '0' digits in place at offsets 2/3... */
-  undefined1 auStack_130 [16];
+  char auStack_130 [16];
   undefined1 local_127;
   char acStack_120 [260];
 
@@ -341,7 +341,7 @@ int play_music_track(byte track_number, int flags)
   }
   else {
     if (track_number != DAT_0023c3a8) {
-      pcVar2 = &DAT_0023cca8;
+      pcVar2 = (char *)&DAT_0023cca8;
     stack0xffdc3238_ptr = stack0xffdc3238_buf;
       auStack_130[2] = (track_number >> 3) + 0x30;
       auStack_130[3] = (track_number & 7) + 0x30;
@@ -1960,7 +1960,7 @@ int load_and_resample_wave_sample(char *slot, int module, short resource_id)
   bool bVar11;
   void *uVar12;
   
-  iVar7 = (char *)FindResourceW(module,resource_id,(long)(intptr_t)u_WAVE_0008686c);
+  iVar7 = (char *)FindResourceW(module,resource_id,(intptr_t)u_WAVE_0008686c);
   if ((iVar7 == 0) || (iVar7 = (char *)LoadResource(module), iVar7 == 0)) {
     result = 0;
   }
@@ -2033,7 +2033,7 @@ int load_and_resample_wave_sample(char *slot, int module, short resource_id)
       }
       ce_memmove(slot_sample_ptr(slot),iVar7 + 0x2c,uVar5);
     }
-    DeleteObject((long)iVar7);
+    DeleteObject((intptr_t)iVar7);
     result = 1;
   }
   return result;
@@ -2399,10 +2399,10 @@ LAB_0004c038:
     iVar4 = 0;
     local_33c = iVar3;
     do {
-      resize_mod_pattern_row_array((char *)(intptr_t)(iVar4 + *piVar13),0x40,0xffffffff);
+      resize_mod_pattern_row_array((byte *)(intptr_t)(iVar4 + *piVar13),0x40,0xffffffff);
       iVar3 = 0;
       do {
-        resize_mod_event_row_array((char *)(intptr_t)(*(int *)(iVar4 + *piVar13 + 4) + iVar3),*piVar15,0xffffffff);
+        resize_mod_event_row_array((byte *)(intptr_t)(*(int *)(iVar4 + *piVar13 + 4) + iVar3),*piVar15,0xffffffff);
         local_334 = (undefined1 *)0x0;
         if (0 < *piVar15) {
           iVar10 = 0;
@@ -3326,7 +3326,10 @@ int mix_mod_channels_to_buffer(char *player, uint *left_buffer, uint *right_buff
   int iVar15;
   int local_50;
   uint local_4c;
-  undefined4 *local_48;
+  uint *local_48;
+  /* Output-buffer write cursor for the mix loop below (was the reused int *piVar11, which also
+     walks the per-channel state records; the output buffers are uint *). */
+  uint *puVar_out;
   
   if (0 < sample_count) {
     puVar4 = left_buffer;
@@ -3385,15 +3388,15 @@ int mix_mod_channels_to_buffer(char *player, uint *left_buffer, uint *right_buff
             iVar12 = iVar12 - iVar10;
           }
           if (0 < iVar10) {
-            piVar11 = local_48 + iVar14;
+            puVar_out = local_48 + iVar14;
             iVar14 = iVar10 + iVar14;
             do {
               iVar8 = iVar13 >> 10;
               iVar10 = iVar10 + -1;
               iVar13 = iVar7 + iVar13;
-              *piVar11 = *(int *)(player + (uint)uVar3 * 0x400 + 4 +
-                                 (uint)*(byte *)(intptr_t)(iVar15 + iVar8) * 4) + *piVar11;
-              piVar11 = piVar11 + 1;
+              *puVar_out = *(int *)(player + (uint)uVar3 * 0x400 + 4 +
+                                 (uint)*(byte *)(intptr_t)(iVar15 + iVar8) * 4) + *puVar_out;
+              puVar_out = puVar_out + 1;
             } while (iVar10 != 0);
           }
         }
@@ -3976,7 +3979,7 @@ void register_sound_channel_pool_cleanup()
 void init_all_sound_channel_slots()
 
 {
-  undefined *puVar1;
+  char *puVar1;
   int iVar2;
 
   puVar1 = &DAT_00202a58;
@@ -3993,14 +3996,18 @@ void init_all_sound_channel_slots()
 
 // was FUN_0004f828 -- releases all 16 hardware sound-channel slots in reverse order via
 // release_sound_channel_slot; DAT_00202bf8 is confirmed...
+// BUG FIX: started from &DAT_00202bf8, the one-past-the-end of the slot pool in the original
+// (0x202bf8 - 0x202a58 == 0x1a0 == 16*0x1a), but in this port that symbol is movement.h's unrelated
+// DAT_00202bf8_backing, so the walk read 16 "slots" out of foreign memory. Start from the end of
+// this file's own pool instead. (Dead code: nothing calls register_sound_channel_pool_cleanup.)
 void release_all_sound_channel_slots()
 
 {
-  undefined1 *puVar1;
+  char *puVar1;
   int iVar2;
 
   iVar2 = 0x10;
-  puVar1 = &DAT_00202bf8;
+  puVar1 = DAT_00202a58_backing + 0x10 * 0x1a;
   do {
     puVar1 = puVar1 + -0x1a;
     release_sound_channel_slot(puVar1);
@@ -4017,7 +4024,7 @@ void release_all_sound_channel_slots()
 // was FUN_0004f874 -- generic growable-array resize for 16-byte, zero-initializable elements (grows
 // via cpp_operator_new/realloc-style copy, zero-fills new slots via
 // construct_mod_event_array_range's ce_memset memset).
-void resize_mod_event_row_array(char *array, int new_size, int growth)
+void resize_mod_event_row_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4095,7 +4102,7 @@ LAB_0004f994:
 // was FUN_0004f9a0 -- generic growable-array resize for 20-byte elements with real
 // construct/destruct lifecycle (construct_mod_row_array_range on grow, destroy_mod_row_array_range
 // on shrink/clear).
-void resize_mod_pattern_row_array(char *array, int new_size, int growth)
+void resize_mod_pattern_row_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4110,7 +4117,7 @@ void resize_mod_pattern_row_array(char *array, int new_size, int growth)
   if (new_size == 0) {
     new_size = 0;
     if (*(int *)(array + 4) != 0) {
-      destroy_mod_row_array_range((char *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
+      destroy_mod_row_array_range((byte *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
       cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
       *(undefined4 *)(array + 4) = 0;
     }
@@ -4149,7 +4156,7 @@ void resize_mod_pattern_row_array(char *array, int new_size, int growth)
         }
         iVar2 = (int)(intptr_t)cpp_operator_new(iVar4 * 0x14);
         ce_memmove((void *)(intptr_t)(iVar2),(void *)(intptr_t)(*(undefined4 *)(array + 4)),*(int *)(array + 8) * 0x14);
-        construct_mod_row_array_range((char *)(intptr_t)(*(int *)(array + 8) * 0x14 + iVar2),new_size - *(int *)(array + 8));
+        construct_mod_row_array_range((byte *)(intptr_t)(*(int *)(array + 8) * 0x14 + iVar2),new_size - *(int *)(array + 8));
         cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
         *(int *)(array + 4) = iVar2;
         *(int *)(array + 0xc) = iVar4;
@@ -4157,17 +4164,17 @@ void resize_mod_pattern_row_array(char *array, int new_size, int growth)
       else {
         iVar2 = *(int *)(array + 8);
         if (iVar2 < new_size) {
-          construct_mod_row_array_range((char *)(intptr_t)(iVar2 * 0x14 + iVar4),new_size - iVar2);
+          construct_mod_row_array_range((byte *)(intptr_t)(iVar2 * 0x14 + iVar4),new_size - iVar2);
         }
         else if (new_size < iVar2) {
-          destroy_mod_row_array_range((char *)(intptr_t)(new_size * 0x14 + iVar4),iVar2 - new_size);
+          destroy_mod_row_array_range((byte *)(intptr_t)(new_size * 0x14 + iVar4),iVar2 - new_size);
         }
       }
       goto LAB_0004faec;
     }
     uVar1 = (int)(intptr_t)cpp_operator_new(new_size * 0x14);
     *(undefined4 *)(array + 4) = uVar1;
-    construct_mod_row_array_range((char *)(intptr_t)(uVar1),new_size);
+    construct_mod_row_array_range((byte *)(intptr_t)(uVar1),new_size);
   }
   *(int *)(array + 0xc) = new_size;
 LAB_0004faec:
@@ -4196,7 +4203,7 @@ void init_mod_dynamic_array(byte *array)
 // was FUN_0004fb38 -- generic growable-array resize for plain 4-byte (int) elements: no
 // construct/destruct step, new slots are just zero-filled (construct_mod_int_array_range ->
 // memset).
-void resize_mod_int_array(char *array, int new_size, int growth)
+void resize_mod_int_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4308,7 +4315,7 @@ byte *reset_mod_dynamic_array_and_maybe_free(byte *array, uint delete_flags)
 
 // was FUN_0004fd18 -- MFC CArchive-style serialize for a resize_mod_int_array-managed array:
 // param_2's +0x14 bit 0 matches CArchive::IsLoading()'s flag convention.
-void serialize_mod_int_array(char *array, char *archive)
+void serialize_mod_int_array(byte *array, char *archive)
 {
   undefined4 uVar1;
   uint uVar2;
@@ -4350,7 +4357,7 @@ void init_mod_pattern_array(byte *array)
 
 // was FUN_0004fda4 -- resizes the top-level "array of patterns": each 20-byte element is itself a
 // nested resize_mod_pattern_row_array- style header for one pattern's rows...
-void resize_mod_pattern_array(char *array, int new_size, int growth)
+void resize_mod_pattern_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4365,7 +4372,7 @@ void resize_mod_pattern_array(char *array, int new_size, int growth)
   if (new_size == 0) {
     new_size = 0;
     if (*(int *)(array + 4) != 0) {
-      destroy_mod_pattern_array_range((char *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
+      destroy_mod_pattern_array_range((byte *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
       cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
       *(undefined4 *)(array + 4) = 0;
     }
@@ -4404,7 +4411,7 @@ void resize_mod_pattern_array(char *array, int new_size, int growth)
         }
         iVar2 = (int)(intptr_t)cpp_operator_new(iVar4 * 0x14);
         ce_memmove((void *)(intptr_t)(iVar2),(void *)(intptr_t)(*(undefined4 *)(array + 4)),*(int *)(array + 8) * 0x14);
-        construct_mod_pattern_array_range((char *)(intptr_t)(*(int *)(array + 8) * 0x14 + iVar2),new_size - *(int *)(array + 8));
+        construct_mod_pattern_array_range((byte *)(intptr_t)(*(int *)(array + 8) * 0x14 + iVar2),new_size - *(int *)(array + 8));
         cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
         *(int *)(array + 4) = iVar2;
         *(int *)(array + 0xc) = iVar4;
@@ -4412,17 +4419,17 @@ void resize_mod_pattern_array(char *array, int new_size, int growth)
       else {
         iVar2 = *(int *)(array + 8);
         if (iVar2 < new_size) {
-          construct_mod_pattern_array_range((char *)(intptr_t)(iVar2 * 0x14 + iVar4),new_size - iVar2);
+          construct_mod_pattern_array_range((byte *)(intptr_t)(iVar2 * 0x14 + iVar4),new_size - iVar2);
         }
         else if (new_size < iVar2) {
-          destroy_mod_pattern_array_range((char *)(intptr_t)(new_size * 0x14 + iVar4),iVar2 - new_size);
+          destroy_mod_pattern_array_range((byte *)(intptr_t)(new_size * 0x14 + iVar4),iVar2 - new_size);
         }
       }
       goto LAB_0004fef0;
     }
     uVar1 = (int)(intptr_t)cpp_operator_new(new_size * 0x14);
     *(undefined4 *)(array + 4) = uVar1;
-    construct_mod_pattern_array_range((char *)(intptr_t)(uVar1),new_size);
+    construct_mod_pattern_array_range((byte *)(intptr_t)(uVar1),new_size);
   }
   *(int *)(array + 0xc) = new_size;
 LAB_0004fef0:
@@ -4440,7 +4447,7 @@ void destroy_mod_pattern_array(byte *array)
   array[2] = 8;
   array[3] = 0;
   if (*(int *)(array + 4) != 0) {
-    destroy_mod_pattern_array_range((char *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
+    destroy_mod_pattern_array_range((byte *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
     cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
   }
   *array = 0x20;
@@ -4453,7 +4460,7 @@ void destroy_mod_pattern_array(byte *array)
 
 // was FUN_0004ff68 -- MFC CArchive-style serialize for the top-level "array of patterns" (loading
 // resizes via resize_mod_pattern_array, storing writes via still-unnamed write_mod_pattern_array).
-void serialize_mod_pattern_array(char *array, char *archive)
+void serialize_mod_pattern_array(byte *array, char *archive)
 {
   undefined4 uVar1;
 
@@ -4488,7 +4495,7 @@ void init_mod_instrument_array(byte *array)
 // was FUN_0004fff4 -- resizes the MOD instrument/sample-descriptor
 // array (48-byte elements, construct/destruct via construct_mod_instrument_array_range/
 // destroy_mod_instrument_array_range). The matching constructor is init_mod_instrument_array.
-void resize_mod_instrument_array(char *array, int new_size, int growth)
+void resize_mod_instrument_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4503,7 +4510,7 @@ void resize_mod_instrument_array(char *array, int new_size, int growth)
   if (new_size == 0) {
     new_size = 0;
     if (*(int *)(array + 4) != 0) {
-      destroy_mod_instrument_array_range((char *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
+      destroy_mod_instrument_array_range((byte *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
       cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
       *(undefined4 *)(array + 4) = 0;
     }
@@ -4542,7 +4549,7 @@ void resize_mod_instrument_array(char *array, int new_size, int growth)
         }
         iVar2 = (int)(intptr_t)cpp_operator_new(iVar4 * 0x30);
         ce_memmove((void *)(intptr_t)(iVar2),(void *)(intptr_t)(*(undefined4 *)(array + 4)),*(int *)(array + 8) * 0x30);
-        construct_mod_instrument_array_range((char *)(intptr_t)(*(int *)(array + 8) * 0x30 + iVar2),new_size - *(int *)(array + 8));
+        construct_mod_instrument_array_range((byte *)(intptr_t)(*(int *)(array + 8) * 0x30 + iVar2),new_size - *(int *)(array + 8));
         cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
         *(int *)(array + 4) = iVar2;
         *(int *)(array + 0xc) = iVar4;
@@ -4550,17 +4557,17 @@ void resize_mod_instrument_array(char *array, int new_size, int growth)
       else {
         iVar2 = *(int *)(array + 8);
         if (iVar2 < new_size) {
-          construct_mod_instrument_array_range((char *)(intptr_t)(iVar2 * 0x30 + iVar4),new_size - iVar2);
+          construct_mod_instrument_array_range((byte *)(intptr_t)(iVar2 * 0x30 + iVar4),new_size - iVar2);
         }
         else if (new_size < iVar2) {
-          destroy_mod_instrument_array_range((char *)(intptr_t)(new_size * 0x30 + iVar4),iVar2 - new_size);
+          destroy_mod_instrument_array_range((byte *)(intptr_t)(new_size * 0x30 + iVar4),iVar2 - new_size);
         }
       }
       goto LAB_00050140;
     }
     uVar1 = (int)(intptr_t)cpp_operator_new(new_size * 0x30);
     *(undefined4 *)(array + 4) = uVar1;
-    construct_mod_instrument_array_range((char *)(intptr_t)(uVar1),new_size);
+    construct_mod_instrument_array_range((byte *)(intptr_t)(uVar1),new_size);
   }
   *(int *)(array + 0xc) = new_size;
 LAB_00050140:
@@ -4579,7 +4586,7 @@ void destroy_mod_instrument_array(byte *array)
   array[2] = 8;
   array[3] = 0;
   if (*(int *)(array + 4) != 0) {
-    destroy_mod_instrument_array_range((char *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
+    destroy_mod_instrument_array_range((byte *)(intptr_t)(*(int *)(array + 4)),*(undefined4 *)(array + 8));
     cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(array + 4)));
   }
   *array = 0x20;
@@ -4593,7 +4600,7 @@ void destroy_mod_instrument_array(byte *array)
 // was FUN_000501b8 -- MFC CArchive-style serialize for the MOD instrument/sample-descriptor array
 // (loading resizes via resize_mod_instrument_array, storing writes via still-unnamed
 // write_mod_instrument_array).
-void serialize_mod_instrument_array(char *array, char *archive)
+void serialize_mod_instrument_array(byte *array, char *archive)
 {
   undefined4 uVar1;
 
@@ -4627,7 +4634,7 @@ void init_mod_channel_state_array(byte *array)
 // was FUN_00050244 -- resizes the MOD channel runtime-state array (64-byte elements, no element
 // construct/destruct -- new slots are just zero-filled via
 // construct_mod_channel_state_array_range).
-void resize_mod_channel_state_array(char *array, int new_size, int growth)
+void resize_mod_channel_state_array(byte *array, int new_size, int growth)
 {
   undefined4 uVar1;
   int iVar2;
@@ -4726,7 +4733,7 @@ void destroy_mod_channel_state_array(byte *array)
 // was FUN_000503e0 -- MFC CArchive-style serialize for the MOD channel runtime-state array (loading
 // resizes via resize_mod_channel_state_array, storing writes the raw 64-byte elements directly via
 // ordaudio_op_2135).
-void serialize_mod_channel_state_array(char *array, char *archive)
+void serialize_mod_channel_state_array(byte *array, char *archive)
 {
   undefined4 uVar1;
   uint uVar2;
@@ -4753,7 +4760,7 @@ void serialize_mod_channel_state_array(char *array, char *archive)
 // was FUN_00050430 -- MSVC-style "scalar deleting destructor" for the int-array type: destroys the
 // array in place then, if param_2's low bit is set, frees the struct itself. BUG FIX: was
 // `destroy_mod_dynamic_array();` -- a dropped argument.
-void *destroy_mod_dynamic_array_and_maybe_free(char *array, uint delete_flags)
+void *destroy_mod_dynamic_array_and_maybe_free(byte *array, uint delete_flags)
 {
   destroy_mod_dynamic_array(array);
   if ((delete_flags & 1) != 0) {
@@ -4767,7 +4774,7 @@ void *destroy_mod_dynamic_array_and_maybe_free(char *array, uint delete_flags)
 // was FUN_00050454 -- "scalar deleting destructor" for the top-level pattern-array type (see
 // destroy_mod_dynamic_array_and_maybe_free). BUG FIX: was `destroy_mod_pattern_array();`
 // (destroy_mod_pattern_array) -- the same dropped-argument bug, same fix (pass param_1).
-void *destroy_mod_pattern_array_and_maybe_free(char *array, uint delete_flags)
+void *destroy_mod_pattern_array_and_maybe_free(byte *array, uint delete_flags)
 {
   destroy_mod_pattern_array(array);
   if ((delete_flags & 1) != 0) {
@@ -4780,7 +4787,7 @@ void *destroy_mod_pattern_array_and_maybe_free(char *array, uint delete_flags)
 
 // was FUN_00050478 -- "scalar deleting destructor" for the MOD instrument/sample-descriptor array
 // type (see destroy_mod_dynamic_array_and_maybe_free).
-void *destroy_mod_instrument_array_and_maybe_free(char *array, uint delete_flags)
+void *destroy_mod_instrument_array_and_maybe_free(byte *array, uint delete_flags)
 {
   destroy_mod_instrument_array(array);
   if ((delete_flags & 1) != 0) {
@@ -4794,7 +4801,7 @@ void *destroy_mod_instrument_array_and_maybe_free(char *array, uint delete_flags
 // was FUN_0005049c -- "scalar deleting destructor" for the MOD channel runtime-state array type
 // (see destroy_mod_dynamic_array_and_maybe_free). BUG FIX: was `destroy_mod_channel_state_array();`
 // (destroy_mod_channel_state_array) -- the same dropped-argument bug, same fix (pass param_1).
-void *destroy_mod_channel_state_array_and_maybe_free(char *array, uint delete_flags)
+void *destroy_mod_channel_state_array_and_maybe_free(byte *array, uint delete_flags)
 {
   destroy_mod_channel_state_array(array);
   if ((delete_flags & 1) != 0) {
@@ -4816,7 +4823,7 @@ void construct_mod_event_array_range(void *elements, int count)
 
 // was FUN_000504cc -- destroys param_2 20-byte "row" elements (each a nested event-array header,
 // destroyed via destroy_mod_row_array_elem).
-void destroy_mod_row_array_range(char *elements, int count)
+void destroy_mod_row_array_range(byte *elements, int count)
 {
   for (; count != 0; count = count + -1) {
     destroy_mod_row_array_elem(elements);
@@ -4849,7 +4856,7 @@ void destroy_mod_row_array_elem(byte *element)
 // was FUN_0005056c -- MFC CArchive-style serialize for the event-row
 // array (16-byte elements, one row's channel events): loading resizes
 // via resize_mod_event_row_array, storing writes via write_mod_event_array.
-void serialize_mod_event_row_array(char *array, char *archive)
+void serialize_mod_event_row_array(byte *array, char *archive)
 {
   undefined4 uVar1;
 
@@ -4867,7 +4874,7 @@ void serialize_mod_event_row_array(char *array, char *archive)
 
 // was FUN_000505bc -- "scalar deleting destructor" for the "row" element type (see
 // destroy_mod_dynamic_array_and_maybe_free).
-void *destroy_mod_row_array_elem_and_maybe_free(char *element, uint delete_flags)
+void *destroy_mod_row_array_elem_and_maybe_free(byte *element, uint delete_flags)
 {
   destroy_mod_row_array_elem(element);
   if ((delete_flags & 1) != 0) {
@@ -4896,7 +4903,7 @@ void write_mod_event_array(char *archive, void *elements, int count)
 // was FUN_00050604 -- zero-fills param_2 20-byte "row" elements then
 // default-constructs each one (construct_mod_row_array_elem). The
 // construct-range callback resize_mod_pattern_row_array uses on grow.
-void construct_mod_row_array_range(char *elements, int count)
+void construct_mod_row_array_range(byte *elements, int count)
 {
   ce_memset(elements,0,count * 0x14);
   for (; count != 0; count = count + -1) {
@@ -4921,7 +4928,7 @@ void construct_mod_int_array_range(void *elements, int count)
 
 // was FUN_00050678 -- destroys param_2 20-byte "pattern" elements (each a nested row-array header,
 // destroyed via destroy_mod_pattern_array_elem).
-void destroy_mod_pattern_array_range(char *elements, int count)
+void destroy_mod_pattern_array_range(byte *elements, int count)
 {
   for (; count != 0; count = count + -1) {
     destroy_mod_pattern_array_elem(elements);
@@ -4941,7 +4948,7 @@ void destroy_mod_pattern_array_elem(byte *element)
   element[2] = 8;
   element[3] = 0;
   if (*(int *)(element + 4) != 0) {
-    destroy_mod_row_array_range((char *)(intptr_t)(*(int *)(element + 4)),*(undefined4 *)(element + 8));
+    destroy_mod_row_array_range((byte *)(intptr_t)(*(int *)(element + 4)),*(undefined4 *)(element + 8));
     cpp_operator_delete((void *)(intptr_t)(*(undefined4 *)(element + 4)));
   }
   *element = 0x20;
@@ -4955,7 +4962,7 @@ void destroy_mod_pattern_array_elem(byte *element)
 // was FUN_00050718 -- MFC CArchive-style serialize for the per-pattern row array (20-byte elements,
 // one pattern's rows): loading resizes via resize_mod_pattern_row_array, storing writes via
 // write_mod_pattern_row_array.
-void serialize_mod_pattern_row_array(char *array, char *archive)
+void serialize_mod_pattern_row_array(byte *array, char *archive)
 {
   undefined4 uVar1;
 
@@ -4973,7 +4980,7 @@ void serialize_mod_pattern_row_array(char *array, char *archive)
 
 // was FUN_00050768 -- "scalar deleting destructor" for the "pattern" element type (see
 // destroy_mod_dynamic_array_and_maybe_free).
-void *destroy_mod_pattern_array_elem_and_maybe_free(char *element, uint delete_flags)
+void *destroy_mod_pattern_array_elem_and_maybe_free(byte *element, uint delete_flags)
 {
   destroy_mod_pattern_array_elem(element);
   if ((delete_flags & 1) != 0) {
@@ -5001,7 +5008,7 @@ void write_mod_pattern_row_array(char *archive, void *elements, int count)
 // was FUN_000507b8 -- zero-fills param_2 20-byte "pattern" elements
 // then default-constructs each one (construct_mod_pattern_array_elem).
 // The construct-range callback resize_mod_pattern_array uses on grow.
-void construct_mod_pattern_array_range(char *elements, int count)
+void construct_mod_pattern_array_range(byte *elements, int count)
 {
   ce_memset(elements,0,count * 0x14);
   for (; count != 0; count = count + -1) {
@@ -5031,7 +5038,7 @@ void write_mod_pattern_array(char *archive, void *elements, int count)
 // was FUN_00050828 -- destroys param_2 48-byte instrument elements: releases an embedded object
 // (likely a CString sample name, given BatteryDrvrGetLevels's use alongside name-reading code in
 // the MOD loader) per element via FoldStringW/BatteryDrvrGetLevels.
-void destroy_mod_instrument_array_range(char *elements, int count)
+void destroy_mod_instrument_array_range(byte *elements, int count)
 {
   for (; count != 0; count = count + -1) {
     FoldStringW(elements + 0x1c);
@@ -5045,7 +5052,7 @@ void destroy_mod_instrument_array_range(char *elements, int count)
 // was FUN_00050860 -- zero-fills param_2 48-byte instrument elements then default-constructs each
 // one's embedded object (FindNextFileW/ HeapReAlloc, the construct counterpart to
 // destroy_mod_instrument_array_range's BatteryDrvrGetLevels/FoldStringW).
-void construct_mod_instrument_array_range(char *elements, int count)
+void construct_mod_instrument_array_range(byte *elements, int count)
 {
   ce_memset(elements,0,count * 0x30);
   for (; count != 0; count = count + -1) {

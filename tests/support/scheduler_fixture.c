@@ -2,7 +2,7 @@
 #include "scheduler_fixture.h"
 
 /* Local service declarations; game function bodies link these mocks. */
-uw_object_hdr_t *resolve_object_link(ushort *link_);
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link);
 void *tilemap_lookup(short x, short y);
 void free_object_slot(uw_object_hdr_t *object);
 void set_pending_update_flags(ushort flags);
@@ -29,7 +29,7 @@ void set_pending_music_track(byte track);
 uint read_realtime_clock_units(void);
 int resolve_npc_melee_attack(void *npc, short tile_x, byte tile_y, short offset_x, short offset_y);
 uw_object_hdr_t *spawn_new_object(uint type, int mobile);
-void object_list_insert_head(ushort *head, uw_object_hdr_t *object);
+void object_list_insert_head(uw_link_word_t *head, uw_object_hdr_t *object);
 uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
 				       int mode);
 int drop_object_near_target(void *actor, void *object, short mode, uint flags);
@@ -65,7 +65,7 @@ int corpses_spawned, corpses_placed, corpse_type;
 uw_mobile_object_t *DAT_0010190c;
 
 uw_monster_type_props_t *DAT_00101404;
-char *DAT_00101438;
+byte *DAT_00101438;
 
 void *DAT_0010172c;
 
@@ -104,11 +104,19 @@ undefined4 DAT_00101560, DAT_00101914, DAT_00101944;
 
 int DAT_00101430;
 
-uw_object_hdr_t *resolve_object_link(ushort *link_)
-{ ushort *link = (ushort *)link_;
+/* The fixture lays objects out as raw words; these are the single boundary
+ * where that storage is viewed as the game's object records. */
+uw_mobile_object_t *scheduler_mobile_object(unsigned slot)
+{ return (uw_mobile_object_t *)objects[slot]; }
+
+static uw_object_hdr_t *corpse_object(void)
+{ return (uw_object_hdr_t *)corpse; }
+
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{
     unsigned slot = *link >> 6;
-    if (slot == 3) return corpse;
-    return slot < 3 && slot > 0 && !freed[slot] ? objects[slot] : NULL;
+    if (slot == 3) return corpse_object();
+    return slot < 3 && slot > 0 && !freed[slot] ? &scheduler_mobile_object(slot)->hdr : NULL;
 }
 
 void *tilemap_lookup(short x, short y)
@@ -120,7 +128,7 @@ void *tilemap_lookup(short x, short y)
 
 void free_object_slot(uw_object_hdr_t *object)
 {
-    int slot = object == objects[1] ? 1 : 2;
+    int slot = object == &scheduler_mobile_object(1)->hdr ? 1 : 2;
     TEST_ASSERT_EQUAL_PTR(objects[slot], object);
     freed[slot]++;
 }
@@ -131,8 +139,8 @@ long ce_rand(void) { return 15; }
 
 int encode_object_slot_index(const uw_object_hdr_t *object)
 {
-    if (object == objects[1]) return 1;
-    if (object == objects[2]) return 2;
+    if (object == &scheduler_mobile_object(1)->hdr) return 1;
+    if (object == &scheduler_mobile_object(2)->hdr) return 2;
     TEST_ASSERT_EQUAL_PTR(corpse, object);
     return 3;
 }
@@ -145,7 +153,7 @@ int play_positional_sound_effect(uint sound_id, short world_x, short world_y, ui
 
 int scheduler_advance_effect(short entry_slot, int elapsed) { (void)entry_slot; (void)elapsed; TEST_FAIL_MESSAGE("Unexpected directional effect"); return 0; }
 
-uw_object_hdr_t *get_object_record_by_slot_index(short slot) { TEST_ASSERT_EQUAL_INT(1, slot); return objects[1]; }
+uw_object_hdr_t *get_object_record_by_slot_index(short slot) { TEST_ASSERT_EQUAL_INT(1, slot); return &scheduler_mobile_object(1)->hdr; }
 
 void build_object_placement_snapshot(ushort *object, byte *snapshot) { (void)object; (void)snapshot;}
 
@@ -183,15 +191,15 @@ uw_object_hdr_t *spawn_new_object(uint type, int mobile)
     corpses_spawned++;
     corpse_type = type;
     corpse[0] = type;
-    return corpse;
+    return corpse_object();
 }
 
-void object_list_insert_head(ushort *head, uw_object_hdr_t *object)
+void object_list_insert_head(uw_link_word_t *head, uw_object_hdr_t *object)
 {
     TEST_ASSERT_EQUAL_PTR(tiles[2] + 2, head);
     TEST_ASSERT_EQUAL_PTR(corpse, object);
-    TEST_ASSERT_EQUAL_UINT16(0, *(ushort *)head >> 6);
-    *(ushort *)head = 3 << 6;
+    TEST_ASSERT_EQUAL_UINT16(0, *head >> 6);
+    *head = 3 << 6;
 }
 
 uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,

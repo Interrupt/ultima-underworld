@@ -68,7 +68,7 @@ uint read_realtime_clock_units(void)
     return sleep_fixture.clock;
 }
 uw_object_hdr_t *get_equipped_item_at_slot(short slot)
-{ return slot == 5 && sleep_fixture.torch[0] ? sleep_fixture.torch : NULL; }
+{ return slot == 5 && sleep_fixture.torch[0] ? (uw_object_hdr_t *)sleep_fixture.torch : NULL; }
 void redraw_backpack_slot_widget(short slot)
 { TEST_ASSERT_EQUAL_INT(5, slot); sleep_fixture.light_slot_redraws++; }
 void set_ambient_bias_without_light(char strength) { sleep_fixture.light_updates++; }
@@ -140,7 +140,7 @@ void sleep_fixture_reset(void)
     ((ushort *)g_player_object)[11] = (18 << 10) | (5 << 4);
     DAT_002020a0 = DAT_0023c3dc = 18;
     DAT_002020a4 = DAT_0023c3d8 = 5;
-    object_list_insert_head((char *)tilemap_lookup(18, 5) + 2, g_player_object);
+    object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 5)), &g_player_object->hdr);
     ((byte *)g_player_object)[8] = 10;
     DAT_00086df8[0x39] = 100;
     DAT_00086df8[0x3a] = 8;
@@ -183,7 +183,7 @@ ushort *sleep_fixture_spawn_trap(int blocked)
     npc[11] = (18 << 10) | (4 << 4);
     /* Background processing marks the template before testing the area.
        A second marked NPC blocks the spawn, without making rest unsafe. */
-    object_list_insert_head((char *)tilemap_lookup(18, 4) + 2, spawn);
+    object_list_insert_head(uw_tile_chain_word_ptr(tilemap_lookup(18, 4)), (uw_object_hdr_t *)spawn);
     if (blocked) {
         ushort *other = special_use_npc(3, 19, 4, 1, 0);
         ((byte *)other)[14] |= 1;

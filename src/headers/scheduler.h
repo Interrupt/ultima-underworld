@@ -25,7 +25,7 @@ uint scheduler_add_entry(uint object_link, int delay, byte animation_offset, byt
 void scheduler_step_entry(int entry_slot, int elapsed);
 void scheduler_tick(int elapsed);
 int spawn_scheduled_effect_object(ushort *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y);
-int scheduler_find_entry(char *object);
+int scheduler_find_entry(const uw_object_hdr_t *object);
 int scheduler_get_delay(void *object);
 void scheduler_set_delay(void *object, int delay);
 int scheduler_advance_effect(short entry_slot, int elapsed);

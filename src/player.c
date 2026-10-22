@@ -23,7 +23,7 @@ undefined1 DAT_0023bf0c;
 /* Reused scratch global (see the DAT_000a85d0 comment above for the general pattern) -- most call
    sites treat it as a writable sprintf- style destination buffer via ce_strcat... */
 // was DAT_0008522c
- undefined s_scroll_newline_0008522c_backing[8192] = "\n";
+ char s_scroll_newline_0008522c_backing[8192] = "\n";
 static undefined4 DAT_00101954;
 /* DAT_00204880/82/84/86/88/8a/8c/8e/90/92/94/96/97/a1/a2/a3/a4/a5/a6/ a7/a8/a9/aa were ~20 separate
    lone `short`/`undefined1`/`undefined2` scalars, but movement_collision_sweep and its siblings... */
@@ -182,7 +182,7 @@ char DAT_000872a0 = -1;
 /* Sizing-audit pass: BUG FIX, not just a shrink -- advance_character_ level builds a 2-digit
    level-number string here (tens digit/space at offset 0, units digit written to the
    separately-declared DAT_0008730d at real address +1) then prints it via... */
-static undefined1 DAT_0008730c_backing[16] = " 0\n";
+static char DAT_0008730c_backing[16] = " 0\n";
 #define DAT_0008730c DAT_0008730c_backing[0]
 /* The second digit belongs to the same scroll-message buffer. */
 #define DAT_0008730d DAT_0008730c_backing[1]
@@ -227,7 +227,7 @@ void set_player_tile_position(uint tile_x, uint tile_y, int flag)
   undefined1 local_3c [24];
   
   if (-1 < DAT_00202080) {
-    object_list_unlink(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
+    object_list_unlink((uw_link_word_t *)(DAT_002029cc + DAT_00202080 * 4 + 2),&g_player_object->hdr);
   }
   DAT_002048b8 = check_and_reset_landing_state;
   DAT_002048b2 = 0x1100;
@@ -265,7 +265,7 @@ void set_player_tile_position(uint tile_x, uint tile_y, int flag)
   uVar3 = g_player_object->hdr.next << 6;
   g_player_object->hdr.chain_word = 0;
   DAT_00202c6c = local_3c;
-  uVar1 = encode_object_slot_index(g_player_object);
+  uVar1 = encode_object_slot_index(&g_player_object->hdr);
   DAT_00202c6c[10] = (char)uVar1;
   DAT_00202c6c[0xb] = (char)((ushort)uVar1 >> 8);
   DAT_00202c6c[8] = (byte)DAT_00203304 & 7;
@@ -286,7 +286,7 @@ void set_player_tile_position(uint tile_x, uint tile_y, int flag)
   DAT_0023be98 = 0;
   trigger_view_transition();
   DAT_000858a0 = 1;
-  object_list_insert_head(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
+  object_list_insert_head((uw_link_word_t *)(DAT_002029cc + DAT_00202080 * 4 + 2),&g_player_object->hdr);
 }
 
 /* Debug-only helper (--debug): print both player-position representations side by side
@@ -324,10 +324,10 @@ void commit_player_move()
   iVar7 = iVar8 * 0x10000 >> 0x10;
   if (iVar7 != iVar2) {
     if (iVar2 != -1) {
-      object_list_unlink(DAT_002029cc + iVar2 * 4 + 2,g_player_object);
+      object_list_unlink((uw_link_word_t *)(DAT_002029cc + iVar2 * 4 + 2),&g_player_object->hdr);
     }
     DAT_00202080 = (short)iVar8;
-    object_list_insert_head(DAT_002029cc + iVar7 * 4 + 2,g_player_object);
+    object_list_insert_head((uw_link_word_t *)(DAT_002029cc + iVar7 * 4 + 2),&g_player_object->hdr);
     uVar5 = DAT_00204880 & 0x3f00;
     uVar3 = g_player_object->tile_word & 0x3ff;
     g_player_object->tile_x = (uVar5 >> 8) & 0x3f;
@@ -385,7 +385,7 @@ void commit_player_move()
         uVar3 = (uint)sVar1;
       }
       if (3 < (short)uVar3) {
-        apply_typed_damage_to_object(g_player_object,0,0,0,(char)uVar3,0);
+        apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)uVar3,0);
       }
       if ((1 < (short)uVar3) || ((DAT_002048a8 & 0x10) != 0)) {
         play_sound_effect_with_pan(0xf,0x40,((uVar3 & 0xff) + 0x31) * 4);
@@ -518,7 +518,7 @@ void build_player_save_record(byte *out_record)
     pbVar9[1] = 0;
     iVar6 = (iVar6 + 1) * 0x10000 >> 0x10;
   } while (iVar6 < 0x13);
-  serialize_inventory_link_chain((char *)g_player_object + 6,out_record + 6);
+  serialize_inventory_link_chain((byte *)uw_link_word_ptr(&g_player_object->hdr),out_record + 6);
   puVar4 = (undefined1 *)g_selected_object;
   if (g_cursor_holding_state == 1) {
     ((uw_object_hdr_t *)(out_record + 0x1b))->type_flags = ((uw_object_hdr_t *)puVar4)->type_flags;
@@ -526,9 +526,9 @@ void build_player_save_record(byte *out_record)
     ((uw_object_hdr_t *)(out_record + 0x1b))->chain_word = ((uw_object_hdr_t *)puVar4)->chain_word;
     ((uw_object_hdr_t *)(out_record + 0x1b))->link_word = ((uw_object_hdr_t *)puVar4)->link_word;
     if (((uw_object_hdr_t *)g_selected_object)->is_quant == 0) {
-      serialize_inventory_link_chain(g_selected_object + 6,out_record + 0x21);
+      serialize_inventory_link_chain((byte *)uw_link_word_ptr((uw_object_hdr_t *)g_selected_object),out_record + 0x21);
     }
-    sVar3 = encode_object_slot_index(g_selected_object);
+    sVar3 = encode_object_slot_index((uw_object_hdr_t *)g_selected_object);
     local_14[0] = local_14[0] & 0x3f | sVar3 << 6;
     free_linked_object_recursive(local_14);
   }
@@ -611,7 +611,7 @@ void restore_player_save_record(byte *record)
     puVar3 = puVar3 + 1;
     iVar4 = iVar5;
   } while (iVar5 != 0 && bVar1);
-  deserialize_inventory_link_chain((char *)g_player_object + 6,record + 6);
+  deserialize_inventory_link_chain((byte *)uw_link_word_ptr(&g_player_object->hdr),record + 6);
   if (g_cursor_holding_state == 1) {
     puVar2 = (undefined1 *)alloc_object_slot(0);
     g_selected_object = (char *)puVar2;
@@ -620,7 +620,7 @@ void restore_player_save_record(byte *record)
     ((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)(record + 0x1b))->chain_word;
     ((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)(record + 0x1b))->link_word;
     if (((uw_object_hdr_t *)(record + 0x1b))->is_quant == 0) {
-      deserialize_inventory_link_chain(g_selected_object + 6,record + 0x21);
+      deserialize_inventory_link_chain((byte *)uw_link_word_ptr((uw_object_hdr_t *)g_selected_object),record + 0x21);
     }
   }
   /* DEVIATION FROM AUTHENTIC BEHAVIOR (user requested) -- see write_player_save_record's own
@@ -1039,7 +1039,7 @@ LAB_00066290:
   case 8:
     break;
   case 9:
-    reduce_item_quality_on_use(g_player_object,1);  /* ARM passes only r0 here (r1 is stale); 1 matches the join path's value */
+    reduce_item_quality_on_use((ushort *)g_player_object,1);  /* ARM passes only r0 here (r1 is stale); 1 matches the join path's value */
     break;
   case 10:
     break;
@@ -1324,7 +1324,7 @@ void trigger_view_transition()
     uVar5 = ce_rand();
     uw_ord2005_rem_126 = ((int)(uVar5)) % (5);
     if (uw_ord2005_rem_126 == 0) {
-      apply_typed_damage_to_object(g_player_object,0,0,0,1,8);
+      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,1,8);
     }
   }
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 8) != 0) {
@@ -1377,18 +1377,18 @@ void trigger_view_transition()
 // the player's landing-state status byte (DAT_00086df8+0xb8).
 void set_movement_animation_timer(byte timer_id, byte ticks)
 {
-  undefined1 *puVar1;
-  
+  /* Was one `undefined1 *` aimed at either timer, but the two globals have different types
+     (DAT_0023bf10 byte, DAT_0023bf14 signed char -- its countdown is read signed); store each
+     directly. The stored byte is identical either way. */
   if (timer_id == 0x20) {
-    puVar1 = &DAT_0023bf10;
+    DAT_0023bf10 = ticks;
   }
   else {
     if (timer_id != 0x40) {
       return;
     }
-    puVar1 = &DAT_0023bf14;
+    DAT_0023bf14 = (char)ticks;
   }
-  *puVar1 = ticks;
   *(byte *)(DAT_00086df8 + 0xb8) = *(byte *)(DAT_00086df8 + 0xb8) | timer_id;
 }
 
@@ -1850,7 +1850,7 @@ void advance_character_level(char levels)
     DAT_0008730c = cVar2 + '0';
   }
   uw_ord2005_rem_138 = ((int)(*(undefined1 *)(iVar1 + 0x3d))) % (10);
-  DAT_0008730d = (undefined1)((uint)((uw_ord2005_rem_138 + 0x30) * 0x1000000) >> 0x18);
+  DAT_0008730d = (char)((uint)((uw_ord2005_rem_138 + 0x30) * 0x1000000) >> 0x18);
   print_scroll_message_by_id(0x93);
   message_scroll_print_wrapped(&DAT_0008730c);
   *(char *)(DAT_00086df8 + 0x52) = *(char *)(DAT_00086df8 + 0x52) + levels;
@@ -2081,8 +2081,8 @@ void handle_mantra_chant()
   short sVar13;
   char *pcVar_typed;
   char *pcVar_name;
-  undefined1 local_60 [8];
-  undefined1 local_58 [52];
+  char local_60 [8];
+  char local_58 [52];
 
   local_58[0] = 0;
   scroll_text_entry_prompt(s_Chant_the_mantra__0008731c,0,local_58,1,10);
@@ -2170,11 +2170,11 @@ LAB_00070c78:
       sVar3 = 4;
     }
     if (*(char *)(DAT_00086df8 + 0x52) == '\0') goto LAB_00070980;
-    local_60[0] = 0xff;
+    local_60[0] = -1;
     uVar12 = 0;
-    local_60[1] = 0xff;
-    local_60[2] = 0xff;
-    local_60[3] = 0xff;
+    local_60[1] = -1;
+    local_60[2] = -1;
+    local_60[3] = -1;
     iVar10 = (int)cVar11;
     iVar6 = (int)sVar3;
     while ((iVar6 != 0 &&
@@ -2243,7 +2243,7 @@ void render_endgame_character_stats()
   int iVar14;
   char *font_hdr;
   short local_70;
-  undefined1 auStack_68 [16];
+  char auStack_68 [16];
   char local_58 [52];
 
   select_active_font(s_fontchar_sys_00087330);
@@ -2413,7 +2413,7 @@ void apply_rest_status_effects()
   undefined1 uVar2;
 
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 3) != 0) {
-    apply_typed_damage_to_object(g_player_object,0,0,0,0xff,0);
+    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,0xff,0);
   }
   refresh_player_equipment_effects();
   settle_movement_to_rest();
@@ -2421,10 +2421,10 @@ void apply_rest_status_effects()
     uVar1 = ce_rand();
     uVar2 = 0x10;
     uw_ord2005_rem_144 = ((int)(uVar1)) % (6);
-    apply_typed_damage_to_object(g_player_object,0,0,0,uw_ord2005_rem_144 * '\n' + '\f',uVar2);
+    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,uw_ord2005_rem_144 * '\n' + '\f',uVar2);
   }
   if ((*(byte *)(DAT_00086df8 + 0xb8) & 3) != 0) {
-    apply_typed_damage_to_object(g_player_object,0,0,0,0xff,0);
+    apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,0xff,0);
   }
   return;
 }
@@ -2480,7 +2480,7 @@ LAB_0007158c:
     decay_equipped_light_sources(iVar8 * 0xb4,0);
     if ((*(ushort *)(DAT_00086df8 + 0x5f) & 0x3c) != 0) {
       uVar7 = *(ushort *)(DAT_00086df8 + 0x5f) >> 2 & 0xf;
-      apply_typed_damage_to_object(g_player_object,0,0,0,(char)((int)((uVar7 + 1) * uVar7) >> 1),0x10);
+      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)((int)((uVar7 + 1) * uVar7) >> 1),0x10);
       uVar7 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
       *(char *)(DAT_00086df8 + 0x5f) = (char)uVar7;
       *(char *)(DAT_00086df8 + 0x60) = (char)(uVar7 >> 8);
@@ -2522,7 +2522,7 @@ LAB_0007158c:
         }
         if (*(char *)(DAT_00086df8 + 0x39) == '\0') {
           print_scroll_message_by_id(0x11);
-          apply_typed_damage_to_object(g_player_object,0,0,0,2,0);
+          apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,2,0);
         }
         else {
           adjust_player_hp(g_player_object,(((short)iVar4 + 1) * (int)sVar3 * 0x1000000 >> 0x18) + -1);
@@ -2661,7 +2661,7 @@ void handle_game_victory_sequence()
   uw_object_hdr_t *puVar5;
   char *iVar6;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
   char *pcVar7;
-  char *local_11c;  /* was `int` -- same truncation, derived from iVar6 */
+  uw_link_word_t *local_11c;  /* was `int` -- same truncation, derived from iVar6 (tile word 1) */
   char acStack_114 [260];
   
   if (DAT_0023c27c == '\0') {
@@ -2672,7 +2672,7 @@ void handle_game_victory_sequence()
         puVar5->is_quant = 1;
         puVar5->link = 0x2c0;
         iVar6 = tilemap_lookup(0x20,0x20);
-        local_11c = iVar6 + 2;
+        local_11c = (uw_link_word_t *)(iVar6 + 2);
         object_list_append_tail(local_11c,puVar5);
       }
       print_scroll_message_by_id(0x117);
@@ -2888,7 +2888,7 @@ void draw_stats_panel_header()
      host before handing it to draw_text_string. */
   char *uVar3;
   int iVar4;
-  undefined1 auStack_28 [30];
+  char auStack_28 [30];
   undefined1 local_a;
 
   ce_strncpy(auStack_28,DAT_00086df8,0xf);
@@ -2927,7 +2927,7 @@ void draw_stats_panel_header()
 void draw_stats_panel_attribute_row(uint row)
 {
   int iVar1;
-  undefined1 auStack_c [4];
+  char auStack_c [4];
   
   itoa_radix(*(undefined1 *)((row & 0xff) + DAT_0023be74 + 5),auStack_c,10);
   iVar1 = measure_text_width(auStack_c);
@@ -2943,7 +2943,7 @@ void draw_hp_stat_display()
 {
   short sVar1;
   int iVar2;
-  undefined1 auStack_c [8];
+  char auStack_c [8];
   
   itoa_radix(g_player_object->npc_hp,auStack_c,10);
   sVar1 = ce_strlen(auStack_c);
@@ -2964,7 +2964,7 @@ void draw_mana_stat_display()
 {
   short sVar1;
   int iVar2;
-  undefined1 auStack_10 [8];
+  char auStack_10 [8];
   
   itoa_radix(*(undefined1 *)(DAT_00086df8 + 0x37),auStack_10,10);
   sVar1 = ce_strlen(auStack_10);
@@ -2986,7 +2986,7 @@ void draw_experience_points_display()
 {
   undefined4 uVar1;
   int iVar2;
-  undefined1 auStack_18 [12];
+  char auStack_18 [12];
   
   uVar1 = orduint_divmod(10,*(undefined4 *)(DAT_00086df8 + 0x4e)).quot;
   _ltoa(uVar1,auStack_18,10);
@@ -3009,7 +3009,7 @@ void draw_stats_panel_skill_row(uint skill_index)
   int iVar2;
   uint uVar3;
   int iVar4;
-  undefined1 auStack_18 [4];
+  char auStack_18 [4];
   
   uVar3 = skill_index & 0xff;
   itoa_radix(*(undefined1 *)(DAT_0024af80 + uVar3 + DAT_00086df8 + 0x21),auStack_18,10);
@@ -3080,7 +3080,7 @@ void handle_stats_panel_skill_scroll_click()
   undefined2 uVar1;
   short sVar2;
   uint uVar3;
-  ushort local_c [2];
+  short local_c [2];
   
   select_active_font(s_font5x6i_sys_00086e98);
   *g_draw_color_index = 0x68;
@@ -3232,7 +3232,7 @@ int detect_unsafe_rest_object_callback(int scan_x, int scan_y, char *object)
   byte bVar1;
   short sVar2;
 
-  sVar2 = encode_object_slot_index(object);
+  sVar2 = encode_object_slot_index((uw_object_hdr_t *)object);
   if (((sVar2 != 1) &&
       (((bVar1 = *(byte *)(object + 0xb) & 0xf, bVar1 == 5 || (bVar1 == 4)) || (bVar1 == 9)))) &&
      ((*(byte *)(object + 0x19) & 1) != 0)) {
@@ -3609,7 +3609,7 @@ void update_player_tick_effects()
       bVar1 = (byte)uVar3;
       *(byte *)(player_rec + 0x5f) = ((bVar1 & 0xfc) - 1 ^ bVar1) & 0x3c ^ bVar1;
       *(char *)(DAT_00086df8 + 0x60) = (char)(uVar3 >> 8);
-      apply_typed_damage_to_object(g_player_object,0,0,0,(char)((uVar3 & 0x3c) >> 2),0x10);
+      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,(char)((uVar3 & 0x3c) >> 2),0x10);
       player_rec = DAT_00086df8;
     }
     sVar5 = roll_skill_check(*(undefined1 *)(player_rec + 0x28),10);
@@ -3740,7 +3740,7 @@ void apply_drowning_hazard()
       weapon_overlay_flash_once(0xc6);
       set_pending_update_flags(2);
       uVar1 = roll_dice_sum(2,-(int)iVar3 + 4);
-      apply_typed_damage_to_object(g_player_object,0,0,0,uVar1,0);
+      apply_typed_damage_to_object((ushort *)g_player_object,0,0,0,uVar1,0);
     }
   }
   return;
@@ -3772,9 +3772,9 @@ int dungeon_view_anim_tick()
     if (DAT_00201c9c != (code *)0x0) {
       (*DAT_00201c9c)();
     }
-    iVar1 = find_placement_via_tile_flood_fill(g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,0);
+    iVar1 = find_placement_via_tile_flood_fill((ushort *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,0);
     if ((iVar1 == 0) &&
-       (iVar1 = find_placement_via_tile_flood_fill(g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,1)
+       (iVar1 = find_placement_via_tile_flood_fill((ushort *)g_player_object,(int)DAT_00201c90,(int)DAT_00201c8c,&local_20,&local_1e,1)
        , iVar1 == 0)) {
       DAT_00201c90 = 0;
       g_player_object->npc_hp = 0;

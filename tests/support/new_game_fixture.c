@@ -6,7 +6,7 @@
 int character_generator_start(void);
 int ensure_save_directory_exists(char *path);
 bool write_player_save_record(char *path);
-byte *load_string_resource(char *path);
+char *load_string_resource(char *path);
 int seed_conversation_globals_for_new_game(void);
 bool open_level_archive(void *handle, char *path);
 int seek_file_handle(int handle, int offset, int method);
@@ -55,9 +55,9 @@ undefined2 DAT_00201b60, DAT_000868d8;
 
 short DAT_00201b64;
 
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 
-undefined1 DAT_000857a0_backing[16];
+char DAT_000857a0_backing[16];
 
 char s__DATA_lev_ark_00085734[] = "\\DATA\\lev.ark";
 
@@ -110,11 +110,11 @@ bool write_player_save_record(char *path)
     return true;
 }
 
-byte *load_string_resource(char *path)
+char *load_string_resource(char *path)
 {
     static char converted[520];
     MultiByteToWideChar(0, 2, path, -1, converted, 255);
-    return (undefined *)converted;
+    return converted;
 }
 
 int seed_conversation_globals_for_new_game(void)

@@ -5,7 +5,7 @@
  * uw.h itself so this header is self-contained for any caller. */
 #include "uw.h"
 
-extern undefined DAT_00202878;
+extern char DAT_00202878;
 extern unsigned char DAT_00084eff_backing[12];
 #define DAT_00084eff DAT_00084eff_backing[0]
 /* Globals defined in uw.c but also used by functions that now live in

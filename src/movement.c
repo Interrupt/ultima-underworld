@@ -368,7 +368,7 @@ LAB_00058a64:
   }
 LAB_00058db4:
   if (DAT_00086998 != -1) {
-    psVar3 = (short *)resolve_object_link(&DAT_00202c3a + DAT_00086998 * 6);
+    psVar3 = (short *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_00086998 * 6));
     /* resolve_object_link returns NULL when the picked slot carries no object link (id bits 6..15
        clear). */
     if (psVar3 == (short *)0x0) {
@@ -958,7 +958,7 @@ void sweep_land_on_surface()
 // it. It is absent from the original ARM code. Clear downward velocity, gravity, and airborne state
 // before restitution so the player stops on landing. Mobile items retain their normal bounce.
   {
-    if ((puVar7 == g_player_object) && (*(short *)(DAT_00204874 + 10) < 0) &&
+    if (((uw_object_hdr_t *)puVar7 == &g_player_object->hdr) && (*(short *)(DAT_00204874 + 10) < 0) &&
         g_opts.player_no_bounce) {
       *(short *)(DAT_00204874 + 10) = 0;
       *(short *)(DAT_00204874 + 0x10) = 0;
@@ -1802,7 +1802,7 @@ LAB_0002bb2c:
     if ((uVar1 & 0xf8) == 0x10) {
       DAT_00101924 = 1;
       DAT_00101734 = 0;
-      spawn_scheduled_effect_object(DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
+      spawn_scheduled_effect_object((ushort *)DAT_0010190c,6,3,0,0,(short)(char)((ushort)DAT_002048c0 >> 8),
                    (short)(char)((ushort)_DAT_002048c2 >> 8));
       DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0xcc | 0xc;
       uVar5 = DAT_0010190c->goal_word & 0xfff;
@@ -1998,7 +1998,7 @@ void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
   iVar6 = 0;
   if (DAT_002049dd != 0) {
     do {
-      puVar2 = (ushort *)resolve_object_link(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6);
+      puVar2 = (ushort *)resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + (iVar6 + DAT_002049de) * 6));
       uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;
       uVar3 = (uint)(byte)(&DAT_00202c3c)[(iVar6 + DAT_002049de) * 6] +
               ((int)DAT_002049c8 >> 3 & 0xffU) & 0x3f;
@@ -2010,7 +2010,7 @@ void *find_nearby_door_in_candidates(byte *out_dx, byte *out_dy)
       }
       *out_dy = (char)(iVar5 >> 6) + (char)(DAT_002049ca >> 3) & 0x3f;
       if (((uVar1 & 0x1f0) == 0x140) && ((uVar1 & 0xf) < 8)) {
-        uVar4 = resolve_object_link(&DAT_00202c3a + ((int)DAT_002049de + (int)(short)iVar6) * 6);
+        uVar4 = resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + ((int)DAT_002049de + (int)(short)iVar6) * 6));
         return uVar4;
       }
       iVar6 = (iVar6 + 1) * 0x10000 >> 0x10;
@@ -2031,7 +2031,7 @@ void *get_first_nearby_candidate_object()
     uVar1 = 0;
   }
   else {
-    uVar1 = resolve_object_link(&DAT_00202c3a + DAT_002049de * 6);
+    uVar1 = resolve_object_link((uw_link_word_t *)(&DAT_00202c3a + DAT_002049de * 6));
   }
   return uVar1;
 }
@@ -2114,7 +2114,7 @@ void resolve_wall_slide_corner()
   int extraout_r1;
   short sVar5;
   int iVar6;
-  char *rec;
+  byte *rec;
   int iVar7;
   uint uVar8;
   int iVar9;

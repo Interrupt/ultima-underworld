@@ -10,7 +10,7 @@ uw_object_hdr_t *g_scratch_object_ptr;
 uw_object_type_props_t g_object_type_props[512];
 uw_container_type_props_t g_container_type_props[16];
 unsigned char DAT_00085ac8_backing[16];
-undefined1 DAT_00085c88_backing[128];
+char DAT_00085c88_backing[128];
 char s_UNNAMED_00084f24[] = "UNNAMED";
 static char s_is_too_full__00085c78[] = " is too full.\n";
 static unsigned seed, variant, slot_index, mutation, resolves, foods, effects, lights, weights, sums, names, messages, scrolls;

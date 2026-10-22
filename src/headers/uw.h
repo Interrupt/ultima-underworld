@@ -405,6 +405,21 @@ _Static_assert(sizeof(uw_object_hdr_t) == 8, "UW1 object header layout");
 _Static_assert(sizeof(uw_mobile_object_t) == 27, "UW1 mobile slot layout");
 _Static_assert(sizeof(uw_projectile_object_t) == 27, "UW1 projectile slot layout");
 
+/* Address of a 16-bit chain/link word. Mobile objects are 27 bytes, so half of them sit at odd
+   addresses and a word inside one is genuinely unaligned: the chain primitives therefore take this
+   align-1 type instead of a plain ushort *. Form the address with uw_chain_word_ptr/uw_link_word_ptr
+   rather than &obj->chain_word, which clang flags (-Waddress-of-packed-member) because it cannot
+   know the pointer will only be used for unaligned-safe access. */
+typedef ushort uw_link_word_t __attribute__((aligned(1)));
+
+static inline uw_link_word_t *uw_chain_word_ptr(const uw_object_hdr_t *object) {
+    return (uw_link_word_t *)&object->chain_word;
+}
+
+static inline uw_link_word_t *uw_link_word_ptr(const uw_object_hdr_t *object) {
+    return (uw_link_word_t *)&object->link_word;
+}
+
 /* 4-byte level tilemap record (wiki section 4.2). DAT_002029cc is the level's flat 64x64 array of
    these (tilemap_lookup, uw.c ~58433, is the single shared accessor behind 70+ call sites: index =
    tileX + tileY*0x40). */
@@ -423,6 +438,12 @@ typedef struct __attribute__((packed)) {
     unsigned short obj_head     : 10; /* bits 6-15: first object slot index on this tile */
 } uw_tile_t;  /* 4 bytes total */
 _Static_assert(sizeof(uw_tile_t) == 4, "UW1 tile record layout");
+
+/* Address of a tile record's word 1 (wall_tex:6 | obj_head:10), the head link of the tile's object
+   chain, as the chain primitives take it. It is a bitfield word, so there is no member to address. */
+static inline uw_link_word_t *uw_tile_chain_word_ptr(const uw_tile_t *tile) {
+    return (uw_link_word_t *)((const char *)tile + 2);
+}
 
 /* UW1 COMOBJ.DAT: 11 bytes on disk, expanded by the ARM loader to 13
  * bytes in memory. Disk bytes 4..10 become native bytes 5..11. */

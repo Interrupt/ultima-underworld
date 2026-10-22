@@ -36,7 +36,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
 {
   char *stat_ptr;
   char *msg_text;
-  void *linked_obj;
+  uw_object_hdr_t *linked_obj;
   char *equipped_item;
   ushort uVar1;
   byte bVar2;
@@ -45,20 +45,20 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
   uint uVar5;
   undefined4 uVar6;
   undefined4 uVar7;
-  ushort *puVar8;
-  undefined1 *puVar9;
-  undefined1 *puVar10;
+  uw_object_hdr_t *puVar8;
+  uw_object_hdr_t *puVar9;
+  uw_object_hdr_t *puVar10;
   int iVar11;
   char *pcMessage;
   /* HACK: case 8's own two find_object_in_chain results (real `ushort *` returns, see that
      function's own signature) were stored into iVar16/iVar11 -- both plain `int`, truncating a real
      64-bit pointer on this host. */
-  ushort *_case8_p1;
-  ushort *_case8_p2;
+  uw_object_hdr_t *_case8_p1;
+  uw_object_hdr_t *_case8_p2;
   ushort *puVar12;
   undefined2 uVar13;
   uint uVar14;
-  ushort *puVar15;
+  char *puVar15;
   int iVar16;
   uint uVar17;
   uint uVar18;
@@ -68,7 +68,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
   undefined4 in_stack_ffffffb8;
   undefined2 uVar21;
   undefined1 auStack_38 [4];
-  char *local_34;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
+  uw_link_word_t *local_34;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
   int local_30;
   
   uVar20 = (undefined2)((uint)in_stack_ffffffb4 >> 0x10);
@@ -86,7 +86,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     if ((((uw_object_hdr_t *)trap_record)->owner) == 0) {
       sVar3 = 1;
     }
-    uVar7 = encode_object_slot_index(DAT_0024cff4);
+    uVar7 = encode_object_slot_index((uw_object_hdr_t *)DAT_0024cff4);
     iVar16 = apply_poison_or_damage_trap_effect(uVar7,
                                                 (((uw_object_hdr_t *)trap_record)->quality) * (int)sVar3,
                                                 4,uVar6);
@@ -141,9 +141,9 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     }
     /* alloc_object_slot's argument is object_ptr_in_arena's return value (ARM 0x7d708-0x7d70c:
        bl object_ptr_in_arena; bl alloc_object_slot with r0 untouched) -- Ghidra dropped it. */
-    puVar8 = (ushort *)alloc_object_slot(object_ptr_in_arena(puVar12));
-    if (puVar8 != (ushort *)0x0) {
-      iVar16 = object_ptr_in_arena(puVar12);
+    puVar8 = alloc_object_slot(object_ptr_in_arena((uw_object_hdr_t *)puVar12));
+    if (puVar8 != (uw_object_hdr_t *)0x0) {
+      iVar16 = object_ptr_in_arena((uw_object_hdr_t *)puVar12);
       if (iVar16 == 0) {
         ((uw_object_hdr_t *)puVar8)->type_flags = ((uw_object_hdr_t *)puVar12)->type_flags;
         ((uw_object_hdr_t *)puVar8)->position_word = ((uw_object_hdr_t *)puVar12)->position_word;
@@ -152,13 +152,13 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
       }
       else {
         iVar16 = 0x1b;
-        puVar15 = puVar8;
+        puVar15 = (char *)puVar8;
         do {
           iVar11 = iVar16 + -1;
-          *(char *)puVar15 = (char)*puVar12;
+          *puVar15 = *(char *)puVar12;
           bVar19 = 0 < iVar16;
           iVar16 = iVar11;
-          puVar15 = (ushort *)((char *)puVar15 + 1);
+          puVar15 = puVar15 + 1;
           puVar12 = (ushort *)((char *)puVar12 + 1);
         } while (iVar11 != 0 && bVar19);
       }
@@ -171,8 +171,8 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
       DAT_00202c84 = 0;
       if (local_30 != 0) {
         if (((((uw_object_hdr_t *)puVar8)->is_quant == 0) && (((uw_object_hdr_t *)puVar8)->link != 0)) &&
-            (puVar9 = (undefined1 *)alloc_object_slot(0), puVar9 != (undefined1 *)0x0)) {
-          puVar10 = (undefined1 *)get_object_record_by_slot_index(((uw_object_hdr_t *)puVar8)->link);
+            (puVar9 = alloc_object_slot(0), puVar9 != (uw_object_hdr_t *)0x0)) {
+          puVar10 = get_object_record_by_slot_index(((uw_object_hdr_t *)puVar8)->link);
           ((uw_object_hdr_t *)puVar9)->type_flags = ((uw_object_hdr_t *)puVar10)->type_flags;
           ((uw_object_hdr_t *)puVar9)->position_word = ((uw_object_hdr_t *)puVar10)->position_word;
           ((uw_object_hdr_t *)puVar9)->chain_word = ((uw_object_hdr_t *)puVar10)->chain_word;
@@ -194,14 +194,13 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
     }
     return 2;
   case 8:
-    local_34 = (char *)tilemap_lookup(tile_x,tile_y);
-    local_34 = local_34 + 2;
+    local_34 = (uw_link_word_t *)((char *)tilemap_lookup(tile_x,tile_y) + 2);
     _case8_p1 = find_object_in_chain(&local_34,0,5,0,CONCAT22(uVar20,0xffff));
     DAT_002020a0 = (undefined2)tile_x;
     DAT_002020a4 = sVar3;
-    if (_case8_p1 == (ushort *)0x0) {
+    if (_case8_p1 == (uw_object_hdr_t *)0x0) {
       _case8_p1 = find_object_in_chain(&local_34,0,7,0xffffffff,0xf);
-      if (_case8_p1 == (ushort *)0x0) {
+      if (_case8_p1 == (uw_object_hdr_t *)0x0) {
         return 2;
       }
       uVar4 = ((uw_object_hdr_t *)trap_record)->quality;
@@ -219,16 +218,16 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
       }
     }
     else {
-      local_34 = (char *)_case8_p1 + 6;
+      local_34 = uw_link_word_ptr(_case8_p1);
       _case8_p2 = find_object_in_chain(&local_34,0,4,0,0xf);
-      if (_case8_p2 != (ushort *)0x0) {
+      if (_case8_p2 != (uw_object_hdr_t *)0x0) {
         object_list_unlink(local_34,_case8_p2);
         free_object_slot(_case8_p2);
       }
       if ((((uw_object_hdr_t *)trap_record)->is_quant == 0) && (((uw_object_hdr_t *)trap_record)->link != 0)) {
-        puVar9 = (undefined1 *)resolve_object_link(trap_record + 3);
-        puVar10 = (undefined1 *)alloc_object_slot(0);
-        if (puVar10 != (undefined1 *)0x0) {
+        puVar9 = resolve_object_link(trap_record + 3);
+        puVar10 = alloc_object_slot(0);
+        if (puVar10 != (uw_object_hdr_t *)0x0) {
           ((uw_object_hdr_t *)puVar10)->type_flags = ((uw_object_hdr_t *)puVar9)->type_flags;
           ((uw_object_hdr_t *)puVar10)->position_word = ((uw_object_hdr_t *)puVar9)->position_word;
           ((uw_object_hdr_t *)puVar10)->chain_word = ((uw_object_hdr_t *)puVar9)->chain_word;
@@ -243,7 +242,7 @@ int dispatch_trap_type_effect(ushort *trap_record, int tile_x, int tile_y)
 LAB_0007dbc0:
         /* HACK: was `close_door_object(DAT_0024cff4,iVar16);` -- same truncated-pointer class as
            _case8_p1's own fix a few lines above (see this switch case's top comment). */
-        close_door_object(DAT_0024cff4,_case8_p1);
+        close_door_object(DAT_0024cff4,(ushort *)_case8_p1);
         return 2;
       }
       if (uVar4 != 2) {
@@ -275,13 +274,12 @@ LAB_0007dce4:
                                            CONCAT22(uVar20,*(ushort *)(DAT_0024cff4 + 0x16) >> 10),
                                            CONCAT22(uVar21,(*(ushort *)(DAT_0024cff4 + 0x16) & 0x3f0) >> 4),
                                            0,0);
-    uVar6 = encode_object_slot_index(DAT_0024cff4);
+    uVar6 = encode_object_slot_index((uw_object_hdr_t *)DAT_0024cff4);
     iVar16 = apply_poison_or_damage_trap_effect(uVar6,sVar3 + 3,4,0);
     return iVar16;
   case 0xb:
-    local_34 = (char *)tilemap_lookup(((uw_object_hdr_t *)trap_record)->quality,
-                                      ((uw_object_hdr_t *)trap_record)->owner);
-    local_34 = local_34 + 2;
+    local_34 = (uw_link_word_t *)((char *)tilemap_lookup(((uw_object_hdr_t *)trap_record)->quality,
+                                                         ((uw_object_hdr_t *)trap_record)->owner) + 2);
     linked_obj = resolve_object_link(trap_record + 3);
     unlink_and_free_object(local_34,linked_obj);
     set_pending_update_flags(2);
@@ -390,7 +388,7 @@ LAB_0007d460:
       if (((uw_object_hdr_t *)linked_obj)->next == 0) {
         return 2;
       }
-      linked_obj = resolve_object_link((char *)linked_obj + 4);
+      linked_obj = resolve_object_link(uw_chain_word_ptr(linked_obj));
       iVar16 = resolve_skill_gated_unlock_or_use(DAT_0024cff4,DAT_0024cff0,linked_obj,0xffff);
       return iVar16;
     }
@@ -487,7 +485,7 @@ int dispatch_quest_event_code(void *trap_record_ptr, int tile_x, int tile_y)
   }
   else if (0x3b < uVar1) {
     if (uVar1 < 0x3f) {
-      if ((ushort *)DAT_0024cff4 == g_player_object) {
+      if ((uw_mobile_object_t *)DAT_0024cff4 == g_player_object) {
         apply_quest_vertical_effect((*(ushort *)(trap_record + 4) & 0x3f) - 0x3b,*(ushort *)(trap_record + 6) & 0x3f);
       }
     }
@@ -511,8 +509,8 @@ int create_scripted_trap_pair_at_tile(int tile_x, int tile_y, uint code)
   int iVar1;
   ushort uVar2;
   byte bVar3;
-  ushort *puVar4;
-  ushort *puVar5;
+  uw_object_hdr_t *puVar4;
+  uw_object_hdr_t *puVar5;
   byte *pbVar6;
   uint uVar7;
   undefined4 uVar8;
@@ -520,10 +518,10 @@ int create_scripted_trap_pair_at_tile(int tile_x, int tile_y, uint code)
   uint uVar10;
   uint uVar11;
 
-  puVar4 = (ushort *)alloc_object_slot(0);
-  if (puVar4 != (ushort *)0x0) {
-    puVar5 = (ushort *)alloc_object_slot(0);
-    if (puVar5 != (ushort *)0x0) {
+  puVar4 = alloc_object_slot(0);
+  if (puVar4 != (uw_object_hdr_t *)0x0) {
+    puVar5 = alloc_object_slot(0);
+    if (puVar5 != (uw_object_hdr_t *)0x0) {
       pbVar6 = (byte *)tilemap_lookup(tile_x, tile_y);
       uVar2 = ((uw_object_hdr_t *)puVar4)->type_flags;
       uVar7 = uVar2 & 0xffa0 | 0x61a0;
@@ -550,7 +548,7 @@ int create_scripted_trap_pair_at_tile(int tile_x, int tile_y, uint code)
       ((uw_object_hdr_t *)puVar4)->quality = (byte)tile_x & 0x3f;
       ((uw_object_hdr_t *)puVar4)->owner = (byte)tile_y & 0x3f;
       ((uw_object_hdr_t *)puVar4)->link = uVar7 & 0x3ff;
-      object_list_insert_head(pbVar6 + 2, puVar4);
+      object_list_insert_head((uw_link_word_t *)(pbVar6 + 2), puVar4);
       uVar7 = ((uw_object_hdr_t *)puVar5)->type_flags & 0xff8f | 0x180;
       uVar11 = (uVar7 ^ code) & 0xf ^ uVar7;
       ((uw_object_hdr_t *)puVar5)->object_id = 0x180 | (code & 0xf);
@@ -570,7 +568,7 @@ int create_scripted_trap_pair_at_tile(int tile_x, int tile_y, uint code)
       ((uw_object_hdr_t *)puVar5)->flags_res = 1;
       ((uw_object_hdr_t *)puVar5)->enchanted = 0;
       ((uw_object_hdr_t *)puVar5)->is_quant = 1;
-      object_list_insert_head(pbVar6 + 2, puVar5);
+      object_list_insert_head((uw_link_word_t *)(pbVar6 + 2), puVar5);
       uVar8 = encode_object_slot_index(puVar4);
       return uVar8;
     }
@@ -594,7 +592,7 @@ void remove_trap_chain_marker(char *link_field, char *trap_object)
   ushort *puVar4;
   char *iVar5;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
 
-  puVar4 = (ushort *)resolve_object_link((char *)&((uw_object_hdr_t *)trap_object)->link_word);
+  puVar4 = (ushort *)resolve_object_link(uw_link_word_ptr((uw_object_hdr_t *)trap_object));
   uVar2 = ((uw_object_hdr_t *)puVar4)->type_flags;
   uVar1 = (uVar2 & 0x1e00) >> 9;
   if ((short)uVar1 == 1) {
@@ -606,8 +604,9 @@ void remove_trap_chain_marker(char *link_field, char *trap_object)
     bVar3 = (byte)(uVar2 >> 8);
     ((uw_object_hdr_t *)puVar4)->flags_res = (uVar1 - 1) & 7;
     ((uw_object_hdr_t *)puVar4)->enchanted = ((uVar1 - 1) >> 3) & 1;
-    object_list_unlink(link_field,trap_object);
-    free_object_slot(trap_object);
+    object_list_unlink((uw_link_word_t *)link_field,
+                       (uw_object_hdr_t *)trap_object);
+    free_object_slot((uw_object_hdr_t *)trap_object);
   }
 }
 
@@ -619,7 +618,8 @@ void remove_trap_chain_marker(char *link_field, char *trap_object)
 void free_trap_class_object(void *link_field_ptr, void *trap_object_ptr)
 {
   char *link_field = (char *)link_field_ptr;
-  byte *trap_object = (byte *)trap_object_ptr;
+  /* char * to match remove_trap_chain_marker; `& 0x30` reads the same bits whatever the sign. */
+  char *trap_object = (char *)trap_object_ptr;
   if ((*trap_object & 0x30) < 0x11) {
     refresh_object_link_chain(link_field,trap_object);
   }
@@ -692,7 +692,7 @@ void process_nearby_background_traps(int target_present)
   /* find_object_in_world/resolve_object_link now return real pointers (ushort-pointer /
      void-pointer) -- was `int iVar2`/`iVar3`, truncating them on this 64-bit host exactly like the
      sibling fix in objects.c's find_object_in_world/find_object_in_chain. iVar3 keeps its later... */
-  ushort *pObj;
+  uw_object_hdr_t *pObj;
   char *pbVar5;
   int iVar3;
   int iVar4;
@@ -704,18 +704,18 @@ void process_nearby_background_traps(int target_present)
   pObj = find_object_in_world(6,0,7,&local_14,&local_12);
   while (pObj != 0) {
     if ((((uw_object_hdr_t *)pObj)->type_flags_high & 0x1e) == 0) {
-      pbVar5 = resolve_object_link((char *)pObj + 6);
+      pbVar5 = (char *)resolve_object_link(uw_link_word_ptr(pObj));
       /* HACK: was a bare `object_ptr_in_arena();` -- dropped argument, the same class of bug fixed
          repeatedly elsewhere in this file. object_ptr_in_arena takes exactly one argument at every
          other call site in this codebase... */
-      iVar4 = object_ptr_in_arena(pbVar5);
+      iVar4 = object_ptr_in_arena((uw_object_hdr_t *)pbVar5);
       if (iVar4 != 0) {
         uVar1 = *(undefined2 *)(pbVar5 + 0xd);
         *(char *)(pbVar5 + 0xd) = (char)uVar1;
         *(byte *)(pbVar5 + 0xe) = (byte)((ushort)uVar1 >> 8) | 1;
         iVar3 = is_out_of_player_range(target_present,(int)local_14,(int)local_12);
         if (iVar3 != 0) {
-          dispatch_trap_type_effect(pObj,(int)local_14,(int)local_12);
+          dispatch_trap_type_effect((ushort *)pObj,(int)local_14,(int)local_12);
         }
       }
     }
@@ -829,9 +829,9 @@ LAB_0003987c:
                 uVar10 = puVar8[1] & 0xff80;
                 *(byte *)(puVar8 + 1) = (byte)uVar10 | (byte)((uVar13 & 0xf) << 3);
                 *(char *)((char *)puVar8 + 3) = (char)(uVar10 >> 8);
-                iVar9 = object_ptr_in_arena(puVar8);
+                iVar9 = object_ptr_in_arena((uw_object_hdr_t *)puVar8);
                 if ((iVar9 == 0) || ((*puVar8 & 0x1c0) == 0x40)) {
-                  if (puVar8 == g_player_object) {
+                  if ((uw_mobile_object_t *)puVar8 == g_player_object) {
                     DAT_00204884 = (undefined2)(iVar12 << 6);
                   }
                 }
@@ -850,10 +850,10 @@ LAB_0003987c:
                 uVar10 = puVar8[1] & 0xff80;
                 *(byte *)(puVar8 + 1) = (byte)uVar10 | (byte)((uVar13 & 0xf) << 3);
                 *(char *)((char *)puVar8 + 3) = (char)(uVar10 >> 8);
-                uVar14 = object_ptr_in_arena(puVar8);
+                uVar14 = object_ptr_in_arena((uw_object_hdr_t *)puVar8);
                 uVar10 = (uint)((ulonglong)uVar14 >> 0x20);
                 if (((int)uVar14 == 0) || ((*puVar8 & 0x1c0) == 0x40)) {
-                  if (puVar8 == g_player_object) {
+                  if ((uw_mobile_object_t *)puVar8 == g_player_object) {
                     /* Was `uVar10 = extraout_r1;` -- set_locomotion_state is void (stops/locks the
                        player's movement when a trap hits them), so there's no real second return
                        value to read here... */
@@ -916,7 +916,7 @@ int apply_poison_or_damage_trap_effect(int object_slot, uint damage_delta, int u
     if (iVar2 == g_player_object) {
       uVar5 = *(byte *)(DAT_00086df8 + 0x5f) >> 2 & 0xf;
       if ((-uVar5 != iVar3 && (int)uVar5 <= -iVar3) &&
-         (cVar1 = resolve_damage_type_resistance(g_player_object,1,0x10), cVar1 != '\0')) {
+         (cVar1 = resolve_damage_type_resistance((ushort *)g_player_object,1,0x10), cVar1 != '\0')) {
         uVar5 = *(ushort *)(DAT_00086df8 + 0x5f) & 0xffc3;
         *(byte *)(DAT_00086df8 + 0x5f) =
              (byte)uVar5 | (byte)(((damage_delta & 0xffff) * -0x10000 >> 0x10 & 0xf) << 2);
@@ -1052,7 +1052,7 @@ void try_combine_shrine_markers(int unused, int tile_x, int tile_y)
   void *local_44 [4];
   void *local_34 [4];
   char *pTile;
-  char *pNew;
+  uw_object_hdr_t *pNew;
 
   iVar5 = 0;
   cVar7 = -4;
@@ -1079,11 +1079,11 @@ void try_combine_shrine_markers(int unused, int tile_x, int tile_y)
     iVar1 = (int)cVar7;
   } while (iVar1 < 5);
   if ((char)iVar5 == '\x04') {
-    pNew = (char *)spawn_new_object(0xfd,0);
+    pNew = spawn_new_object(0xfd,0);
     pTile = (char *)tilemap_lookup(tile_x,tile_y + 1);
     uVar4 = ((uw_object_hdr_t *)pNew)->heading << 7 | 0x6c40;
     ((uw_object_hdr_t *)pNew)->position_word = (ushort)uVar4;
-    object_list_insert_head(pTile + 2,pNew);
+    object_list_insert_head((uw_link_word_t *)(pTile + 2),pNew);
     settle_dropped_object(pNew,tile_x,tile_y + 1,1);
     iVar5 = 0;
     do {
@@ -1098,7 +1098,7 @@ void try_combine_shrine_markers(int unused, int tile_x, int tile_y)
 // handler: emits a noise alert of type param_1 centered on the player.
 void emit_player_noise_alert(byte noise_type)
 {
-  emit_noise_alert(g_player_object,noise_type);
+  emit_noise_alert((ushort *)g_player_object,noise_type);
 }
 
 
@@ -1147,7 +1147,7 @@ void trigger_exploding_book_trap()
     *(byte *)(DAT_00086df8 + 0x66) = (byte)((uint)uVar1 >> 8) | 1;
     *(char *)(DAT_00086df8 + 0x67) = (char)((uint)uVar1 >> 0x10);
     *(char *)(DAT_00086df8 + 0x68) = (char)((uint)uVar1 >> 0x18);
-    reduce_item_quality_on_use(g_player_object,3);
+    reduce_item_quality_on_use((ushort *)g_player_object,3);
     decrement_object_count(iVar2);
     discard_misplaced_object(0,iVar2,1);
     redraw_container_icon_slot();
@@ -1174,7 +1174,7 @@ void trigger_exploding_book_trap_at_tile(int unused, int tile_x, int tile_y)
     *(byte *)(DAT_00086df8 + 0x66) = (byte)((uint)uVar1 >> 8) | 1;
     *(char *)(DAT_00086df8 + 0x67) = (char)((uint)uVar1 >> 0x10);
     *(char *)(DAT_00086df8 + 0x68) = (char)((uint)uVar1 >> 0x18);
-    reduce_item_quality_on_use(g_player_object,3);
+    reduce_item_quality_on_use((ushort *)g_player_object,3);
     decrement_object_count(iVar2);
     discard_misplaced_object(0,iVar2,1);
     redraw_container_icon_slot();
@@ -1220,7 +1220,7 @@ int unlink_object_from_tile_callback(char *object)
 
   iVar1 = tilemap_lookup(*(ushort *)(object + 0x16) >> 10,(*(ushort *)(object + 0x16) & 0x3f0) >> 4)
   ;
-  unlink_and_free_object(iVar1 + 2,object);
+  unlink_and_free_object((uw_link_word_t *)((char *)iVar1 + 2),(uw_object_hdr_t *)object);
   return 1;
 }
 
@@ -1232,8 +1232,8 @@ int unlink_object_from_tile_callback(char *object)
 void trigger_quest_milestone_cleanup_event()
 {
   undefined2 uVar1;
-  ushort *puVar2;
-  ushort *puVar3;
+  uw_object_hdr_t *puVar2;
+  uw_object_hdr_t *puVar3;
   int iVar4;
   char *tile_rec;
 
@@ -1247,11 +1247,11 @@ void trigger_quest_milestone_cleanup_event()
     iVar4 = (iVar4 + -1) * 0x1000000 >> 0x18;
   } while (0 < iVar4);
   tile_rec = tilemap_lookup(0x17,0x38);
-  puVar3 = (ushort *)resolve_object_link(tile_rec + 2);
-  while (puVar2 = puVar3, puVar2 != (ushort *)0x0) {
-    puVar3 = (ushort *)resolve_object_link(puVar2 + 2);
+  puVar3 = resolve_object_link((uw_link_word_t *)(tile_rec + 2));
+  while (puVar2 = puVar3, puVar2 != (uw_object_hdr_t *)0x0) {
+    puVar3 = resolve_object_link(uw_chain_word_ptr(puVar2));
     if ((((uw_object_hdr_t *)puVar2)->object_id) == 0x1a0) {
-      object_list_unlink(tile_rec + 2,puVar2);
+      object_list_unlink((uw_link_word_t *)(tile_rec + 2),puVar2);
       free_object_slot(puVar2);
     }
   }

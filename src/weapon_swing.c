@@ -116,7 +116,7 @@ byte load_weapon_swing_sprites()
                            ,0x1c,&weapon_swing_frame_alloc,&weapon_swing_frame_loaded);
       iVar8 = (int)DAT_000870d8;
       bVar3 = *(byte *)(DAT_00086df8 + 100);
-      pcVar5 = &DAT_0023cca8;
+      pcVar5 = (char *)&DAT_0023cca8;
     stack0xffdc3240_ptr = acStack_118;
       do {
         cVar1 = *pcVar5;
@@ -412,7 +412,7 @@ bool load_weapon_combat_maneuver_data()
   bool bVar7;
   char acStack_110 [260];
   
-  pcVar3 = &DAT_0023cca8;
+  pcVar3 = (char *)&DAT_0023cca8;
     stack0xffdc3248_ptr = acStack_110;
   do {
     cVar1 = *pcVar3;
@@ -456,10 +456,6 @@ int find_and_consume_ammo(short weapon_type)
   short sVar2;
   int iVar3;
   char *pcVar4;
-  /* Was 544528 bytes -- same Ghidra stack-frame-size-miscalculation artifact already fixed
-     elsewhere this session (check_object_fits_in_slot, dispatch_object_action,
-     try_combine_or_stow_object)... */
-  char acStackY_84f60 [64];
   short local_4c [4];
   ushort local_44 [4];
   char acStack_3c [52];
@@ -471,8 +467,11 @@ int find_and_consume_ammo(short weapon_type)
     message_scroll_print_wrapped(s_Sorry__you_have_no_00084f2c);
     sVar2 = build_object_display_name(acStack_3c,local_44,0,1);
     if (sVar2 == 0) {
+      /* Ghidra mis-resolved this copy loop's destination as a separate 544528-byte acStackY_84f60
+         (stack-frame-size artifact, see fix_stack_copy_loops.py); "UNNAMED" really fills the
+         acStack_3c name buffer printed right below. */
       pcVar4 = s_UNNAMED_00084f24;
-    wptr_14062 = acStackY_84f60;
+    wptr_14062 = acStack_3c;
       do {
         cVar1 = *pcVar4;
         *wptr_14062 = cVar1; wptr_14062 = wptr_14062 + 1;
@@ -480,7 +479,7 @@ int find_and_consume_ammo(short weapon_type)
       } while (cVar1 != '\0');
     }
     message_scroll_print_wrapped(acStack_3c);
-    message_scroll_print_wrapped(&DAT_00084f20);
+    message_scroll_print_wrapped((char *)&DAT_00084f20);
     iVar3 = -1;
   }
   else {
@@ -676,7 +675,8 @@ void draw_hud_icon_sprite(int sprite_id, int x, int y)
 {
   char cVar1;
   char cVar2;
-  char *pcVar3;
+  /* Raw .GR entry bytes; cVar1/cVar2 keep the original signed-char reads. */
+  byte *pcVar3;
   undefined4 unaff_r4;
   undefined4 unaff_r5;
   uint resolved;
@@ -685,7 +685,7 @@ void draw_hud_icon_sprite(int sprite_id, int x, int y)
      resolve_sprite_id_to_frame(sprite_id); lookup_grtile_by_id(resolved);` pair used correctly
      elsewhere in this file (see e.g. the call site right above this function). */
   resolved = resolve_sprite_id_to_frame(sprite_id);
-  pcVar3 = (char *)lookup_grtile_by_id(resolved);
+  pcVar3 = (byte *)lookup_grtile_by_id(resolved);
   cVar1 = pcVar3[1];
   cVar2 = pcVar3[2];
   if (*pcVar3 == '\x04') {
@@ -695,7 +695,7 @@ void draw_hud_icon_sprite(int sprite_id, int x, int y)
     /* HACK: dropped 3rd argument (the .GR entry's own compression-mode byte, *pcVar3) -- the same
        bug already found and fixed twice elsewhere in this file for this identical
        decompress_gr_bitmap call shape... */
-    pcVar3 = (char *)decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,*pcVar3);
+    pcVar3 = decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,*pcVar3);
   }
   bitmap_blit_to_framebuffer(x,y,pcVar3,cVar2,cVar1,0,0,1);
 }
@@ -787,7 +787,7 @@ void fire_ranged_weapon(short weapon_type)
     DAT_00202a48 = (ushort)(byte) g_ranged_type_props[(short)cVar3].projectile_speed;
     DAT_00202a38 = cVar3 + 0x10;
     DAT_00202a4c = (ushort)(g_player_object->npc_xhome);
-    DAT_00202a44 = g_player_object;
+    DAT_00202a44 = (ushort *)g_player_object; /* word view of the projectile source record */
     DAT_00202a50 = (undefined2)(g_player_object->npc_yhome);
     DAT_00202a54 = 1;
     compute_drop_aim_from_cursor();

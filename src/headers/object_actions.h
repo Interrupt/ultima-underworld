@@ -44,7 +44,7 @@ void scan_area_ahead_of_object(void *object, int filter_a, int (*callback)(), in
 void for_each_object_of_type(ushort type_id, int mode, int argument, int (*callback)());
 void damage_all_objects_at_tile(int tile_x, short tile_y, char damage_tier, byte attacker_slot);
 int build_object_display_name(char *out_text, void *object, int flag_a, int flag_b);
-byte *format_object_display_name(byte *buffer, int flag_a, int flag_b);
+char *format_object_display_name(char *buffer, int flag_a, int flag_b);
 void print_scroll_message_by_id(uint message_id);
 void print_scroll_message_concat(uint id_a, uint id_b, uint id_c);
 int check_object_combination(void *actor, ushort *object, short count);

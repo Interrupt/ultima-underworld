@@ -47,7 +47,7 @@ void draw_dungeon_hud_backdrop()
   char main_byt_path[264];
 
   ce_memset(main_byt_path,0,0x104);
-  install_dir = &DAT_0023cca8;
+  install_dir = (char *)&DAT_0023cca8;
   path_cursor = main_byt_path;
   do {
     path_char = *install_dir;
@@ -201,8 +201,8 @@ void reset_level_object_arena()
     reset_equipment_and_container_state();
   }
   g_scheduler_count = 0;
-  DAT_002046c0 = DAT_002046a0 + 2;
-  DAT_002046c8 = DAT_002046a0 + 2;
+  DAT_002046c0 = (byte *)DAT_002046a0 + 2;
+  DAT_002046c8 = (byte *)DAT_002046a0 + 2;
 }
 
 
@@ -389,7 +389,7 @@ int teleport_object_to_level_tile(void *object_ptr, int tile_x, int tile_y, shor
   short placed_x;
   short placed_y;
 
-  if ((level_number != DAT_00201b68) && (object != g_player_object)) {
+  if ((level_number != DAT_00201b68) && (object_ptr != g_player_object)) {
     return 2;
   }
   if (((level_number == 0) || (level_number == DAT_00201b68)) &&
@@ -402,7 +402,7 @@ int teleport_object_to_level_tile(void *object_ptr, int tile_x, int tile_y, shor
     tile_y = (int)placed_y;
     level_number = current_level;
   }
-  if (object == g_player_object) {
+  if (object_ptr == g_player_object) {
     DAT_00201c90 = (undefined2)tile_x;
     DAT_00201c8c = (undefined2)tile_y;
     DAT_00201c7c = level_number;

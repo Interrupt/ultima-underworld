@@ -27,9 +27,9 @@ short fine(ushort *object, int offset)
 { short value; memcpy(&value, (byte *)object + offset, 2); return value; }
 uw_object_hdr_t *alloc_object_slot(int mobile)
 {
-    if (mobile) { mobile_allocations++; return (char *)arena + 0x4000 + 2 * 27; }
+    if (mobile) { mobile_allocations++; return (uw_object_hdr_t *)((char *)arena + 0x4000 + 2 * 27); }
     static_allocations++;
-    return (char *)arena + 0x5b00 + 8;
+    return (uw_object_hdr_t *)((char *)arena + 0x5b00 + 8);
 }
 void free_object_slot(uw_object_hdr_t *object)
 {
@@ -44,14 +44,14 @@ int encode_object_slot_index(const uw_object_hdr_t *object)
 }
 void *tilemap_lookup(short x, short y)
 { TEST_ASSERT_TRUE(x>=0 && x<64 && y>=0 && y<64); return (byte *)arena + (y*64+x)*4; }
-uw_object_hdr_t *resolve_object_link(ushort *head_)
-{ ushort *head = (ushort *)head_;
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *head)
+{
     unsigned slot=*head>>6;
-    return !slot ? NULL : slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8;
+    return !slot ? NULL : (uw_object_hdr_t *)(slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8);
 }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
-{ return slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8; }
-void get_mouse_position(ushort *x, ushort *y) { *x=141; *y=cursor_y; }
+{ return (uw_object_hdr_t *)(slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8); }
+void get_mouse_position(short *x, short *y) { *x=141; *y=cursor_y; }
 long ce_rand(void) { return 0; }
 void angle_to_screen_delta(uint heading, void *x_, void *y_)
 { short *x = (short *)x_; short *y = (short *)y_;
@@ -89,7 +89,7 @@ void collision_height_envelope(int mode, int collision)
             record[1]=bridge_heights[i]-2; /* underside */
             *(ushort *)(record+2)=(300+i)<<6;
             *(short *)(record+4)=0; /* same tile */
-            ushort *bridge=get_object_record_by_slot_index(300+i);
+            ushort *bridge=(ushort *)get_object_record_by_slot_index(300+i);
             bridge[0]=0x164;
             bridge[1]=bridge_heights[i]-2;
         }
@@ -113,8 +113,8 @@ int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int dam
 ushort *discard_misplaced_object(void *list, ushort *object, int destroy)
 {
     if (!destroy) return object;
-    object_list_unlink(list,object);
-    free_object_slot(object);
+    object_list_unlink(list,(uw_object_hdr_t *)object);
+    free_object_slot((uw_object_hdr_t *)object);
     return NULL;
 }
 uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
@@ -132,7 +132,7 @@ int resolve_collision_candidate_interaction(short contact, int slot)
     return 4;
 }
 void randomize_settled_snapshot_position(void *snapshot) { (void)snapshot;}
-void object_list_append_tail(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Throw took the ground-drop path"); }
+void object_list_append_tail(uw_link_word_t *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Throw took the ground-drop path"); }
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias) { (void)sound_id; (void)world_x; (void)world_y; (void)volume_bias; return 0; }
 
 bool apply_swim_wade_pose(ushort collision_mask) { (void)collision_mask; TEST_FAIL_MESSAGE("Unexpected water"); return false; }
@@ -199,7 +199,7 @@ void launch(void)
     TEST_ASSERT_EQUAL_UINT16(0x80,thrown[0]&0x1ff);
 }
 void tick(void)
-{ DAT_0010190c=thrown; mobile_object_tick(); }
+{ DAT_0010190c=(uw_mobile_object_t *)thrown; mobile_object_tick(); }
 
 /* One main-loop pass per 60Hz game frame, as uw_pump_events() + dispatch_sticky_mode_handlers() run
    it: the game clock is serviced against a monotonic microsecond time (uw_service_game_clock), then

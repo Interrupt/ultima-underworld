@@ -52,8 +52,8 @@ int DAT_0023b83c;
 /* Were int / undefined4, truncating the real &DAT_002049e0-relative pointers this loader
    (FUN_00042174 area) computes into them: ae38 = &DAT_002049e0 ae34 = ae38 + DAT_0023adb0*0x1000
    (10 x 0x400 shade tables at +0x30..) ae3c = ae34 + DAT_0023aeb8*0x400 ae30 = ae3c + n*0x100... */
-char *DAT_0023ae38;
-char *DAT_0023ae3c;
+byte *DAT_0023ae38;
+byte *DAT_0023ae3c;
 undefined2 DAT_00202734;
 byte DAT_0023b4a0;
 char *DAT_0023aecc;
@@ -230,7 +230,7 @@ void render_visible_tile_list()
   int local_94;
   /* Ghidra named the 4 words of the viewport-clip-rect struct passed to raster_triangle (as
      param_8) as 4 separate locals. */
-  undefined4 local_70_rect[4];
+  int local_70_rect[4]; /* clip rect handed to raster_triangle as int* */
 #define local_70 (local_70_rect[0])
 #define local_6c (local_70_rect[1])
 #define local_68 (local_70_rect[2])
@@ -383,7 +383,7 @@ void walk_visible_tiles()
   short sVar2;
   short sVar3;
   int iVar4;
-  char *pcVar5;
+  byte *pcVar5;
   uint uVar6;
   int iVar7;
   byte *pbVar8;
@@ -541,7 +541,7 @@ void process_visible_tile_cell(byte *cell)
   int iVar34;
   byte *pbVar35;
   int iVar36;
-  const char *pcVar37;
+  const byte *pcVar37; /* signed per-direction offset table: read as (char) */
   int iVar38;
   bool bVar39;
   byte local_84;
@@ -1007,7 +1007,7 @@ LAB_0005e7e0:
   if (local_30 == 0x44) {
     iVar33 = (local_48 & 3) * 6;
     pcVar37 = &DAT_00086bc8 + iVar33;
-    if ((((int)*pcVar37 + (int)DAT_0023b4e4 + -0x10) * 0x100 - (int)*(short *)(iVar16 + 10)) *
+    if ((((int)(char)*pcVar37 + (int)DAT_0023b4e4 + -0x10) * 0x100 - (int)*(short *)(iVar16 + 10)) *
         (int)(char)(&DAT_00086bcc)[iVar33] +
         (((int)(char)(&DAT_00086bc9)[iVar33] + (int)DAT_0023b4e8) * 0x100 -
         (int)*(short *)(iVar16 + 0x12)) * (int)(char)(&DAT_00086bcd)[iVar33] < 0) {
@@ -1049,7 +1049,7 @@ LAB_0005e7e0:
       iVar38 = (int)DAT_0023b4e4;
       cVar2 = (char)(sVar31 >> 0xf);
       iVar32 = DAT_0023b838 * 0xc;
-      uVar17 = ordfloat_int_to_float2((iVar38 + *pcVar37) * 0x100);
+      uVar17 = ordfloat_int_to_float2((iVar38 + (char)*pcVar37) * 0x100);
       iVar18 = (int)DAT_0023b4e8;
       UW_BITS(UW_VERT_AT(g_geom_arena.model_verts, iVar32)->x) = uVar17;
       uVar17 = ordfloat_int_to_float2((iVar18 + (char)(&DAT_00086bc9)[iVar33]) * 0x100);
@@ -1070,7 +1070,7 @@ LAB_0005e7e0:
       DAT_0023b838 = iVar32;
       UW_REC_AT(iVar34)->uv[1] = uVar20;
       iVar30 = iVar32 * 0xc;
-      uVar20 = ordfloat_int_to_float2((iVar38 + *pcVar37) * 0x100);
+      uVar20 = ordfloat_int_to_float2((iVar38 + (char)*pcVar37) * 0x100);
       UW_BITS(UW_VERT_AT(g_geom_arena.model_verts, iVar30)->x) = uVar20;
       uVar20 = ordfloat_int_to_float2((iVar18 + (char)(&DAT_00086bc9)[iVar33]) * 0x100);
       UW_BITS(UW_VERT_AT(g_geom_arena.model_verts, iVar30)->z) = uVar20;
@@ -1292,7 +1292,7 @@ void resolve_billboard_corner_offset(byte *corner, void *feature_ptr)
 // was FUN_000652e8 -- computes a feature's draw-order depth key (written to param_1[0]) from its
 // X/Y offsets (param_1[1]/[2]), combined differently depending on which ring-scan phase is current
 // (DAT_0023bb94, see update_wall_partition_phase).
-void compute_feature_depth_key(char *feature)
+void compute_feature_depth_key(byte *feature)
 {
   char cVar1;
   
@@ -1347,7 +1347,7 @@ void emit_tile_features(ushort *tile)
   ushort uVar11;
   ushort uVar12;
   int iVar13;
-  char *pcVar14;
+  byte *pcVar14;
   int iVar15;
   int iVar16;
   short local_38;
@@ -1462,7 +1462,7 @@ void emit_tile_features(ushort *tile)
                          (short)((uint)((int)DAT_0023b4e4 << 0x13) >> 0x10)) * 0x20 + 0x10;
           DAT_0023b920 = ((short)(char)(&DAT_0023bb9a)[iVar7] +
                          (short)((uint)((int)DAT_0023b4e8 << 0x13) >> 0x10)) * 0x20 + 0x10;
-          if (((((uw_object_hdr_t *)puVar5)->object_id & 0x1c0) == 0x40) || (iVar16 = object_ptr_in_arena(puVar5), iVar16 == 0)) {
+          if (((((uw_object_hdr_t *)puVar5)->object_id & 0x1c0) == 0x40) || (iVar16 = object_ptr_in_arena((uw_object_hdr_t *)puVar5), iVar16 == 0)) {
             DAT_0023b91c = (((uw_object_hdr_t *)puVar5)->zpos) << 3;
           }
           else {
@@ -1624,7 +1624,7 @@ byte tile_is_no_magic(int tile_x, int tile_y)
 void *get_texture_page(short page_index)
 {
   int iVar1;
-  char **ppcVar2;
+  byte **ppcVar2;
 
   iVar1 = (int)page_index;
   if (iVar1 < 0x30) {
@@ -1689,7 +1689,7 @@ void emit_tile_objects(ushort *tile)
   int iVar35;
   ushort local_54;
   
-  if (tile == g_player_object) {
+  if ((uw_object_hdr_t *)tile == &g_player_object->hdr) {
     return;
   }
   if ((*tile & 0x4000) == 0x4000) {
@@ -1698,7 +1698,7 @@ void emit_tile_objects(ushort *tile)
   if (DAT_0023b830 != 0) {
     *(short *)((intptr_t)g_pick_tile_off_backing + (uint)DAT_0023b830 * 2 + 2) =
          DAT_0023b8c4 + (short)((DAT_0023b4ec - DAT_0023b814) >> 2);
-    uVar15 = encode_object_slot_index(tile);
+    uVar15 = encode_object_slot_index((uw_object_hdr_t *)tile);
     puVar12 = (ushort *)DAT_00110fc0;
     *(undefined2 *)(&DAT_0023b676 + (uint)DAT_0023b830 * 2) = uVar15;
     *puVar12 = 0xae;
@@ -1712,7 +1712,7 @@ void emit_tile_objects(ushort *tile)
       DAT_0023b830 = 1;
     }
   }
-  iVar17 = object_ptr_in_arena(tile);
+  iVar17 = object_ptr_in_arena((uw_object_hdr_t *)tile);
   if ((iVar17 != 0) && ((*tile & 0x1c0) != 0x40)) {
     bVar13 = *(byte *)((char *)tile + 0xb);
     bVar1 = *(byte *)((char *)tile + 0xd);

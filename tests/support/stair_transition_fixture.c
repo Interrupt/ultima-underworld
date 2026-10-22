@@ -77,14 +77,14 @@ void update_player_tick_effects(void) {}
 long ce_rand(void) { return 1; }
 void apply_level9_random_hazard_tick(void) {}
 void debug_print(char *format, ...) {}
-uw_object_hdr_t *find_object_in_chain(ushort **link, int recursive, int group,
+uw_object_hdr_t *find_object_in_chain(uw_link_word_t **link, int recursive, int group,
                                       int subclass, short type)
 {
     TEST_ASSERT_EQUAL_INT(7, group);
     TEST_ASSERT_EQUAL_INT(0, subclass);
     TEST_ASSERT_EQUAL_INT(10, type);
     scan_calls++;
-    return resurrection_object;
+    return (uw_object_hdr_t *)resurrection_object; /* raw 8-byte record viewed as a header */
 }
 
 void stair_transition_fixture_reset(void)

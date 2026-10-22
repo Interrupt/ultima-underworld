@@ -226,7 +226,7 @@ static short DAT_0023c1e8_arr[2];
 /* Same split-symbol bug, same fix: `hud_dragon_reaction_tick` indexes `&DAT_0023c1e4 + iVar6` (the
    animation-phase state byte per dragon side) and `reset_hud_panel_animation_state` resets both
    elements individually (`DAT_0023c1e6 = 0; ... */
-static undefined2 DAT_0023c1e4_arr[2];
+static short DAT_0023c1e4_arr[2];
 #define DAT_0023c1e4 DAT_0023c1e4_arr[0]
 #define DAT_0023c1e6 DAT_0023c1e4_arr[1]
 static undefined2 DAT_0023c220;
@@ -389,7 +389,7 @@ static short DAT_0023c134;
 /* Sizing-audit pass: single use, `debug_print(&DAT_00087298)`, 0 writers. Real content confirmed
    via direct Ghidra memory export of UU.exe (tests/fixtures/static_strings.json): "ick\n" -- an odd
    short fragment, but that's genuinely what's at this address in the real binary's .data section. */
-static undefined DAT_00087298_backing[16] = "ick\n";
+static char DAT_00087298_backing[16] = "ick\n";
 #define DAT_00087298 DAT_00087298_backing[0]
 static byte DAT_0023c208;
 static short DAT_0023c138;
@@ -446,13 +446,13 @@ static char s_Yes_000879a0[] = "Yes";
    comment far above): scroll_text_entry_prompt's ESC-cancel path prints
    `&s_dash_000879a4` with no write beforehand. Real bytes at 0x879a4: "-". */
 // was DAT_000879a4
-static undefined s_dash_000879a4_backing[8192] = "-";
+static char s_dash_000879a4_backing[8192] = "-";
 #define s_dash_000879a4 s_dash_000879a4_backing[0]
 /* Same pattern: scroll_text_entry_prompt defaults its prompt-before-the-input-field text to
    `&s_scroll_prompt_arrow_000879a8` whenever the caller passes a NULL label (the save-name-entry
    call site does exactly this) -- real bytes at 0x879a8 are ">"... */
 // was DAT_000879a8
-static undefined s_scroll_prompt_arrow_000879a8_backing[8192] = ">";
+static char s_scroll_prompt_arrow_000879a8_backing[8192] = ">";
 #define s_scroll_prompt_arrow_000879a8 s_scroll_prompt_arrow_000879a8_backing[0]
 
 
@@ -1923,16 +1923,16 @@ void msg_scroll_more_prompt()
 // at ~0x31 columns (one msg_scroll_split_escape_segments call per line).
 int message_scroll_print_wrapped(char *text)
 {
-  undefined1 uVar1;
+  char uVar1;
   int iVar2;
   uint uVar3;
-  undefined1 *puVar4;
+  char *puVar4;
   int extraout_r3;
   int extraout_r3_00;
   /* Ghidra split these into two locals (their own stack-offset names, 0x54 and 0x23, differ by
      exactly 0x31 = sizeof(auStack_54)) -- same "adjacent stack locals are really one buffer"
      pattern fixed elsewhere this session. */
-  undefined1 auStack_54_backing [52];
+  char auStack_54_backing [52];
   #define auStack_54 auStack_54_backing
   #define local_23 (auStack_54_backing + 49)
 
@@ -1968,13 +1968,13 @@ int message_scroll_print_wrapped(char *text)
         uVar3 = ((short)uVar3 - iVar2) * 0x10000 >> 0x10) {
       ce_memmove(auStack_54,text,0x31);
       local_23[0] = 0;
-      puVar4 = (undefined1 *)ce_strrchr(auStack_54,0x20);
-      if (puVar4 == (undefined1 *)0x0) {
+      puVar4 = ce_strrchr(auStack_54,0x20);
+      if (puVar4 == (char *)0x0) {
         puVar4 = local_23;
       }
       uVar1 = *puVar4;
       *puVar4 = 0;
-      iVar2 = ((int)((char *)puVar4 - (char *)auStack_54) * 0x10000) >> 0x10;
+      iVar2 = ((int)(puVar4 - auStack_54) * 0x10000) >> 0x10;
       msg_scroll_split_escape_segments(auStack_54,1);
       *puVar4 = uVar1;
       text = iVar2 + text;
@@ -2487,7 +2487,7 @@ void update_ready_rune_slot_icons(char *character)
 // opposite screen edge from update_ready_rune_slot_icons's rune slots -- DAT_00087218's X positions
 // decrease where DAT_00087210's increase)...
 /* Same truncation bug as its sibling update_ready_rune_slot_icons above. */
-void update_light_source_color_icons(char *character)
+void update_light_source_color_icons(byte *character)
 {
   undefined4 uVar1;
   int iVar2;
@@ -3049,7 +3049,7 @@ void squash_hud_panel_flip_rows(char *src, char *dst, short stage)
 
 // was FUN_0006fa28 -- copies one column of the HUD panel-flip's squashed panel content from a
 // source column (param_1) into a destination column (param_2)...
-void copy_hud_panel_flip_column(byte *src, byte *dst)
+void copy_hud_panel_flip_column(char *src, char *dst)
 {
   short sVar1;
   short sVar2;
@@ -3337,7 +3337,7 @@ void flush_sprite_list_compositor()
 
 /* was FUN_0007e998 -- Not decompiled -- confirmed a genuine dead stub in the real binary too
    (disassembly at 0x0007e998 is just `cpy pc,lr`, 4 bytes, no body). */
-void capture_framebuffer_rect_to_grtile_paletted(unsigned char *out_pixels, int x, int y, int width, int height)
+void capture_framebuffer_rect_to_grtile_paletted(char *out_pixels, int x, int y, int width, int height)
 {
   int row;
   int col;
@@ -3372,7 +3372,7 @@ void capture_framebuffer_rect_to_grtile_paletted(unsigned char *out_pixels, int 
           if (dist == 0) break;
         }
       }
-      out_pixels[row * width + col] = (unsigned char)best_index;
+      out_pixels[row * width + col] = (char)best_index;
     }
   }
 }
@@ -3513,12 +3513,12 @@ int draw_conversation_window_decoration()
 
 // was FUN_0007f6fc -- confirmed by message_scroll_print_wrapped's own pre-existing comment
 // (src/hud.c) as its per-~49-char-chunk worker (one call per line in the word-wrap loop).
-void msg_scroll_split_escape_segments(byte *text, int span_length)
+void msg_scroll_split_escape_segments(char *text, int span_length)
 {
-  undefined1 *puVar1;
+  char *puVar1;
   undefined4 uVar2;
   
-  while (puVar1 = (undefined1 *)ce_strchr(text + 1,0x5c), puVar1 != (undefined1 *)0x0) {
+  while (puVar1 = ce_strchr(text + 1,0x5c), puVar1 != (char *)0x0) {
     *puVar1 = 0;
     if ((puVar1[2] != '\0') || (uVar2 = span_length, puVar1[1] == 'm')) {
       uVar2 = 1;
@@ -3562,7 +3562,7 @@ void echo_number_to_scroll(short number)
 {
   short sVar1;
   int iVar2;
-  undefined1 auStack_18 [8];
+  char auStack_18 [8];
 
   itoa_radix((int)number,auStack_18,10);
   iVar2 = (int)DAT_0025070c;
@@ -3888,7 +3888,7 @@ LAB_0008062c:
 int prompt_yes_no_scroll(int question_text, int message_id, int *result)
 {
   short sVar1;
-  undefined *puVar2;
+  char *puVar2;
   undefined4 uVar3;
   int iVar4;
   int iVar5;
@@ -3996,8 +3996,8 @@ void show_flask_value_tooltip()
   short sVar2;
   char *pcVar3;
   char *pcVar4;
-  undefined1 auStack_a4 [16];
-  undefined1 auStack_94 [16];
+  char auStack_a4 [16];
+  char auStack_94 [16];
   char local_84 [120];
 
   sVar2 = *DAT_00085a6c;
@@ -4526,7 +4526,7 @@ bool update_carry_weight_display(int force)
   undefined4 uVar3;
   int iVar4;
   bool bVar5;
-  undefined1 auStack_24 [8];
+  char auStack_24 [8];
   
   bVar5 = false;
   iVar4 = ((int)g_player_max_carry_weight - (int)g_player_carry_weight) * 0x10000;
@@ -5484,7 +5484,7 @@ void redraw_hotspot_border_cursor()
 
 
 // was FUN_00057504 -- returns the current raw mouse position.
-void get_mouse_position(ushort *out_x, ushort *out_y)
+void get_mouse_position(short *out_x, short *out_y)
 {
   *out_x = g_mouse_x;
   *out_y = g_mouse_y;

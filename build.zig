@@ -81,12 +81,9 @@ const uw_sources = [_][]const u8{
 
 const c_flags = [_][]const u8{
     "-std=gnu11",
-    "-Wno-pointer-sign",
-    // Decompiled code mixes pointer types freely; newer clang makes these hard errors on some targets.
-    "-Wno-incompatible-pointer-types",
-    "-Wno-int-conversion",
-    "-Wno-int-to-pointer-cast",
     "-fno-common",
+    // The code assumes plain char is signed (see CMakeLists.txt); it is unsigned on ARM Linux.
+    "-fsigned-char",
     // The decompiled code relies on behaviour UBSan would trap on; the CMake build does not enable it.
     "-fno-sanitize=undefined",
 };

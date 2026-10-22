@@ -57,6 +57,8 @@ extern char * g_backpack_slot_table;
    variables (never written, so the scroll arrows did nothing): first slot = scroll start, slot 0x18
    = where "scroll forward" starts, slot 0x1b = last visible. */
 #define SLOT_LINK(i) (*(ushort *)(&g_equipped_items + (i) * 2))
+/* Address of slot i's link word, for the chain primitives (resolve_object_link etc.). */
+#define SLOT_LINK_PTR(i) ((uw_link_word_t *)(&g_equipped_items + (i) * 2))
 #define GRID_FIRST_SLOT SLOT_LINK(0x14)
 extern char * g_current_container_record;
 extern undefined2 g_cursor_holding_state;

@@ -156,13 +156,14 @@ REPLACEMENTS = {'babl_builtin_place_object': [('undefined1 *puVar4;', 'uw_object
                                ('(undefined1 *)get_object_record_by_slot_index',
                                 'get_object_record_by_slot_index'),
                                ('void *link_cursor;', 'uw_object_hdr_t *link_cursor;'),
+                               ('ushort *puVar7;', 'uw_link_word_t *puVar7;'),
                                ('byte *pbVar9;', 'uw_tile_t *pbVar9;'),
                                ('puVar7 = (ushort *)((char *)&DAT_00100674->hdr.link_word);',
-                                'puVar7 = &DAT_00100674->hdr.link_word;'),
+                                'puVar7 = uw_link_word_ptr(&DAT_00100674->hdr);'),
                                ('puVar7 = (ushort *)((char *)link_cursor + 4);',
-                                'puVar7 = &link_cursor->chain_word;'),
+                                'puVar7 = uw_chain_word_ptr(link_cursor);'),
                                ('object_list_unlink((char *)&DAT_00100674->hdr.link_word,puVar4);',
-                                'object_list_unlink(&DAT_00100674->hdr.link_word,puVar4);'),
+                                'object_list_unlink(uw_link_word_ptr(&DAT_00100674->hdr),puVar4);'),
                                ('g_player_object->tile_word >> 7 & 0x1f8',
                                 'g_player_object->tile_x << 3'),
                                ('g_player_object->tile_word >> 1 & 0x1f8',
@@ -182,10 +183,10 @@ REPLACEMENTS = {'babl_builtin_place_object': [('undefined1 *puVar4;', 'uw_object
                                   ('(ushort *)get_object_record_by_slot_index',
                                    'get_object_record_by_slot_index'),
                                   ('(ushort *)resolve_object_link((char *)&DAT_00100674->hdr.link_word)',
-                                   'resolve_object_link(&DAT_00100674->hdr.link_word)'),
+                                   'resolve_object_link(uw_link_word_ptr(&DAT_00100674->hdr))'),
                                   ('(ushort *)0x0', 'NULL'),
                                   ('(ushort *)resolve_object_link(puVar3 + 2)',
-                                   'resolve_object_link(&puVar3->chain_word)'),
+                                   'resolve_object_link(uw_chain_word_ptr(puVar3))'),
                                   ('            if ((((((uw_object_hdr_t *)puVar2)->is_quant != 0) && '
                                    '(((uw_object_hdr_t *)puVar3)->is_quant != 0)) &&\n'
                                    '                 ((((uw_object_hdr_t *)puVar2)->link & 0x200) == '
@@ -206,7 +207,15 @@ REPLACEMENTS = {'babl_builtin_place_object': [('undefined1 *puVar4;', 'uw_object
                                    'puVar3->link = (iVar4 >> 6) & 0x3ff;'),
                                   ('object_list_insert_head((char '
                                    '*)&DAT_00100674->hdr.link_word,puVar2);',
-                                   'object_list_insert_head(&DAT_00100674->hdr.link_word,puVar2);')]}
+                                   'object_list_insert_head(uw_link_word_ptr(&DAT_00100674->hdr),puVar2);'),
+                                  # -Wpointer-sign: DAT_000bbfd0 is an unsigned (undefined2) slot array;
+                                  # psVar5 now matches it and each signed read is spelled out.
+                                  ('  short *psVar5;', '  ushort *psVar5;'),
+                                  ('if (0 < *psVar5) {', 'if (0 < (short)*psVar5) {'),
+                                  ('check_npc_item_preference(*psVar5)',
+                                   'check_npc_item_preference((short)*psVar5)'),
+                                  ('get_object_record_by_slot_index((int)*psVar5)',
+                                   'get_object_record_by_slot_index((int)(short)*psVar5)')]}
 
 def converted(name):
     result = ORIGINALS[name]

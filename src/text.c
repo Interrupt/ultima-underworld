@@ -27,7 +27,7 @@ static short DAT_000a85b8;
 /* Was `int`, truncating the real char* pointer (DAT_000890a4) assigned
    into it -- used as a glyph-bitmap-data base address in byte-pointer
    arithmetic passed to unpack_glyph_bitmap. */
-static char *g_font_glyph_data_base;
+static byte *g_font_glyph_data_base;
 static undefined2 DAT_000a85b0;
 static char s_0123456789ABCDEF_00084a28[] = "0123456789ABCDEF";
 static undefined1 DAT_00189588;
@@ -253,7 +253,7 @@ void load_font_metrics()
   g_font_row_stride = *(undefined2 *)(DAT_000879b0 + 8);
   DAT_000a85b0 = *(undefined2 *)(DAT_000879b0 + 10);
   DAT_000a85b8 = *(short *)(DAT_000879b0 + 2);
-  g_font_glyph_data_base = DAT_000890a4;
+  g_font_glyph_data_base = (byte *)DAT_000890a4;
   iVar1 = (int)DAT_000a85b8;
   puVar5 = &DAT_000890b0;
   pbVar3 = (byte *)(DAT_000890a4 + iVar1);
@@ -281,7 +281,7 @@ bool select_active_font(char *font_filename)
   int iVar3;
   char acStack_110 [260];
   
-  pcVar2 = &DAT_0023cca8;
+  pcVar2 = (char *)&DAT_0023cca8;
     stack0xffdc3248_ptr = acStack_110;
   do {
     cVar1 = *pcVar2;
@@ -330,7 +330,7 @@ uint pack_word_byte(uint word, uint new_byte, int into_high_byte)
 // in base param_3 into buffer param_2 (via the s_0123456789ABCDEF_00084a28 digit table)...
 /* Real arity is 3 (value, buffer, radix): ARM 0x229e0 reads r0-r2 only. Ghidra's param_4 was a
    scratch register (the pad-character local) that all 21 call sites correctly leave unset. */
-void itoa_radix(int value, byte *buffer, int radix)
+void itoa_radix(int value, char *buffer, int radix)
 {
   undefined1 pad_char;
   char cVar1;

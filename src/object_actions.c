@@ -48,7 +48,7 @@ static char s_with_00085cd0[] = " with ";
    prefixes a special/unique item's proper name onto its base name, e.g. "<item> of <name>"... */
 /* Sizing-audit pass: confirmed 4-char content (" of \0"), no
    indexing. Sized to 16; down from 8192. */
-static undefined DAT_00085cd8_backing[16] = " of ";
+static char DAT_00085cd8_backing[16] = " of ";
 static undefined4 DAT_0024cfcc;
 /* DAT_00085ccc/ccd/cce sit right after DAT_00085cc8 ("no\0", above) in real memory ("00\0" -- 0x30
    0x30 0x00) and get copied into this function's own digit-formatting scratch buffer before being
@@ -61,7 +61,7 @@ static undefined1 DAT_00085cce;
    count isn't exactly 1. */
 /* Sizing-audit pass: confirmed 1-char content ("s\0"), no indexing.
    Sized to 16; down from 8192. */
-static undefined DAT_00085cb4_backing[16] = "s";
+static char DAT_00085cb4_backing[16] = "s";
 static char s__DATA_grave_dat_00085cf8[] = "\\DATA\\grave.dat";
 /* Ghidra rendered the embedded space as an underscore and dropped
    the trailing newline. Real bytes at 0x85d08 (ARM UU.exe .data):
@@ -94,12 +94,12 @@ void dispatch_object_action(ushort *object, int mode)
   int iVar5;
   char *pcVar6;
   char *count_str;
-  undefined *puVar8;
+  char *puVar8;
   int iVar9;
   char cVar10;
   undefined4 uVar11;
   char acStack_85978 [547012];
-  undefined1 auStack_b4 [8];
+  char auStack_b4 [8];
   char acStack_ac [16];
   char acStack_9c [32];
   /* Was 80 bytes -- build_creature_look_text's creature-look text ("You see " + article +
@@ -214,7 +214,7 @@ int decode_critter_sprite_page(int page_base, int page_index, short column, shor
   int iVar1;
   int iVar5;
   byte *pbVar6;
-  char *uVar7; /* decompress_gr_bitmap's real return type -- was undefined4, truncating it */
+  byte *uVar7; /* decompress_gr_bitmap's real return type -- was undefined4, truncating it */
   byte *pbVar8;
   int iVar9;
   int iVar10;
@@ -365,12 +365,12 @@ void dispatch_object_action_dup(ushort *object, int mode)
   int iVar5;
   char *pcVar6;
   char *count_str;
-  undefined *puVar8;
+  char *puVar8;
   int iVar9;
   char cVar10;
   undefined4 uVar11;
   char acStack_85978 [547012];
-  undefined1 auStack_b4 [8];
+  char auStack_b4 [8];
   char local_ac [16];
   char local_9c [32];
   /* Same too-small stack buffer fixed in this function's duplicate,
@@ -578,26 +578,26 @@ int check_object_combination(void *actor_ptr, ushort *object, short count)
   ushort uVar1;
   ushort uVar2;
   short sVar3;
-  ushort *puVar4;
+  uw_object_hdr_t *puVar4;
   uint uVar5;
   uint uVar6;
-  ushort *local_18;
+  uw_link_word_t *local_18;
   
   if ((((*object & 0x8000) != 0) || (local_18 = object + 3, (*local_18 & 0xffc0) == 0)) ||
-     (puVar4 = (ushort *)find_object_in_chain(&local_18,0,4,0,0xf), puVar4 == (ushort *)0x0)) {
+     (puVar4 = find_object_in_chain(&local_18,0,4,0,0xf), puVar4 == (uw_object_hdr_t *)0x0)) {
     return 1;
   }
-  uVar1 = ((uw_object_hdr_t *)puVar4)->type_flags;
+  uVar1 = puVar4->type_flags;
   if ((uVar1 & 0x200) == 0) {
     if (0 < count) {
       uVar2 = *object;
       if ((((uVar2 & 0x1f0) != 0x140) || ((uVar2 & 0xf) < 8)) &&
          (((uVar2 & 0x1f0) != 0x80 || ((0xb < (uVar2 & 0xf) || ((uVar2 & 1) == 0)))))) {
-        if ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) != (int)count) {
+        if ((puVar4->link & 0x1ff) != (int)count) {
           return 0;
         }
-        ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)uVar1;
-        ((uw_object_hdr_t *)puVar4)->type_flags_high = (byte)(uVar1 >> 8) | 2;
+        puVar4->type_flags_low = (byte)(char)uVar1;
+        puVar4->type_flags_high = (byte)(uVar1 >> 8) | 2;
         return 2;
       }
     }
@@ -605,25 +605,25 @@ int check_object_combination(void *actor_ptr, ushort *object, short count)
   }
   uVar6 = (uint)count;
   if ((int)uVar6 < 0) {
-    uVar5 = ((uw_object_hdr_t *)puVar4)->zpos;
+    uVar5 = puVar4->zpos;
     if (((uVar5 != 0xe) || (0x1e < (int)-uVar6)) &&
        ((uVar5 != 0xf &&
-        (sVar3 = roll_skill_check((int)(uVar6 * -0x10000) >> 0x10,(((uw_object_hdr_t *)puVar4)->zpos) * 3),
+        (sVar3 = roll_skill_check((int)(uVar6 * -0x10000) >> 0x10,(puVar4->zpos) * 3),
          0 < sVar3)))) {
 LAB_0007c130:
       trigger_object_trap_or_use_action(actor,object,6,(int)DAT_002020a0,DAT_002020a4);
-      if ((((uw_object_hdr_t *)puVar4)->flags_res & 0x2) == 0) {
+      if ((puVar4->flags_res & 0x2) == 0) {
         object_list_unlink(local_18,puVar4);
         free_object_slot(puVar4);
       }
       else {
-        uVar6 = ((uw_object_hdr_t *)puVar4)->type_flags & 0xfdff;
-        ((uw_object_hdr_t *)puVar4)->type_flags = (ushort)uVar6;
+        uVar6 = puVar4->type_flags & 0xfdff;
+        puVar4->type_flags = (ushort)uVar6;
       }
       return 3;
     }
   }
-  else if (((0 < (int)uVar6) && ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) != 0)) && ((((uw_object_hdr_t *)puVar4)->link & 0x1ff) == uVar6))
+  else if (((0 < (int)uVar6) && ((puVar4->link & 0x1ff) != 0)) && ((puVar4->link & 0x1ff) == uVar6))
   goto LAB_0007c130;
   return 0;
 }
@@ -669,7 +669,7 @@ void reduce_item_quality_on_use(ushort *object, char dice_count)
         cVar2 = bVar1 - cVar2;
       }
       *(char *)(object + 4) = cVar2;
-      if (object == g_player_object) {
+      if (object == (ushort *)g_player_object) {
         weapon_overlay_flash_once(0xa8);
       }
     }
@@ -691,7 +691,7 @@ void scan_area_for_matching_objects(char filter_a, byte filter_b, int (*callback
   ushort uVar3;
   int iVar4;
   undefined4 uVar5;
-  ushort *puVar6;
+  uw_object_hdr_t *puVar6;
   int iVar7;
   int iVar8;
   int iVar9;
@@ -699,7 +699,7 @@ void scan_area_for_matching_objects(char filter_a, byte filter_b, int (*callback
   int iVar10;
   char cVar11;
   int iVar12;
-  ushort *puVar13;
+  uw_link_word_t *puVar13;
   byte *pbVar14;
   int iVar15;
   int iVar16;
@@ -781,9 +781,9 @@ void scan_area_for_matching_objects(char filter_a, byte filter_b, int (*callback
                       }
                     }
                     else {
-                      puVar13 = (ushort *)(pbVar14 + 2);
-                      puVar6 = (ushort *)resolve_object_link(puVar13);
-                      while (puVar6 != (ushort *)0x0) {
+                      puVar13 = (uw_link_word_t *)(pbVar14 + 2);
+                      puVar6 = resolve_object_link(puVar13);
+                      while (puVar6 != (uw_object_hdr_t *)0x0) {
                         uVar2 = *puVar13;
                         if (object_class == -0x80) {
 LAB_000749c4:
@@ -795,7 +795,7 @@ LAB_000749c4:
                           }
                         }
                         else if (object_class == '\0') {
-                          if ((((uw_object_hdr_t *)puVar6)->object_id & 0x1c0) == 0x40) {
+                          if ((puVar6->object_id & 0x1c0) == 0x40) {
                             uVar3 = encode_object_slot_index(puVar6);
                             if (uVar3 != filter_b) goto LAB_000749c4;
                             goto LAB_000749bc;
@@ -806,9 +806,9 @@ LAB_000749bc:
                           if (object_class == -0x40) goto LAB_000749c4;
                         }
                         if (*puVar13 >> 6 == uVar2 >> 6) {
-                          puVar13 = puVar6 + 2;
+                          puVar13 = uw_chain_word_ptr(puVar6);  /* was `puVar6 + 2` on a ushort *: byte +4 */
                         }
-                        puVar6 = (ushort *)resolve_object_link(puVar13);
+                        puVar6 = resolve_object_link(puVar13);
                       }
                     }
                   }
@@ -846,7 +846,7 @@ void scan_area_ahead_of_object(void *object_ptr, int filter_a, int (*callback)()
   ushort local_1c;
   ushort local_1a;
   
-  uVar2 = encode_object_slot_index(object);  /* ARM 0x74ad0-0x74ae8: r0 untouched since entry */
+  uVar2 = encode_object_slot_index(object_ptr);  /* ARM 0x74ad0-0x74ae8: r0 untouched since entry */
   uVar3 = *(ushort *)(object + 2) & 0x380;
   if ((short)uVar2 < 0x100) {
     uVar2 = uVar2 & 0xff;
@@ -910,19 +910,20 @@ void for_each_object_of_type(ushort type_id, int mode, int argument, int (*callb
 void damage_all_objects_at_tile(int tile_x, short tile_y, char damage_tier, byte attacker_slot)
 {
   undefined1 uVar1;
-  char *iVar2;  /* was `int` -- truncated tilemap_lookup's/resolve_object_link's
+  char *tile;  /* tilemap_lookup's record (formerly shared the iVar2 local below) */
+  uw_object_hdr_t *iVar2;  /* was `int` -- truncated tilemap_lookup's/resolve_object_link's
                    real `void *` returns */
-  char *iVar3;  /* was `int` -- same, holds resolve_object_link's return */
+  uw_object_hdr_t *iVar3;  /* was `int` -- same, holds resolve_object_link's return */
   void *uVar4;
   byte bVar5;
 
   bVar5 = damage_tier - 1;
   if (damage_tier != '\0') {
-    iVar2 = (char *)tilemap_lookup(tile_x,tile_y);  /* ARM 0x75ab4-0x75ab8: r1 still holds tile_y */
-    iVar2 = (char *)resolve_object_link(iVar2 + 2);
+    tile = (char *)tilemap_lookup(tile_x,tile_y);  /* ARM 0x75ab4-0x75ab8: r1 still holds tile_y */
+    iVar2 = resolve_object_link((uw_link_word_t *)(tile + 2));
     if (iVar2 != 0) {
       do {
-        iVar3 = (char *)resolve_object_link(iVar2 + 4);
+        iVar3 = resolve_object_link(uw_chain_word_ptr(iVar2));
         uVar1 = roll_dice_sum((&DAT_0008762c)[bVar5],(&DAT_00087630)[bVar5]);
         uVar4 = get_object_record_by_slot_index(attacker_slot);
         apply_typed_damage_to_object((ushort *)iVar2,uVar4,tile_x,(int)tile_y,uVar1,(&DAT_00087634)[bVar5]);
@@ -968,7 +969,7 @@ int build_object_display_name(char *out_text, void *object_ptr, int flag_a, int 
     if (*pcVar3 == '\0') {
       return 0;
     }
-    pcVar3 = (char *)format_object_display_name(pcVar3,flag_a,flag_b);
+    pcVar3 = format_object_display_name(pcVar3,flag_a,flag_b);
     do {
       cVar1 = *pcVar3;
       pcVar3 = pcVar3 + 1;
@@ -982,18 +983,18 @@ int build_object_display_name(char *out_text, void *object_ptr, int flag_a, int 
 
 
 // was FUN_00078bfc
-byte *format_object_display_name(byte *buffer, int flag_a, int flag_b)
+char *format_object_display_name(char *buffer, int flag_a, int flag_b)
 {
-  undefined1 *puVar1;
+  char *puVar1;
   int iVar2;
   
-  puVar1 = (undefined1 *)ce_strchr(buffer,0x26);
+  puVar1 = ce_strchr(buffer,0x26);
   if (flag_b == 0) {
-    if (puVar1 != (undefined1 *)0x0) {
+    if (puVar1 != (char *)0x0) {
       *puVar1 = 0;
     }
   }
-  else if (puVar1 == (undefined1 *)0x0) {
+  else if (puVar1 == (char *)0x0) {
     iVar2 = ce_strlen(buffer);
     buffer[iVar2] = 0x73;
     (buffer + iVar2)[1] = 0;
@@ -1001,8 +1002,8 @@ byte *format_object_display_name(byte *buffer, int flag_a, int flag_b)
   else {
     buffer = puVar1 + 1;
   }
-  puVar1 = (undefined1 *)ce_strchr(buffer,0x5f);
-  if (puVar1 != (undefined1 *)0x0) {
+  puVar1 = ce_strchr(buffer,0x5f);
+  if (puVar1 != (char *)0x0) {
     if (flag_a == 0) {
       buffer = puVar1 + 1;
     }
@@ -1358,7 +1359,7 @@ void spawn_effect_debris_burst(void *template_ptr, uint tile_x, int tile_y)
        tilemap_lookup's real `void *` return */
     {
       char *_tile7 = (char *)tilemap_lookup(tile_x,tile_y);
-      object_list_insert_head(_tile7 + 2,puVar8);
+      object_list_insert_head((uw_link_word_t *)(_tile7 + 2),puVar8);
     }
     uVar6 = ce_rand();
     uw_ord2005_rem_173 = ((int)(uVar6)) % (3);
@@ -1373,7 +1374,7 @@ void spawn_effect_debris_burst(void *template_ptr, uint tile_x, int tile_y)
       /* was folded into `int iVar7` (this function's loop counter) --
          truncated tilemap_lookup's real `void *` return */
       char *_tile7b = (char *)tilemap_lookup(tile_x,tile_y);
-      object_list_unlink(_tile7b + 2,puVar8);
+      object_list_unlink((uw_link_word_t *)(_tile7b + 2),puVar8);
       free_object_slot(puVar8);
       iVar7 = -1;
     }
@@ -1502,7 +1503,7 @@ int append_object_special_name(void *object_ptr, short mode, char *out_text)
   int uw_ord2005_rem_113 = 0;
   char cVar1;
   int iVar2;
-  ushort *chain_item;
+  uw_object_hdr_t *chain_item;
   uint uVar3;
   char *pcVar4;
   int iVar5;
@@ -1515,7 +1516,7 @@ int append_object_special_name(void *object_ptr, short mode, char *out_text)
   undefined1 local_26 [2];
   undefined1 local_24;
   int local_20;
-  byte *local_1c;
+  uw_link_word_t *local_1c;
   int has_variant;
   
   DAT_0024cfcc = 1;
@@ -1555,15 +1556,15 @@ LAB_00048e80:
     iVar5 = ce_strlen(out_text);
     ce_memmove(out_text + iVar5,pcVar4,iVar2 + 1);
     if ((object[1] & 0x80) == 0) {
-      local_1c = object + 6;
+      local_1c = uw_link_word_ptr((uw_object_hdr_t *)object);  /* byte +6 */
       uVar8 = 0xffff;
-      chain_item = find_object_in_chain((ushort **)&local_1c,0,4,2,0);
+      chain_item = find_object_in_chain(&local_1c,0,4,2,0);
       bVar9 = chain_item == 0;
       if (!bVar9) {
-        bVar9 = (((uw_object_hdr_t *)chain_item)->flags_res & 0x4) == 0;
+        bVar9 = (chain_item->flags_res & 0x4) == 0;
       }
       if (!bVar9) {
-        uVar8 = ((uw_object_hdr_t *)chain_item)->quality;
+        uVar8 = chain_item->quality;
       }
       iVar2 = (int)(short)uVar8;
       if (-1 < iVar2) {
@@ -1668,7 +1669,7 @@ void look_at_inscribed_object(ushort *inscribed_object, short look_mode)
     }
     if (uVar8 == 5) {
       ce_memset(acStack_120,0,0x104);
-      pcVar4 = &DAT_0023cca8;
+      pcVar4 = (char *)&DAT_0023cca8;
     stack0xffdc3238_ptr = acStack_120;
       do {
         cVar1 = *pcVar4;
@@ -1698,7 +1699,7 @@ void look_at_inscribed_object(ushort *inscribed_object, short look_mode)
       /* Same dropped-argument pattern: format_object_display_name's real `undefined1 *` return
          (pcVar_str word-wrapped for the message scroll) is the actual real sign/inscription text
          ("We attacked the entrance with all manner of tools..."), confirmed live. */
-      message_scroll_print_wrapped((char *)format_object_display_name(pcVar_str,1,0));
+      message_scroll_print_wrapped(format_object_display_name(pcVar_str,1,0));
       message_scroll_print_wrapped(&s_scroll_newline_0008522c);
     }
     if (local_128[0] != '\0') {
@@ -1718,7 +1719,7 @@ void describe_object_owner(ushort *object, short mode)
   char *pcVar4;
   ushort local_54 [13];
   undefined1 local_3a;
-  undefined1 auStack_34 [40];
+  char auStack_34 [40];
   
   if (mode != 0) {
     uVar2 = object[3];

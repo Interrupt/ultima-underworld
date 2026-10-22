@@ -60,10 +60,10 @@ char *DAT_00086df8;
 uw_object_type_props_t g_object_type_props[512];
 uw_monster_type_props_t g_monster_type_props[64];
 short DAT_00201b68, DAT_00201c74;
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 char *DAT_00248410;
 ushort DAT_001007c4;
-undefined s_scroll_newline_0008522c_backing[8192] = "\n";
+char s_scroll_newline_0008522c_backing[8192] = "\n";
 int g_blit_transparent_mode;
 int g_text_use_palette_color;
 byte *g_draw_color_index_unused;
@@ -75,7 +75,8 @@ static ushort player[32];
 ushort *conv_npc;
 
 /* STRINGS.PAK decoder state (same layout the introduction suite uses). */
-undefined1 DAT_0023c698_backing[1024], DAT_00101968_backing[260];
+char DAT_0023c698_backing[1024];
+char DAT_00101968_backing[260];
 undefined4 DAT_0024bf98;
 unsigned short *DAT_0024cfb8;
 char *DAT_0024cfa8;
