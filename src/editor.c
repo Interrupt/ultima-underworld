@@ -80,9 +80,10 @@ static int g_brush_armed;         /* map clicks place the brush object (a right 
 static int g_group = 6;           /* the selected object group (decor, as in the screenshot) */
 static int g_group_scroll = 3;    /* first group shown in the group bar (the default group is in view) */
 static int g_palette_scroll;      /* first row of the group's objects shown in the palette */
-static int g_mode = 2;            /* mode palette: the object mode is the one the screenshot shows selected */
+static int g_mode = 2;            /* the mode column's selected button: object mode (M_OBJECT) is the one the screenshot shows */
 static const char *g_status;      /* a transient message on the info bar */
 static void draw_menu(void);
+static void draw_mode(void);
 static int menu_open(void);
 
 int uw_editor_active(void) { return g_active; }
@@ -723,9 +724,7 @@ int uw_editor_compose(unsigned short *display)
   draw_view_pane();
   draw_map_pane();
   draw_palette_pane();
-  draw_strip_pane();
-  draw_object_palette();
-  draw_object_editor();
+  draw_mode();
   draw_info_bar();
   draw_menu();
   g_uw_framebuffer = saved;
@@ -1847,6 +1846,97 @@ static void edit_click(int x, int y, int button)
   }
 }
 
+/* ---- the modes ---- */
+
+/* The mode column's eight buttons, top to bottom. Each mode has its own panels: what the bottom half of the screen shows, and what
+   a click there does. The 3D view, the map and the mode column are shared. */
+enum { M_TILE, M_TEXTURE, M_OBJECT, M_VIEW, M_FIND, M_CUTCOPY, M_PASTE, M_FILL, MODE_COUNT };
+static const char *const g_mode_names[MODE_COUNT] = { "Tile", "Texture", "Object", "View", "Find", "Cut/Copy", "Paste", "Fill" };
+
+/* Object mode: the group bar and palette, the selected object's editor and its buttons. Returns nonzero if the click was theirs. */
+static int object_mode_click(int x, int y, int button)
+{
+  if (in_rect(&R_STRIP, x, y)) {
+    if (x < GROUP_X0 - 1) g_group_scroll--;
+    else if (x >= GROUP_X0 + GROUPS_SHOWN * GROUP_CELL) g_group_scroll++;
+    else {
+      int g = g_group_scroll + (x - GROUP_X0) / GROUP_CELL;
+      if (g < GROUP_COUNT) { g_group = g; g_palette_scroll = 0; g_palette_brush = g_groups[g].first; }
+    }
+    clamp_scrolls();
+  }
+  else if (in_rect(&R_OBJPAL, x, y)) {
+    if (x >= R_OBJPAL.x1 - 9) {
+      g_palette_scroll += y < (R_OBJPAL.y0 + R_OBJPAL.y1) / 2 ? -1 : 1;
+      clamp_scrolls();
+    }
+    else {
+      int col = (x - R_OBJPAL.x0 - 2) / PAL_CELL_W, row = (y - R_OBJPAL.y0 - 1) / PAL_CELL_H;
+      int n = (g_palette_scroll + row) * PAL_COLS + col;
+      if (button == SDL_BUTTON_RIGHT && col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
+        g_palette_brush = g_groups[g_group].first + n;   /* type view: its Comm and Class pages, no object needed */
+        g_type_view = 1;
+        if (g_tab < 0 || g_tab == TAB_ITEM) g_tab = TAB_COMM;
+        g_tab_scroll = 0;
+        g_status = "type pages: edits every object of it";
+      }
+      else if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
+        int id = g_groups[g_group].first + n;
+        /* the picked icon is armed for placing; picking the armed one again puts the brush away */
+        g_brush_armed = !(g_brush_armed && id == g_palette_brush);
+        g_palette_brush = id;
+        g_status = g_brush_armed ? "left click a tile to place" : NULL;
+      }
+    }
+  }
+  else if (y >= 177 && y < 190 && x >= 3 && x < 96) {
+    int i = (x - 3) / 31;
+    if (i < 3) { g_tab = g_tab == i ? -1 : i; g_tab_scroll = 0; }   /* a tab replaces the position view; again goes back */
+  }
+  else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
+    edit_click(x, y, button);
+  }
+  else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + BUTTON_COUNT * BUTTON_H) {
+    button_pressed((y - BUTTON_Y) / BUTTON_H);
+  }
+  else return 0;
+  return 1;
+}
+
+static void draw_object_mode(void)
+{
+  draw_strip_pane();
+  draw_object_palette();
+  draw_object_editor();
+}
+
+/* A mode whose panels are not built yet: its name, where they go. */
+static void draw_mode_placeholder(void)
+{
+  char line[48];
+  frame(0, 126, 150, 190, COL_FRAME);
+  frame(174, 119, 320, 190, COL_FRAME);
+  snprintf(line, sizeof line, "%s mode", g_mode_names[g_mode]);
+  text(line, 8, 132, COL_TEXT);
+  text("not built yet", 8, 142, COL_FRAME);
+}
+
+static void draw_mode(void)
+{
+  switch (g_mode) {
+    case M_OBJECT: draw_object_mode(); break;
+    default: draw_mode_placeholder(); break;
+  }
+}
+
+static int mode_click(int x, int y, int button)
+{
+  switch (g_mode) {
+    case M_OBJECT: return object_mode_click(x, y, button);
+    default: return 0;
+  }
+}
+
 void uw_editor_mouse_motion(int x, int y)
 {
   if (!g_map_dragging) return;
@@ -1891,51 +1981,13 @@ void uw_editor_click(int x, int y, int button)
   }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;
-    if (y >= 26 && i < 8 && x >= 156 && x < 172) g_mode = i;
-  }
-  else if (in_rect(&R_STRIP, x, y)) {
-    if (x < GROUP_X0 - 1) g_group_scroll--;
-    else if (x >= GROUP_X0 + GROUPS_SHOWN * GROUP_CELL) g_group_scroll++;
-    else {
-      int g = g_group_scroll + (x - GROUP_X0) / GROUP_CELL;
-      if (g < GROUP_COUNT) { g_group = g; g_palette_scroll = 0; g_palette_brush = g_groups[g].first; }
-    }
-    clamp_scrolls();
-  }
-  else if (in_rect(&R_OBJPAL, x, y)) {
-    if (x >= R_OBJPAL.x1 - 9) {
-      g_palette_scroll += y < (R_OBJPAL.y0 + R_OBJPAL.y1) / 2 ? -1 : 1;
-      clamp_scrolls();
-    }
-    else {
-      int col = (x - R_OBJPAL.x0 - 2) / PAL_CELL_W, row = (y - R_OBJPAL.y0 - 1) / PAL_CELL_H;
-      int n = (g_palette_scroll + row) * PAL_COLS + col;
-      if (button == SDL_BUTTON_RIGHT && col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
-        g_palette_brush = g_groups[g_group].first + n;   /* type view: its Comm and Class pages, no object needed */
-        g_type_view = 1;
-        if (g_tab < 0 || g_tab == TAB_ITEM) g_tab = TAB_COMM;
-        g_tab_scroll = 0;
-        g_status = "type pages: edits every object of it";
-      }
-      else if (col >= 0 && col < PAL_COLS && row >= 0 && row < PAL_ROWS && n < g_groups[g_group].count) {
-        int id = g_groups[g_group].first + n;
-        /* the picked icon is armed for placing; picking the armed one again puts the brush away */
-        g_brush_armed = !(g_brush_armed && id == g_palette_brush);
-        g_palette_brush = id;
-        g_status = g_brush_armed ? "left click a tile to place" : NULL;
-      }
+    if (y >= 26 && i < MODE_COUNT && x >= 156 && x < 172) {
+      g_mode = i;
+      g_brush_armed = 0; g_target_mode = 0;
+      g_status = g_mode_names[g_mode];
     }
   }
-  else if (y >= 177 && y < 190 && x >= 3 && x < 96) {
-    int i = (x - 3) / 31;
-    if (i < 3) { g_tab = g_tab == i ? -1 : i; g_tab_scroll = 0; }   /* a tab replaces the position view; again goes back */
-  }
-  else if (x >= 3 && x < 86 && y >= 128 && y < 177) {
-    edit_click(x, y, button);
-  }
-  else if (x >= BUTTON_X && x < 150 && y >= BUTTON_Y && y < BUTTON_Y + BUTTON_COUNT * BUTTON_H) {
-    button_pressed((y - BUTTON_Y) / BUTTON_H);
-  }
+  else mode_click(x, y, button);
 }
 
 /* The mouse wheel over the group bar or the palette scrolls it. */
