@@ -323,7 +323,7 @@ static void draw_object_palette(void)
   arrow(R_OBJPAL.x1 - 8, R_OBJPAL.y1 - 8, 3, g_palette_scroll < palette_rows() - PAL_ROWS ? COL_TEXT : COL_FRAME);
 }
 
-/* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "My:" box,
+/* The picked object's editor: the sub-tile position grid, height spinner, heading rose, icon box, "Mv:" box,
    the Head/Next/Link/Show/Move/Copy/Delete buttons and the Class/Comm/Item tabs. */
 static const char *const g_editor_buttons[7] = { "Head", "Next", "Link", "Show", "Move", "Copy", "Delete" };
 #define BUTTON_X 113
@@ -343,7 +343,9 @@ static void draw_object_editor(void)
   frame(53, 146, 85, 178, COL_ORANGE);
   frame(86, 134, 105, 150, COL_GREEN);
   frame(94, 166, 112, 188, COL_FRAME);
-  text("My:", 96, 160, COL_ORANGE);
+  /* "Mv:" (the screenshot's label, dimmed there with nothing in the box): probably the object a Move in progress
+     holds; not wired yet, so the box stays empty. */
+  text("Mv:", 96, 160, RGB(120, 60, 16));
   if (o) {
     fill(3 + o->xpos * 6 + 2, 128 + (7 - o->ypos) * 6 + 2, 3 + o->xpos * 6 + 4, 128 + (7 - o->ypos) * 6 + 4, COL_ORANGE);
     snprintf(line, sizeof line, "%d", o->zpos);
@@ -356,10 +358,6 @@ static void draw_object_editor(void)
       if (d == o->heading) fill(69 + dx[d] * 13 - 1, 162 + dy[d] * 13 - 1, 69 + dx[d] * 13 + 1, 162 + dy[d] * 13 + 1, COL_BLUE);
     }
     sprite("objects", o->object_id, 88, 135);
-    if (is_mobile(o)) {
-      snprintf(line, sizeof line, "%d", ((const uw_mobile_object_t *)o)->npc_whoami);
-      text(line, 97, 170, COL_TEXT);
-    }
   }
   for (int i = 0; i < 7; i++) {
     int y = BUTTON_Y + i * BUTTON_H;
