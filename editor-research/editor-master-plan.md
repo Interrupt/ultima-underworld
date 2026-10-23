@@ -323,3 +323,12 @@ Updated as work lands; the phases above say what each item is, this says what ex
 ## Object mode pixel audit
 
 The lower left panel and the info bar were audited against a clean 2078x1299 copy of the original screenshot, cropped of its border and resampled at nearest neighbour to 320x200. Layout (native pixels): grid x3-51, y128-168 (cells 6x5); height box x53-83, y128-144, its text at (55,130) and (55,138), the spinner arrows at x75-82; heading box x53-83, y146-173 with the rose's grey square at x61-75, y153-167; icon box x86-103, y134-151; "Mv:" at (97,165), its box x94-111, y171-188; buttons x113-148 in 7 steps of 9 from y127 (text at x121, y+2; Delete at x115); Class / Comm x2-63 (divider at 33), Item x65-92, y177-187; info bar text at y194 (position x80, map x160, date x238). Colours: panel (36,36,36), button frames (166,81,0), text (255,142,27), Delete (255,57,76), tab blue (60,60,255), Item olive (80,89,0). Deviations: Back (out of a container, to the object that holds it) and Replace (the selected object becomes the palette's) have no button in the original, so they are keys: Backspace and Ctrl+R (`EDITOR back` / `EDITOR replace` in demos); the panel has a light 1px outline (52,52,52); the original's "R:22 P:2 S:4 F:9.1" statistics and the small square at (57,168) are not drawn (their meaning is unknown).
+
+## The working copy (the EDITOR folder)
+
+The master archive, `DATA\LEV.ARK`, is only written by a real Save. The editor works on `EDITOR\LEV.ARK`, a copy that sits beside the save slots:
+
+- Opening the editor for the first time in a session copies the master into `EDITOR\LEV.ARK` and loads the level from it. Closing and reopening keeps the working copy, so tested but unsaved edits survive.
+- Play commits the level into the working copy and copies that over `SAVE0\LEV.ARK`. The master is not touched, so a change can be tried without saving it.
+- Save (Ctrl+S, the starburst, the menu) commits into the working copy, then copies the working copy over the master (a one-time `LEV.ARK.BAK` of the pristine archive first) and writes the type tables. This is also the only thing that clears the unsaved `*` mark.
+- Revert and Discard copy the master over the working copy again, dropping every unsaved edit (type edits too). Change level loads from the working copy.

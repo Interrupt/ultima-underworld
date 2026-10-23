@@ -1285,51 +1285,68 @@ static void reload_type_tables(void)
   g_types_dirty = 0;
 }
 
-/* The editor works on the master level archive, DATA\\LEV.ARK, not on a save slot. Entering the editor reloads the level
-   being edited from it (so play-session state is thrown away), and Save writes the level back into it. The first save
-   makes a one-time copy of the pristine archive as LEV.ARK.BAK. */
+/* The master level archive, DATA\\LEV.ARK, is the source of truth. The editor does not work on it directly but on a copy in its own
+   folder, EDITOR\\LEV.ARK, alongside the save slots, the way a save slot is a copy: the first time the editor opens, the master is
+   copied there; the level is loaded from the copy (so play-session state is thrown away); Play writes the level into the copy and copies
+   that over SAVE0; and only a real Save writes the copy over the master (the first one makes a one-time LEV.ARK.BAK of the pristine
+   archive). Revert and Discard copy the master over the working copy again. */
 static char g_master_ark[] = "\\DATA\\LEV.ARK";
 static char g_master_backup[] = "\\DATA\\LEV.ARK.BAK";
+static char g_work_ark[] = "\\EDITOR\\LEV.ARK";
 static char g_save0_ark[] = "\\SAVE0\\LEV.ARK";
+static int g_work_ready;   /* the working copy exists and holds this session's edits (it survives leaving and reopening the editor) */
 
-/* Reload the level being edited from the master archive. The player is put back on its tile afterwards, as when the game
-   changes level. */
-static int reload_level_from_master(void)
+/* Reload the level being edited from the working copy. With fresh, the master is copied over the working copy first (the edits, the
+   type edits too, are dropped); without it a working copy from earlier in the session is kept, and one is made if there is none.
+   The player is put back on its tile afterwards, as when the game changes level. */
+static int reload_level(int fresh)
 {
   int tx = ((const uw_mobile_object_t *)g_player_object)->tile_x, ty = ((const uw_mobile_object_t *)g_player_object)->tile_y;
-  if (!load_level_from_archive((int)DAT_00201b68, g_master_ark)) return 0;
-  reload_type_tables();
+  if (fresh || !g_work_ready) {
+    if (!uw_file_copy(g_master_ark, g_work_ark)) return 0;
+    g_work_ready = 1;
+    fresh = 1;
+    reload_type_tables();
+  }
+  if (!load_level_from_archive((int)DAT_00201b68, g_work_ark)) return 0;
   set_player_tile_position((uint)tx, (uint)ty, 1);
   g_sel_tx = g_sel_ty = -1;
   g_sel_slot = 0;
   g_sel_link = NULL;
   g_held_slot = 0;
   g_undo_count = g_redo_count = 0;
-  g_dirty = 0;
+  if (fresh) g_dirty = 0;
   full_dungeon_redraw();
   set_pending_update_flags(0x7ffe);
-  fprintf(stderr, "[editor] level %d reloaded from LEV.ARK\n", DAT_00201b68);
+  fprintf(stderr, "[editor] level %d loaded from EDITOR\\LEV.ARK%s\n", DAT_00201b68, fresh ? " (a fresh copy of the master)" : "");
   return 1;
 }
 
-/* Save the level being edited into the master archive, with the game's own level commit: it writes the level's tile map
-   and objects and its texture map (not the automap), and takes the player out of the level and back, as when the player
-   leaves a level. Returns nonzero on success. */
-static int save_to_master(void)
+/* Write the level being edited into the working copy, with the game's own level commit: it writes the level's tile map and objects and its
+   texture map (not the automap), and takes the player out of the level and back, as when the player leaves a level. Returns nonzero on success. */
+static int commit_to_work(void)
 {
-  int have = uw_file_open_read(g_master_backup);
-  if (have != -1) uw_file_close(have);
-  else if (!uw_file_copy(g_master_ark, g_master_backup)) { g_status = "could not back up LEV.ARK"; return 0; }
-  if (g_types_dirty && !save_type_tables()) { g_status = "could not write the type tables"; return 0; }
-  return commit_level_to_archive((int)DAT_00201b68, g_master_ark, 0);
+  if (g_held_slot) { g_status = "put the object down first"; return 0; }
+  if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return 0; }
+  if (!commit_level_to_archive((int)DAT_00201b68, g_work_ark, 0)) { g_status = "could not write EDITOR\\LEV.ARK"; return 0; }
+  g_work_ready = 1;
+  return 1;
 }
 
+/* A real save: the working copy over the master archive (and the type tables). */
 void uw_editor_save(void)
 {
   if (!g_active) return;
-  if (g_held_slot) { g_status = "put the object down first"; return; }
-  if (uw_editor_validate() != 0) { g_status = "object lists are damaged, not saved"; return; }
-  int ok = save_to_master();
+  int ok = 0;
+  if (commit_to_work()) {
+    int have = uw_file_open_read(g_master_backup);
+    if (have != -1) uw_file_close(have);
+    else if (!uw_file_copy(g_master_ark, g_master_backup)) g_status = "could not back up LEV.ARK";
+    if (g_status && !strcmp(g_status, "could not back up LEV.ARK")) ;
+    else if (g_types_dirty && !save_type_tables()) g_status = "could not write the type tables";
+    else if (!uw_file_copy(g_work_ark, g_master_ark)) g_status = "could not write LEV.ARK";
+    else ok = 1;
+  }
   if (ok) { g_status = "level saved"; g_dirty = 0; }
   else if (!g_status) g_status = "save failed";
   fprintf(stderr, "[editor] save level %d to LEV.ARK: %s\n", DAT_00201b68, ok ? "ok" : "failed");
@@ -3169,7 +3186,7 @@ void uw_editor_selftest(void)
   fprintf(stderr, "[editor] selftest: ok, %d checks\n", g_selftest_checks);
 }
 
-/* Play from here: save the level into the master archive, copy that over the save slot's archive, leave the editor and drop
+/* Play from here: write the level into the working copy, copy that over the save slot's archive, leave the editor and drop
    the player where the camera is, facing the way it faces. (The current game and character, not a new one.) */
 void uw_editor_play(void)
 {
@@ -3180,10 +3197,10 @@ void uw_editor_play(void)
   if (!tile_is_open(tx, ty)) { g_status = "move the camera over open floor"; return; }
   double floor_z = ((const uw_tile_t *)tilemap_lookup((short)tx, (short)ty))->floor_height * 64.0;
   double yaw = (ushort)DAT_0023bf00 * (360.0 / 65536.0), pitch = DAT_0023beb4 / 256.0;
-  uw_editor_save();
-  if (g_status && strcmp(g_status, "level saved") != 0) return;   /* it said why it could not */
-  /* the game plays from the save slot, so it gets the master archive: every level as authored */
-  if (!uw_file_copy(g_master_ark, g_save0_ark)) { g_status = "could not copy LEV.ARK to SAVE0"; return; }
+  g_status = NULL;
+  if (!commit_to_work()) return;   /* it said why it could not */
+  /* the game plays from the save slot, so it gets the working copy, every level as authored so far; the master is not touched */
+  if (!uw_file_copy(g_work_ark, g_save0_ark)) { g_status = "could not copy EDITOR\\LEV.ARK to SAVE0"; return; }
   uw_editor_set(0);
   demo_set_player_pos(x / 256.0, y / 256.0, floor_z, yaw, pitch);
   full_dungeon_redraw();
@@ -3223,7 +3240,7 @@ static void change_level(int n)
 {
   int ox, oy;
   if (n < 1 || n > MENU_LEVELS_COUNT || n == DAT_00201b68) return;
-  if (!load_level_from_archive(n, g_master_ark)) { g_status = "could not load that level"; return; }
+  if (!load_level_from_archive(n, g_work_ark)) { g_status = "could not load that level"; return; }
   DAT_00201b68 = (short)n;   /* the level load restores the old number from the player record */
   if (!find_open_tile(&ox, &oy)) { ox = 32; oy = 32; }
   set_player_tile_position((uint)ox, (uint)oy, 1);
@@ -3248,7 +3265,7 @@ static void do_action(int action, int arg)
 {
   g_menu = MENU_NONE;
   switch (action) {
-    case ACT_REVERT: if (reload_level_from_master()) { g_status = "reverted"; } else g_status = "could not load LEV.ARK"; break;
+    case ACT_REVERT: if (reload_level(1)) { g_status = "reverted"; } else g_status = "could not load LEV.ARK"; break;
     case ACT_LEVEL: change_level(arg); break;
     case ACT_PLAY: uw_editor_play(); break;
     case ACT_EXIT: uw_editor_set(0); break;
@@ -3291,7 +3308,7 @@ static void menu_choose(int item)
       if (!g_dirty) do_action(action, arg); else g_menu = MENU_NONE;
     }
     else if (item == 1) {   /* Discard: back to the archive, then carry on */
-      reload_level_from_master();
+      reload_level(1);
       do_action(action, arg);
     }
     else g_menu = MENU_NONE;
@@ -3872,7 +3889,7 @@ void uw_editor_set(int on)
   g_active = on;
   if (on) {
     /* reload the level from the master archive first: the editor never edits play-session state */
-    if (!reload_level_from_master()) g_status = "could not load LEV.ARK";
+    if (!reload_level(0)) g_status = "could not load LEV.ARK";
     /* detach the view from the player: Far Sight's free camera (DAT_0023b82c == 0), seeded at the player */
     int x, y, z;
     camera(&x, &y, &z);
