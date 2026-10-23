@@ -3214,7 +3214,7 @@ void uw_editor_play(void)
    Play and Exit ask Save / Discard / Cancel when there are unsaved edits. While it is open it takes all the input. The
    selection, the brush and the Mv slot are kept. */
 enum { MENU_NONE, MENU_MAIN, MENU_LEVELS, MENU_CONFIRM };
-enum { ACT_NONE, ACT_REVERT, ACT_LEVEL, ACT_PLAY, ACT_EXIT };
+enum { ACT_NONE, ACT_REVERT, ACT_LEVEL, ACT_PLAY, ACT_EXIT, ACT_STARBURST };   /* the starburst asks Save, Discard or Exit */
 static int g_menu = MENU_NONE, g_menu_sel;
 static int g_menu_action = ACT_NONE, g_menu_arg;   /* what a confirm is for */
 static const ed_rect_t R_MENU = { 70, 50, 250, 150 };
@@ -3273,7 +3273,8 @@ static void do_action(int action, int arg)
   }
 }
 
-/* Run an action that leaves the level behind, asking first if there are unsaved edits. */
+/* Run an action that leaves the level behind, asking first if there are unsaved edits. (Play never asks: it writes the level into the
+   EDITOR working copy itself, which is not a save of the master.) */
 static void guarded(int action, int arg)
 {
   if (action == ACT_REVERT || g_dirty) {
@@ -3289,7 +3290,7 @@ static void menu_choose(int item)
       case 0: g_menu = MENU_NONE; uw_editor_save(); break;
       case 1: guarded(ACT_REVERT, 0); break;
       case 2: g_menu = MENU_LEVELS; g_menu_sel = DAT_00201b68 - 1; break;
-      case 3: guarded(ACT_PLAY, 0); break;
+      case 3: do_action(ACT_PLAY, 0); break;
       case 4: guarded(ACT_EXIT, 0); break;
       default: g_menu = MENU_NONE; break;
     }
@@ -3300,7 +3301,13 @@ static void menu_choose(int item)
   }
   else if (g_menu == MENU_CONFIRM) {
     int action = g_menu_action, arg = g_menu_arg;
-    if (action == ACT_REVERT) {   /* Revert / Cancel */
+    if (action == ACT_STARBURST) {   /* Save (stay) / Discard (reload from the master, stay) / Exit (leave; the working copy is kept) */
+      g_menu = MENU_NONE;
+      if (item == 0) uw_editor_save();
+      else if (item == 1) g_status = reload_level(1) ? "edits discarded" : "could not load LEV.ARK";
+      else uw_editor_set(0);
+    }
+    else if (action == ACT_REVERT) {   /* Revert / Cancel */
       if (item == 0) do_action(action, arg); else g_menu = MENU_NONE;
     }
     else if (item == 0) {   /* Save, then carry on */
@@ -3366,6 +3373,7 @@ static void draw_menu(void)
   static const char *const main_items[6] = { "Save", "Revert", "Change level", "Play", "Exit editor", "Close" };
   static const char *const revert_items[2] = { "Revert", "Cancel" };
   static const char *const dirty_items[3] = { "Save", "Discard", "Cancel" };
+  static const char *const starburst_items[3] = { "Save", "Discard", "Exit" };
   char line[40];
   if (!menu_open()) return;
   fill(R_MENU.x0, R_MENU.y0, R_MENU.x1, R_MENU.y1, COL_BLACK);
@@ -3373,8 +3381,9 @@ static void draw_menu(void)
   frame(R_MENU.x0 + 2, R_MENU.y0 + 2, R_MENU.x1 - 2, R_MENU.y1 - 2, COL_FRAME);
   int top = R_MENU.y0 + (g_menu == MENU_CONFIRM ? 30 : 14);
   if (g_menu == MENU_CONFIRM) {
-    text(g_menu_action == ACT_REVERT ? "Discard your edits and reload?" : "This level has unsaved edits.", R_MENU.x0 + 8, R_MENU.y0 + 8, COL_TEXT);
-    text(g_menu_action == ACT_REVERT ? "from the archive" : "Save them first?", R_MENU.x0 + 8, R_MENU.y0 + 17, COL_TEXT);
+    int sb = g_menu_action == ACT_STARBURST;
+    text(g_menu_action == ACT_REVERT ? "Discard your edits and reload?" : sb ? (g_dirty ? "This level has unsaved edits." : "No unsaved edits.") : "This level has unsaved edits.", R_MENU.x0 + 8, R_MENU.y0 + 8, COL_TEXT);
+    text(g_menu_action == ACT_REVERT ? "from the archive" : sb ? "Save, discard them, or exit?" : "Save them first?", R_MENU.x0 + 8, R_MENU.y0 + 17, COL_TEXT);
   }
   else text(g_menu == MENU_MAIN ? "Level editor" : "Change level", R_MENU.x0 + 8, R_MENU.y0 + 6, COL_TEXT);
   int n = menu_item_count();
@@ -3385,7 +3394,7 @@ static void draw_menu(void)
       if (i < MENU_LEVELS_COUNT) { snprintf(line, sizeof line, "Level %d%s", i + 1, i + 1 == DAT_00201b68 ? "  (current)" : ""); label = line; }
       else label = "Back";
     }
-    else label = g_menu_action == ACT_REVERT ? revert_items[i] : dirty_items[i];
+    else label = g_menu_action == ACT_REVERT ? revert_items[i] : g_menu_action == ACT_STARBURST ? starburst_items[i] : dirty_items[i];
     int y = top + i * MENU_ROW;
     if (i == g_menu_sel) fill(R_MENU.x0 + 6, y - 1, R_MENU.x1 - 6, y + MENU_ROW - 2, RGB(24, 24, 88));
     text(label, R_MENU.x0 + 10, y, i == g_menu_sel ? COL_TEXT : COL_ORANGE);
@@ -3815,10 +3824,10 @@ void uw_editor_click(int x, int y, int button)
     }
   }
   else if (in_rect(&R_PALETTE, x, y) && y >= 175 && x >= 156 && x < 172) {
-    guarded(ACT_PLAY, 0);   /* the orange button below the modes: play from the camera */
+    do_action(ACT_PLAY, 0);   /* the orange button below the modes: play from the camera */
   }
   else if (in_rect(&R_PALETTE, x, y) && y < 25) {
-    uw_editor_save();   /* the starburst at the top, for now */
+    g_menu = MENU_CONFIRM; g_menu_sel = 0; g_menu_action = ACT_STARBURST; g_menu_arg = 0;   /* the starburst: Save, Discard or Exit */
   }
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;

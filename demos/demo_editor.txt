@@ -433,6 +433,9 @@ SDLRCLICK 502 118
 WAIT 10
 SDLCLICK 320 30
 WAIT 30
+# the starburst asks Save, Discard or Exit: Save
+SDLCLICK 320 170
+WAIT 30
 # save the level into the master archive (this run's own copy of it)
 EDITOR save
 WAIT 30
