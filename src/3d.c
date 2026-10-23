@@ -41,6 +41,8 @@ void update_fullbright_palette_mask()
 }
 char DAT_0023b830;
 undefined2 DAT_000da47c;
+int g_face_shade_active, g_face_shade_fixed;
+double g_face_shade_x0, g_face_shade_y0, g_face_shade_s0, g_face_shade_dx, g_face_shade_dy;
 /* build_trig_tables builds these as 361-entry (0..360 degrees) sin / cos tables (float bit
    patterns); every reader indexes `(&DAT_000d99xx)[angle]`. Were lone `undefined4` scalars, so
    build_trig_tables's `[0..360]` writes smashed ~1.4 KB of adjacent globals. */
@@ -742,6 +744,13 @@ void raster_textured_span(int row, char *framebuffer, char *gradients, char *lef
       }
       if (bVar1 != 0) {
         double ray_x = (light_x - proj_cx) / proj_scale;
+        if (g_face_shade_active) {
+          double s = g_face_shade_s0 + g_face_shade_dx * (light_x + 0.5 - g_face_shade_x0) +
+                     g_face_shade_dy * (*(int *)(left_edge + 8) + 0.5 - g_face_shade_y0);
+          g_face_shade_fixed = s > 0.0 ? (int)s : 0;
+        } else {
+          g_face_shade_fixed = 0;
+        }
         /* DOS's alternating +0.25/+0.75 thresholds, anchored to the screen.
            ARM applies them at RGB565 quantization rather than palette lookup. */
         int dither_offset = dither_enabled ?

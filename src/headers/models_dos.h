@@ -53,6 +53,13 @@ int uw_dos_model_script(int dos_index, char *out, unsigned int out_sz);
  * non-planar face each carry their parent face's colour. */
 int uw_dos_model_face_colour(int dos_index, int part);
 
+/* The shade level the DOS bytecode gives corner `corner` (0-3, in emitted order) of part `part` of model
+   `dos_index`: a row of the light table to darken it by (0 = none), from 0x00bc's flat level or 0x00d4's
+   vertex shade. -1 if the model gives none, as it never does for the Pocket PC models. Like the colour, it
+   is out of band because the .E script has nowhere to put it; a triangle split off a wider face reports
+   its own three corners. */
+int uw_dos_model_face_vertex_shade(int dos_index, int part, int corner);
+
 /* Releases the cached copy of UW.EXE. Call after model loading; a later
  * uw_dos_model_script would simply read it again. */
 void uw_dos_models_release(void);

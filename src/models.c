@@ -1428,6 +1428,23 @@ void emit_catalog_object(byte catalog, void *obj_ptr, char heading, short frame_
       *(char *)(_face_rec + 0x41) = (char)((uint)uVar17 >> 8);
       *(char *)(_face_rec + 0x42) = (char)((uint)uVar17 >> 0x10);
       *(char *)(_face_rec + 0x43) = (char)((uint)uVar17 >> 0x18);
+      /* DEVIATION FROM THE ORIGINAL, deliberate: a DOS model face's light-table shade, per corner (models_dos.c).
+         A face with no texture never reads its texture coordinates, so each corner's u carries its shade
+         instead, in 8.8 fixed point: the near-plane clip then interpolates it along with everything else (as
+         the DOS clip does), and tmap.c turns the three corners of each triangle into a screen-space gradient
+         for the rasteriser. tex[2] (the record's +0x54, which nothing else sets) flags such a face. Nothing
+         reaches this for the .E models: uw_dos_model_face_vertex_shade answers -1 for them. */
+      *(int *)(_face_rec + 0x54) = 0;
+      if (texptr == (byte *)0) {
+        int _vs[4], _k, _vc = *(int *)_face_rec;
+        for (_k = 0; _k < 4; _k++)
+          _vs[_k] = uw_dos_model_face_vertex_shade((int)catalog_u, row_base / 0x18, _k);
+        if (_vc >= 3 && _vc <= 4 && _vs[0] >= 0) {
+          for (_k = 0; _k < _vc; _k++)
+            *(int *)(_face_rec + 0x24 + _k * 8) = (_vs[_k] >= 0 ? _vs[_k] : _vs[0]) * 256;
+          *(int *)(_face_rec + 0x54) = 1;
+        }
+      }
       local_58 = (byte *)((char *)local_58 + -0x18);
       /* BUG FIX (dropped loop update): the original steps BOTH per-face
          cursors here -- the byte offset into the part records (iVar22, -0x60)

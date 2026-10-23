@@ -92,7 +92,8 @@ enum {
     SLOT_ZERO_RADIUS = 12, /* radius 0, but with real geometry behind it */
     SLOT_TEXQUAD = 13,    /* 0x00a0 textured quad: winding flips, origin stays */
     SLOT_WIDE = 18,       /* a FLAT hexagon: too wide for the port's record */
-    SLOT_CONCAVE = 19     /* a flat 5-gon with a notch: a fan inverts part of it */
+    SLOT_CONCAVE = 19,    /* a flat 5-gon with a notch: a fan inverts part of it */
+    SLOT_SHADE = 20       /* a flat-shaded face, then a face shaded by its vertices */
 };
 
 static void build_simple(void)
@@ -377,6 +378,24 @@ static void build_concave(void)
     emit16(w, sizeof w / sizeof w[0]);
 }
 
+/* 0x00bc's second operand is the face's flat shade level. 0x00d4 gives each listed vertex a shade byte
+   (vertex number as a uint16, then the byte, padded to an even length), and the faces after 0x00d6 take the
+   average of their own vertices'. Here the vertices are shaded 2, 4 and 6. */
+static void build_shade(void)
+{
+    model_begin(SLOT_SHADE, 100);
+    unsigned int w[] = {
+        0x0082, 3, 0, fx(0), fx(0), fx(0), fx(10), fx(0), fx(0), fx(10), fx(0), fx(10),
+        0x00d4, 3, 0x2920, 0x0000, 0x0802, 0x0400, 0x0010, 0x0006,
+        0x00bc, 0x2920, 3,                  /* flat shade 3 */
+        0x007e, 3, vn(0), vn(1), vn(2),
+        0x00d6,                             /* vertex shading again */
+        0x007e, 3, vn(0), vn(2), vn(1),
+        0x0000
+    };
+    emit16(w, sizeof w / sizeof w[0]);
+}
+
 static void build_colour_fan(void)
 {
     model_begin(SLOT_COLOUR_FAN, 100);
@@ -431,6 +450,7 @@ static void setup_once(void)
     build_colour_fan();
     build_wide();
     build_concave();
+    build_shade();
     /* SLOT_EMPTY keeps its zero-radius default. */
     w8(0, 0);
     g_exe_len = g_next + 16;
@@ -743,6 +763,27 @@ static void test_each_face_keeps_its_own_colour(void)
                                   "second face follows FACE_SHADE 0x2920 -> entry 0");
 }
 
+/* Each corner carries a shade level: the flat one from 0x00bc for all of them, or its own vertex's from 0x00d4. */
+static void test_each_corner_reports_its_shade_level(void)
+{
+    TEST_ASSERT_TRUE(script_of(SLOT_SHADE) > 0);
+    for (int k = 0; k < 3; k++)
+        TEST_ASSERT_EQUAL_INT_MESSAGE(3, uw_dos_model_face_vertex_shade(SLOT_SHADE, 0, k), "0x00bc's flat shade");
+    /* The face lists vertices 0, 2, 1 (shades 2, 6, 4) and is emitted in reverse, like every DOS face. */
+    TEST_ASSERT_EQUAL_INT(4, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 0));
+    TEST_ASSERT_EQUAL_INT(6, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 1));
+    TEST_ASSERT_EQUAL_INT(2, uw_dos_model_face_vertex_shade(SLOT_SHADE, 1, 2));
+}
+
+static void test_a_model_with_no_shade_operand_reports_none(void)
+{
+    TEST_ASSERT_TRUE(script_of(SLOT_SIMPLE) > 0);
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SIMPLE, 0, 0));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SHADE, 999, 0));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(SLOT_SHADE, 0, 4));
+    TEST_ASSERT_EQUAL_INT(-1, uw_dos_model_face_vertex_shade(-1, 0, 0));
+}
+
 /* The decoder reports the index the data actually says, even when no palette
    could hold it -- the real bridge model has two such faces (index 11 on a
    one-colour model). Range-checking is the renderer's job, against the entry
@@ -802,7 +843,7 @@ static void test_every_script_is_shaped_like_a_dot_e_file(void)
         /* No CR anywhere: the in-memory path skips the CRLF stripper. */
         TEST_ASSERT_NULL_MESSAGE(strchr(g_script, '\r'), "scripts must be LF-only");
     }
-    TEST_ASSERT_EQUAL_INT_MESSAGE(16, seen, "every non-empty scenario slot should decode");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(17, seen, "every non-empty scenario slot should decode");
 }
 
 /* A buffer too small to hold the script must be refused, not half-filled. */
@@ -837,6 +878,8 @@ int main(void)
     RUN_TEST(test_a_concave_face_splits_without_inverting_any_triangle);
     RUN_TEST(test_no_emitted_face_is_wider_than_a_quad);
     RUN_TEST(test_each_face_keeps_its_own_colour);
+    RUN_TEST(test_each_corner_reports_its_shade_level);
+    RUN_TEST(test_a_model_with_no_shade_operand_reports_none);
     RUN_TEST(test_an_out_of_range_colour_is_reported_truthfully);
     RUN_TEST(test_a_model_with_no_colour_operand_reports_none);
     RUN_TEST(test_split_triangles_inherit_the_face_colour);

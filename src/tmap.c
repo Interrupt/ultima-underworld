@@ -324,6 +324,20 @@ void render_visible_tile_list()
           local_34 = ordfloat_sub(proj_cy,uVar11);
           local_30 = ordfloat_mul(uVar5,0x3a2ec33e);
           DAT_000da47c = (undefined2)piVar14[0x1d];
+          /* HACK: not original behaviour -- a DOS model face's corners carry shade levels in their u
+             (models.c); fit the screen-space gradient the DOS scan converter interpolates (see
+             g_face_shade_* in 3d.h). */
+          g_face_shade_active = piVar14[0x1f] & 1;
+          if (g_face_shade_active) {
+            float _p[15];
+            memcpy(_p, local_60_arr, sizeof _p);
+            double _dx1 = _p[5] - _p[0], _dy1 = _p[6] - _p[1], _ds1 = _p[8] - _p[3];
+            double _dx2 = _p[10] - _p[0], _dy2 = _p[11] - _p[1], _ds2 = _p[13] - _p[3];
+            double _det = _dx1 * _dy2 - _dx2 * _dy1;
+            g_face_shade_x0 = _p[0]; g_face_shade_y0 = _p[1]; g_face_shade_s0 = _p[3];
+            g_face_shade_dx = _det != 0.0 ? (_ds1 * _dy2 - _ds2 * _dy1) / _det : 0.0;
+            g_face_shade_dy = _det != 0.0 ? (_ds2 * _dx1 - _ds1 * _dx2) / _det : 0.0;
+          }
           raster_triangle(0x140,g_uw_framebuffer,local_60_arr,piVar14[0x1e],
                        piVar14[0x1b],piVar14[0x1c] * piVar14[0x1b],
                        ((unsigned)local_94 < UW_MAX_VIS_TILES)
@@ -409,6 +423,9 @@ void walk_visible_tiles()
      emits, but a frame where it emits nothing... */
   g_geom_arena.vert_count = 0;
   g_geom_arena.rec_count = 0;
+  /* HACK: not original behaviour -- tex[2] carries a DOS model face's shade rows (emit_catalog_object); only
+     models set it, so clear whatever an earlier frame left in the other records. */
+  for (int _r = 0; _r < UW_ARENA_MAX_RECORDS; _r++) g_geom_arena.records[_r].tex[2] = 0;
   if (0x2000 < (int)uVar6) {
     uVar6 = uVar6 - 0x4000;
   }

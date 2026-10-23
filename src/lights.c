@@ -339,6 +339,7 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     int row;
     if (shade_fixed < 0) shade_fixed = 0;
     shade_fixed += (int)DAT_0025064c * 256;
+    shade_fixed += g_face_shade_fixed;
     shade_fixed += dither_offset;
     if (use_extra) {
       for (i = 0; i < g_extra_light_count; i++) {
@@ -372,6 +373,8 @@ unsigned short shade_span_pixel(byte texel, int depth, double ray_x, double ray_
     int red, green, blue;
     colour = (unsigned int)(unsigned short)(&g_palette_rgb565)[texel];
     factor = DAT_0024fa2c ? dos_shade_factor(light_distance) : 4096;
+    factor -= g_face_shade_fixed * (4096 / 16) / 256;   /* a row of the DOS table is a sixteenth of full brightness */
+    if (factor < 0) factor = 0;
     if (use_extra) {
       /* Same falloff table, indexed by the distance to each light scaled so that the table's last
          entry lands on the light's radius; the contributions add up, capped at full brightness. */
