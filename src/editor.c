@@ -2973,6 +2973,15 @@ void uw_editor_selftest(void)
     uw_editor_undo();
     selftest_expect(&before, "undoing an item put into a creature's inventory");
     g_selftest_checks += 3;
+    op_place(0xc2, tx, ty, 5, 5);
+    op_pick_up(0);
+    if (!g_held_slot) { fprintf(stderr, "[editor] selftest FAILED: nothing picked up\n"); abort(); }
+    uw_editor_click(103, 180, SDL_BUTTON_RIGHT);   /* a right click on the Mv box empties it */
+    if (g_held_slot) { fprintf(stderr, "[editor] selftest FAILED: the Mv box was not emptied\n"); abort(); }
+    op_pick_up(0);
+    uw_editor_escape();   /* so does Escape, without opening the menu */
+    if (g_held_slot || menu_open()) { fprintf(stderr, "[editor] selftest FAILED: Escape did not just empty the Mv box\n"); abort(); }
+    g_selftest_checks += 3;
   }
 
   /* a trap's page (a teleport trap: tile and level) and Set Target on it */
@@ -3727,6 +3736,10 @@ static void edit_click(int x, int y, int button)
 /* Object mode: the group bar and palette, the selected object's editor and its buttons. Returns nonzero if the click was theirs. */
 static int object_mode_click(int x, int y, int button)
 {
+  if (button == SDL_BUTTON_RIGHT && x >= 94 && x < 112 && y >= 171 && y < 189) {   /* a right click on the Mv box empties it, as Escape does */
+    if (g_held_slot) { g_held_slot = 0; g_status = "cancelled"; }
+    return 1;
+  }
   if (in_rect(&R_STRIP, x, y)) {
     if (x < GROUP_X0 - 1) g_group_scroll--;
     else if (x >= GROUP_X0 + GROUPS_SHOWN * GROUP_CELL) g_group_scroll++;

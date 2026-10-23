@@ -411,6 +411,12 @@ SDLCLICK 240 262
 WAIT 5
 SDLCLICK 240 280
 WAIT 5
+# a Move in progress is emptied by a right click on the Mv box
+SDLCLICK 260 334
+WAIT 5
+SDLRCLICK 206 360
+WAIT 5
+EDITOR validate
 # the group bar and palette scroll arrows
 SDLCLICK 590 260
 WAIT 5
