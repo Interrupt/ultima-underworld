@@ -335,4 +335,4 @@ The master archive, `DATA\LEV.ARK`, is only written by a real Save. The editor w
 
 ## Head, Next and Link follow the object's own list
 
-Head, Next and Link work on the objects' internal links, not the tile's: Next follows the object's next link along the list it is in (a tile's chain at the top level, or a container's contents); Head goes to the head of the selected object's own list (a container's contents, remembered so Back returns), or, where it has none, to the head of the list you are in; Link links the held object (from Move or Copy) into the selected container, as a sword into a bag.
+Next follows the object's next link along the list it is in (a tile's chain at the top level, or a container's contents). Link, with nothing held, follows the object's link down into a bag's contents (Back or Head returns to the bag); with an object held (from Move or Copy) it links that object into the selected bag, as a sword into a bag. Head inside a bag's contents returns to the bag, does nothing on a bag, and otherwise goes to the head of the tile's chain.

@@ -2914,9 +2914,12 @@ void uw_editor_selftest(void)
   if (g_back_depth != 1 || !object_at(g_sel_slot)) { fprintf(stderr, "[editor] selftest FAILED: not inside the container\n"); abort(); }
   button_pressed(3);                           /* Back out of it */
   if (g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Back did not return to the container\n"); abort(); }
-  button_pressed(0);                           /* Head: into the container's own list */
-  if (g_back_depth != 1 || g_sel_slot == box_slot) { fprintf(stderr, "[editor] selftest FAILED: Head did not enter the container's list\n"); abort(); }
-  button_pressed(3);
+  button_pressed(0);                           /* Head on a bag does nothing */
+  if (g_back_depth != 0 || g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Head moved off a bag\n"); abort(); }
+  button_pressed(2);                           /* Link follows the link down into the contents */
+  if (g_back_depth != 1 || g_sel_slot == box_slot) { fprintf(stderr, "[editor] selftest FAILED: Link did not enter the bag\n"); abort(); }
+  button_pressed(0);                           /* Head returns to the bag */
+  if (g_back_depth != 0 || g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Head did not return to the bag\n"); abort(); }
   uw_editor_undo();
   selftest_expect(&before, "undoing a copy into a container (the container's placement is kept)");
   uw_editor_redo();
@@ -3504,23 +3507,20 @@ static void button_pressed(int i)
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   g_status = NULL;
   switch (i) {
-    case 0:   /* Head: the head of the selected object's own list (a container's contents, remembering where from), else of the list you are in */
+    case 0:   /* Head: inside a container's contents, back up to the container; on a bag, nothing; otherwise the head of the tile's chain */
+      if (g_back_depth > 0) op_back();
+      else if (o && !o->is_quant && o->link) break;
+      else { g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); }
+      break;
+    case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next: along the list you are in */
+    case 2:   /* Link: with an object held (Move or Copy) link it into the selected container, as a sword into a bag; with none, follow the link down into the contents */
+      if (g_held_slot && o) { op_put_into(g_sel_slot); break; }
       if (o && !o->is_quant && o->link && g_back_depth < BACK_DEPTH) {
         g_back_slot[g_back_depth] = g_sel_slot;
         g_back_link[g_back_depth++] = g_sel_link;
         g_sel_link = &((uw_object_hdr_t *)o)->link_word;
         g_sel_slot = o->link;
       }
-      else if (g_back_depth > 0) {
-        uw_object_hdr_t *parent = object_at(g_back_slot[g_back_depth - 1]);
-        if (parent) { g_sel_link = &parent->link_word; g_sel_slot = parent->link; }
-      }
-      else { g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); }
-      break;
-    case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next: along the list you are in */
-    case 2:   /* Link: link the held object (from Move or Copy) into the selected object's list, as a sword into a bag */
-      if (g_held_slot && o) op_put_into(g_sel_slot);
-      else g_status = g_held_slot ? "select a container" : "Move or Copy an object, then Link it into a container";
       break;
     case 3: op_back(); break;
     case 4: op_show(); break;
