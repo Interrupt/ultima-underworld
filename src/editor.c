@@ -3507,14 +3507,17 @@ static void button_pressed(int i)
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   g_status = NULL;
   switch (i) {
-    case 0:   /* Head: inside a container's contents, back up to the container; on a bag, nothing; otherwise the head of the tile's chain */
+    case 0:   /* Head: inside a container's contents, back up to the container; anywhere else nothing (the buttons stay in the object's own chain, off the tiles) */
       if (g_back_depth > 0) op_back();
-      else if (o && !o->is_quant && o->link) break;
-      else { g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); }
       break;
     case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next: along the list you are in */
     case 2:   /* Link: with an object held (Move or Copy) link it into the selected container, as a sword into a bag; with none, follow the link down into the contents */
-      if (g_held_slot && o) { op_put_into(g_sel_slot); break; }
+      if (g_held_slot && o) {
+        if ((o->object_id & 0x1f0) == 0x80 && !o->is_quant) op_put_into(g_sel_slot);
+        else if (g_back_depth > 0) op_put_into(g_back_slot[g_back_depth - 1]);   /* in a bag's contents: add to this list */
+        else g_status = "select a container";
+        break;
+      }
       if (o && !o->is_quant && o->link && g_back_depth < BACK_DEPTH) {
         g_back_slot[g_back_depth] = g_sel_slot;
         g_back_link[g_back_depth++] = g_sel_link;
