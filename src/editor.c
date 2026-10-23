@@ -142,15 +142,37 @@ static void text(const char *s, int x, int y, unsigned short colour)
 /* A .GR entry drawn through the game palette; palette index 0 is transparent. decode_gr_entry_to_buffer gives the
    entry's raw record (type, width, height, aux palette, data), which the game's own sprite path turns into pixels
    the same way (see draw_sprite_by_id in bitmap.c). */
-static void sprite(const char *resource, int index, int x, int y)
+/* The palette-index pixels of a .GR entry (0 is transparent), decoded once and kept: the editor redraws its sprites every frame, and decoding reads the
+   file each time. Returns NULL for an entry with no pixels. */
+static const unsigned char *gr_pixels(const char *resource, int index, int *w, int *h)
 {
+  enum { CACHE = 1024 };
+  static struct { char resource[12]; int index, w, h; unsigned char *pixels; } cache[CACHE];
+  static int used;
+  for (int i = 0; i < used; i++)
+    if (cache[i].index == index && strcmp(cache[i].resource, resource) == 0) { *w = cache[i].w; *h = cache[i].h; return cache[i].pixels; }
   static unsigned char record[0x10000];
   memset(record, 0, sizeof record);
   decode_gr_entry_to_buffer((char *)resource, index, record);
-  int w = record[1], h = record[2];
+  int sw = record[1], sh = record[2];
   const unsigned char *pixels = record[0] == 4 ? record + 5
       : (const unsigned char *)decompress_gr_bitmap((char *)record + 4, &DAT_00202520 + record[3] * 0x10, record[0]);
-  if (!pixels || !w || !h) return;
+  unsigned char *copy = NULL;
+  if (pixels && sw && sh && (copy = malloc((size_t)sw * sh))) memcpy(copy, pixels, (size_t)sw * sh);
+  *w = sw; *h = sh;
+  if (used < CACHE) {
+    snprintf(cache[used].resource, sizeof cache[used].resource, "%s", resource);
+    cache[used].index = index; cache[used].w = sw; cache[used].h = sh; cache[used].pixels = copy;
+    used++;
+  }
+  return copy;
+}
+
+static void sprite(const char *resource, int index, int x, int y)
+{
+  int w, h;
+  const unsigned char *pixels = gr_pixels(resource, index, &w, &h);
+  if (!pixels) return;
   for (int j = 0; j < h; j++)
     for (int i = 0; i < w; i++)
       if (pixels[j * w + i]) put(x + i, y + j, (unsigned short)(&g_palette_rgb565)[pixels[j * w + i]]);
@@ -843,7 +865,17 @@ int uw_editor_compose(unsigned short *display)
   if (!g_active || DAT_00201b64 != 0) return 0;
   void *saved = g_uw_framebuffer;
   g_uw_framebuffer = g_screen;
-  select_active_font(s_font5x6p_sys_0008430c);
+  {
+    /* Selecting a font reads its file, so only do it when the font in memory is not already ours (the game switches fonts between frames). */
+    static unsigned char header[0xc], glyphs[0x1080];
+    static int have;
+    if (!have || memcmp(DAT_000879b0, header, sizeof header) != 0 || memcmp(DAT_000890a4, glyphs, sizeof glyphs) != 0) {
+      select_active_font(s_font5x6p_sys_0008430c);
+      memcpy(header, DAT_000879b0, sizeof header);
+      memcpy(glyphs, DAT_000890a4, sizeof glyphs);
+      have = 1;
+    }
+  }
   fill(0, 0, ED_W, ED_H, COL_BLACK);
   fill(1, 126, 151, 191, COL_PANEL);
   frame(1, 126, 151, 191, RGB(52, 52, 52));   /* the panel's light 1px outline */
@@ -1672,13 +1704,9 @@ static const ed_rect_t R_TILE_PAL = { 174, 119, 320, 190 };
 /* a BUTTONS.GR swatch drawn at twice its size */
 static void sprite_2x(const char *resource, int index, int x, int y)
 {
-  static unsigned char record[0x10000];
-  memset(record, 0, sizeof record);
-  decode_gr_entry_to_buffer((char *)resource, index, record);
-  int w = record[1], h = record[2];
-  const unsigned char *pixels = record[0] == 4 ? record + 5
-      : (const unsigned char *)decompress_gr_bitmap((char *)record + 4, &DAT_00202520 + record[3] * 0x10, record[0]);
-  if (!pixels || !w || !h) return;
+  int w, h;
+  const unsigned char *pixels = gr_pixels(resource, index, &w, &h);
+  if (!pixels) return;
   for (int j = 0; j < h; j++)
     for (int i = 0; i < w; i++)
       if (pixels[j * w + i]) {
