@@ -332,3 +332,7 @@ The master archive, `DATA\LEV.ARK`, is only written by a real Save. The editor w
 - Play commits the level into the working copy and copies that over `SAVE0\LEV.ARK`. The master is not touched, so a change can be tried without saving it.
 - Save (Ctrl+S, the starburst, the menu) commits into the working copy, then copies the working copy over the master (a one-time `LEV.ARK.BAK` of the pristine archive first) and writes the type tables. This is also the only thing that clears the unsaved `*` mark.
 - Revert and Discard copy the master over the working copy again, dropping every unsaved edit (type edits too). Change level loads from the working copy.
+
+## Head, Next and Link follow the object's own list
+
+Head, Next and Link work on the objects' internal links, not the tile's: Next follows the object's next link along the list it is in (a tile's chain at the top level, or a container's contents); Head goes to the head of the selected object's own list (a container's contents, remembered so Back returns), or, where it has none, to the head of the list you are in; Link links the held object (from Move or Copy) into the selected container, as a sword into a bag.
