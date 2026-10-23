@@ -2917,7 +2917,7 @@ void uw_editor_selftest(void)
   snapshot_take(&before);
   op_pick_up(1);
   select_object_on_tile(other_x, ty, object_at(box_slot));
-  button_pressed(2);                           /* Link with an object held: copy it into the container */
+  button_pressed(6);                           /* Copy with an object held: copy it into the selected container */
   snapshot_take(&after);
   if (g_back_depth != 1 || !object_at(g_sel_slot)) { fprintf(stderr, "[editor] selftest FAILED: not inside the container\n"); abort(); }
   button_pressed(3);                           /* Back out of it */
@@ -2965,7 +2965,7 @@ void uw_editor_selftest(void)
   {
     int npc = g_sel_slot;
     snapshot_take(&before);
-    button_pressed(2);
+    button_pressed(5);   /* Move with an object held: into the selected one */
     if (g_back_depth != 1 || !object_at(g_sel_slot) || object_at(g_sel_slot)->object_id != 0xc2) { fprintf(stderr, "[editor] selftest FAILED: the item did not go into the creature\n"); abort(); }
     if (uw_editor_validate() != 0) { fprintf(stderr, "[editor] selftest FAILED: a creature's inventory broke the lists\n"); abort(); }
     button_pressed(0);
@@ -3130,7 +3130,7 @@ void uw_editor_selftest(void)
       select_object_on_tile(tiles[1][0], tiles[1][1], object_at(tile_head(tiles[1][0], tiles[1][1])));
       op_pick_up(0);
       select_object_on_tile(tiles[0][0], tiles[0][1], object_at(box));
-      button_pressed(2);
+      button_pressed(5);   /* Move with an object held: into the selected one */
       int skull = g_sel_slot;
       op_place(0x181, tiles[2][0], tiles[2][1], 4, 4);   /* a trap nothing links to */
       int trap = g_sel_slot;
@@ -3577,6 +3577,19 @@ static void op_replace(void)
   g_status = "replaced";
 }
 
+/* Move or Copy. With nothing held it picks the selected object up (into the Mv box). With an object already held it puts that object where
+   the selection is: into the selected bag or creature (or, inside a bag's contents, into that bag), the way a click puts it on a tile. */
+static void move_or_copy(int copy)
+{
+  const uw_object_hdr_t *o = object_at(g_sel_slot);
+  if (g_held_slot && o && g_held_slot != g_sel_slot) {
+    g_held_copy = copy;
+    if (holds_list(o)) { op_put_into(g_sel_slot); return; }
+    if (g_back_depth > 0) { op_put_into(g_back_slot[g_back_depth - 1]); return; }
+  }
+  op_pick_up(copy);
+}
+
 static void button_pressed(int i)
 {
   const uw_object_hdr_t *o = object_at(g_sel_slot);
@@ -3587,13 +3600,7 @@ static void button_pressed(int i)
       else { g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); }
       break;
     case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next: along the list you are in */
-    case 2:   /* Link: with an object held (Move or Copy) link it into the selected container, as a sword into a bag; with none, follow the link down into the contents */
-      if (g_held_slot && o) {
-        if (holds_list(o)) op_put_into(g_sel_slot);
-        else if (g_back_depth > 0) op_put_into(g_back_slot[g_back_depth - 1]);   /* in a bag's contents: add to this list */
-        else g_status = "select a container";
-        break;
-      }
+    case 2:   /* Link: follow the selected object's link down into its contents (a bag's or a creature's) */
       if (o && holds_list(o) && o->link && g_back_depth < BACK_DEPTH) {
         g_back_slot[g_back_depth] = g_sel_slot;
         g_back_link[g_back_depth++] = g_sel_link;
@@ -3603,8 +3610,8 @@ static void button_pressed(int i)
       break;
     case 3: op_back(); break;
     case 4: op_show(); break;
-    case 5: op_pick_up(0); break;
-    case 6: op_pick_up(1); break;
+    case 5: move_or_copy(0); break;
+    case 6: move_or_copy(1); break;
     case 7: op_replace(); break;
     default: op_delete(); break;
   }
