@@ -72,7 +72,7 @@ ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=0}"
 SDL_VIDEODRIVER="${SDL_VIDEODRIVER-dummy}"
 SDL_AUDIODRIVER="${SDL_AUDIODRIVER-dummy}"
 
-DEFAULT_SCRIPTS="demo_critter_orbit_cardinal.txt demo_inventory_container_item_click_test.txt demo_inventory_container_torch_use_test.txt demo_inventory_dropback_test.txt demo_inventory_invalid_drop_test.txt demo_inventory_open_bag_test.txt demo_cast_all_spells.txt demo_summon_flood.txt demo_fullscreen_view.txt"
+DEFAULT_SCRIPTS="demo_critter_orbit_cardinal.txt demo_inventory_container_item_click_test.txt demo_inventory_container_torch_use_test.txt demo_inventory_dropback_test.txt demo_inventory_invalid_drop_test.txt demo_inventory_open_bag_test.txt demo_cast_all_spells.txt demo_summon_flood.txt demo_fullscreen_view.txt demo_editor.txt demo_editor_menu.txt"
 
 if [ "$#" -gt 0 ]; then
   SCRIPTS="$*"
@@ -105,8 +105,17 @@ setup_isolated_data_dir() {
   d="$DATA_DIR_ROOT/$script_name"
   rm -rf "$d"
   mkdir -p "$d"
-  for ro in CRIT CUTS DATA DATA3D SOUND gx.dll UU.exe; do
+  for ro in CRIT CUTS DATA3D SOUND gx.dll UU.exe; do
     ln -s "$(pwd)/data/$ro" "$d/$ro"
+  done
+  # DATA is a real directory of links, with its own copies of the files the level editor writes (LEV.ARK, COMOBJ.DAT,
+  # OBJECTS.DAT): a run must never write into the repo's data/ directory.
+  mkdir -p "$d/DATA"
+  for f in "$(pwd)"/data/DATA/*; do
+    case "$(basename "$f")" in
+      LEV.ARK|COMOBJ.DAT|OBJECTS.DAT) cp "$f" "$d/DATA/$(basename "$f")" ;;   # the files the editor writes
+      *) ln -s "$f" "$d/DATA/$(basename "$f")" ;;
+    esac
   done
   # SAVE1 is the real template "new game" copies FROM -- needs real
   # content. SAVE0 (and the other slots) are left EMPTY: every script

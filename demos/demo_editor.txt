@@ -1,0 +1,458 @@
+# The level editor (editor.c): pick and select objects, fly the free camera, click the map, strip, palette and
+# buttons, and toggle it off and on. Run under ASan.
+
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+TYPE Avatar
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+WAIT 30
+DELAY 1
+GOTOLEVEL 1
+WAIT 90
+SETPLAYERPOS 17.500 6.500 768 180 0
+WAIT 120
+# the level editor (editor.c): the level is reloaded from the master LEV.ARK (a copy, in this run's own data directory) on entry; pick the shrine in the 3D pane, fly the camera, click the map / strip / buttons
+EDITOR on
+WAIT 60
+SPAWNOBJ 0x157
+WAIT 5
+SPAWNOBJ 0x44
+WAIT 5
+# Edit the picked object: the position grid, height spinner (right click steps by 8), heading rose, then the
+# Item, Comm and Class tabs' fields
+SDLCLICK 502 118
+WAIT 30
+SDLCLICK 60 280
+WAIT 5
+SDLCLICK 156 264
+WAIT 5
+SDLCLICK 156 264
+WAIT 5
+SDLRCLICK 156 276
+WAIT 5
+SDLCLICK 150 300
+WAIT 5
+SDLCLICK 160 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLRCLICK 154 266
+WAIT 5
+SDLCLICK 96 266
+WAIT 5
+SDLCLICK 98 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLRCLICK 96 282
+WAIT 5
+SDLCLICK 36 366
+WAIT 5
+SDLCLICK 154 266
+WAIT 5
+SDLCLICK 36 366
+WAIT 5
+EDITOR validate
+# the mode column: every mode in turn, then back to object mode
+SDLCLICK 330 98
+WAIT 8
+SDLCLICK 330 66
+WAIT 8
+SDLCLICK 330 162
+WAIT 8
+SDLCLICK 330 194
+WAIT 8
+SDLCLICK 330 226
+WAIT 8
+SDLCLICK 330 258
+WAIT 8
+SDLCLICK 330 290
+WAIT 8
+SDLCLICK 330 130
+WAIT 8
+# tile mode: pick the solid type, paint a freehand stroke on the map, eyedrop with Ctrl, paint a rectangle with Shift held, raise and
+# lower the selected tile, Fix, then paint in the 3D view; the editor checks the tiles after each stroke
+SDLCLICK 330 98
+WAIT 10
+SDLCLICK 376 266
+WAIT 10
+SDLDOWN 540 120
+WAIT 5
+SDLMOVE 560 120
+WAIT 5
+SDLMOVE 560 100
+WAIT 5
+SDLUP 560 100
+WAIT 20
+SDLKEYDOWN ctrl
+WAIT 5
+SDLCLICK 500 100
+WAIT 10
+SDLKEYUP ctrl
+WAIT 5
+SDLKEYDOWN shift
+WAIT 5
+SDLDOWN 480 160
+WAIT 5
+SDLMOVE 520 190
+WAIT 5
+SDLUP 520 190
+WAIT 20
+SDLKEYUP shift
+WAIT 5
+SDLCLICK 40 354
+WAIT 10
+SDLCLICK 100 354
+WAIT 10
+SDLCLICK 150 354
+WAIT 10
+SDLCLICK 330 130
+WAIT 10
+EDITOR undo
+WAIT 5
+EDITOR undo
+WAIT 5
+EDITOR undo
+WAIT 5
+EDITOR validate
+# texture mode: pick a slot, change the ceiling, paint a tile on the map, eyedrop with Ctrl, a floor slot, then the global texture lists
+# (a texture with no slot is given a free one, if there is one); undo it all
+SDLCLICK 330 66
+WAIT 10
+SDLCLICK 372 276
+WAIT 10
+SDLCLICK 232 334
+WAIT 20
+SDLCLICK 232 334
+WAIT 20
+SDLCLICK 502 126
+WAIT 20
+SDLKEYDOWN ctrl
+WAIT 5
+SDLCLICK 502 118
+WAIT 10
+SDLKEYUP ctrl
+WAIT 5
+SDLCLICK 442 250
+WAIT 10
+SDLCLICK 410 276
+WAIT 10
+SDLCLICK 502 126
+WAIT 20
+SDLCLICK 512 250
+WAIT 10
+SDLCLICK 440 276
+WAIT 30
+SDLCLICK 330 130
+WAIT 10
+SDLCLICK 330 66
+WAIT 10
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
+# fill mode: the paint target and spread rule, a hover (the preview), a click to fill, a Shift-drag rectangle, through doors; then undo
+SDLCLICK 330 290
+WAIT 10
+SDLCLICK 20 306
+WAIT 5
+SDLCLICK 180 342
+WAIT 5
+SDLMOVE 502 126
+WAIT 10
+SDLCLICK 502 126
+WAIT 30
+SDLCLICK 20 360
+WAIT 5
+SDLKEYDOWN shift
+WAIT 5
+SDLDOWN 490 110
+WAIT 5
+SDLMOVE 530 150
+WAIT 5
+SDLUP 530 150
+WAIT 30
+SDLKEYUP shift
+WAIT 5
+SDLCLICK 20 342
+WAIT 5
+SDLCLICK 502 126
+WAIT 30
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
+# find mode: a type (giant spiders), All, Next and Previous (they fly the camera to each match), a click on a result, then the level checks
+SDLCLICK 330 194
+WAIT 10
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLRCLICK 28 298
+WAIT 5
+SDLCLICK 28 298
+WAIT 5
+SDLCLICK 28 298
+WAIT 5
+SDLCLICK 28 298
+WAIT 5
+SDLCLICK 28 298
+WAIT 5
+SDLCLICK 160 344
+WAIT 10
+SDLCLICK 84 344
+WAIT 30
+SDLCLICK 84 344
+WAIT 30
+SDLCLICK 48 344
+WAIT 30
+SDLCLICK 520 372
+WAIT 30
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 28 278
+WAIT 5
+SDLCLICK 84 344
+WAIT 30
+SDLCLICK 160 344
+WAIT 10
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
+# cut / copy and paste: drag a rectangle on the map, Copy, Cut, then paste it elsewhere in paste mode; undo
+SDLCLICK 330 226
+WAIT 10
+SDLDOWN 490 100
+WAIT 5
+SDLMOVE 520 130
+WAIT 5
+SDLUP 520 130
+WAIT 20
+SDLCLICK 20 330
+WAIT 10
+SDLCLICK 330 258
+WAIT 10
+SDLMOVE 560 140
+WAIT 10
+SDLCLICK 560 140
+WAIT 30
+EDITOR undo
+WAIT 20
+SDLCLICK 330 226
+WAIT 10
+SDLCLICK 110 330
+WAIT 20
+EDITOR undo
+WAIT 20
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
+# view modes (the Eye button): Triggers and Markers draw editor sprites in the 3D view, then back to Preview; the mode is kept
+SDLCLICK 330 162
+WAIT 10
+SDLCLICK 80 324
+WAIT 40
+SDLCLICK 80 356
+WAIT 40
+SDLCLICK 80 292
+WAIT 40
+SDLCLICK 330 130
+WAIT 10
+EDITOR validate
+# undo and redo restore the level byte for byte after every kind of edit (the self-check aborts if not)
+EDITOR selftest
+WAIT 10
+# type view: right click a palette icon for its Comm and Class pages (an edit changes every object of the type); undo it
+SDLRCLICK 440 320
+WAIT 10
+SDLCLICK 142 266
+WAIT 10
+SDLCLICK 36 366
+WAIT 10
+SDLCLICK 142 280
+WAIT 10
+SDLCLICK 98 366
+WAIT 10
+EDITOR undo
+WAIT 10
+EDITOR undo
+WAIT 10
+SDLCLICK 36 366
+WAIT 10
+# Move, Copy and Delete (the map's clicks pick tiles; EDITOR validate checks the object lists after each)
+SDLCLICK 502 118
+WAIT 30
+EDITOR validate
+EDITOR replace
+WAIT 10
+SDLCLICK 514 106
+WAIT 20
+EDITOR validate
+SDLCLICK 260 334
+WAIT 10
+SDLCLICK 490 106
+WAIT 20
+EDITOR validate
+SDLCLICK 502 118
+WAIT 20
+SDLCLICK 260 280
+WAIT 10
+EDITOR replace
+WAIT 10
+SDLCLICK 514 118
+WAIT 20
+EDITOR validate
+SDLCLICK 260 370
+WAIT 20
+EDITOR validate
+# Place new objects from the palette: arm an icon, left click tiles on the map (a right click selects instead).
+# First a decor object, then (after scrolling the group bar) a critter.
+SDLCLICK 372 320
+WAIT 10
+SDLCLICK 514 106
+WAIT 20
+EDITOR validate
+SDLCLICK 396 260
+WAIT 5
+SDLCLICK 422 260
+WAIT 5
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 514 118
+WAIT 20
+EDITOR validate
+SDLCLICK 372 320
+WAIT 5
+# 3D picking: arm an icon and click the floor in the 3D pane to place there, then click the floor to select its tile
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 148 230
+WAIT 20
+EDITOR validate
+SDLCLICK 372 320
+WAIT 5
+SDLCLICK 100 190
+WAIT 20
+SDLCLICK 140 160
+WAIT 10
+SDLKEYDOWN e
+WAIT 30
+SDLKEYUP e
+SDLKEYDOWN left
+WAIT 40
+SDLKEYUP left
+SDLKEYDOWN w
+WAIT 20
+SDLKEYUP w
+WAIT 10
+SDLCLICK 502 118
+WAIT 5
+SDLCLICK 440 190
+WAIT 5
+SDLCLICK 250 298
+WAIT 5
+SDLCLICK 480 90
+WAIT 5
+SDLCLICK 760 358
+WAIT 5
+SDLCLICK 240 262
+WAIT 5
+SDLCLICK 240 280
+WAIT 5
+# a Move in progress is emptied by a right click on the Mv box
+SDLCLICK 260 334
+WAIT 5
+SDLRCLICK 206 360
+WAIT 5
+EDITOR validate
+# the group bar and palette scroll arrows
+SDLCLICK 590 260
+WAIT 5
+SDLCLICK 630 364
+WAIT 5
+SDLCLICK 630 306
+WAIT 5
+SDLCLICK 260 316
+WAIT 10
+# right-drag pans the map (a right click does not select); the starburst saves
+SDLRDOWN 500 100
+WAIT 5
+SDLMOVE 440 140
+WAIT 5
+SDLMOVE 400 160
+WAIT 5
+SDLRUP 400 160
+WAIT 20
+SDLRCLICK 502 118
+WAIT 10
+SDLCLICK 320 30
+WAIT 30
+# the starburst asks Save, Discard or Exit: Save
+SDLCLICK 320 170
+WAIT 30
+# save the level into the master archive (this run's own copy of it)
+EDITOR save
+WAIT 30
+EDITOR validate
+EDITOR
+WAIT 20
+EDITOR
+WAIT 20
+# the bottom orange button plays from the camera: it flies through a wall first (Far Sight style), then back out
+SDLCLICK 320 364
+WAIT 60
+EDITOR validate
+EDITOR off
+WAIT 10

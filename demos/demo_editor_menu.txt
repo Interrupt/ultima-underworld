@@ -1,0 +1,150 @@
+# The level editor's Escape menu: Change level with the unsaved-edits prompt (Discard), Page Up / Page Down, Revert's confirmation,
+# and Exit editor with Cancel and Discard. Run under ASan.
+
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+TYPE Avatar
+ENTER
+ENTER
+ENTER
+ENTER
+ENTER
+WAIT 30
+DELAY 1
+GOTOLEVEL 1
+WAIT 90
+SETPLAYERPOS 17.500 6.500 768 180 0
+WAIT 120
+EDITOR on
+WAIT 60
+# place something, so the level has unsaved edits
+SDLCLICK 440 320
+WAIT 10
+SDLCLICK 502 126
+WAIT 30
+SDLCLICK 440 320
+WAIT 10
+# Escape, Change level, Level 2: the unsaved-edits prompt; Discard
+EDITOR escape
+WAIT 20
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+WAIT 60
+EDITOR validate
+# back to level 1 (Page Down on the keyboard), nothing unsaved now
+EDITOR level 1
+WAIT 60
+EDITOR validate
+# Revert always asks
+SDLCLICK 440 320
+WAIT 10
+SDLCLICK 502 126
+WAIT 30
+SDLCLICK 440 320
+WAIT 10
+EDITOR escape
+WAIT 20
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+WAIT 40
+EDITOR validate
+# Exit editor with unsaved edits: Cancel keeps the editor, Discard leaves it
+SDLCLICK 440 320
+WAIT 10
+SDLCLICK 502 126
+WAIT 30
+SDLCLICK 440 320
+WAIT 10
+EDITOR escape
+WAIT 20
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+WAIT 20
+EDITOR escape
+WAIT 20
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+SDLKEYDOWN down
+SDLKEYUP down
+WAIT 8
+SDLKEYDOWN return
+SDLKEYUP return
+WAIT 8
+WAIT 60
+EDITOR validate

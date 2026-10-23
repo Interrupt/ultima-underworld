@@ -5,6 +5,7 @@
 #include "headers/tmap.h"
 #include "headers/options.h"
 #include "headers/debug.h"
+#include "headers/editor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -1436,7 +1437,7 @@ short g_view_y0 = 0x13;
 
 int uw_fullscreen_scene_height(void)
 {
-  return g_opts.fullscreen_floating_log ? 200 : UW_FULLSCREEN_VIEW_HEIGHT;
+  return g_opts.fullscreen_floating_log || uw_editor_active() ? 200 : UW_FULLSCREEN_VIEW_HEIGHT;
 }
 
 double uw_fullscreen_proj_cy(void)

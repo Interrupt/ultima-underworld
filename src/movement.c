@@ -1,6 +1,7 @@
 /* Movement collision sweep: the substep integrator, wall-slide/ deflect/knockback/land-on-surface
    resolution, and the reticle object pick. Split out of uw.c (the original monolithic decompile)
    once these functions' real roles were confirmed. */
+#include "headers/editor.h"
 #include "headers/movement.h"
 #include "headers/input.h"
 #include "headers/options.h"
@@ -1510,6 +1511,12 @@ void movement_pacing_handler()
      elapsed-time sample in the same 4ms-per-unit scale (see g_uw_frame_clock_units). */
   uVar_now = uw_frame_clock_ms();
   iVar3 = uVar_now;
+  if (uw_editor_active()) {
+    /* HACK: not original behaviour -- the level editor freezes the simulation; keep the clock current so no time
+       passes on resume. */
+    DAT_0023bf54 = uVar_now;
+    return;
+  }
   uVar6 = iVar3 - DAT_0023bf54;
   if (uVar6 < 0x41) {
     uVar5 = uVar_now;

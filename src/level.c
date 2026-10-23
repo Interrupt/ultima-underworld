@@ -109,7 +109,12 @@ int init_level_object_arena()
     /* Widened by 0x3a bytes: 28 backpack/equipment slots * 2 bytes (0x38) plus
        g_current_container_link's own 2 bytes, both now reserved at this buffer's tail -- see
        reset_level_object_arena and g_equipped_items's/ g_current_container_link's own comments. */
-    DAT_002029cc = ce_malloc(0x7c08 + 0x3a + 0x180);
+    /* HACK: not original behaviour -- a zeroed margin of two tile rows (0x200 bytes) on each side of the arena. The
+       visibility flood reads the tile beside a ray's tile without a bounds check, so a ray on the map's edge reads past
+       the tile map; zero bytes are solid tiles, which stops it. The game never has a ray there, but the level editor's
+       Far Sight camera can fly outside the map's outer ring. The arena itself (DAT_002029cc) starts after the margin. */
+    char *arena_block = ce_malloc(0x200 + 0x7c08 + 0x3a + 0x180 + 0x200);
+    DAT_002029cc = arena_block != 0 ? arena_block + 0x200 : 0;
     if (DAT_002029cc == 0) {
       report_categorized_fatal_error(0x1002);
     }
@@ -211,6 +216,13 @@ void reset_level_object_arena()
 // was FUN_0006bc28
 int load_level(int level_number)
 {
+  return load_level_from_archive(level_number, s__SAVE0_lev_ark_000842fc);
+}
+
+/* load_level for any level archive path: the level editor reads a level from the master DATA\LEV.ARK this way, so the
+   game's save slot is left alone. */
+int load_level_from_archive(int level_number, char *archive_path)
+{
   int result;
   byte archive[16];
 
@@ -219,7 +231,7 @@ int load_level(int level_number)
     DAT_00202080 = -1;
   }
   uw_test_hook_pre_level_load(level_number);
-  if (open_level_archive(archive,s__SAVE0_lev_ark_000842fc) == 0) {
+  if (open_level_archive(archive,archive_path) == 0) {
     return 0;
   }
   result = (int)(short)load_level_object_table(archive,level_number);
@@ -428,6 +440,6 @@ void reset_level_arena_and_invalidate(int reserved)
 void free_level_tile_arena()
 {
   if (DAT_002029cc != 0) {
-    LocalFree(DAT_002029cc);
+    LocalFree(DAT_002029cc - 0x200);   /* the block starts at the zeroed margin (see init_level_object_arena) */
   }
 }

@@ -938,6 +938,14 @@ int probe_archive_entry_exists(char *path, uint entry_index)
 // the current level's live tilemap+object arena to its on-disk archive.
 int commit_level_to_save_slot(int level_number)
 {
+  return commit_level_to_archive(level_number, s__SAVE0_lev_ark_000842fc, 1);
+}
+
+/* The commit above for any archive path: writes the level's tile map and objects and its texture map into
+   the archive (and the player's automap reveal too, when with_automap), taking the player out of the level and back
+   in as a level change does. The level editor uses it to write an edited copy of DATA\LEV.ARK. */
+int commit_level_to_archive(int level_number, char *archive_path, int with_automap)
+{
   ushort uVar1;
   int iVar2;
   undefined4 uVar3;
@@ -954,12 +962,12 @@ int commit_level_to_save_slot(int level_number)
   DAT_00202080 = 0xffff;
   uVar1 = g_player_object->hdr.type_flags;
   g_player_object->hdr.type_flags = (ushort)(uVar1 & 0xfe3f);
-  iVar2 = open_level_archive(auStack_20,s__SAVE0_lev_ark_000842fc);
+  iVar2 = open_level_archive(auStack_20,archive_path);
   uVar3 = 0;
   if (iVar2 != 0) {
     iVar2 = write_level_tilemap_to_archive(auStack_20,level_number);
     if (((iVar2 != 0) && (iVar2 = write_level_quest_flags_to_archive(auStack_20,level_number), iVar2 != 0)) &&
-       (iVar2 = save_automap_reveal_to_archive(auStack_20,level_number), iVar2 != 0)) {
+       (!with_automap || (iVar2 = save_automap_reveal_to_archive(auStack_20,level_number), iVar2 != 0))) {
       iVar2 = close_level_archive(auStack_20);
       uVar3 = 1;
       if (iVar2 != 0) goto LAB_0006bdbc;

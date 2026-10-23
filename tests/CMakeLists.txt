@@ -146,7 +146,7 @@ add_fixture_game_unit_test(chargen
 target_compile_definitions(test_chargen PRIVATE UW_TEST_DATA_DIR="${UW_TEST_DATA_DIR}")
 add_fixture_game_unit_test(new_game
   src/game.c:prepare_new_game src/game.c:start_game_with_current_character src/game.c:begin_gameplay
-  src/level.c:load_level_object_table src/level.c:load_level
+  src/level.c:load_level_object_table src/level.c:load_level src/level.c:load_level_from_archive
   src/game.c:set_game_mode
   src/ordinal_stubs.c:ce_wcscpy src/ordinal_stubs.c:CopyFileW
   src/ordinal_stubs.c:MultiByteToWideChar)
@@ -1449,6 +1449,7 @@ add_supported_game_unit_test(object_weight uw_test_object_weight)
 add_game_test_library(uw_test_object_core
   src/objects.c:spawn_new_object src/objects.c:resolve_object_link
   src/objects.c:find_object_in_chain src/objects.c:find_object_by_encoded_slot_in_chain
+  src/objects.c:find_object_in_world
   src/objects.c:object_list_insert_head src/objects.c:object_list_append_tail
   src/objects.c:object_list_unlink src/containers.c:sum_container_weight
   src/item_use.c:objects_can_stack)

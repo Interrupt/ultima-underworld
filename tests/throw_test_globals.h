@@ -98,3 +98,4 @@ extern short DAT_00085890, DAT_00202074, DAT_00202078, DAT_0020207a, DAT_0020207
 #ifndef DAT_00086987
 #define DAT_00086987 DAT_00086986_backing[1]
 #endif
+int uw_editor_active(void);
