@@ -333,6 +333,8 @@ The master archive, `DATA\LEV.ARK`, is only written by a real Save. The editor w
 - Save (Ctrl+S, the starburst, the menu) commits into the working copy, then copies the working copy over the master (a one-time `LEV.ARK.BAK` of the pristine archive first) and writes the type tables. This is also the only thing that clears the unsaved `*` mark.
 - Revert and Discard copy the master over the working copy again, dropping every unsaved edit (type edits too). Change level loads from the working copy.
 
-## Head, Next and Link follow the object's own list
+## Head, Next and Link
 
-Next follows the object's next link along the list it is in (a tile's chain at the top level, or a container's contents). Link, with nothing held, follows the object's link down into a bag's contents (Back or Head returns to the bag); with an object held (from Move or Copy) it links that object into the selected bag, as a sword into a bag. Head inside a bag's contents returns to the bag and otherwise does nothing: the three buttons stay in the object's own chain and never jump to a tile's. With an object held, Link on a non-bag inside a bag's contents adds it to that list.
+Next follows the object's next link along the list it is in: a tile's chain at the top level, or, once Link has been pressed on a bag, the bag's contents. Link with nothing held follows the link down into a bag's (or a creature's) contents; with an object held (from Move or Copy) it links that object into the selected bag, or into the bag you are in. Head inside the contents goes back to the bag; Head again (at the top level) goes to the first object on the tile.
+
+Link into a container applies the game's own pick-up rules (the capacity from OBJECTS.DAT against the weight of the item plus what the container holds, via the game's `calculate_object_weight` and `sum_container_weight`, and the container type's acceptance mask), with the refusal shown on the status bar. A creature's own list is its inventory: Link into a creature takes any item that is not another creature, with no capacity check. Container class is 0x80-0x8F (every one of them); creatures are 0x40-0x7F.

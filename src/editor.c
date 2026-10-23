@@ -177,6 +177,13 @@ static uw_object_hdr_t *object_at(int slot)
   return slot > 0 ? get_object_record_by_slot_index((short)slot) : NULL;
 }
 
+/* An object whose link field is a list of objects it holds: a container (class 0x80-0x8F), or a creature, whose inventory it is
+   (what it drops when it dies). */
+static int holds_list(const uw_object_hdr_t *o)
+{
+  return !o->is_quant && (((o->object_id & 0x1f0) == 0x80) || ((o->object_id & 0x1c0) == 0x40));
+}
+
 /* The first object on a tile. */
 static int tile_head(int tx, int ty)
 {
@@ -1052,7 +1059,7 @@ static int validate_chain(int slot, int tx, int ty, unsigned char *seen, int dep
         (*problems)++;
       }
     }
-    if ((o->object_id & 0x1f0) == 0x80 && !o->is_quant && o->link && depth < 8)
+    if (holds_list(o) && o->link && depth < 8)
       count += validate_chain(o->link, tx, ty, seen, depth + 1, problems);
     slot = o->next;
     if (n == VALIDATE_MAX_OBJECTS - 1 && slot) { fprintf(stderr, "[editor] validate: a chain does not end\n"); (*problems)++; }
@@ -1078,7 +1085,7 @@ static ushort *find_link_in(ushort *link, int slot, int depth)
     uw_object_hdr_t *c = resolve_object_link(link);
     if (!c) return NULL;
     if (encode_object_slot_index(c) == slot) return link;
-    if ((c->object_id & 0x1f0) == 0x80 && !c->is_quant && c->link && depth < 8) {
+    if (holds_list(c) && c->link && depth < 8) {
       ushort *in = find_link_in(&c->link_word, slot, depth + 1);
       if (in) return in;
     }
@@ -1369,6 +1376,7 @@ static int apply_target(int tx, int ty)
 
 static void button_pressed(int i);
 static void op_replace(void);
+static void op_put_into(int container_slot);
 static int apply_target(int tx, int ty);
 
 /* What a point of the 3D view looks at: the floor of a tile, a face of a solid tile (its wall), the ceiling, or nothing. */
@@ -2299,7 +2307,7 @@ static void find_survey_chain(int slot, int depth)
     if (!o) return;
     if (!o->is_quant && o->link) g_find_linked[o->link & 0x3ff] = 1;
     if (slot_is_mobile(o)) g_find_whoami[((const uw_mobile_object_t *)o)->npc_whoami] = 1;
-    if (!o->is_quant && o->link && (o->object_id & 0x1f0) == 0x80 && depth < 8) find_survey_chain(o->link, depth + 1);
+    if (holds_list(o) && o->link && depth < 8) find_survey_chain(o->link, depth + 1);
     slot = o->next;
   }
 }
@@ -2345,7 +2353,7 @@ static void find_scan_chain(int slot, int tx, int ty, const int *path, int depth
       f->slot = slot; f->tx = tx; f->ty = ty; f->depth = depth;
       memcpy(f->path, path, sizeof(int) * (size_t)depth);
     }
-    if (!o->is_quant && o->link && (o->object_id & 0x1f0) == 0x80 && depth < 8) {
+    if (holds_list(o) && o->link && depth < 8) {
       int inner[8];
       memcpy(inner, path, sizeof(int) * (size_t)depth);
       inner[depth] = slot;
@@ -2914,8 +2922,8 @@ void uw_editor_selftest(void)
   if (g_back_depth != 1 || !object_at(g_sel_slot)) { fprintf(stderr, "[editor] selftest FAILED: not inside the container\n"); abort(); }
   button_pressed(3);                           /* Back out of it */
   if (g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Back did not return to the container\n"); abort(); }
-  button_pressed(0);                           /* Head on a bag does nothing */
-  if (g_back_depth != 0 || g_sel_slot != box_slot) { fprintf(stderr, "[editor] selftest FAILED: Head moved off a bag\n"); abort(); }
+  button_pressed(0);                           /* Head at the top level: the tile's first object (the box here is alone? then itself) */
+  select_object_on_tile(other_x, ty, object_at(box_slot));
   button_pressed(2);                           /* Link follows the link down into the contents */
   if (g_back_depth != 1 || g_sel_slot == box_slot) { fprintf(stderr, "[editor] selftest FAILED: Link did not enter the bag\n"); abort(); }
   button_pressed(0);                           /* Head returns to the bag */
@@ -2926,6 +2934,46 @@ void uw_editor_selftest(void)
   selftest_expect(&after, "redoing a copy into a container");
   button_pressed(2); button_pressed(0); button_pressed(3);   /* Link with nothing held, and in and out of the contents */
   selftest_expect(&after, "Link, Head and Back change nothing");
+
+  /* a container whose type accepts only some things refuses the rest, by the game's own rule */
+  {
+    int pick = -1;
+    for (int i = 0; i < 16 && pick < 0; i++)
+      if ((short)g_container_type_props[i].acceptance_mask > 0 && (short)g_container_type_props[i].acceptance_mask != 0xc2) pick = i;
+    if (pick >= 0) {
+      op_place(0xc2, tx, ty, 6, 6);
+      op_pick_up(0);
+      op_place(0x80 + pick, other_x, ty, 3, 3);
+      int fussy = g_sel_slot;
+      snapshot_take(&before);
+      g_status = NULL;
+      op_put_into(fussy);
+      snapshot_take(&after);
+      if (!g_status || !strstr(g_status, "take") || memcmp(&before, &after, sizeof before) != 0) {
+        fprintf(stderr, "[editor] selftest FAILED: container 0x%x took a skull its type refuses (%s)\n", 0x80 + pick, g_status ? g_status : "no message");
+        abort();
+      }
+      g_held_slot = 0;
+      g_selftest_checks++;
+    }
+  }
+
+  /* a creature's inventory is a list too: an item goes into it with Link, shows under it, and undoes */
+  op_place(0xc2, tx, ty, 5, 5);
+  op_pick_up(0);
+  op_place(0x44, tx, ty, 2, 2);
+  {
+    int npc = g_sel_slot;
+    snapshot_take(&before);
+    button_pressed(2);
+    if (g_back_depth != 1 || !object_at(g_sel_slot) || object_at(g_sel_slot)->object_id != 0xc2) { fprintf(stderr, "[editor] selftest FAILED: the item did not go into the creature\n"); abort(); }
+    if (uw_editor_validate() != 0) { fprintf(stderr, "[editor] selftest FAILED: a creature's inventory broke the lists\n"); abort(); }
+    button_pressed(0);
+    if (g_sel_slot != npc) { fprintf(stderr, "[editor] selftest FAILED: Head did not return to the creature\n"); abort(); }
+    uw_editor_undo();
+    selftest_expect(&before, "undoing an item put into a creature's inventory");
+    g_selftest_checks += 3;
+  }
 
   /* a trap's page (a teleport trap: tile and level) and Set Target on it */
   op_place(0x181, tx, ty, 1, 1);
@@ -3437,13 +3485,40 @@ static int contains_slot(const uw_object_hdr_t *o, int slot, int depth)
   return 0;
 }
 
+/* Whether a container takes an item, by the game's own rules for picking one up into a pack (check_object_fits_in_slot): the item's weight
+   plus what the container already holds must fit its capacity (0 is unlimited; weights from OBJECTS.DAT, summed by the game's own
+   calculate_object_weight and sum_container_weight), and the container type's acceptance mask must allow it (a single item id, or the
+   categories 0x200 to 0x203: runes, wands... as the game decodes them); a mask of zero or less takes anything that can be picked up.
+   The game's version also prints to the message scroll and checks the pack slot, so the rules are repeated here. A creature takes anything
+   but another creature. Returns nonzero if it fits, else sets g_status. */
+static int container_has_room(uw_object_hdr_t *box, uw_object_hdr_t *item)
+{
+  if ((box->object_id & 0x1c0) == 0x40) return 1;
+  const uw_container_type_props_t *type = &g_container_type_props[box->object_id & 0xf];
+  short weight = (short)calculate_object_weight(item);
+  sum_container_weight(&box->link_word, &weight);
+  if (type->capacity != 0 && weight > type->capacity) { g_status = "it is too full"; return 0; }
+  int mask = (short)type->acceptance_mask, id = (int)item->object_id, cls = (id >> 6) & 7, sub = (id >> 4) & 3, low = id & 0xf;
+  int ok;
+  if (mask <= 0) ok = (g_object_type_props[id].flags >> 5) & 1;
+  else if (mask < 0x200) ok = id == mask;
+  else if (mask == 0x200) ok = cls == 3 && (sub == 3 || (sub == 2 && low >= 8));
+  else if (mask == 0x201) ok = cls == 0 && sub == 1 && low <= 2;
+  else if (mask == 0x202) ok = cls == 4 && sub == 3 && low >= 8;
+  else if (mask == 0x203) ok = (cls == 2 && sub == 3) || id == 0xce || id == 0xcf || id == 0x92 || id == 0x125 || id == 0x11b || id == 0xd9;
+  else ok = 0;
+  if (!ok) { g_status = "it does not take that"; return 0; }
+  return 1;
+}
+
 static void op_put_into(int container_slot)
 {
   uw_object_hdr_t *box = object_at(container_slot), *src = object_at(g_held_slot);
   if (!box || !src) return;
-  if ((box->object_id & 0x1f0) != 0x80 || box->is_quant) { g_status = "that is not a container"; return; }
+  if (!holds_list(box)) { g_status = "that is not a container or a creature"; return; }
   if (is_mobile(src) || slot_is_mobile(src)) { g_status = "a creature cannot go in a container"; return; }
   if (g_held_slot == container_slot || contains_slot(src, container_slot, 0)) { g_status = "not into itself"; return; }
+  if (!container_has_room(box, src)) return;
   uw_object_hdr_t *placed = src;
   if (g_held_copy) {
     if (!have_free_slot(0)) { g_status = "no free object slots"; return; }
@@ -3507,18 +3582,19 @@ static void button_pressed(int i)
   const uw_object_hdr_t *o = object_at(g_sel_slot);
   g_status = NULL;
   switch (i) {
-    case 0:   /* Head: inside a container's contents, back up to the container; anywhere else nothing (the buttons stay in the object's own chain, off the tiles) */
+    case 0:   /* Head: inside a container's contents, back up to the container; at the top level, the first object on the tile */
       if (g_back_depth > 0) op_back();
+      else { g_sel_slot = tile_head(g_sel_tx, g_sel_ty); g_sel_link = tile_link(g_sel_tx, g_sel_ty); }
       break;
     case 1: if (o && o->next) { g_sel_link = &((uw_object_hdr_t *)o)->chain_word; g_sel_slot = o->next; } break;   /* Next: along the list you are in */
     case 2:   /* Link: with an object held (Move or Copy) link it into the selected container, as a sword into a bag; with none, follow the link down into the contents */
       if (g_held_slot && o) {
-        if ((o->object_id & 0x1f0) == 0x80 && !o->is_quant) op_put_into(g_sel_slot);
+        if (holds_list(o)) op_put_into(g_sel_slot);
         else if (g_back_depth > 0) op_put_into(g_back_slot[g_back_depth - 1]);   /* in a bag's contents: add to this list */
         else g_status = "select a container";
         break;
       }
-      if (o && !o->is_quant && o->link && g_back_depth < BACK_DEPTH) {
+      if (o && holds_list(o) && o->link && g_back_depth < BACK_DEPTH) {
         g_back_slot[g_back_depth] = g_sel_slot;
         g_back_link[g_back_depth++] = g_sel_link;
         g_sel_link = &((uw_object_hdr_t *)o)->link_word;
