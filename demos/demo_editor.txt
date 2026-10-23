@@ -73,9 +73,9 @@ SDLCLICK 36 366
 WAIT 5
 EDITOR validate
 # the mode column: every mode in turn, then back to object mode
-SDLCLICK 330 66
-WAIT 8
 SDLCLICK 330 98
+WAIT 8
+SDLCLICK 330 66
 WAIT 8
 SDLCLICK 330 162
 WAIT 8
@@ -91,7 +91,7 @@ SDLCLICK 330 130
 WAIT 8
 # tile mode: pick the solid type, paint a freehand stroke on the map, eyedrop with Ctrl, paint a rectangle with Shift held, raise and
 # lower the selected tile, Fix, then paint in the 3D view; the editor checks the tiles after each stroke
-SDLCLICK 330 66
+SDLCLICK 330 98
 WAIT 10
 SDLCLICK 376 266
 WAIT 10
@@ -136,7 +136,7 @@ WAIT 5
 EDITOR validate
 # texture mode: pick a slot, change the ceiling, paint a tile on the map, eyedrop with Ctrl, a floor slot, then the global texture lists
 # (a texture with no slot is given a free one, if there is one); undo it all
-SDLCLICK 330 98
+SDLCLICK 330 66
 WAIT 10
 SDLCLICK 372 276
 WAIT 10
@@ -164,7 +164,7 @@ SDLCLICK 440 276
 WAIT 30
 SDLCLICK 330 130
 WAIT 10
-SDLCLICK 330 98
+SDLCLICK 330 66
 WAIT 10
 EDITOR undo
 WAIT 20

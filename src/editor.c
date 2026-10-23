@@ -345,7 +345,9 @@ static void draw_map_pane(void)
 }
 
 /* BUTTONS.GR frames of the mode palette, top to bottom (14x14 each). */
-static const int g_mode_frames[8] = { 3, 4, 5, 7, 8, 9, 10, 14 };   /* the last is the paint bucket (fill) */
+static const int g_mode_frames[8] = { 3, 4, 5, 7, 8, 9, 10, 14 };
+/* The mode each button opens: the first icon (the grid) is the texture painter and the second (the swatch) is tile mode. */
+static const int g_button_mode[8] = { M_TEXTURE, M_TILE, M_OBJECT, M_VIEW, M_FIND, M_CUTCOPY, M_PASTE, M_FILL };   /* the last is the paint bucket (fill) */
 
 static void draw_palette_pane(void)
 {
@@ -354,7 +356,7 @@ static void draw_palette_pane(void)
   for (int i = 0; i < 8; i++) {
     int y = 26 + 16 * i;
     sprite("buttons", g_mode_frames[i], 157, y);
-    if (i == g_mode) frame(156, y - 1, 172, y + 15, COL_BLUE);
+    if (g_button_mode[i] == g_mode) frame(156, y - 1, 172, y + 15, COL_BLUE);
   }
   sprite("buttons", 16, 157, 176);
 }
@@ -1937,18 +1939,11 @@ static int tex_cells(void)
   }
 }
 
-static void draw_texture_mode(void)
+/* The texture palette's grid of cells for the current g_tex_tab (slots with their usage, or the global textures), and its page arrows. */
+static void draw_texture_grid(void)
 {
-  static const char *const tabs[4] = { "Wall", "Floor", "W tex", "F tex" };
   char line[64];
   int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
-  frame(R_TEX_PAL.x0, R_TEX_PAL.y0, R_TEX_PAL.x1, R_TEX_PAL.y1, COL_FRAME);
-  for (int i = 0; i < 4; i++) {
-    int x = R_TEX_PAL.x0 + 2 + i * 35;
-    if (i == g_tex_tab) fill(x + 1, R_TEX_PAL.y0 + 2, x + 33, R_TEX_PAL.y0 + 11, RGB(24, 24, 88));
-    frame(x, R_TEX_PAL.y0 + 1, x + 34, R_TEX_PAL.y0 + 12, i < 2 ? COL_ORANGE : COL_BLUE);
-    text(tabs[i], x + 3, R_TEX_PAL.y0 + 3, i < 2 ? COL_ORANGE : COL_BLUE);
-  }
   int cells = tex_cells(), rows = (cells + TEX_COLS - 1) / TEX_COLS;
   if (g_tex_page > rows - TEX_ROWS) g_tex_page = rows - TEX_ROWS;
   if (g_tex_page < 0) g_tex_page = 0;
@@ -1971,6 +1966,21 @@ static void draw_texture_mode(void)
     arrow(R_TEX_PAL.x1 - 8, R_TEX_PAL.y0 + 16, 2, g_tex_page > 0 ? COL_TEXT : COL_FRAME);
     arrow(R_TEX_PAL.x1 - 8, R_TEX_PAL.y1 - 8, 3, g_tex_page < rows - TEX_ROWS ? COL_TEXT : COL_FRAME);
   }
+}
+
+static void draw_texture_mode(void)
+{
+  static const char *const tabs[4] = { "Wall", "Floor", "W tex", "F tex" };
+  char line[64];
+  int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
+  frame(R_TEX_PAL.x0, R_TEX_PAL.y0, R_TEX_PAL.x1, R_TEX_PAL.y1, COL_FRAME);
+  for (int i = 0; i < 4; i++) {
+    int x = R_TEX_PAL.x0 + 2 + i * 35;
+    if (i == g_tex_tab) fill(x + 1, R_TEX_PAL.y0 + 2, x + 33, R_TEX_PAL.y0 + 11, RGB(24, 24, 88));
+    frame(x, R_TEX_PAL.y0 + 1, x + 34, R_TEX_PAL.y0 + 12, i < 2 ? COL_ORANGE : COL_BLUE);
+    text(tabs[i], x + 3, R_TEX_PAL.y0 + 3, i < 2 ? COL_ORANGE : COL_BLUE);
+  }
+  draw_texture_grid();
   /* panel: the active slot, its texture, the ceiling, the selected tile */
   frame(0, 126, 150, 190, COL_FRAME);
   int slot = g_tex_slot[floor_tab];
@@ -1992,6 +2002,19 @@ static void draw_texture_mode(void)
   }
 }
 
+static void texture_grid_click(int x, int y)
+{
+  int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
+    int cells = tex_cells(), rows = (cells + TEX_COLS - 1) / TEX_COLS;
+    if (x >= R_TEX_PAL.x1 - 9) { g_tex_page += y < (R_TEX_PAL.y0 + R_TEX_PAL.y1) / 2 ? -1 : 1; if (g_tex_page > rows - TEX_ROWS) g_tex_page = rows - TEX_ROWS; if (g_tex_page < 0) g_tex_page = 0; return; }
+    int col = (x - R_TEX_PAL.x0 - 4) / TEX_CELL_W, row = (y - R_TEX_PAL.y0 - 15) / TEX_CELL_H;
+    int n = (g_tex_page + row) * TEX_COLS + col;
+    if (col >= 0 && col < TEX_COLS && row >= 0 && row < TEX_ROWS && n < cells) {
+      if (g_tex_tab == TT_WALL_SLOTS || g_tex_tab == TT_FLOOR_SLOTS) { g_tex_slot[floor_tab] = n; g_tex_confirm = 0; }
+      else tex_pick_global(floor_tab, n);
+    }
+}
+
 static int texture_mode_click(int x, int y, int button)
 {
   int floor_tab = g_tex_tab == TT_FLOOR_SLOTS || g_tex_tab == TT_FLOOR_TEXTURES;
@@ -2002,14 +2025,7 @@ static int texture_mode_click(int x, int y, int button)
       if (i >= 0 && i < 4) { g_tex_tab = i; g_tex_page = 0; g_tex_confirm = 0; }
       return 1;
     }
-    int cells = tex_cells(), rows = (cells + TEX_COLS - 1) / TEX_COLS;
-    if (x >= R_TEX_PAL.x1 - 9) { g_tex_page += y < (R_TEX_PAL.y0 + R_TEX_PAL.y1) / 2 ? -1 : 1; if (g_tex_page > rows - TEX_ROWS) g_tex_page = rows - TEX_ROWS; if (g_tex_page < 0) g_tex_page = 0; return 1; }
-    int col = (x - R_TEX_PAL.x0 - 4) / TEX_CELL_W, row = (y - R_TEX_PAL.y0 - 15) / TEX_CELL_H;
-    int n = (g_tex_page + row) * TEX_COLS + col;
-    if (col >= 0 && col < TEX_COLS && row >= 0 && row < TEX_ROWS && n < cells) {
-      if (g_tex_tab == TT_WALL_SLOTS || g_tex_tab == TT_FLOOR_SLOTS) { g_tex_slot[floor_tab] = n; g_tex_confirm = 0; }
-      else tex_pick_global(floor_tab, n);
-    }
+    texture_grid_click(x, y);
     return 1;
   }
   if (y >= 148 && y < 156 && x >= 76 && x < 100) {   /* the active slot's texture */
@@ -2037,6 +2053,7 @@ static int g_fill_target = FT_FLOOR_TEX, g_fill_spread = FS_FLOOR_TEX, g_fill_do
 static unsigned char g_fill_mask[64 * 64];   /* the tiles a fill would paint (the preview) or just painted (the flash) */
 static unsigned g_fill_flash_until;
 static int g_fill_hover_x = -1, g_fill_hover_y = -1;
+static int g_fill_tab;                       /* the palette shows: 0 wall slots, 1 floor slots, 2 tile types */
 static int g_fill_rect;                      /* dragging a rectangle: its first corner is in g_stroke_x0/y0 */
 static const char *const g_fill_target_names[FILL_TARGETS] = { "Floor tex", "Wall tex", "Both tex", "Tile type" };
 static const char *const g_fill_spread_names[FILL_SPREADS] = { "Same floor", "Same wall", "Same height", "Same type", "Any open" };
@@ -2169,15 +2186,26 @@ static void draw_fill_mode(void)
   text("Spread over", 76, 128, COL_TEXT);
   for (int i = 0; i < FILL_SPREADS; i++) radio(76, 137 + i * 8, g_fill_spread_names[i], g_fill_spread == i, COL_BLUE);
   checkbox(4, 176, "Through doors", g_fill_doors, COL_ORANGE);
-  /* the active brush: the texture slots and the tile type, from the texture painter and the tile mode */
+  /* the brush's palette, like the texture painter's: the wall slots, the floor slots (with their textures), or the tile types */
   frame(R_TEX_PAL.x0, R_TEX_PAL.y0, R_TEX_PAL.x1, R_TEX_PAL.y1, COL_FRAME);
-  text("Floor slot", R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 6, COL_ORANGE);
-  draw_slot_texture(1, g_tex_slot[1], R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 14, 32);
-  text("Wall slot", R_TEX_PAL.x0 + 50, R_TEX_PAL.y0 + 6, COL_ORANGE);
-  draw_slot_texture(0, g_tex_slot[0], R_TEX_PAL.x0 + 50, R_TEX_PAL.y0 + 14, 32);
-  text("Tile type", R_TEX_PAL.x0 + 94, R_TEX_PAL.y0 + 6, COL_ORANGE);
-  sprite_2x("buttons", 33 + g_brush_type, R_TEX_PAL.x0 + 94, R_TEX_PAL.y0 + 14);
-  text("click: fill   Shift-drag: rectangle", R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 52, COL_FRAME);
+  for (int i = 0; i < 3; i++) {
+    static const char *const tabs[3] = { "Wall", "Floor", "Type" };
+    int x = R_TEX_PAL.x0 + 2 + i * 35;
+    if (i == g_fill_tab) fill(x + 1, R_TEX_PAL.y0 + 2, x + 33, R_TEX_PAL.y0 + 11, RGB(24, 24, 88));
+    frame(x, R_TEX_PAL.y0 + 1, x + 34, R_TEX_PAL.y0 + 12, i < 2 ? COL_ORANGE : COL_BLUE);
+    text(tabs[i], x + 3, R_TEX_PAL.y0 + 3, i < 2 ? COL_ORANGE : COL_BLUE);
+  }
+  if (g_fill_tab < 2) { g_tex_tab = g_fill_tab ? TT_FLOOR_SLOTS : TT_WALL_SLOTS; draw_texture_grid(); }
+  else {
+    for (int i = 0; i < 10; i++) {
+      int x = R_TEX_PAL.x0 + 8 + (i % 5) * 26, y = R_TEX_PAL.y0 + 18 + (i / 5) * 24;
+      sprite_2x("buttons", 33 + i, x, y);
+      if (i == g_brush_type) frame(x - 2, y - 2, x + 18, y + 18, COL_BLUE);
+    }
+    snprintf(line, sizeof line, "brush: %s", g_tile_type_names[g_brush_type]);
+    text(line, R_TEX_PAL.x0 + 6, R_TEX_PAL.y0 + 62, COL_TEXT);
+  }
+  text("click: fill   Shift-drag: rectangle", 4, 184, COL_FRAME);
   if (g_fill_hover_x >= 0 && !g_fill_rect) {
     int n = 0;
     for (int i = 0; i < 64 * 64; i++) n += g_fill_mask[i];
@@ -2189,6 +2217,21 @@ static void draw_fill_mode(void)
 static int fill_mode_click(int x, int y, int button)
 {
   (void)button;
+  if (in_rect(&R_TEX_PAL, x, y)) {
+    if (y < R_TEX_PAL.y0 + 13) {
+      int i = (x - R_TEX_PAL.x0 - 2) / 35;
+      if (i >= 0 && i < 3) { g_fill_tab = i; g_tex_page = 0; }
+    }
+    else if (g_fill_tab < 2) { g_tex_tab = g_fill_tab ? TT_FLOOR_SLOTS : TT_WALL_SLOTS; texture_grid_click(x, y); }
+    else {
+      for (int i = 0; i < 10; i++) {
+        int bx = R_TEX_PAL.x0 + 8 + (i % 5) * 26, by = R_TEX_PAL.y0 + 18 + (i / 5) * 24;
+        if (x >= bx - 2 && x < bx + 18 && y >= by - 2 && y < by + 18) g_brush_type = i;
+      }
+    }
+    g_fill_hover_x = -1;
+    return 1;
+  }
   if (x >= 4 && x < 72 && y >= 137 && y < 137 + FILL_TARGETS * 8) { g_fill_target = (y - 137) / 8; return 1; }
   if (x >= 76 && x < 148 && y >= 137 && y < 137 + FILL_SPREADS * 8) { g_fill_spread = (y - 137) / 8; g_fill_hover_x = -1; return 1; }
   if (x >= 4 && x < 80 && y >= 176 && y < 184) { g_fill_doors = !g_fill_doors; g_fill_hover_x = -1; return 1; }
@@ -3763,7 +3806,7 @@ void uw_editor_click(int x, int y, int button)
   else if (in_rect(&R_PALETTE, x, y)) {
     int i = (y - 26) / 16;
     if (y >= 26 && i < MODE_COUNT && x >= 156 && x < 172) {
-      g_mode = i;
+      g_mode = g_button_mode[i];
       g_brush_armed = 0; g_target_mode = 0;
       g_status = g_mode_names[g_mode];
     }
