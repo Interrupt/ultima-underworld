@@ -3743,13 +3743,13 @@ void handle_barter_slot_click(int is_player_side, int slot, void *counts, void *
 {
   short sVar1;
   int iVar2;
-  char *obj_rec;
+  uw_object_hdr_t *obj_rec;
   int iVar3;
   uint *puVar4;
   undefined4 uVar5;
-  void *obj_ptr;
+  uw_object_hdr_t *obj_ptr;
   int iVar6;
-  char *split_rec;
+  uw_object_hdr_t *split_rec;
   bool bVar7;
   short local_38;
   short local_36;
@@ -3774,25 +3774,24 @@ void handle_barter_slot_click(int is_player_side, int slot, void *counts, void *
         return;
       }
       obj_rec = get_object_record_by_slot_index((int)*(short *)(local_8 + (short)local_c * 2));
-      if ((((((uw_object_hdr_t *)obj_rec)->is_quant != 0) && ((((uw_object_hdr_t *)obj_rec)->link & 0x200) == 0)) &&
-           (((uw_object_hdr_t *)obj_rec)->link != 1)) && (split_rec = prompt_split_object_stack((byte *)(intptr_t)(obj_rec)), split_rec == 0))
+      if ((((obj_rec->is_quant != 0) && ((obj_rec->link & 0x200) == 0)) &&
+           (obj_rec->link != 1)) && (split_rec = (uw_object_hdr_t *)prompt_split_object_stack((byte *)obj_rec), split_rec == 0))
       {
         return;
       }
-      iVar3 = check_object_carry_weight((ushort *)(intptr_t)(obj_rec));
+      iVar3 = check_object_carry_weight((ushort *)obj_rec);
       if (iVar3 == 0) {
         if ((split_rec != 0) && (split_rec != obj_rec)) {
-          iVar3 = (((uw_object_hdr_t *)obj_rec)->link << 6) + (*(ushort *)(split_rec + 6) & 0xffc0);
-          ((uw_object_hdr_t *)obj_rec)->link_word_low = (byte)iVar3 ^ ((uw_object_hdr_t *)obj_rec)->owner;
-          ((uw_object_hdr_t *)obj_rec)->link_word_high = (byte)(char)((uint)iVar3 >> 8);
-          object_list_unlink((void *)(intptr_t)(obj_rec + 4),(void *)(intptr_t)(split_rec));
-          free_object_slot((void *)(intptr_t)(split_rec));
+          iVar3 = (obj_rec->link << 6) + (split_rec->link << 6);
+          obj_rec->link = ((uint)iVar3 >> 6) & 0x3ff;
+          object_list_unlink(&obj_rec->chain_word,split_rec);
+          free_object_slot(split_rec);
         }
         print_scroll_message_by_id(0xfc);
         return;
       }
       if (split_rec != 0 && split_rec != obj_rec) {
-        object_list_insert_head((void *)(intptr_t)(obj_rec + 4),(void *)(intptr_t)(split_rec));
+        object_list_insert_head(&obj_rec->chain_word,split_rec);
       }
       bVar7 = true;
       if ((split_rec == 0) || (uVar5 = 1, split_rec == obj_rec)) {

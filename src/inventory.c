@@ -210,27 +210,27 @@ void inventory_panel_click_region()
 // was FUN_000440d0
 void serialize_inventory_link_chain(byte *link_chain, byte *out_link)
 {
-  undefined1 *puVar1;
-  undefined1 *puVar2;
+  uw_object_hdr_t *puVar1;
+  uw_object_hdr_t *puVar2;
   uint uVar3;
 
-  puVar1 = (undefined1 *)resolve_object_link(link_chain);
-  while (puVar1 != (undefined1 *)0x0) {
-    puVar2 = (undefined1 *)alloc_save_record_slot();
-    ((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)puVar1)->type_flags;
-    ((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)puVar1)->position_word;
-    ((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)puVar1)->chain_word;
-    ((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)puVar1)->link_word;
+  puVar1 = resolve_object_link((ushort *)link_chain);
+  while (puVar1 != NULL) {
+    puVar2 = (uw_object_hdr_t *)alloc_save_record_slot();
+    puVar2->type_flags = puVar1->type_flags;
+    puVar2->position_word = puVar1->position_word;
+    puVar2->chain_word = puVar1->chain_word;
+    puVar2->link_word = puVar1->link_word;
     uVar3 = (uint)g_save_record_count;
     *out_link = *out_link & 0x3f | (byte)((uVar3 & 0x3ff) << 6);
     out_link[1] = (byte)((uVar3 << 0x16) >> 0x18);
     encode_equipped_item_index((ushort *)link_chain,(ushort *)out_link);
-    link_chain = puVar1 + 4;
-    out_link = puVar2 + 4;
-    if ((((uw_object_hdr_t *)puVar1)->is_quant == 0) && (((uw_object_hdr_t *)puVar1)->link != 0)) {
-      serialize_inventory_link_chain(puVar1 + 6,puVar2 + 6);
+    link_chain = (byte *)&puVar1->chain_word;
+    out_link = (byte *)&puVar2->chain_word;
+    if ((puVar1->is_quant == 0) && (puVar1->link != 0)) {
+      serialize_inventory_link_chain((byte *)&puVar1->link_word,(byte *)&puVar2->link_word);
     }
-    puVar1 = (undefined1 *)resolve_object_link(link_chain);
+    puVar1 = resolve_object_link((ushort *)link_chain);
   }
 }
 
@@ -241,27 +241,27 @@ void serialize_inventory_link_chain(byte *link_chain, byte *out_link)
 void deserialize_inventory_link_chain(byte *link_field, void *saved_link_ptr)
 {
   ushort *saved_link = (ushort *)saved_link_ptr;
-  undefined1 *puVar1;
+  uw_object_hdr_t *puVar1;
   uint uVar2;
-  undefined1 *puVar3;
+  uw_object_hdr_t *puVar3;
   
-  while (puVar3 = (undefined1 *)save_record_slot_from_index(*saved_link >> 6), puVar3 != (undefined1 *)0x0) {
-    puVar1 = (undefined1 *)alloc_object_slot(0);
-    ((uw_object_hdr_t *)puVar1)->type_flags = ((uw_object_hdr_t *)puVar3)->type_flags;
-    ((uw_object_hdr_t *)puVar1)->position_word = ((uw_object_hdr_t *)puVar3)->position_word;
-    ((uw_object_hdr_t *)puVar1)->chain_word = ((uw_object_hdr_t *)puVar3)->chain_word;
-    ((uw_object_hdr_t *)puVar1)->link_word = ((uw_object_hdr_t *)puVar3)->link_word;
+  while (puVar3 = (uw_object_hdr_t *)save_record_slot_from_index(*saved_link >> 6), puVar3 != NULL) {
+    puVar1 = alloc_object_slot(0);
+    puVar1->type_flags = puVar3->type_flags;
+    puVar1->position_word = puVar3->position_word;
+    puVar1->chain_word = puVar3->chain_word;
+    puVar1->link_word = puVar3->link_word;
     uVar2 = encode_object_slot_index(puVar1);
     *link_field = *link_field & 0x3f | (byte)((uVar2 & 0x3ff) << 6);
     link_field[1] = (byte)((uVar2 << 0x16) >> 0x18);
     decode_equipped_item_index((ushort *)link_field,saved_link);
-    link_field = puVar1 + 4;
-    saved_link = (ushort *)(puVar3 + 4);
-    if (((puVar3[1] & 0x80) == 0) && ((*(ushort *)(puVar3 + 6) & 0xffc0) != 0)) {
+    link_field = (byte *)&puVar1->chain_word;
+    saved_link = &puVar3->chain_word;
+    if ((puVar3->is_quant == 0) && (puVar3->link != 0)) {
       /* Dropped 2nd argument -- deserialize_inventory_link_chain takes (link_field, saved_link) and every
          other call site (both non-recursive ones, a few lines up this file) passes both; this
          self-recursive call for a nested container's own contents only passed the first. */
-      deserialize_inventory_link_chain(puVar1 + 6,(ushort *)(puVar3 + 6));
+      deserialize_inventory_link_chain((byte *)&puVar1->link_word,&puVar3->link_word);
     }
   }
 }

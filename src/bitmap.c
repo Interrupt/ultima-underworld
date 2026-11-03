@@ -392,7 +392,7 @@ void sprite_partition_by_depth(int entry_index, short *out_index, int extra)
 
   _o = (char *)get_object_record_by_slot_index((int)(short)(&DAT_0023b848)[(short)entry_index]);
   iVar1 = (short)entry_index * 4;
-  if (((((uw_object_hdr_t *)_o)->position_word >> 7) + DAT_0023b4a0 * -2 & 3) == 0) {
+  if (((((uw_object_hdr_t *)_o)->heading) + DAT_0023b4a0 * -2 & 3) == 0) {
     uVar3 = 2;
     sVar4 = (short)(char)(&DAT_0023bb9a)[iVar1];
 LAB_000651b0:

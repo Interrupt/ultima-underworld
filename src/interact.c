@@ -49,22 +49,22 @@ void interact_default()
 {
   int iVar1;
   int iVar2;
-  ushort *puVar3;
+  uw_object_hdr_t *split_object;
 
-  puVar3 = (ushort *)0x0;
+  split_object = NULL;
   iVar1 = target_in_range((int)DAT_000858c4,g_interact_target,DAT_002020b0);
   iVar2 = target_line_of_sight((int)DAT_000858c4,g_interact_target);
   if (DAT_002020ec == 0) {
     if (DAT_002020e0 != 0) {
-      iVar1 = object_ptr_in_arena(g_interact_target);
-      if ((iVar1 != 0) && ((*g_interact_target & 0x1c0) == 0x40)) {
+      iVar1 = object_ptr_in_arena((uw_object_hdr_t *)g_interact_target);
+      if ((iVar1 != 0) && ((((uw_object_hdr_t *)g_interact_target)->object_id & 0x1c0) == 0x40)) {
         interact_talk_npc();
         return;
       }
       interact_use();
       return;
     }
-    if ((*g_interact_target & 0x1ff) == 0x1ca) {
+    if ((((uw_object_hdr_t *)g_interact_target)->object_id) == 0x1ca) {
       if ((iVar1 != 0) && (iVar2 == 0)) {
         use_object_on_target(g_player_object,g_interact_target,0);
       }
@@ -74,26 +74,25 @@ void interact_default()
   }
   else {
     if ((iVar1 != 0) && (iVar2 == 0)) {
-      if (((*g_interact_target & 0x8000) != 0) &&
-         (((g_interact_target[3] & 0x8000) == 0 && ((g_interact_target[3] & 0xffc0) != 0x40)))) {
+      if ((((uw_object_hdr_t *)g_interact_target)->is_quant != 0) &&
+         ((((uw_object_hdr_t *)g_interact_target)->link < 512 && (((uw_object_hdr_t *)g_interact_target)->link != 1)))) {
         /* BUG FIX: was `FUN_000470fc();` -- dropped its only argument. g_interact_target (the
            object this whole "grab" handler is operating on throughout this function) is the obvious
            intended argument -- same dropped-argument idiom fixed repeatedly elsewhere this session. */
-        puVar3 = (ushort *)prompt_split_object_stack((undefined1 *)g_interact_target);
-        if (puVar3 == (ushort *)0x0) {
+        split_object = (uw_object_hdr_t *)prompt_split_object_stack((undefined1 *)g_interact_target);
+        if (split_object == NULL) {
           return;
         }
-        if (puVar3 != g_interact_target) {
-          object_list_insert_head(g_interact_target + 2,puVar3);
+        if (split_object != (uw_object_hdr_t *)g_interact_target) {
+          object_list_insert_head(&((uw_object_hdr_t *)g_interact_target)->chain_word,split_object);
         }
       }
       iVar1 = check_object_carry_weight(g_interact_target);
       if (iVar1 == 0) {
-        if ((puVar3 != (ushort *)0x0) && (puVar3 != g_interact_target)) {
-          iVar1 = (g_interact_target[3] & 0xffc0) + (puVar3[3] & 0xffc0);
-          *(byte *)(g_interact_target + 3) = (byte)iVar1 ^ (byte)g_interact_target[3] & 0x3f;
-          *(char *)((char *)g_interact_target + 7) = (char)((uint)iVar1 >> 8);
-          object_list_unlink(g_interact_target + 2,puVar3);
+        if ((split_object != NULL) && (split_object != (uw_object_hdr_t *)g_interact_target)) {
+          iVar1 = (((uw_object_hdr_t *)g_interact_target)->link << 6) + (split_object->link << 6);
+          ((uw_object_hdr_t *)g_interact_target)->link = ((uint)iVar1 >> 6) & 0x3ff;
+          object_list_unlink(&((uw_object_hdr_t *)g_interact_target)->chain_word,split_object);
         }
         print_scroll_message_by_id(0x5f);
         return;
@@ -547,19 +546,18 @@ int apply_trap_or_link_effect(void *trigger_object_ptr, void *trigger_link_ptr, 
 void purge_tagged_objects_from_chain(void *link_field_ptr)
 {
   ushort *link_field = (ushort *)link_field_ptr;
-  ushort *puVar1;
+  uw_object_hdr_t *puVar1;
   
-  for (puVar1 = (ushort *)resolve_object_link(link_field); puVar1 != (ushort *)0x0; /* confirmed via ARM disassembly, 0x7deec */
-      puVar1 = (ushort *)resolve_object_link(puVar1 + 2)) {
-    if (((((uw_object_hdr_t *)puVar1)->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(((uw_object_hdr_t *)puVar1)->link))) {
+  for (puVar1 = resolve_object_link(link_field); puVar1 != NULL; /* confirmed via ARM disassembly, 0x7deec */
+      puVar1 = resolve_object_link(&puVar1->chain_word)) {
+    if (((puVar1->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(puVar1->link))) {
       object_list_unlink(link_field,puVar1);
       free_object_slot(puVar1);
-      ((uw_object_hdr_t *)puVar1)->link_word_low = ((uw_object_hdr_t *)puVar1)->owner;
-      ((uw_object_hdr_t *)puVar1)->link_word_high = 0;
+      puVar1->link = 0;
       DAT_0024cfd8 = DAT_0024cfd8 + -1;
     }
-    if ((((uw_object_hdr_t *)puVar1)->is_quant == 0) && (((uw_object_hdr_t *)puVar1)->link != 0)) {
-      purge_tagged_objects_from_chain(puVar1 + 3); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
+    if ((puVar1->is_quant == 0) && (puVar1->link != 0)) {
+      purge_tagged_objects_from_chain(&puVar1->link_word); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
     }
   }
 }

@@ -693,7 +693,7 @@ R F(...) {
 
 @word_9_0@
 type R;
-identifier F =~ "^\(handle_object_drop_target\|trigger_object_trap_or_use_action\)$";
+identifier F =~ "^\(handle_object_drop_target\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -719,7 +719,7 @@ R F(...) {
 
 @word_9_1@
 type R;
-identifier F =~ "^\(handle_object_drop_target\|trigger_object_trap_or_use_action\)$";
+identifier F =~ "^\(handle_object_drop_target\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -739,7 +739,7 @@ R F(...) {
 
 @word_9_2@
 type R;
-identifier F =~ "^\(handle_object_drop_target\|trigger_object_trap_or_use_action\)$";
+identifier F =~ "^\(handle_object_drop_target\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -759,7 +759,7 @@ R F(...) {
 
 @word_9_3@
 type R;
-identifier F =~ "^\(handle_object_drop_target\|trigger_object_trap_or_use_action\)$";
+identifier F =~ "^\(handle_object_drop_target\)$";
 typedef ushort, uw_object_hdr_t;
 @@
 R F(...) {
@@ -2530,6 +2530,231 @@ R F(...) {
 |
 - object[3]
 + ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@use_trap_native_word_0_0@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@use_trap_native_word_0_1@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@use_trap_native_word_0_2@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@use_trap_native_word_0_3@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@use_trap_native_word_1_0@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 0)
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- ((ushort *)puVar1)[0]
++ ((uw_object_hdr_t *)puVar1)->type_flags
+|
+- *(ushort *)puVar1
++ ((uw_object_hdr_t *)puVar1)->type_flags
+)
+...>
+}
+
+@use_trap_native_word_1_1@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 2)
++ ((uw_object_hdr_t *)puVar1)->position_word
+|
+- ((ushort *)puVar1)[1]
++ ((uw_object_hdr_t *)puVar1)->position_word
+)
+...>
+}
+
+@use_trap_native_word_1_2@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 4)
++ ((uw_object_hdr_t *)puVar1)->chain_word
+|
+- ((ushort *)puVar1)[2]
++ ((uw_object_hdr_t *)puVar1)->chain_word
+)
+...>
+}
+
+@use_trap_native_word_1_3@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar1 + 6)
++ ((uw_object_hdr_t *)puVar1)->link_word
+|
+- ((ushort *)puVar1)[3]
++ ((uw_object_hdr_t *)puVar1)->link_word
+)
+...>
+}
+
+@use_trap_native_word_2_0@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@use_trap_native_word_2_1@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@use_trap_native_word_2_2@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@use_trap_native_word_2_3@
+type R;
+identifier F =~ "^\(trigger_object_trap_or_use_action\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
 )
 ...>
 }

@@ -1,0 +1,5 @@
+{
+  "function": "release_container_reference",
+  "before": "void release_container_reference(char *container_link)\n{\n  ushort uVar1;\n  ushort *puVar2;\n\n  puVar2 = (ushort *)get_object_record_by_slot_index(*(ushort *)(container_link + 8) >> 6);\n  uVar1 = ((uw_object_hdr_t *)puVar2)->type_flags;\n  if (((uVar1 & 0xf) < 0xc) && ((uVar1 & 1) != 0)) {\n    ((uw_object_hdr_t *)puVar2)->type_flags_low = ((char)(uVar1 & 0xf) - 1U ^ (byte)uVar1) & 0xf ^ (byte)uVar1;\n    ((uw_object_hdr_t *)puVar2)->type_flags_high = (byte)(uVar1 >> 8);\n  }\n}",
+  "after": "void release_container_reference(char *container_link)\n{\n  ushort uVar1;\n  uw_object_hdr_t *puVar2;\n\n  puVar2 = get_object_record_by_slot_index(*(ushort *)(container_link + 8) >> 6);\n  uVar1 = puVar2->type_flags;\n  if (((uVar1 & 0xf) < 0xc) && ((uVar1 & 1) != 0)) {\n    puVar2->object_id -= 1;\n  }\n}"
+}

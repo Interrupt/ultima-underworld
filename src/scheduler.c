@@ -527,10 +527,11 @@ void scheduler_set_delay(void *object_ptr, int delay)
 int scheduler_advance_effect(short entry_slot, int elapsed)
 {
   byte bVar1;
-  ushort *puVar2;
+  uw_object_hdr_t *puVar2;
   undefined4 uVar3;
   int iVar4;
   uint uVar5;
+  uint effect_flags;
   int iVar6;
   ushort uVar7;
   int iVar8;
@@ -543,33 +544,33 @@ int scheduler_advance_effect(short entry_slot, int elapsed)
   /* HACK: adds the NULL guard every other resolve_object_link call site in this file has (this one
      had none at all -- a stale queue entry resolving to NULL would dereference puVar2 below
      unconditionally). */
-  puVar2 = (ushort *)resolve_object_link(&DAT_00250778 + iVar8);
-  if (puVar2 == (ushort *)0x0) {
+  puVar2 = resolve_object_link(&DAT_00250778 + iVar8);
+  if (puVar2 == NULL) {
     return 0;
   }
-  uVar7 = (ushort)(byte)((uw_object_hdr_t *)puVar2)->link_word;
+  uVar7 = (ushort)(byte)puVar2->link_word;
   DAT_0010144c = (ushort)(byte)(&DAT_0025077c)[iVar8];
-  uVar9 = ((uw_object_hdr_t *)puVar2)->zpos;
+  uVar9 = puVar2->zpos;
   DAT_00101454 = (ushort)(byte)(&DAT_0025077d)[iVar8];
   if ((uVar7 & 7) != 6) {
     uVar9 = uVar9 - 0x18;
   }
   uVar3 = encode_object_slot_index(puVar2);
   iVar4 = check_object_placement_clearance((uVar7 & 0x30) + (uVar7 & 0xf) + 0x140,uVar3,
-                       (uint)(((uw_object_hdr_t *)puVar2)->xpos) + (short)DAT_0010144c * 8,
-                       (((uw_object_hdr_t *)puVar2)->ypos) + (short)DAT_00101454 * 8,
+                       (uint)(puVar2->xpos) + (short)DAT_0010144c * 8,
+                       (puVar2->ypos) + (short)DAT_00101454 * 8,
                        uVar9,1,
                        8);
   if (iVar4 == 0) {
-    uVar5 = (uint)((uw_object_hdr_t *)puVar2)->type_flags;
+    uVar5 = (uint)puVar2->type_flags;
     if ((((uVar5 & 0x1c0) == 0x140) && ((uVar5 & 7) == 6)) ||
-       (((uVar5 & 0x1c0) == 0x1c0 && ((((uw_object_hdr_t *)puVar2)->owner & 0x7) == 6)))) {
+       (((uVar5 & 0x1c0) == 0x1c0 && ((puVar2->owner & 0x7) == 6)))) {
       iVar10 = 4;
     }
     bVar1 = (byte)((uVar5 & 0xefff) >> 8);
-    ((uw_object_hdr_t *)puVar2)->type_flags_low = (byte)(char)(uVar5 & 0xefff);
-    ((uw_object_hdr_t *)puVar2)->type_flags_high =
-        ((byte)(((uVar5 & 0xe00) + (elapsed + 1) * -0x200) >> 8) ^ bVar1) & 0x1e ^ bVar1;
+    effect_flags = (uVar5 & 0xe00) + (elapsed + 1) * -0x200;
+    puVar2->flags_res = (effect_flags >> 9) & 7;
+    puVar2->enchanted = (effect_flags >> 12) & 1;
     iVar6 = scheduler_get_delay(puVar2);
     iVar4 = (int)(short)iVar6;
     bVar11 = -1 < iVar4;

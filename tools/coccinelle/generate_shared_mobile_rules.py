@@ -29,7 +29,7 @@ CONTEXTS = {
              ('reset_npc_path_cache', 'iVar1', 'char *', 'shared')],
     'object_actions.c': [('check_object_drop_height', 'object', 'ushort *', 'shared'),
                          ('spawn_random_variant_object_at_tile', 'iVar4', 'char *', 'shared')],
-    'objects.c': [('settle_dropped_object', 'puVar9', 'ushort *', 'shared'),
+    'objects.c': [('settle_dropped_object', 'mobile', 'uw_mobile_object_t *', 'shared'),
                   ('reallocate_object_to_arena', 'puVar2', 'ushort *', 'shared')],
     'collision.c': [('build_collision_height_field_for_object', 'object', 'ushort *', 'tile'),
                     ('collision_height_envelope', 'puVar7', 'ushort *', 'shared')],

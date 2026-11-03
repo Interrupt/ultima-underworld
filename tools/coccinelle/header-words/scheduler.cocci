@@ -392,7 +392,7 @@ R F(...) {
 ...>
 }
 
-@word_5_0@
+@effect_word_0_0@
 type R;
 identifier F =~ "^\(scheduler_advance_effect\)$";
 typedef ushort, uw_object_hdr_t;
@@ -408,17 +408,11 @@ R F(...) {
 |
 - *(ushort *)puVar2
 + ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- puVar2[0]
-+ ((uw_object_hdr_t *)puVar2)->type_flags
-|
-- *puVar2
-+ ((uw_object_hdr_t *)puVar2)->type_flags
 )
 ...>
 }
 
-@word_5_1@
+@effect_word_0_1@
 type R;
 identifier F =~ "^\(scheduler_advance_effect\)$";
 typedef ushort, uw_object_hdr_t;
@@ -431,14 +425,11 @@ R F(...) {
 |
 - ((ushort *)puVar2)[1]
 + ((uw_object_hdr_t *)puVar2)->position_word
-|
-- puVar2[1]
-+ ((uw_object_hdr_t *)puVar2)->position_word
 )
 ...>
 }
 
-@word_5_2@
+@effect_word_0_2@
 type R;
 identifier F =~ "^\(scheduler_advance_effect\)$";
 typedef ushort, uw_object_hdr_t;
@@ -451,14 +442,11 @@ R F(...) {
 |
 - ((ushort *)puVar2)[2]
 + ((uw_object_hdr_t *)puVar2)->chain_word
-|
-- puVar2[2]
-+ ((uw_object_hdr_t *)puVar2)->chain_word
 )
 ...>
 }
 
-@word_5_3@
+@effect_word_0_3@
 type R;
 identifier F =~ "^\(scheduler_advance_effect\)$";
 typedef ushort, uw_object_hdr_t;
@@ -470,9 +458,6 @@ R F(...) {
 + ((uw_object_hdr_t *)puVar2)->link_word
 |
 - ((ushort *)puVar2)[3]
-+ ((uw_object_hdr_t *)puVar2)->link_word
-|
-- puVar2[3]
 + ((uw_object_hdr_t *)puVar2)->link_word
 )
 ...>

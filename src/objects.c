@@ -80,8 +80,6 @@ uw_object_hdr_t *spawn_object_near_player()
 
 {
   byte bVar1;
-  byte bVar2;
-  byte bVar3;
   char cVar4;
   short sVar5;
   uw_projectile_object_t *puVar6;
@@ -119,14 +117,11 @@ LAB_0004b06c:
     puVar6->hdr.xpos = ((uw_object_hdr_t *)DAT_00202a44)->xpos;
     uVar7 = puVar6->hdr.position_word;
     bVar1 = (byte)uVar7;
-    bVar2 = (byte)(uVar7 >> 8);
     puVar6->hdr.ypos = ((uw_object_hdr_t *)DAT_00202a44)->ypos;
-    bVar2 = puVar6->hdr.position_word_high;
     if ((byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height != 0) {
       cVar4 = ordint_divmod(6,
                             (uint)(byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height * 5).quot;
       puVar6->hdr.zpos = cVar4 + (char)DAT_00202a3c * '\x02' + (bVar1 & 0x7f);
-      bVar3 = puVar6->hdr.position_word_low;
       if ((DAT_00202a44 == g_player_object) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {
         puVar6->hdr.zpos = ((char)DAT_00202a3c * '\x02' - (*(byte *)(DAT_00086df8 + 0xb9) >> 3)) + g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height + (bVar1 & 0x7f);
       }
@@ -423,17 +418,25 @@ uw_object_hdr_t *spawn_new_object(uint object_type, int region)
 
   puVar3 = alloc_object_slot(region);
   if (puVar3 != NULL) {
-    puVar3->position_word = 0x6c00;
-    puVar3->type_flags = (puVar3->is_quant << 15) ^ (object_type & 0x1ff);
-    puVar3->chain_word = 0x28;
+    puVar3->zpos = 0;
+    puVar3->heading = 0;
+    puVar3->ypos = 3;
+    puVar3->xpos = 3;
+    puVar3->object_id = object_type & 0x1ff;
+    puVar3->flags_res = 0;
+    puVar3->enchanted = 0;
+    puVar3->doordir = 0;
+    puVar3->invisible = 0;
+    puVar3->quality = 40;
+    puVar3->next = 0;
     puVar3->owner = 0;
     if (((g_object_type_props[(short)object_type].flags & 0xc0) == 0) || ((g_object_type_props[(short)object_type].flags & 0xc0) == 0x80)) {
-      puVar3->link_word = 0x40;
+      puVar3->link = 1;
       puVar3->is_quant = 1;
     }
     else {
       puVar3->is_quant = 0;
-      puVar3->link_word = 0;
+      puVar3->link = 0;
     }
   }
   return puVar3;
@@ -448,14 +451,14 @@ uw_object_hdr_t *spawn_new_object(uint object_type, int region)
    object_list_insert_head/object_list_append_tail below). */
 int reset_burnt_out_item_state(char *tile_link, void *object_ptr)
 {
-  char *object = (char *)object_ptr;
-  ushort *discarded;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
+  uw_object_hdr_t *discarded;
 
-  if (object < DAT_002046c4) {
-    *(undefined1 *)(object + 8) = 0;
+  if ((char *)object < DAT_002046c4) {
+    ((uw_mobile_object_t *)object)->hit_points = 0;
   }
   else {
-    discarded = discard_misplaced_object(tile_link,(ushort *)object,0);
+    discarded = (uw_object_hdr_t *)discard_misplaced_object(tile_link,(ushort *)object,0);
     if (discarded == 0) {
       return 1;
     }
@@ -825,7 +828,7 @@ int clear_object_temp_flag_callback(ushort *object)
     if (((uVar3 != 0x140) && (uVar3 != 0x180)) &&
        ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {
       uVar1 = ((uw_object_hdr_t *)object)->position_word;
-      ((uw_object_hdr_t *)object)->position_word = (ushort)(uVar1 & 0xfdff);
+      ((uw_object_hdr_t *)object)->heading = (uVar1 >> 7) & 3;
     }
   }
   return 0;
@@ -1037,9 +1040,9 @@ void *get_scanned_object_class_effect_ptr()
    using their arguments */
 int walk_object_tree(void *object_ptr, int (*callback)())
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int iVar1;
-  char *pcVar2;
+  uw_object_hdr_t *contents;
 
   /* Dropped argument (both call sites below): callback is a callback (object_exceeds_size_threshold
      at every call site reached so far) that declares one parameter -- the object/link being tested,
@@ -1049,18 +1052,18 @@ int walk_object_tree(void *object_ptr, int (*callback)())
     if (iVar1 != 0) {
       return 1;
     }
-    if (((*(byte *)(object + 1) & 0x80) == 0) && ((*(ushort *)(object + 6) & 0xffc0) != 0)) {
+    if ((object->is_quant == 0) && (object->link != 0)) {
       /* Was `undefined4 uVar2` -- truncated resolve_object_link's real
          pointer return before forwarding it into the recursive call
          just below, same class as object itself above. */
-      pcVar2 = (char *)resolve_object_link((ushort *)(object + 6)); /* confirmed via ARM disassembly, 0x52b54 */
-      iVar1 = walk_object_tree(pcVar2,callback);
+      contents = resolve_object_link(&object->link_word); /* confirmed via ARM disassembly, 0x52b54 */
+      iVar1 = walk_object_tree(contents,callback);
       if (iVar1 != 0) {
         return 1;
       }
     }
-    if ((*(ushort *)(object + 4) & 0xffc0) == 0) break;
-    object = (char *)resolve_object_link((ushort *)(object + 4)); /* confirmed via ARM disassembly, 0x52b84 */
+    if (object->next == 0) break;
+    object = resolve_object_link(&object->chain_word); /* confirmed via ARM disassembly, 0x52b84 */
     iVar1 = ((int (*)(void *))callback)(object);
   }
   return 0;
@@ -1070,22 +1073,22 @@ int walk_object_tree(void *object_ptr, int (*callback)())
 
 // was FUN_00052bac -- checks whether object param_1's size/weight class exceeds the current
 // threshold in DAT_002046b0 (set by its caller, e.g. roll_object_destroy_chance, just before use):
-// container-flagged objects (0x2000) always report "exceeds" (1)...
+// objects with header bit 13 (`doordir` in the common layout) always report "exceeds" (1)...
 int object_exceeds_size_threshold(void *object_ptr)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   ushort uVar1;
   undefined4 uVar2;
   short sVar3;
   int iVar4;
   
-  uVar1 = *object;
-  if ((uVar1 & 0x2000) == 0) {
-    if (((uVar1 & 0x8000) == 0) || ((object[3] & 0x8000) != 0)) {
+  uVar1 = object->type_flags;
+  if (object->doordir == 0) {
+    if ((object->is_quant == 0) || ((object->link & 0x200) != 0)) {
       sVar3 = 0;
     }
     else {
-      sVar3 = (object[3] >> 6) - 1;
+      sVar3 = object->link - 1;
     }
     iVar4 = (int)sVar3;
     if (iVar4 < 0) {
@@ -1486,7 +1489,7 @@ void randomize_settled_snapshot_position(void *snapshot_ptr)
 uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
                                        short tile_y, int force)
 {
-  ushort *object = (ushort *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int uw_ord2005_rem_119 = 0;
   bool bVar1;
   ushort uVar2;
@@ -1494,9 +1497,9 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   char cVar4;
   byte bVar5;
   undefined2 uVar6;
-  short *psVar7;
+  uw_object_hdr_t *supporting_object;
   uint uVar8;
-  ushort *puVar9;
+  uw_object_hdr_t *puVar9;
   undefined4 uVar10;
   char extraout_r1;
   int iVar11;
@@ -1514,7 +1517,7 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
   uVar6 = encode_object_slot_index(object);
   DAT_00202c6c[10] = (char)uVar6;
   DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
-  iVar12 = (*object & 0x1ff) * 0xd;
+  iVar12 = object->object_id * 0xd;
   bVar5 = g_object_type_props[iVar12 / 0xd].flags;
   do {
     if ((bVar5 & 8) != 0) {
@@ -1522,12 +1525,12 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
     }
     DAT_00202c6c[8] = g_object_type_props[iVar12 / 0xd].collision_radius;
     DAT_00202c6c[9] = g_object_type_props[iVar12 / 0xd].height;
-    DAT_00202c6c[4] = (byte)object[1] & 0x7f;
+    DAT_00202c6c[4] = object->zpos;
     DAT_00202c6c[5] = 0;
-    iVar12 = tile_x * 8 + (uint)(*(byte *)((char *)object + 3) >> 5);
+    iVar12 = tile_x * 8 + (uint)object->xpos;
     *DAT_00202c6c = (char)iVar12;
     DAT_00202c6c[1] = (char)((uint)iVar12 >> 8);
-    iVar12 = tile_y * 8 + ((*(byte *)((char *)object + 3) & 0x1c) >> 2);
+    iVar12 = tile_y * 8 + object->ypos;
     DAT_00202c6c[2] = (char)iVar12;
     DAT_00202c6c[3] = (char)((uint)iVar12 >> 8);
     collision_build_height_field(DAT_00202c6c[8]);
@@ -1547,8 +1550,8 @@ uw_object_hdr_t *settle_dropped_object(void *object_ptr, short tile_x,
         if ((cVar4 < 0) ||
            ((ushort)(byte)(&DAT_00202c38)[cVar4 * 6] != *(ushort *)(DAT_00202c6c + 4))) break;
         DAT_00086998 = cVar4;
-        psVar7 = (short *)resolve_object_link(&DAT_00202c3a + cVar4 * 6);
-        uVar8 = (int)((uw_object_hdr_t *)psVar7)->object_id;
+        supporting_object = resolve_object_link((ushort *)(&DAT_00202c3a + cVar4 * 6));
+        uVar8 = (int)supporting_object->object_id;
         DAT_00086999 = (undefined1)uVar8;
         DAT_0008699a = (undefined1)(uVar8 >> 8);
         if ((g_object_type_props[(short)uVar8].flags & 2) == 2) {
@@ -1573,15 +1576,15 @@ LAB_000564d0:
       }
 LAB_000564d8:
       pDropTile = (char *)tilemap_lookup((int)tile_x,(int)tile_y);
-      puVar9 = (ushort *)discard_misplaced_object(pDropTile + 2,object,0);
+      puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pDropTile + 2,(ushort *)object,0);
       return puVar9;
     }
     if ((uVar2 & 7) == 5) goto LAB_000564d8;
     if ((uVar2 & 7) == 6) {
-      if ((g_object_type_props[(*object & 0x1ff)].quality_flags & 0xc) == 0xc) {
+      if ((g_object_type_props[object->object_id].quality_flags & 0xc) == 0xc) {
         return object;
       }
-      cVar4 = resolve_damage_type_resistance(object,1,8);
+      cVar4 = resolve_damage_type_resistance((ushort *)object,1,8);
       goto LAB_000564d0;
     }
     if ((uVar2 & 8) != 0) {
@@ -1593,22 +1596,23 @@ LAB_000564d8:
     if (iVar12 == 0) {
       DAT_0010144c = tile_x;
       DAT_00101454 = tile_y;
-      puVar9 = (ushort *)reallocate_object_to_arena(object);
+      puVar9 = reallocate_object_to_arena((ushort *)object);
+      uw_mobile_object_t *mobile = (uw_mobile_object_t *)puVar9;
       DAT_0010144c = uVar6;
       DAT_00101454 = uVar3;
       if (DAT_002046d4 != 0) {
-        ((uw_mobile_object_t *)puVar9)->motion_flags = ((uw_mobile_object_t *)puVar9)->motion_flags & 0x83 | 3;
+        mobile->speed = 3;
         uVar10 = ce_rand();
         uw_ord2005_rem_119 = ((int)(uVar10)) % (9);
-        ((uw_mobile_object_t *)puVar9)->full_heading = (byte)((char)((uw_mobile_object_t *)puVar9)->full_heading + (uw_ord2005_rem_119 + '\f') * '\x10');
+        mobile->full_heading = (byte)((char)mobile->full_heading + (uw_ord2005_rem_119 + '\f') * '\x10');
       }
       if (force == 0) {
         return puVar9;
       }
       bVar5 = ce_rand();
-      ((uw_mobile_object_t *)puVar9)->speed = ((bVar5 & 3) + 1) & 0x7f;
+      mobile->speed = ((bVar5 & 3) + 1) & 0x7f;
       bVar5 = ce_rand();
-      ((uw_mobile_object_t *)puVar9)->attack_pitch = ((uw_mobile_object_t *)puVar9)->attack_pitch & 7 ^ ((bVar5 & 3) + 0xe) * '\b';
+      mobile->pitch = (bVar5 & 3) + 14;
       return puVar9;
     }
     DAT_00202c6c = local_4c;
@@ -1616,7 +1620,7 @@ LAB_000564d8:
     uVar6 = encode_object_slot_index(object);
     DAT_00202c6c[10] = (char)uVar6;
     DAT_00202c6c[0xb] = (char)((ushort)uVar6 >> 8);
-    iVar12 = (*object & 0x1ff) * 0xd;
+    iVar12 = object->object_id * 0xd;
     bVar5 = g_object_type_props[iVar12 / 0xd].flags;
   } while( true );
 }
@@ -1734,7 +1738,7 @@ void *class2_variant_effect_table_lookup()
    declares its own param_1 as `ushort *`) truncated to 32 bits on this host. */
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr, short radius, int skip_roll)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   int iVar1;
   uint uVar2;
   
@@ -1744,10 +1748,11 @@ int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr
       unlink_and_free_object(0,object);
       return 0;
     }
-    uVar2 = *(ushort *)(object + 2) & 0x3ff;
-    *(char *)(object + 2) = (char)uVar2;
-    *(byte *)(object + 3) =
-         (byte)(uVar2 >> 8) | (byte)(((tile_y & 7 | (tile_x & 0x1fff) << 3) << 10) >> 8);
+    uVar2 = object->position_word & 0x3ff;
+    object->zpos = uVar2 & 0x7f;
+    object->heading = uVar2 >> 7;
+    object->ypos = tile_y & 7;
+    object->xpos = tile_x & 7;
     /* was folded into `int iVar1` (reused above for unrelated int
        values) -- truncated tilemap_lookup's real `void *` return */
     char *_tile1 = (char *)tilemap_lookup((int)(short)tile_x >> 3,(int)(short)tile_y >> 3);
@@ -1761,7 +1766,7 @@ int place_object_in_world(uint tile_x, uint tile_y, int height, void *object_ptr
 // its render/collision height from the low 7 bits of its own offset 2-3 field...
 void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 {
-  byte *object = (byte *)object_ptr;
+  uw_mobile_object_t *object = (uw_mobile_object_t *)object_ptr;
   char cVar1;
   uint uVar2;
   int iVar3;
@@ -1770,35 +1775,32 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
   uint uVar6;
   uint uVar7;
   
-  uVar7 = (uint)*(ushort *)(object + 2);
-  object[9] = (byte)(*(ushort *)(object + 2) >> 2) & 0xe0;
-  object[0x18] = object[0x18] & 0xe0;
-  object[0x14] = object[0x14] & 7 | 0x80;
-  uVar6 = (uint)((uw_object_hdr_t *)object)->type_flags;
+  uVar7 = (uint)object->hdr.position_word;
+  object->full_heading = object->hdr.heading << 5;
+  object->fine_heading = 0;
+  object->pitch = 16;
+  uVar6 = (uint)object->hdr.type_flags;
   bVar4 = ((g_object_type_props[(uVar6 & 0x1ff)].flags & 8) == 0) << 7;
-  object[0x13] = bVar4 | object[0x13] & 0x7f;
+  object->gravity_flag = bVar4 >> 7;
   uVar2 = tile_y & 0x3f | (tile_x & 0x3ff) << 6;
-  object[0x16] = object[0x16] & 0xf | (byte)(uVar2 << 4);
-  object[0x17] = (char)(uVar2 >> 4);
+  object->tile_y = uVar2 & 0x3f;
+  object->tile_x = (uVar2 >> 6) & 0x3f;
   cVar1 = DAT_00101928;
-  object[0x13] = bVar4;
-  object[10] = (cVar1 + 1U ^ object[10]) & 0xf ^ object[10];
-  object[0x14] = 0x82;
-  *object = (char)(uVar6 & 0xbfff);
-  object[1] = (char)((uVar6 & 0xbfff) >> 8);
-  object[8] = 0x3f;
-  object[10] = object[10] & 0x8f;
+  object->speed = 0;
+  object->tick_phase = (cVar1 + 1U) & 0xf;
+  object->attack_pitch = 0x82;
+  object->hdr.invisible = 0;
+  object->hit_points = 0x3f;
+  object->movement_mode = 0;
   if ((uVar6 & 0x1c0) != 0x40) {
+    uw_projectile_object_t *projectile = (uw_projectile_object_t *)object;
     iVar5 = ((uVar7 & 0x1c00) >> 5) + tile_y * 0x100 + 0xf;
-    object[0xd] = (char)iVar5;
-    object[0xe] = (char)((uint)iVar5 >> 8);
+    projectile->precise_y = (ushort)iVar5;
     iVar5 = (uVar7 & 0x7f) << 3;
-    object[0xf] = (char)iVar5;
+    projectile->precise_z = (ushort)iVar5;
     iVar3 = ((uVar7 & 0xe000) >> 8) + (tile_x & 0xff) * 0x100 + 0xf;
-    object[0xb] = (char)iVar3;
-    object[0x10] = (char)((uint)iVar5 >> 8);
-    object[0x12] = 0;
-    object[0xc] = (char)((uint)iVar3 >> 8);
+    projectile->precise_x = (ushort)iVar3;
+    projectile->source_slot = 0;
   }
 }
 
@@ -1809,24 +1811,25 @@ void compute_object_placement_fields(void *object_ptr, uint tile_x, uint tile_y)
 uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
 {
   char *iVar1;  /* was `int` -- truncated tilemap_lookup's real pointer */
-  ushort *puVar2;
+  uw_object_hdr_t *puVar2;
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
 
   iVar1 = (char *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
-  puVar2 = (ushort *)alloc_object_slot(1);
-  if (puVar2 == (ushort *)0x0) {
-    puVar2 = (ushort *)0x0;
+  puVar2 = alloc_object_slot(1);
+  if (puVar2 == NULL) {
+    puVar2 = NULL;
   }
   else {
-    ((uw_object_hdr_t *)puVar2)->type_flags = ((uw_object_hdr_t *)object)->type_flags;
-    ((uw_object_hdr_t *)puVar2)->position_word = ((uw_object_hdr_t *)object)->position_word;
-    ((uw_object_hdr_t *)puVar2)->chain_word = ((uw_object_hdr_t *)object)->chain_word;
-    ((uw_object_hdr_t *)puVar2)->link_word = ((uw_object_hdr_t *)object)->link_word;
+    puVar2->type_flags = header->type_flags;
+    puVar2->position_word = header->position_word;
+    puVar2->chain_word = header->chain_word;
+    puVar2->link_word = header->link_word;
     compute_object_placement_fields(puVar2,(int)DAT_0010144c,(int)DAT_00101454);
-    ((uw_mobile_object_t *)puVar2)->hit_points = ((uw_object_hdr_t *)object)->quality;
-    if (((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {
-      ((uw_projectile_object_t *)puVar2)->original_heading = ((uw_object_hdr_t *)object)->heading;
+    ((uw_mobile_object_t *)puVar2)->hit_points = header->quality;
+    if (((header->object_id & 0x1c0) != 0x140) && ((g_object_type_props[(header->object_id)].class_flags & 3) != 2)) {
+      ((uw_projectile_object_t *)puVar2)->original_heading = header->heading;
     }
-    if ((((uw_object_hdr_t *)puVar2)->object_id & 0x1c0) == 0x1c0) {
+    if ((puVar2->object_id & 0x1c0) == 0x1c0) {
       scheduler_relink_entry(puVar2,object);
     }
     object_list_unlink(iVar1 + 2,object);
@@ -1840,6 +1843,7 @@ uw_object_hdr_t *reallocate_object_to_arena(ushort *object)
 // was FUN_00052450
 int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height, short radius)
 {
+  uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   ushort uVar1;
   undefined4 uVar2;
   byte bVar3;
@@ -1861,7 +1865,7 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
       uVar6 = (ordint_divmod(iVar5,(int)uVar2).rem - (int)radius) + tile_y;
     }
     uVar2 = encode_object_slot_index(object);
-    iVar5 = check_object_placement_clearance(*object & 0x1ff,uVar2,uVar4,uVar6,height,1,0);
+    iVar5 = check_object_placement_clearance(header->object_id,uVar2,uVar4,uVar6,height,1,0);
     if (iVar5 != 0) break;
     bVar3 = bVar3 + 1;
     if (0x17 < bVar3) {
@@ -1869,11 +1873,11 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
     }
   }
   pTile = (char *)tilemap_lookup((int)uVar4 >> 3,(int)uVar6 >> 3);
-  uVar1 = object[1];
-  bVar3 = (byte)(uVar1 & 0x3ff);
-  *(byte *)(object + 1) = (bVar3 ^ (byte)height) & 0x7f ^ bVar3;
-  *(byte *)((char *)object + 3) =
-       (byte)((uVar1 & 0x3ff) >> 8) | (byte)(((uVar6 & 7 | (uVar4 & 0x1fff) << 3) << 10) >> 8);
+  uVar1 = header->position_word;
+  header->zpos = (byte)height;
+  header->heading = uVar1 >> 7;
+  header->ypos = uVar6 & 7;
+  header->xpos = uVar4 & 7;
   object_list_append_tail(pTile + 2,object);
   iVar5 = object_ptr_in_arena(object);
   if (iVar5 == 0) {
@@ -1882,8 +1886,9 @@ int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height
   else {
     uVar4 = ((int)(short)((ushort)uVar4 & 0x1f8) >> 3) << 6 |
             (int)(((int)(short)uVar6 & 0x1f8U) << 0x10) >> 0x13;
-    *(byte *)(object + 0xb) = (byte)object[0xb] & 0xf | (byte)(uVar4 << 4);
-    *(char *)((char *)object + 0x17) = (char)(uVar4 >> 4);
+    uw_mobile_object_t *mobile = (uw_mobile_object_t *)object;
+    mobile->tile_y = uVar4 & 0x3f;
+    mobile->tile_x = (uVar4 >> 6) & 0x3f;
   }
   return 1;
 }

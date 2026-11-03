@@ -1,0 +1,5 @@
+{
+  "function": "clear_object_temp_flag_callback",
+  "before": "int clear_object_temp_flag_callback(ushort *object)\n{\n  ushort uVar1;\n  int iVar2;\n  uint uVar3;\n\n  iVar2 = object_ptr_in_arena(object);\n  if (iVar2 == 0) {\n    uVar3 = ((uw_object_hdr_t *)object)->object_id & 0x1c0;\n    if (((uVar3 != 0x140) && (uVar3 != 0x180)) &&\n       ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {\n      uVar1 = ((uw_object_hdr_t *)object)->position_word;\n      ((uw_object_hdr_t *)object)->position_word = (ushort)(uVar1 & 0xfdff);\n    }\n  }\n  return 0;\n}",
+  "after": "int clear_object_temp_flag_callback(ushort *object)\n{\n  ushort uVar1;\n  int iVar2;\n  uint uVar3;\n\n  iVar2 = object_ptr_in_arena(object);\n  if (iVar2 == 0) {\n    uVar3 = ((uw_object_hdr_t *)object)->object_id & 0x1c0;\n    if (((uVar3 != 0x140) && (uVar3 != 0x180)) &&\n       ((g_object_type_props[(((uw_object_hdr_t *)object)->object_id)].class_flags & 3) != 2)) {\n      uVar1 = ((uw_object_hdr_t *)object)->position_word;\n      ((uw_object_hdr_t *)object)->heading = (uVar1 >> 7) & 3;\n    }\n  }\n  return 0;\n}"
+}

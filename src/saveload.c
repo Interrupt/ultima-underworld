@@ -947,13 +947,13 @@ int commit_level_to_save_slot(int level_number)
   /* Was `+ 3` -- confirmed wrong via Ghidra decompile of the real ARM binary (0x6bcd4): it passes
      `+ 6`. free_player_inventory_chain treats its argument as a pointer to a 2-byte object link
      field (it immediately calls resolve_object_link on it)... */
-  free_player_inventory_chain((char *)g_player_object + 6);
+  free_player_inventory_chain((char *)&g_player_object->hdr.link_word);
   if (-1 < DAT_00202080) {
     object_list_unlink(DAT_002029cc + DAT_00202080 * 4 + 2,g_player_object);
   }
   DAT_00202080 = 0xffff;
   uVar1 = g_player_object->hdr.type_flags;
-  g_player_object->hdr.type_flags = (ushort)(uVar1 & 0xfe3f);
+  g_player_object->hdr.object_id = uVar1 & 0x3f;
   iVar2 = open_level_archive(auStack_20,s__SAVE0_lev_ark_000842fc);
   uVar3 = 0;
   if (iVar2 != 0) {

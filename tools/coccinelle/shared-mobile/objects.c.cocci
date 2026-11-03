@@ -6,9 +6,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x16) = (char)V;
-- *(char *)((char *)puVar9 + 0x17) = (char)(V >> 8);
-+ ((uw_mobile_object_t *)puVar9)->tile_position = (ushort)V;
+- *(char *)((char *)mobile + 0x16) = (char)V;
+- *(char *)((char *)mobile + 0x17) = (char)(V >> 8);
++ ((uw_mobile_object_t *)mobile)->tile_position = (ushort)V;
 
 ...>
 }
@@ -21,9 +21,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x16) = (char)V;
-- *(byte *)((char *)puVar9 + 0x17) = (byte)(V >> 8);
-+ ((uw_mobile_object_t *)puVar9)->tile_position = (ushort)V;
+- *(char *)((char *)mobile + 0x16) = (char)V;
+- *(byte *)((char *)mobile + 0x17) = (byte)(V >> 8);
++ ((uw_mobile_object_t *)mobile)->tile_position = (ushort)V;
 
 ...>
 }
@@ -36,9 +36,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x16) = (byte)V;
-- *(char *)((char *)puVar9 + 0x17) = (char)(V >> 8);
-+ ((uw_mobile_object_t *)puVar9)->tile_position = (ushort)V;
+- *(byte *)((char *)mobile + 0x16) = (byte)V;
+- *(char *)((char *)mobile + 0x17) = (char)(V >> 8);
++ ((uw_mobile_object_t *)mobile)->tile_position = (ushort)V;
 
 ...>
 }
@@ -51,9 +51,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x16) = (byte)V;
-- *(byte *)((char *)puVar9 + 0x17) = (byte)(V >> 8);
-+ ((uw_mobile_object_t *)puVar9)->tile_position = (ushort)V;
+- *(byte *)((char *)mobile + 0x16) = (byte)V;
+- *(byte *)((char *)mobile + 0x17) = (byte)(V >> 8);
++ ((uw_mobile_object_t *)mobile)->tile_position = (ushort)V;
 
 ...>
 }
@@ -66,23 +66,17 @@ typedef ushort, undefined2, byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(ushort *)((char *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- *(ushort *)((byte *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(ushort *)((byte *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- ((ushort *)puVar9)[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- ((ushort *)mobile)[0xb]
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- *(ushort *)((ushort *)puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
-|
-- *(ushort *)(puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
-|
-- puVar9[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(ushort *)((ushort *)mobile + 0xb)
++ ((uw_mobile_object_t *)mobile)->tile_position
 )
 ...>
 }
@@ -96,23 +90,17 @@ typedef ushort, undefined2, byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined2 *)((char *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(undefined2 *)((char *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- *(undefined2 *)((byte *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(undefined2 *)((byte *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- ((undefined2 *)puVar9)[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- ((undefined2 *)mobile)[0xb]
++ ((uw_mobile_object_t *)mobile)->tile_position
 |
-- *(undefined2 *)((undefined2 *)puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
-|
-- *(undefined2 *)(puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position
-|
-- puVar9[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position
+- *(undefined2 *)((undefined2 *)mobile + 0xb)
++ ((uw_mobile_object_t *)mobile)->tile_position
 )
 ...>
 }
@@ -126,20 +114,17 @@ typedef ushort, undefined2, byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(short *)((char *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_signed
+- *(short *)((char *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_signed
 |
-- *(short *)((byte *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_signed
+- *(short *)((byte *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_signed
 |
-- ((short *)puVar9)[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_signed
+- ((short *)mobile)[0xb]
++ ((uw_mobile_object_t *)mobile)->tile_position_signed
 |
-- *(short *)((short *)puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_signed
-|
-- *(short *)(puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_signed
+- *(short *)((short *)mobile + 0xb)
++ ((uw_mobile_object_t *)mobile)->tile_position_signed
 )
 ...>
 }
@@ -153,26 +138,20 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(byte *)((char *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(byte *)((byte *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(byte *)((byte *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- ((byte *)puVar9)[0x16]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- ((byte *)mobile)[0x16]
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(byte *)((ushort *)puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(byte *)((ushort *)mobile + 0xb)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- (byte)((ushort *)puVar9)[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- *(byte *)(puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- (byte)puVar9[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- (byte)((ushort *)mobile)[0xb]
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 )
 ...>
 }
@@ -186,26 +165,20 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(undefined1 *)((char *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(undefined1 *)((byte *)puVar9 + 0x16)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(undefined1 *)((byte *)mobile + 0x16)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- ((undefined1 *)puVar9)[0x16]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- ((undefined1 *)mobile)[0x16]
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(undefined1 *)((ushort *)puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(undefined1 *)((ushort *)mobile + 0xb)
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- (undefined1)((ushort *)puVar9)[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- *(undefined1 *)(puVar9 + 0xb)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- (undefined1)puVar9[0xb]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low
+- (undefined1)((ushort *)mobile)[0xb]
++ ((uw_mobile_object_t *)mobile)->tile_position_low
 )
 ...>
 }
@@ -219,20 +192,17 @@ typedef byte, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x16)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_low
+- &*(char *)((char *)mobile + 0x16)
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- &*(char *)((byte *)puVar9 + 0x16)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_low
+- &*(char *)((byte *)mobile + 0x16)
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- &((char *)puVar9)[0x16]
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_low
+- &((char *)mobile)[0x16]
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- &*(char *)((ushort *)puVar9 + 0xb)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- &*(char *)(puVar9 + 0xb)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_low
+- &*(char *)((ushort *)mobile + 0xb)
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_low
 )
 ...>
 }
@@ -247,20 +217,17 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x16) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low = (byte)E;
+- *(char *)((char *)mobile + 0x16) = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_low = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x16) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low = (byte)E;
+- *(char *)((byte *)mobile + 0x16) = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_low = (byte)E;
 |
-- ((char *)puVar9)[0x16] = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low = (byte)E;
+- ((char *)mobile)[0x16] = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_low = (byte)E;
 |
-- *(char *)((ushort *)puVar9 + 0xb) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low = (byte)E;
-|
-- *(char *)(puVar9 + 0xb) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_low = (byte)E;
+- *(char *)((ushort *)mobile + 0xb) = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_low = (byte)E;
 )
 ...>
 }
@@ -274,26 +241,20 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x16)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(char *)((char *)mobile + 0x16)
++ (char)((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(char *)((byte *)puVar9 + 0x16)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(char *)((byte *)mobile + 0x16)
++ (char)((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- ((char *)puVar9)[0x16]
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
+- ((char *)mobile)[0x16]
++ (char)((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- *(char *)((ushort *)puVar9 + 0xb)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
+- *(char *)((ushort *)mobile + 0xb)
++ (char)((uw_mobile_object_t *)mobile)->tile_position_low
 |
-- (char)((ushort *)puVar9)[0xb]
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- *(char *)(puVar9 + 0xb)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
-|
-- (char)puVar9[0xb]
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_low
+- (char)((ushort *)mobile)[0xb]
++ (char)((uw_mobile_object_t *)mobile)->tile_position_low
 )
 ...>
 }
@@ -307,14 +268,14 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x17)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(byte *)((char *)mobile + 0x17)
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- *(byte *)((byte *)puVar9 + 0x17)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(byte *)((byte *)mobile + 0x17)
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- ((byte *)puVar9)[0x17]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- ((byte *)mobile)[0x17]
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 )
 ...>
 }
@@ -328,14 +289,14 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x17)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(undefined1 *)((char *)mobile + 0x17)
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- *(undefined1 *)((byte *)puVar9 + 0x17)
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(undefined1 *)((byte *)mobile + 0x17)
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- ((undefined1 *)puVar9)[0x17]
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high
+- ((undefined1 *)mobile)[0x17]
++ ((uw_mobile_object_t *)mobile)->tile_position_high
 )
 ...>
 }
@@ -349,14 +310,14 @@ typedef byte, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x17)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_high
+- &*(char *)((char *)mobile + 0x17)
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- &*(char *)((byte *)puVar9 + 0x17)
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_high
+- &*(char *)((byte *)mobile + 0x17)
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- &((char *)puVar9)[0x17]
-+ (char *)&((uw_mobile_object_t *)puVar9)->tile_position_high
+- &((char *)mobile)[0x17]
++ (char *)&((uw_mobile_object_t *)mobile)->tile_position_high
 )
 ...>
 }
@@ -371,14 +332,14 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x17) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high = (byte)E;
+- *(char *)((char *)mobile + 0x17) = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_high = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x17) = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high = (byte)E;
+- *(char *)((byte *)mobile + 0x17) = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_high = (byte)E;
 |
-- ((char *)puVar9)[0x17] = E;
-+ ((uw_mobile_object_t *)puVar9)->tile_position_high = (byte)E;
+- ((char *)mobile)[0x17] = E;
++ ((uw_mobile_object_t *)mobile)->tile_position_high = (byte)E;
 )
 ...>
 }
@@ -392,14 +353,14 @@ typedef byte, undefined1, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x17)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(char *)((char *)mobile + 0x17)
++ (char)((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- *(char *)((byte *)puVar9 + 0x17)
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_high
+- *(char *)((byte *)mobile + 0x17)
++ (char)((uw_mobile_object_t *)mobile)->tile_position_high
 |
-- ((char *)puVar9)[0x17]
-+ (char)((uw_mobile_object_t *)puVar9)->tile_position_high
+- ((char *)mobile)[0x17]
++ (char)((uw_mobile_object_t *)mobile)->tile_position_high
 )
 ...>
 }
@@ -413,20 +374,14 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)puVar9)->object_id
+- *(ushort *)((char *)mobile + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)mobile)->object_id
 |
-- ((ushort *)puVar9)[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar9)->object_id
+- ((ushort *)mobile)[0] & 0x1ff
++ ((uw_object_hdr_t *)mobile)->object_id
 |
-- *(ushort *)puVar9 & 0x1ff
-+ ((uw_object_hdr_t *)puVar9)->object_id
-|
-- puVar9[0] & 0x1ff
-+ ((uw_object_hdr_t *)puVar9)->object_id
-|
-- *puVar9 & 0x1ff
-+ ((uw_object_hdr_t *)puVar9)->object_id
+- *(ushort *)mobile & 0x1ff
++ ((uw_object_hdr_t *)mobile)->object_id
 )
 ...>
 }
@@ -439,41 +394,29 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(ushort *)((char *)mobile + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (*(ushort *)((char *)puVar9 + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(ushort *)((char *)mobile + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (((ushort *)puVar9)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (((ushort *)mobile)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (((ushort *)puVar9)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (((ushort *)mobile)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (*(ushort *)puVar9 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(ushort *)mobile >> 9) & 0x7
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (*(ushort *)puVar9 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(ushort *)mobile & 0xe00) >> 9
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (puVar9[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(byte *)((char *)mobile + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)mobile)->flags_res
 |
-- (puVar9[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar9)->flags_res
-|
-- (*puVar9 >> 9) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
-|
-- (*puVar9 & 0xe00) >> 9
-+ ((uw_object_hdr_t *)puVar9)->flags_res
-|
-- (*(byte *)((char *)puVar9 + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->flags_res
-|
-- (*(byte *)((char *)puVar9 + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)puVar9)->flags_res
+- (*(byte *)((char *)mobile + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)mobile)->flags_res
 )
 ...>
 }
@@ -486,41 +429,29 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(ushort *)((char *)mobile + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (*(ushort *)((char *)puVar9 + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(ushort *)((char *)mobile + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (((ushort *)puVar9)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (((ushort *)mobile)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (((ushort *)puVar9)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (((ushort *)mobile)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (*(ushort *)puVar9 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(ushort *)mobile >> 12) & 0x1
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (*(ushort *)puVar9 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(ushort *)mobile & 0x1000) >> 12
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (puVar9[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(byte *)((char *)mobile + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)mobile)->enchanted
 |
-- (puVar9[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar9)->enchanted
-|
-- (*puVar9 >> 12) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
-|
-- (*puVar9 & 0x1000) >> 12
-+ ((uw_object_hdr_t *)puVar9)->enchanted
-|
-- (*(byte *)((char *)puVar9 + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->enchanted
-|
-- (*(byte *)((char *)puVar9 + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)puVar9)->enchanted
+- (*(byte *)((char *)mobile + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)mobile)->enchanted
 )
 ...>
 }
@@ -533,41 +464,29 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(ushort *)((char *)mobile + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (*(ushort *)((char *)puVar9 + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(ushort *)((char *)mobile + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (((ushort *)puVar9)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (((ushort *)mobile)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (((ushort *)puVar9)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (((ushort *)mobile)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (*(ushort *)puVar9 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(ushort *)mobile >> 13) & 0x1
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (*(ushort *)puVar9 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(ushort *)mobile & 0x2000) >> 13
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (puVar9[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(byte *)((char *)mobile + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)mobile)->doordir
 |
-- (puVar9[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->doordir
-|
-- (*puVar9 >> 13) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
-|
-- (*puVar9 & 0x2000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->doordir
-|
-- (*(byte *)((char *)puVar9 + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->doordir
-|
-- (*(byte *)((char *)puVar9 + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)puVar9)->doordir
+- (*(byte *)((char *)mobile + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)mobile)->doordir
 )
 ...>
 }
@@ -580,41 +499,29 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(ushort *)((char *)mobile + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (*(ushort *)((char *)puVar9 + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(ushort *)((char *)mobile + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (((ushort *)puVar9)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (((ushort *)mobile)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (((ushort *)puVar9)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (((ushort *)mobile)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (*(ushort *)puVar9 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(ushort *)mobile >> 14) & 0x1
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (*(ushort *)puVar9 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(ushort *)mobile & 0x4000) >> 14
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (puVar9[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(byte *)((char *)mobile + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)mobile)->invisible
 |
-- (puVar9[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar9)->invisible
-|
-- (*puVar9 >> 14) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
-|
-- (*puVar9 & 0x4000) >> 14
-+ ((uw_object_hdr_t *)puVar9)->invisible
-|
-- (*(byte *)((char *)puVar9 + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->invisible
-|
-- (*(byte *)((char *)puVar9 + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)puVar9)->invisible
+- (*(byte *)((char *)mobile + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)mobile)->invisible
 )
 ...>
 }
@@ -627,59 +534,32 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(ushort *)((char *)mobile + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- (*(ushort *)((char *)puVar9 + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(ushort *)((char *)mobile + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- *(ushort *)((char *)puVar9 + 0x0) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (((ushort *)mobile)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- (((ushort *)puVar9)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (((ushort *)mobile)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- (((ushort *)puVar9)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(ushort *)mobile >> 15) & 0x1
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- ((ushort *)puVar9)[0] >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(ushort *)mobile & 0x8000) >> 15
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- (*(ushort *)puVar9 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(byte *)((char *)mobile + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- (*(ushort *)puVar9 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- (*(byte *)((char *)mobile + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)mobile)->is_quant
 |
-- *(ushort *)puVar9 >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (puVar9[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (puVar9[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- puVar9[0] >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (*puVar9 >> 15) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (*puVar9 & 0x8000) >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- *puVar9 >> 15
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (*(byte *)((char *)puVar9 + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- (*(byte *)((char *)puVar9 + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)puVar9)->is_quant
-|
-- *(byte *)((char *)puVar9 + 0x1) >> 7
-+ ((uw_object_hdr_t *)puVar9)->is_quant
+- *(byte *)((char *)mobile + 0x1) >> 7
++ ((uw_object_hdr_t *)mobile)->is_quant
 )
 ...>
 }
@@ -692,20 +572,14 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar9)->zpos
+- *(ushort *)((char *)mobile + 0x2) & 0x7f
++ ((uw_object_hdr_t *)mobile)->zpos
 |
-- ((ushort *)puVar9)[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar9)->zpos
+- ((ushort *)mobile)[1] & 0x7f
++ ((uw_object_hdr_t *)mobile)->zpos
 |
-- puVar9[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar9)->zpos
-|
-- *(byte *)((char *)puVar9 + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)puVar9)->zpos
-|
-- (byte)puVar9[1] & 0x7f
-+ ((uw_object_hdr_t *)puVar9)->zpos
+- *(byte *)((char *)mobile + 0x2) & 0x7f
++ ((uw_object_hdr_t *)mobile)->zpos
 )
 ...>
 }
@@ -718,23 +592,17 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->heading
+- (*(ushort *)((char *)mobile + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)mobile)->heading
 |
-- (*(ushort *)((char *)puVar9 + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar9)->heading
+- (*(ushort *)((char *)mobile + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)mobile)->heading
 |
-- (((ushort *)puVar9)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->heading
+- (((ushort *)mobile)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)mobile)->heading
 |
-- (((ushort *)puVar9)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar9)->heading
-|
-- (puVar9[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->heading
-|
-- (puVar9[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)puVar9)->heading
+- (((ushort *)mobile)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)mobile)->heading
 )
 ...>
 }
@@ -747,29 +615,23 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (*(ushort *)((char *)mobile + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)mobile)->ypos
 |
-- (*(ushort *)((char *)puVar9 + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (*(ushort *)((char *)mobile + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)mobile)->ypos
 |
-- (((ushort *)puVar9)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (((ushort *)mobile)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)mobile)->ypos
 |
-- (((ushort *)puVar9)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (((ushort *)mobile)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)mobile)->ypos
 |
-- (puVar9[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (*(byte *)((char *)mobile + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)mobile)->ypos
 |
-- (puVar9[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)puVar9)->ypos
-|
-- (*(byte *)((char *)puVar9 + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->ypos
-|
-- (*(byte *)((char *)puVar9 + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)puVar9)->ypos
+- (*(byte *)((char *)mobile + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)mobile)->ypos
 )
 ...>
 }
@@ -782,41 +644,26 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (*(ushort *)((char *)mobile + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- (*(ushort *)((char *)puVar9 + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (*(ushort *)((char *)mobile + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- *(ushort *)((char *)puVar9 + 0x2) >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (((ushort *)mobile)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- (((ushort *)puVar9)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (((ushort *)mobile)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- (((ushort *)puVar9)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (*(byte *)((char *)mobile + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- ((ushort *)puVar9)[1] >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- (*(byte *)((char *)mobile + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)mobile)->xpos
 |
-- (puVar9[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->xpos
-|
-- (puVar9[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
-|
-- puVar9[1] >> 13
-+ ((uw_object_hdr_t *)puVar9)->xpos
-|
-- (*(byte *)((char *)puVar9 + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)puVar9)->xpos
-|
-- (*(byte *)((char *)puVar9 + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)puVar9)->xpos
-|
-- *(byte *)((char *)puVar9 + 0x3) >> 5
-+ ((uw_object_hdr_t *)puVar9)->xpos
+- *(byte *)((char *)mobile + 0x3) >> 5
++ ((uw_object_hdr_t *)mobile)->xpos
 )
 ...>
 }
@@ -829,20 +676,14 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->quality
+- *(ushort *)((char *)mobile + 0x4) & 0x3f
++ ((uw_object_hdr_t *)mobile)->quality
 |
-- ((ushort *)puVar9)[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->quality
+- ((ushort *)mobile)[2] & 0x3f
++ ((uw_object_hdr_t *)mobile)->quality
 |
-- puVar9[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->quality
-|
-- *(byte *)((char *)puVar9 + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->quality
-|
-- (byte)puVar9[2] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->quality
+- *(byte *)((char *)mobile + 0x4) & 0x3f
++ ((uw_object_hdr_t *)mobile)->quality
 )
 ...>
 }
@@ -855,32 +696,17 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->next
+- (*(ushort *)((char *)mobile + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)mobile)->next
 |
-- (*(ushort *)((char *)puVar9 + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
+- (*(ushort *)((char *)mobile + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)mobile)->next
 |
-- *(ushort *)((char *)puVar9 + 0x4) >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
+- (((ushort *)mobile)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)mobile)->next
 |
-- (((ushort *)puVar9)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->next
-|
-- (((ushort *)puVar9)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
-|
-- ((ushort *)puVar9)[2] >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
-|
-- (puVar9[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->next
-|
-- (puVar9[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
-|
-- puVar9[2] >> 6
-+ ((uw_object_hdr_t *)puVar9)->next
+- (((ushort *)mobile)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)mobile)->next
 )
 ...>
 }
@@ -893,20 +719,14 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->owner
+- *(ushort *)((char *)mobile + 0x6) & 0x3f
++ ((uw_object_hdr_t *)mobile)->owner
 |
-- ((ushort *)puVar9)[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->owner
+- ((ushort *)mobile)[3] & 0x3f
++ ((uw_object_hdr_t *)mobile)->owner
 |
-- puVar9[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->owner
-|
-- *(byte *)((char *)puVar9 + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->owner
-|
-- (byte)puVar9[3] & 0x3f
-+ ((uw_object_hdr_t *)puVar9)->owner
+- *(byte *)((char *)mobile + 0x6) & 0x3f
++ ((uw_object_hdr_t *)mobile)->owner
 )
 ...>
 }
@@ -919,32 +739,17 @@ typedef ushort, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- (*(ushort *)((char *)puVar9 + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->link
+- (*(ushort *)((char *)mobile + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)mobile)->link
 |
-- (*(ushort *)((char *)puVar9 + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
+- (*(ushort *)((char *)mobile + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)mobile)->link
 |
-- *(ushort *)((char *)puVar9 + 0x6) >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
+- (((ushort *)mobile)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)mobile)->link
 |
-- (((ushort *)puVar9)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->link
-|
-- (((ushort *)puVar9)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
-|
-- ((ushort *)puVar9)[3] >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
-|
-- (puVar9[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)puVar9)->link
-|
-- (puVar9[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
-|
-- puVar9[3] >> 6
-+ ((uw_object_hdr_t *)puVar9)->link
+- (((ushort *)mobile)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)mobile)->link
 )
 ...>
 }
@@ -957,9 +762,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x0) = (char)V;
-- *(char *)((char *)puVar9 + 0x1) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->type_flags = (ushort)V;
+- *(char *)((char *)mobile + 0x0) = (char)V;
+- *(char *)((char *)mobile + 0x1) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->type_flags = (ushort)V;
 
 ...>
 }
@@ -972,9 +777,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x0) = (char)V;
-- *(byte *)((char *)puVar9 + 0x1) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->type_flags = (ushort)V;
+- *(char *)((char *)mobile + 0x0) = (char)V;
+- *(byte *)((char *)mobile + 0x1) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->type_flags = (ushort)V;
 
 ...>
 }
@@ -987,9 +792,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x0) = (byte)V;
-- *(char *)((char *)puVar9 + 0x1) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->type_flags = (ushort)V;
+- *(byte *)((char *)mobile + 0x0) = (byte)V;
+- *(char *)((char *)mobile + 0x1) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->type_flags = (ushort)V;
 
 ...>
 }
@@ -1002,9 +807,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x0) = (byte)V;
-- *(byte *)((char *)puVar9 + 0x1) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->type_flags = (ushort)V;
+- *(byte *)((char *)mobile + 0x0) = (byte)V;
+- *(byte *)((char *)mobile + 0x1) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->type_flags = (ushort)V;
 
 ...>
 }
@@ -1017,26 +822,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(ushort *)((char *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- *(ushort *)((byte *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(ushort *)((byte *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- ((ushort *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- ((ushort *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- *(ushort *)((ushort *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- *(ushort *)(puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- puVar9[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- *puVar9
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(ushort *)((ushort *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 )
 ...>
 }
@@ -1050,26 +846,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined2 *)((char *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(undefined2 *)((char *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- *(undefined2 *)((byte *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(undefined2 *)((byte *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- ((undefined2 *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- ((undefined2 *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags
 |
-- *(undefined2 *)((undefined2 *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- *(undefined2 *)(puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- puVar9[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags
-|
-- *puVar9
-+ ((uw_object_hdr_t *)puVar9)->type_flags
+- *(undefined2 *)((undefined2 *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags
 )
 ...>
 }
@@ -1083,20 +870,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(short *)((char *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_signed
+- *(short *)((char *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_signed
 |
-- *(short *)((byte *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_signed
+- *(short *)((byte *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_signed
 |
-- ((short *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_signed
+- ((short *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags_signed
 |
-- *(short *)((short *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_signed
-|
-- *(short *)(puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_signed
+- *(short *)((short *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_signed
 )
 ...>
 }
@@ -1110,29 +894,23 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(byte *)((char *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(byte *)((byte *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(byte *)((byte *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- ((byte *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- ((byte *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(byte *)((ushort *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(byte *)((ushort *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- (byte)((ushort *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- (byte)((ushort *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(byte *)puVar9
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- *(byte *)(puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- (byte)puVar9[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(byte *)mobile
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 )
 ...>
 }
@@ -1146,29 +924,23 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(undefined1 *)((char *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(undefined1 *)((byte *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(undefined1 *)((byte *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- ((undefined1 *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- ((undefined1 *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(undefined1 *)((ushort *)puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(undefined1 *)((ushort *)mobile + 0x0)
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- (undefined1)((ushort *)puVar9)[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- (undefined1)((ushort *)mobile)[0x0]
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(undefined1 *)puVar9
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- *(undefined1 *)(puVar9 + 0x0)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- (undefined1)puVar9[0x0]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(undefined1 *)mobile
++ ((uw_object_hdr_t *)mobile)->type_flags_low
 )
 ...>
 }
@@ -1182,23 +954,20 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x0)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
+- &*(char *)((char *)mobile + 0x0)
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- &*(char *)((byte *)puVar9 + 0x0)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
+- &*(char *)((byte *)mobile + 0x0)
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- &((char *)puVar9)[0x0]
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
+- &((char *)mobile)[0x0]
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- &*(char *)((ushort *)puVar9 + 0x0)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
+- &*(char *)((ushort *)mobile + 0x0)
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- &*(char *)puVar9
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- &*(char *)(puVar9 + 0x0)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_low
+- &*(char *)mobile
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_low
 )
 ...>
 }
@@ -1213,23 +982,20 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x0) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
+- *(char *)((char *)mobile + 0x0) = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_low = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x0) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
+- *(char *)((byte *)mobile + 0x0) = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_low = (byte)E;
 |
-- ((char *)puVar9)[0x0] = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
+- ((char *)mobile)[0x0] = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_low = (byte)E;
 |
-- *(char *)((ushort *)puVar9 + 0x0) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
+- *(char *)((ushort *)mobile + 0x0) = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_low = (byte)E;
 |
-- *(char *)puVar9 = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
-|
-- *(char *)(puVar9 + 0x0) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_low = (byte)E;
+- *(char *)mobile = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_low = (byte)E;
 )
 ...>
 }
@@ -1243,29 +1009,23 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x0)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(char *)((char *)mobile + 0x0)
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(char *)((byte *)puVar9 + 0x0)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(char *)((byte *)mobile + 0x0)
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- ((char *)puVar9)[0x0]
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- ((char *)mobile)[0x0]
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(char *)((ushort *)puVar9 + 0x0)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(char *)((ushort *)mobile + 0x0)
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- (char)((ushort *)puVar9)[0x0]
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- (char)((ushort *)mobile)[0x0]
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 |
-- *(char *)puVar9
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- *(char *)(puVar9 + 0x0)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
-|
-- (char)puVar9[0x0]
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_low
+- *(char *)mobile
++ (char)((uw_object_hdr_t *)mobile)->type_flags_low
 )
 ...>
 }
@@ -1279,14 +1039,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(byte *)((char *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- *(byte *)((byte *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(byte *)((byte *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- ((byte *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- ((byte *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 )
 ...>
 }
@@ -1300,14 +1060,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(undefined1 *)((char *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- *(undefined1 *)((byte *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(undefined1 *)((byte *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- ((undefined1 *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high
+- ((undefined1 *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->type_flags_high
 )
 ...>
 }
@@ -1321,14 +1081,14 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x1)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_high
+- &*(char *)((char *)mobile + 0x1)
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- &*(char *)((byte *)puVar9 + 0x1)
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_high
+- &*(char *)((byte *)mobile + 0x1)
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- &((char *)puVar9)[0x1]
-+ (char *)&((uw_object_hdr_t *)puVar9)->type_flags_high
+- &((char *)mobile)[0x1]
++ (char *)&((uw_object_hdr_t *)mobile)->type_flags_high
 )
 ...>
 }
@@ -1343,14 +1103,14 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x1) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high = (byte)E;
+- *(char *)((char *)mobile + 0x1) = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_high = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x1) = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high = (byte)E;
+- *(char *)((byte *)mobile + 0x1) = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_high = (byte)E;
 |
-- ((char *)puVar9)[0x1] = E;
-+ ((uw_object_hdr_t *)puVar9)->type_flags_high = (byte)E;
+- ((char *)mobile)[0x1] = E;
++ ((uw_object_hdr_t *)mobile)->type_flags_high = (byte)E;
 )
 ...>
 }
@@ -1364,14 +1124,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x1)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(char *)((char *)mobile + 0x1)
++ (char)((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- *(char *)((byte *)puVar9 + 0x1)
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_high
+- *(char *)((byte *)mobile + 0x1)
++ (char)((uw_object_hdr_t *)mobile)->type_flags_high
 |
-- ((char *)puVar9)[0x1]
-+ (char)((uw_object_hdr_t *)puVar9)->type_flags_high
+- ((char *)mobile)[0x1]
++ (char)((uw_object_hdr_t *)mobile)->type_flags_high
 )
 ...>
 }
@@ -1385,9 +1145,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x2) = (char)V;
-- *(char *)((char *)puVar9 + 0x3) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->position_word = (ushort)V;
+- *(char *)((char *)mobile + 0x2) = (char)V;
+- *(char *)((char *)mobile + 0x3) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->position_word = (ushort)V;
 
 ...>
 }
@@ -1400,9 +1160,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x2) = (char)V;
-- *(byte *)((char *)puVar9 + 0x3) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->position_word = (ushort)V;
+- *(char *)((char *)mobile + 0x2) = (char)V;
+- *(byte *)((char *)mobile + 0x3) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->position_word = (ushort)V;
 
 ...>
 }
@@ -1415,9 +1175,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x2) = (byte)V;
-- *(char *)((char *)puVar9 + 0x3) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->position_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x2) = (byte)V;
+- *(char *)((char *)mobile + 0x3) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->position_word = (ushort)V;
 
 ...>
 }
@@ -1430,9 +1190,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x2) = (byte)V;
-- *(byte *)((char *)puVar9 + 0x3) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->position_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x2) = (byte)V;
+- *(byte *)((char *)mobile + 0x3) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->position_word = (ushort)V;
 
 ...>
 }
@@ -1445,23 +1205,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(ushort *)((char *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- *(ushort *)((byte *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(ushort *)((byte *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- ((ushort *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- ((ushort *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- *(ushort *)((ushort *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word
-|
-- *(ushort *)(puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word
-|
-- puVar9[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(ushort *)((ushort *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->position_word
 )
 ...>
 }
@@ -1475,23 +1229,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined2 *)((char *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(undefined2 *)((char *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- *(undefined2 *)((byte *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(undefined2 *)((byte *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- ((undefined2 *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- ((undefined2 *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->position_word
 |
-- *(undefined2 *)((undefined2 *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word
-|
-- *(undefined2 *)(puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word
-|
-- puVar9[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word
+- *(undefined2 *)((undefined2 *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->position_word
 )
 ...>
 }
@@ -1505,20 +1253,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(short *)((char *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_signed
+- *(short *)((char *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_signed
 |
-- *(short *)((byte *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_signed
+- *(short *)((byte *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_signed
 |
-- ((short *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word_signed
+- ((short *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->position_word_signed
 |
-- *(short *)((short *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_signed
-|
-- *(short *)(puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_signed
+- *(short *)((short *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->position_word_signed
 )
 ...>
 }
@@ -1532,26 +1277,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(byte *)((char *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(byte *)((byte *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(byte *)((byte *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- ((byte *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- ((byte *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(byte *)((ushort *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(byte *)((ushort *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- (byte)((ushort *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- *(byte *)(puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- (byte)puVar9[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- (byte)((ushort *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->position_word_low
 )
 ...>
 }
@@ -1565,26 +1304,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(undefined1 *)((char *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(undefined1 *)((byte *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(undefined1 *)((byte *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- ((undefined1 *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- ((undefined1 *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(undefined1 *)((ushort *)puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- *(undefined1 *)((ushort *)mobile + 0x1)
++ ((uw_object_hdr_t *)mobile)->position_word_low
 |
-- (undefined1)((ushort *)puVar9)[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- *(undefined1 *)(puVar9 + 0x1)
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- (undefined1)puVar9[0x1]
-+ ((uw_object_hdr_t *)puVar9)->position_word_low
+- (undefined1)((ushort *)mobile)[0x1]
++ ((uw_object_hdr_t *)mobile)->position_word_low
 )
 ...>
 }
@@ -1598,20 +1331,17 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x2)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_low
+- &*(char *)((char *)mobile + 0x2)
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_low
 |
-- &*(char *)((byte *)puVar9 + 0x2)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_low
+- &*(char *)((byte *)mobile + 0x2)
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_low
 |
-- &((char *)puVar9)[0x2]
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_low
+- &((char *)mobile)[0x2]
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_low
 |
-- &*(char *)((ushort *)puVar9 + 0x1)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- &*(char *)(puVar9 + 0x1)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_low
+- &*(char *)((ushort *)mobile + 0x1)
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_low
 )
 ...>
 }
@@ -1626,20 +1356,17 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x2) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_low = (byte)E;
+- *(char *)((char *)mobile + 0x2) = E;
++ ((uw_object_hdr_t *)mobile)->position_word_low = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x2) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_low = (byte)E;
+- *(char *)((byte *)mobile + 0x2) = E;
++ ((uw_object_hdr_t *)mobile)->position_word_low = (byte)E;
 |
-- ((char *)puVar9)[0x2] = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_low = (byte)E;
+- ((char *)mobile)[0x2] = E;
++ ((uw_object_hdr_t *)mobile)->position_word_low = (byte)E;
 |
-- *(char *)((ushort *)puVar9 + 0x1) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_low = (byte)E;
-|
-- *(char *)(puVar9 + 0x1) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_low = (byte)E;
+- *(char *)((ushort *)mobile + 0x1) = E;
++ ((uw_object_hdr_t *)mobile)->position_word_low = (byte)E;
 )
 ...>
 }
@@ -1653,26 +1380,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x2)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
+- *(char *)((char *)mobile + 0x2)
++ (char)((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(char *)((byte *)puVar9 + 0x2)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
+- *(char *)((byte *)mobile + 0x2)
++ (char)((uw_object_hdr_t *)mobile)->position_word_low
 |
-- ((char *)puVar9)[0x2]
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
+- ((char *)mobile)[0x2]
++ (char)((uw_object_hdr_t *)mobile)->position_word_low
 |
-- *(char *)((ushort *)puVar9 + 0x1)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
+- *(char *)((ushort *)mobile + 0x1)
++ (char)((uw_object_hdr_t *)mobile)->position_word_low
 |
-- (char)((ushort *)puVar9)[0x1]
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- *(char *)(puVar9 + 0x1)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
-|
-- (char)puVar9[0x1]
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_low
+- (char)((ushort *)mobile)[0x1]
++ (char)((uw_object_hdr_t *)mobile)->position_word_low
 )
 ...>
 }
@@ -1686,14 +1407,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- *(byte *)((char *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->position_word_high
 |
-- *(byte *)((byte *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- *(byte *)((byte *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->position_word_high
 |
-- ((byte *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- ((byte *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->position_word_high
 )
 ...>
 }
@@ -1707,14 +1428,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- *(undefined1 *)((char *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->position_word_high
 |
-- *(undefined1 *)((byte *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- *(undefined1 *)((byte *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->position_word_high
 |
-- ((undefined1 *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->position_word_high
+- ((undefined1 *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->position_word_high
 )
 ...>
 }
@@ -1728,14 +1449,14 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x3)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_high
+- &*(char *)((char *)mobile + 0x3)
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_high
 |
-- &*(char *)((byte *)puVar9 + 0x3)
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_high
+- &*(char *)((byte *)mobile + 0x3)
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_high
 |
-- &((char *)puVar9)[0x3]
-+ (char *)&((uw_object_hdr_t *)puVar9)->position_word_high
+- &((char *)mobile)[0x3]
++ (char *)&((uw_object_hdr_t *)mobile)->position_word_high
 )
 ...>
 }
@@ -1750,14 +1471,14 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x3) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_high = (byte)E;
+- *(char *)((char *)mobile + 0x3) = E;
++ ((uw_object_hdr_t *)mobile)->position_word_high = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x3) = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_high = (byte)E;
+- *(char *)((byte *)mobile + 0x3) = E;
++ ((uw_object_hdr_t *)mobile)->position_word_high = (byte)E;
 |
-- ((char *)puVar9)[0x3] = E;
-+ ((uw_object_hdr_t *)puVar9)->position_word_high = (byte)E;
+- ((char *)mobile)[0x3] = E;
++ ((uw_object_hdr_t *)mobile)->position_word_high = (byte)E;
 )
 ...>
 }
@@ -1771,14 +1492,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x3)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_high
+- *(char *)((char *)mobile + 0x3)
++ (char)((uw_object_hdr_t *)mobile)->position_word_high
 |
-- *(char *)((byte *)puVar9 + 0x3)
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_high
+- *(char *)((byte *)mobile + 0x3)
++ (char)((uw_object_hdr_t *)mobile)->position_word_high
 |
-- ((char *)puVar9)[0x3]
-+ (char)((uw_object_hdr_t *)puVar9)->position_word_high
+- ((char *)mobile)[0x3]
++ (char)((uw_object_hdr_t *)mobile)->position_word_high
 )
 ...>
 }
@@ -1792,9 +1513,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x4) = (char)V;
-- *(char *)((char *)puVar9 + 0x5) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->chain_word = (ushort)V;
+- *(char *)((char *)mobile + 0x4) = (char)V;
+- *(char *)((char *)mobile + 0x5) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->chain_word = (ushort)V;
 
 ...>
 }
@@ -1807,9 +1528,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x4) = (char)V;
-- *(byte *)((char *)puVar9 + 0x5) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->chain_word = (ushort)V;
+- *(char *)((char *)mobile + 0x4) = (char)V;
+- *(byte *)((char *)mobile + 0x5) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->chain_word = (ushort)V;
 
 ...>
 }
@@ -1822,9 +1543,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x4) = (byte)V;
-- *(char *)((char *)puVar9 + 0x5) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->chain_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x4) = (byte)V;
+- *(char *)((char *)mobile + 0x5) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->chain_word = (ushort)V;
 
 ...>
 }
@@ -1837,9 +1558,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x4) = (byte)V;
-- *(byte *)((char *)puVar9 + 0x5) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->chain_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x4) = (byte)V;
+- *(byte *)((char *)mobile + 0x5) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->chain_word = (ushort)V;
 
 ...>
 }
@@ -1852,23 +1573,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(ushort *)((char *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- *(ushort *)((byte *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(ushort *)((byte *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- ((ushort *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- ((ushort *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- *(ushort *)((ushort *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
-|
-- *(ushort *)(puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
-|
-- puVar9[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(ushort *)((ushort *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->chain_word
 )
 ...>
 }
@@ -1882,23 +1597,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined2 *)((char *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(undefined2 *)((char *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- *(undefined2 *)((byte *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(undefined2 *)((byte *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- ((undefined2 *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- ((undefined2 *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->chain_word
 |
-- *(undefined2 *)((undefined2 *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
-|
-- *(undefined2 *)(puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word
-|
-- puVar9[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word
+- *(undefined2 *)((undefined2 *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->chain_word
 )
 ...>
 }
@@ -1912,20 +1621,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(short *)((char *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_signed
+- *(short *)((char *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_signed
 |
-- *(short *)((byte *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_signed
+- *(short *)((byte *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_signed
 |
-- ((short *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_signed
+- ((short *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->chain_word_signed
 |
-- *(short *)((short *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_signed
-|
-- *(short *)(puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_signed
+- *(short *)((short *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->chain_word_signed
 )
 ...>
 }
@@ -1939,26 +1645,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(byte *)((char *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(byte *)((byte *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(byte *)((byte *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- ((byte *)puVar9)[0x4]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- ((byte *)mobile)[0x4]
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(byte *)((ushort *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(byte *)((ushort *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- (byte)((ushort *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- *(byte *)(puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- (byte)puVar9[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- (byte)((ushort *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 )
 ...>
 }
@@ -1972,26 +1672,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(undefined1 *)((char *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(undefined1 *)((byte *)puVar9 + 0x4)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(undefined1 *)((byte *)mobile + 0x4)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- ((undefined1 *)puVar9)[0x4]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- ((undefined1 *)mobile)[0x4]
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(undefined1 *)((ushort *)puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(undefined1 *)((ushort *)mobile + 0x2)
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- (undefined1)((ushort *)puVar9)[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- *(undefined1 *)(puVar9 + 0x2)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- (undefined1)puVar9[0x2]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low
+- (undefined1)((ushort *)mobile)[0x2]
++ ((uw_object_hdr_t *)mobile)->chain_word_low
 )
 ...>
 }
@@ -2005,20 +1699,17 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x4)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_low
+- &*(char *)((char *)mobile + 0x4)
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- &*(char *)((byte *)puVar9 + 0x4)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_low
+- &*(char *)((byte *)mobile + 0x4)
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- &((char *)puVar9)[0x4]
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_low
+- &((char *)mobile)[0x4]
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- &*(char *)((ushort *)puVar9 + 0x2)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- &*(char *)(puVar9 + 0x2)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_low
+- &*(char *)((ushort *)mobile + 0x2)
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_low
 )
 ...>
 }
@@ -2033,20 +1724,17 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x4) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low = (byte)E;
+- *(char *)((char *)mobile + 0x4) = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_low = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x4) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low = (byte)E;
+- *(char *)((byte *)mobile + 0x4) = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_low = (byte)E;
 |
-- ((char *)puVar9)[0x4] = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low = (byte)E;
+- ((char *)mobile)[0x4] = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_low = (byte)E;
 |
-- *(char *)((ushort *)puVar9 + 0x2) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low = (byte)E;
-|
-- *(char *)(puVar9 + 0x2) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_low = (byte)E;
+- *(char *)((ushort *)mobile + 0x2) = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_low = (byte)E;
 )
 ...>
 }
@@ -2060,26 +1748,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x4)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(char *)((char *)mobile + 0x4)
++ (char)((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(char *)((byte *)puVar9 + 0x4)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(char *)((byte *)mobile + 0x4)
++ (char)((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- ((char *)puVar9)[0x4]
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
+- ((char *)mobile)[0x4]
++ (char)((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- *(char *)((ushort *)puVar9 + 0x2)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
+- *(char *)((ushort *)mobile + 0x2)
++ (char)((uw_object_hdr_t *)mobile)->chain_word_low
 |
-- (char)((ushort *)puVar9)[0x2]
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- *(char *)(puVar9 + 0x2)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
-|
-- (char)puVar9[0x2]
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_low
+- (char)((ushort *)mobile)[0x2]
++ (char)((uw_object_hdr_t *)mobile)->chain_word_low
 )
 ...>
 }
@@ -2093,14 +1775,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x5)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(byte *)((char *)mobile + 0x5)
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- *(byte *)((byte *)puVar9 + 0x5)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(byte *)((byte *)mobile + 0x5)
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- ((byte *)puVar9)[0x5]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- ((byte *)mobile)[0x5]
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 )
 ...>
 }
@@ -2114,14 +1796,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x5)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(undefined1 *)((char *)mobile + 0x5)
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- *(undefined1 *)((byte *)puVar9 + 0x5)
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(undefined1 *)((byte *)mobile + 0x5)
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- ((undefined1 *)puVar9)[0x5]
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high
+- ((undefined1 *)mobile)[0x5]
++ ((uw_object_hdr_t *)mobile)->chain_word_high
 )
 ...>
 }
@@ -2135,14 +1817,14 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x5)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_high
+- &*(char *)((char *)mobile + 0x5)
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- &*(char *)((byte *)puVar9 + 0x5)
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_high
+- &*(char *)((byte *)mobile + 0x5)
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- &((char *)puVar9)[0x5]
-+ (char *)&((uw_object_hdr_t *)puVar9)->chain_word_high
+- &((char *)mobile)[0x5]
++ (char *)&((uw_object_hdr_t *)mobile)->chain_word_high
 )
 ...>
 }
@@ -2157,14 +1839,14 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x5) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high = (byte)E;
+- *(char *)((char *)mobile + 0x5) = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_high = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x5) = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high = (byte)E;
+- *(char *)((byte *)mobile + 0x5) = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_high = (byte)E;
 |
-- ((char *)puVar9)[0x5] = E;
-+ ((uw_object_hdr_t *)puVar9)->chain_word_high = (byte)E;
+- ((char *)mobile)[0x5] = E;
++ ((uw_object_hdr_t *)mobile)->chain_word_high = (byte)E;
 )
 ...>
 }
@@ -2178,14 +1860,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x5)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(char *)((char *)mobile + 0x5)
++ (char)((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- *(char *)((byte *)puVar9 + 0x5)
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_high
+- *(char *)((byte *)mobile + 0x5)
++ (char)((uw_object_hdr_t *)mobile)->chain_word_high
 |
-- ((char *)puVar9)[0x5]
-+ (char)((uw_object_hdr_t *)puVar9)->chain_word_high
+- ((char *)mobile)[0x5]
++ (char)((uw_object_hdr_t *)mobile)->chain_word_high
 )
 ...>
 }
@@ -2199,9 +1881,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x6) = (char)V;
-- *(char *)((char *)puVar9 + 0x7) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->link_word = (ushort)V;
+- *(char *)((char *)mobile + 0x6) = (char)V;
+- *(char *)((char *)mobile + 0x7) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->link_word = (ushort)V;
 
 ...>
 }
@@ -2214,9 +1896,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(char *)((char *)puVar9 + 0x6) = (char)V;
-- *(byte *)((char *)puVar9 + 0x7) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->link_word = (ushort)V;
+- *(char *)((char *)mobile + 0x6) = (char)V;
+- *(byte *)((char *)mobile + 0x7) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->link_word = (ushort)V;
 
 ...>
 }
@@ -2229,9 +1911,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x6) = (byte)V;
-- *(char *)((char *)puVar9 + 0x7) = (char)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->link_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x6) = (byte)V;
+- *(char *)((char *)mobile + 0x7) = (char)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->link_word = (ushort)V;
 
 ...>
 }
@@ -2244,9 +1926,9 @@ identifier V;
 @@
 R F(...) {
 <...
-- *(byte *)((char *)puVar9 + 0x6) = (byte)V;
-- *(byte *)((char *)puVar9 + 0x7) = (byte)(V >> 8);
-+ ((uw_object_hdr_t *)puVar9)->link_word = (ushort)V;
+- *(byte *)((char *)mobile + 0x6) = (byte)V;
+- *(byte *)((char *)mobile + 0x7) = (byte)(V >> 8);
++ ((uw_object_hdr_t *)mobile)->link_word = (ushort)V;
 
 ...>
 }
@@ -2259,23 +1941,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(ushort *)((char *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(ushort *)((char *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- *(ushort *)((byte *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(ushort *)((byte *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- ((ushort *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- ((ushort *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- *(ushort *)((ushort *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word
-|
-- *(ushort *)(puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word
-|
-- puVar9[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(ushort *)((ushort *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->link_word
 )
 ...>
 }
@@ -2289,23 +1965,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined2 *)((char *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(undefined2 *)((char *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- *(undefined2 *)((byte *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(undefined2 *)((byte *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- ((undefined2 *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- ((undefined2 *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->link_word
 |
-- *(undefined2 *)((undefined2 *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word
-|
-- *(undefined2 *)(puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word
-|
-- puVar9[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word
+- *(undefined2 *)((undefined2 *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->link_word
 )
 ...>
 }
@@ -2319,20 +1989,17 @@ typedef ushort, undefined2, byte, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(short *)((char *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_signed
+- *(short *)((char *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_signed
 |
-- *(short *)((byte *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_signed
+- *(short *)((byte *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_signed
 |
-- ((short *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word_signed
+- ((short *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->link_word_signed
 |
-- *(short *)((short *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_signed
-|
-- *(short *)(puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_signed
+- *(short *)((short *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->link_word_signed
 )
 ...>
 }
@@ -2346,26 +2013,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(byte *)((char *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(byte *)((byte *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(byte *)((byte *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- ((byte *)puVar9)[0x6]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- ((byte *)mobile)[0x6]
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(byte *)((ushort *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(byte *)((ushort *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- (byte)((ushort *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- *(byte *)(puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- (byte)puVar9[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- (byte)((ushort *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->link_word_low
 )
 ...>
 }
@@ -2379,26 +2040,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(undefined1 *)((char *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(undefined1 *)((byte *)puVar9 + 0x6)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(undefined1 *)((byte *)mobile + 0x6)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- ((undefined1 *)puVar9)[0x6]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- ((undefined1 *)mobile)[0x6]
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(undefined1 *)((ushort *)puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- *(undefined1 *)((ushort *)mobile + 0x3)
++ ((uw_object_hdr_t *)mobile)->link_word_low
 |
-- (undefined1)((ushort *)puVar9)[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- *(undefined1 *)(puVar9 + 0x3)
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- (undefined1)puVar9[0x3]
-+ ((uw_object_hdr_t *)puVar9)->link_word_low
+- (undefined1)((ushort *)mobile)[0x3]
++ ((uw_object_hdr_t *)mobile)->link_word_low
 )
 ...>
 }
@@ -2412,20 +2067,17 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x6)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_low
+- &*(char *)((char *)mobile + 0x6)
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_low
 |
-- &*(char *)((byte *)puVar9 + 0x6)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_low
+- &*(char *)((byte *)mobile + 0x6)
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_low
 |
-- &((char *)puVar9)[0x6]
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_low
+- &((char *)mobile)[0x6]
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_low
 |
-- &*(char *)((ushort *)puVar9 + 0x3)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- &*(char *)(puVar9 + 0x3)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_low
+- &*(char *)((ushort *)mobile + 0x3)
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_low
 )
 ...>
 }
@@ -2440,20 +2092,17 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x6) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_low = (byte)E;
+- *(char *)((char *)mobile + 0x6) = E;
++ ((uw_object_hdr_t *)mobile)->link_word_low = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x6) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_low = (byte)E;
+- *(char *)((byte *)mobile + 0x6) = E;
++ ((uw_object_hdr_t *)mobile)->link_word_low = (byte)E;
 |
-- ((char *)puVar9)[0x6] = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_low = (byte)E;
+- ((char *)mobile)[0x6] = E;
++ ((uw_object_hdr_t *)mobile)->link_word_low = (byte)E;
 |
-- *(char *)((ushort *)puVar9 + 0x3) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_low = (byte)E;
-|
-- *(char *)(puVar9 + 0x3) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_low = (byte)E;
+- *(char *)((ushort *)mobile + 0x3) = E;
++ ((uw_object_hdr_t *)mobile)->link_word_low = (byte)E;
 )
 ...>
 }
@@ -2467,26 +2116,20 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x6)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
+- *(char *)((char *)mobile + 0x6)
++ (char)((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(char *)((byte *)puVar9 + 0x6)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
+- *(char *)((byte *)mobile + 0x6)
++ (char)((uw_object_hdr_t *)mobile)->link_word_low
 |
-- ((char *)puVar9)[0x6]
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
+- ((char *)mobile)[0x6]
++ (char)((uw_object_hdr_t *)mobile)->link_word_low
 |
-- *(char *)((ushort *)puVar9 + 0x3)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
+- *(char *)((ushort *)mobile + 0x3)
++ (char)((uw_object_hdr_t *)mobile)->link_word_low
 |
-- (char)((ushort *)puVar9)[0x3]
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- *(char *)(puVar9 + 0x3)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
-|
-- (char)puVar9[0x3]
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_low
+- (char)((ushort *)mobile)[0x3]
++ (char)((uw_object_hdr_t *)mobile)->link_word_low
 )
 ...>
 }
@@ -2500,14 +2143,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x7)
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- *(byte *)((char *)mobile + 0x7)
++ ((uw_object_hdr_t *)mobile)->link_word_high
 |
-- *(byte *)((byte *)puVar9 + 0x7)
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- *(byte *)((byte *)mobile + 0x7)
++ ((uw_object_hdr_t *)mobile)->link_word_high
 |
-- ((byte *)puVar9)[0x7]
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- ((byte *)mobile)[0x7]
++ ((uw_object_hdr_t *)mobile)->link_word_high
 )
 ...>
 }
@@ -2521,14 +2164,14 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x7)
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- *(undefined1 *)((char *)mobile + 0x7)
++ ((uw_object_hdr_t *)mobile)->link_word_high
 |
-- *(undefined1 *)((byte *)puVar9 + 0x7)
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- *(undefined1 *)((byte *)mobile + 0x7)
++ ((uw_object_hdr_t *)mobile)->link_word_high
 |
-- ((undefined1 *)puVar9)[0x7]
-+ ((uw_object_hdr_t *)puVar9)->link_word_high
+- ((undefined1 *)mobile)[0x7]
++ ((uw_object_hdr_t *)mobile)->link_word_high
 )
 ...>
 }
@@ -2542,14 +2185,14 @@ typedef byte, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x7)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_high
+- &*(char *)((char *)mobile + 0x7)
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_high
 |
-- &*(char *)((byte *)puVar9 + 0x7)
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_high
+- &*(char *)((byte *)mobile + 0x7)
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_high
 |
-- &((char *)puVar9)[0x7]
-+ (char *)&((uw_object_hdr_t *)puVar9)->link_word_high
+- &((char *)mobile)[0x7]
++ (char *)&((uw_object_hdr_t *)mobile)->link_word_high
 )
 ...>
 }
@@ -2564,14 +2207,14 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x7) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_high = (byte)E;
+- *(char *)((char *)mobile + 0x7) = E;
++ ((uw_object_hdr_t *)mobile)->link_word_high = (byte)E;
 |
-- *(char *)((byte *)puVar9 + 0x7) = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_high = (byte)E;
+- *(char *)((byte *)mobile + 0x7) = E;
++ ((uw_object_hdr_t *)mobile)->link_word_high = (byte)E;
 |
-- ((char *)puVar9)[0x7] = E;
-+ ((uw_object_hdr_t *)puVar9)->link_word_high = (byte)E;
+- ((char *)mobile)[0x7] = E;
++ ((uw_object_hdr_t *)mobile)->link_word_high = (byte)E;
 )
 ...>
 }
@@ -2585,20 +2228,36 @@ typedef byte, undefined1, ushort, uw_object_hdr_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x7)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_high
+- *(char *)((char *)mobile + 0x7)
++ (char)((uw_object_hdr_t *)mobile)->link_word_high
 |
-- *(char *)((byte *)puVar9 + 0x7)
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_high
+- *(char *)((byte *)mobile + 0x7)
++ (char)((uw_object_hdr_t *)mobile)->link_word_high
 |
-- ((char *)puVar9)[0x7]
-+ (char)((uw_object_hdr_t *)puVar9)->link_word_high
+- ((char *)mobile)[0x7]
++ (char)((uw_object_hdr_t *)mobile)->link_word_high
 )
 ...>
 }
 
 
-@settle_dropped_object_puVar9_hit_points_byte@
+@settle_dropped_object_mobile_typed_header_receiver@
+type R;
+identifier F =~ "^\(settle_dropped_object\)$";
+typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
+
+identifier M;
+@@
+R F(...) {
+<...
+(
+- ((uw_object_hdr_t *)mobile)->M
++ mobile->hdr.M
+)
+...>
+}
+
+@settle_dropped_object_mobile_hit_points_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2607,19 +2266,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x8)
-+ ((uw_mobile_object_t *)puVar9)->hit_points
-|
-- *(byte *)(puVar9 + 0x4)
-+ ((uw_mobile_object_t *)puVar9)->hit_points
-|
-- (byte)puVar9[0x4]
-+ ((uw_mobile_object_t *)puVar9)->hit_points
+- *(byte *)((char *)mobile + 0x8)
++ ((uw_mobile_object_t *)mobile)->hit_points
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_hit_points_undefined1@
+@settle_dropped_object_mobile_hit_points_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2628,19 +2281,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x8)
-+ ((uw_mobile_object_t *)puVar9)->hit_points
-|
-- *(undefined1 *)(puVar9 + 0x4)
-+ ((uw_mobile_object_t *)puVar9)->hit_points
-|
-- (undefined1)puVar9[0x4]
-+ ((uw_mobile_object_t *)puVar9)->hit_points
+- *(undefined1 *)((char *)mobile + 0x8)
++ ((uw_mobile_object_t *)mobile)->hit_points
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_hit_points_address@
+@settle_dropped_object_mobile_hit_points_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2649,16 +2296,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x8)
-+ (char *)&((uw_mobile_object_t *)puVar9)->hit_points
-|
-- &*(char *)(puVar9 + 0x4)
-+ (char *)&((uw_mobile_object_t *)puVar9)->hit_points
+- &*(char *)((char *)mobile + 0x8)
++ (char *)&((uw_mobile_object_t *)mobile)->hit_points
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_hit_points_store@
+@settle_dropped_object_mobile_hit_points_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2667,16 +2311,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x8) = E;
-+ ((uw_mobile_object_t *)puVar9)->hit_points = (byte)E;
-|
-- *(char *)(puVar9 + 0x4) = E;
-+ ((uw_mobile_object_t *)puVar9)->hit_points = (byte)E;
+- *(char *)((char *)mobile + 0x8) = E;
++ ((uw_mobile_object_t *)mobile)->hit_points = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_hit_points_char@
+@settle_dropped_object_mobile_hit_points_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2685,19 +2326,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x8)
-+ (char)((uw_mobile_object_t *)puVar9)->hit_points
-|
-- *(char *)(puVar9 + 0x4)
-+ (char)((uw_mobile_object_t *)puVar9)->hit_points
-|
-- (char)puVar9[0x4]
-+ (char)((uw_mobile_object_t *)puVar9)->hit_points
+- *(char *)((char *)mobile + 0x8)
++ (char)((uw_mobile_object_t *)mobile)->hit_points
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_full_heading_byte@
+@settle_dropped_object_mobile_full_heading_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2706,13 +2341,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x9)
-+ ((uw_mobile_object_t *)puVar9)->full_heading
+- *(byte *)((char *)mobile + 0x9)
++ ((uw_mobile_object_t *)mobile)->full_heading
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_full_heading_undefined1@
+@settle_dropped_object_mobile_full_heading_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2721,13 +2356,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x9)
-+ ((uw_mobile_object_t *)puVar9)->full_heading
+- *(undefined1 *)((char *)mobile + 0x9)
++ ((uw_mobile_object_t *)mobile)->full_heading
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_full_heading_address@
+@settle_dropped_object_mobile_full_heading_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2736,13 +2371,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x9)
-+ (char *)&((uw_mobile_object_t *)puVar9)->full_heading
+- &*(char *)((char *)mobile + 0x9)
++ (char *)&((uw_mobile_object_t *)mobile)->full_heading
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_full_heading_store@
+@settle_dropped_object_mobile_full_heading_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2751,13 +2386,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x9) = E;
-+ ((uw_mobile_object_t *)puVar9)->full_heading = (byte)E;
+- *(char *)((char *)mobile + 0x9) = E;
++ ((uw_mobile_object_t *)mobile)->full_heading = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_full_heading_char@
+@settle_dropped_object_mobile_full_heading_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2766,13 +2401,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x9)
-+ (char)((uw_mobile_object_t *)puVar9)->full_heading
+- *(char *)((char *)mobile + 0x9)
++ (char)((uw_mobile_object_t *)mobile)->full_heading
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_movement_flags_byte@
+@settle_dropped_object_mobile_movement_flags_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2781,19 +2416,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0xa)
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- *(byte *)(puVar9 + 0x5)
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- (byte)puVar9[0x5]
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
+- *(byte *)((char *)mobile + 0xa)
++ ((uw_mobile_object_t *)mobile)->movement_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_movement_flags_undefined1@
+@settle_dropped_object_mobile_movement_flags_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2802,19 +2431,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0xa)
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- *(undefined1 *)(puVar9 + 0x5)
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- (undefined1)puVar9[0x5]
-+ ((uw_mobile_object_t *)puVar9)->movement_flags
+- *(undefined1 *)((char *)mobile + 0xa)
++ ((uw_mobile_object_t *)mobile)->movement_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_movement_flags_address@
+@settle_dropped_object_mobile_movement_flags_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2823,16 +2446,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0xa)
-+ (char *)&((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- &*(char *)(puVar9 + 0x5)
-+ (char *)&((uw_mobile_object_t *)puVar9)->movement_flags
+- &*(char *)((char *)mobile + 0xa)
++ (char *)&((uw_mobile_object_t *)mobile)->movement_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_movement_flags_store@
+@settle_dropped_object_mobile_movement_flags_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2841,16 +2461,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0xa) = E;
-+ ((uw_mobile_object_t *)puVar9)->movement_flags = (byte)E;
-|
-- *(char *)(puVar9 + 0x5) = E;
-+ ((uw_mobile_object_t *)puVar9)->movement_flags = (byte)E;
+- *(char *)((char *)mobile + 0xa) = E;
++ ((uw_mobile_object_t *)mobile)->movement_flags = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_movement_flags_char@
+@settle_dropped_object_mobile_movement_flags_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2859,19 +2476,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0xa)
-+ (char)((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- *(char *)(puVar9 + 0x5)
-+ (char)((uw_mobile_object_t *)puVar9)->movement_flags
-|
-- (char)puVar9[0x5]
-+ (char)((uw_mobile_object_t *)puVar9)->movement_flags
+- *(char *)((char *)mobile + 0xa)
++ (char)((uw_mobile_object_t *)mobile)->movement_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_motion_flags_byte@
+@settle_dropped_object_mobile_motion_flags_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2880,13 +2491,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x13)
-+ ((uw_mobile_object_t *)puVar9)->motion_flags
+- *(byte *)((char *)mobile + 0x13)
++ ((uw_mobile_object_t *)mobile)->motion_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_motion_flags_undefined1@
+@settle_dropped_object_mobile_motion_flags_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2895,13 +2506,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x13)
-+ ((uw_mobile_object_t *)puVar9)->motion_flags
+- *(undefined1 *)((char *)mobile + 0x13)
++ ((uw_mobile_object_t *)mobile)->motion_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_motion_flags_address@
+@settle_dropped_object_mobile_motion_flags_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2910,13 +2521,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x13)
-+ (char *)&((uw_mobile_object_t *)puVar9)->motion_flags
+- &*(char *)((char *)mobile + 0x13)
++ (char *)&((uw_mobile_object_t *)mobile)->motion_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_motion_flags_store@
+@settle_dropped_object_mobile_motion_flags_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2925,13 +2536,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x13) = E;
-+ ((uw_mobile_object_t *)puVar9)->motion_flags = (byte)E;
+- *(char *)((char *)mobile + 0x13) = E;
++ ((uw_mobile_object_t *)mobile)->motion_flags = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_motion_flags_char@
+@settle_dropped_object_mobile_motion_flags_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2940,13 +2551,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x13)
-+ (char)((uw_mobile_object_t *)puVar9)->motion_flags
+- *(char *)((char *)mobile + 0x13)
++ (char)((uw_mobile_object_t *)mobile)->motion_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_attack_pitch_byte@
+@settle_dropped_object_mobile_attack_pitch_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2955,19 +2566,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x14)
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- *(byte *)(puVar9 + 0xa)
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- (byte)puVar9[0xa]
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
+- *(byte *)((char *)mobile + 0x14)
++ ((uw_mobile_object_t *)mobile)->attack_pitch
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_attack_pitch_undefined1@
+@settle_dropped_object_mobile_attack_pitch_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2976,19 +2581,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x14)
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- *(undefined1 *)(puVar9 + 0xa)
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- (undefined1)puVar9[0xa]
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch
+- *(undefined1 *)((char *)mobile + 0x14)
++ ((uw_mobile_object_t *)mobile)->attack_pitch
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_attack_pitch_address@
+@settle_dropped_object_mobile_attack_pitch_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -2997,16 +2596,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x14)
-+ (char *)&((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- &*(char *)(puVar9 + 0xa)
-+ (char *)&((uw_mobile_object_t *)puVar9)->attack_pitch
+- &*(char *)((char *)mobile + 0x14)
++ (char *)&((uw_mobile_object_t *)mobile)->attack_pitch
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_attack_pitch_store@
+@settle_dropped_object_mobile_attack_pitch_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3015,16 +2611,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x14) = E;
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch = (byte)E;
-|
-- *(char *)(puVar9 + 0xa) = E;
-+ ((uw_mobile_object_t *)puVar9)->attack_pitch = (byte)E;
+- *(char *)((char *)mobile + 0x14) = E;
++ ((uw_mobile_object_t *)mobile)->attack_pitch = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_attack_pitch_char@
+@settle_dropped_object_mobile_attack_pitch_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3033,19 +2626,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x14)
-+ (char)((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- *(char *)(puVar9 + 0xa)
-+ (char)((uw_mobile_object_t *)puVar9)->attack_pitch
-|
-- (char)puVar9[0xa]
-+ (char)((uw_mobile_object_t *)puVar9)->attack_pitch
+- *(char *)((char *)mobile + 0x14)
++ (char)((uw_mobile_object_t *)mobile)->attack_pitch
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_animation_flags_byte@
+@settle_dropped_object_mobile_animation_flags_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3054,13 +2641,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x15)
-+ ((uw_mobile_object_t *)puVar9)->animation_flags
+- *(byte *)((char *)mobile + 0x15)
++ ((uw_mobile_object_t *)mobile)->animation_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_animation_flags_undefined1@
+@settle_dropped_object_mobile_animation_flags_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3069,13 +2656,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x15)
-+ ((uw_mobile_object_t *)puVar9)->animation_flags
+- *(undefined1 *)((char *)mobile + 0x15)
++ ((uw_mobile_object_t *)mobile)->animation_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_animation_flags_address@
+@settle_dropped_object_mobile_animation_flags_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3084,13 +2671,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x15)
-+ (char *)&((uw_mobile_object_t *)puVar9)->animation_flags
+- &*(char *)((char *)mobile + 0x15)
++ (char *)&((uw_mobile_object_t *)mobile)->animation_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_animation_flags_store@
+@settle_dropped_object_mobile_animation_flags_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3099,13 +2686,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x15) = E;
-+ ((uw_mobile_object_t *)puVar9)->animation_flags = (byte)E;
+- *(char *)((char *)mobile + 0x15) = E;
++ ((uw_mobile_object_t *)mobile)->animation_flags = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_animation_flags_char@
+@settle_dropped_object_mobile_animation_flags_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3114,13 +2701,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x15)
-+ (char)((uw_mobile_object_t *)puVar9)->animation_flags
+- *(char *)((char *)mobile + 0x15)
++ (char)((uw_mobile_object_t *)mobile)->animation_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_heading_flags_byte@
+@settle_dropped_object_mobile_heading_flags_byte@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3129,19 +2716,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(byte *)((char *)puVar9 + 0x18)
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- *(byte *)(puVar9 + 0xc)
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- (byte)puVar9[0xc]
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
+- *(byte *)((char *)mobile + 0x18)
++ ((uw_mobile_object_t *)mobile)->heading_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_heading_flags_undefined1@
+@settle_dropped_object_mobile_heading_flags_undefined1@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3150,19 +2731,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(undefined1 *)((char *)puVar9 + 0x18)
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- *(undefined1 *)(puVar9 + 0xc)
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- (undefined1)puVar9[0xc]
-+ ((uw_mobile_object_t *)puVar9)->heading_flags
+- *(undefined1 *)((char *)mobile + 0x18)
++ ((uw_mobile_object_t *)mobile)->heading_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_heading_flags_address@
+@settle_dropped_object_mobile_heading_flags_address@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3171,16 +2746,13 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- &*(char *)((char *)puVar9 + 0x18)
-+ (char *)&((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- &*(char *)(puVar9 + 0xc)
-+ (char *)&((uw_mobile_object_t *)puVar9)->heading_flags
+- &*(char *)((char *)mobile + 0x18)
++ (char *)&((uw_mobile_object_t *)mobile)->heading_flags
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_heading_flags_store@
+@settle_dropped_object_mobile_heading_flags_store@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3189,16 +2761,13 @@ expression E;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x18) = E;
-+ ((uw_mobile_object_t *)puVar9)->heading_flags = (byte)E;
-|
-- *(char *)(puVar9 + 0xc) = E;
-+ ((uw_mobile_object_t *)puVar9)->heading_flags = (byte)E;
+- *(char *)((char *)mobile + 0x18) = E;
++ ((uw_mobile_object_t *)mobile)->heading_flags = (byte)E;
 )
 ...>
 }
 
-@settle_dropped_object_puVar9_heading_flags_char@
+@settle_dropped_object_mobile_heading_flags_char@
 type R;
 identifier F =~ "^\(settle_dropped_object\)$";
 typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
@@ -3207,14 +2776,8 @@ typedef byte, undefined1, undefined2, ushort, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- *(char *)((char *)puVar9 + 0x18)
-+ (char)((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- *(char *)(puVar9 + 0xc)
-+ (char)((uw_mobile_object_t *)puVar9)->heading_flags
-|
-- (char)puVar9[0xc]
-+ (char)((uw_mobile_object_t *)puVar9)->heading_flags
+- *(char *)((char *)mobile + 0x18)
++ (char)((uw_mobile_object_t *)mobile)->heading_flags
 )
 ...>
 }

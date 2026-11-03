@@ -672,12 +672,12 @@ void *spawn_and_prime_spell_effect_object(int object_type, byte *source)
   uint uVar1;
   undefined2 uVar2;
   byte bVar3;
-  char *iVar4;
+  uw_object_hdr_t *iVar4;
   undefined4 uVar5;
   char extraout_r1;
   byte bVar6;
 
-  iVar4 = (char *)spawn_new_object(object_type,0);
+  iVar4 = spawn_new_object(object_type,0);
   bVar6 = (*source >> 4) * '\b';
   uVar1 = (int)((uint)(*source >> 4) << 0x13) >> 0x10;
   if (uVar1 < 0x80) {
@@ -685,10 +685,9 @@ void *spawn_and_prime_spell_effect_object(int object_type, byte *source)
     extraout_r1 = (char)ordint_divmod(0x80 - uVar1,uVar5).rem;
     bVar6 = bVar6 + extraout_r1;
   }
-  uVar2 = ((uw_object_hdr_t *)iVar4)->position_word;
+  uVar2 = iVar4->position_word;
   bVar3 = (byte)uVar2;
-  ((uw_object_hdr_t *)iVar4)->position_word_low = (bVar3 ^ bVar6) & 0x7f ^ bVar3;
-  ((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)((ushort)uVar2 >> 8);
+  iVar4->zpos = bVar6 & 0x7f;
   return iVar4;
 }
 
@@ -819,7 +818,7 @@ void complete_pending_player_command_target(ushort *target)
 
 
 // was FUN_00075248 -- spawns one of 3 object-id variants (0x154-0x156, chosen at random) centered
-// in tile (param_1,param_2), sets its quality field to 0x6e, and places it in the world
+// in tile (param_1,param_2), sets its Z position to 0x6e, and places it in the world
 // (place_object_in_world).
 int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
 {
@@ -827,7 +826,7 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
   byte bVar1;
   undefined1 uVar2;
   undefined4 uVar3;
-  char *iVar4;  /* was `int` -- truncated spawn_new_object's real pointer */
+  uw_object_hdr_t *iVar4;
   int iVar5;
   char extraout_r1;
   short extraout_r1_00;
@@ -835,10 +834,9 @@ int spawn_random_variant_object_at_tile(int tile_x, int tile_y)
 
   uVar3 = ce_rand();
   uw_ord2005_rem_157 = ((int)(uVar3)) % (3);
-  iVar4 = (char *)spawn_new_object(uw_ord2005_rem_157 + 0x154,0);
-  uVar6 = ((uw_object_hdr_t *)iVar4)->position_word & 0xffee;
-  ((uw_object_hdr_t *)iVar4)->position_word_low = (byte)uVar6 | 0x6e;
-  ((uw_object_hdr_t *)iVar4)->position_word_high = (byte)(char)(uVar6 >> 8);
+  iVar4 = spawn_new_object(uw_ord2005_rem_157 + 0x154,0);
+  uVar6 = iVar4->position_word & 0xffee;
+  iVar4->zpos = 0x6e;
   iVar5 = place_object_in_world(tile_x * 8 + 3,tile_y * 8 + 3,0x6e,iVar4,0,0);
   if ((iVar5 != 0) && (iVar5 = object_ptr_in_arena(iVar4), iVar5 != 0)) {
     bVar1 = ce_rand();

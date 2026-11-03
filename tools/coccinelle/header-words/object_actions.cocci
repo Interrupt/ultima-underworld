@@ -312,92 +312,6 @@ R F(...) {
 ...>
 }
 
-@word_4_0@
-type R;
-identifier F =~ "^\(check_object_combination\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar4 + 0)
-+ ((uw_object_hdr_t *)puVar4)->type_flags
-|
-- ((ushort *)puVar4)[0]
-+ ((uw_object_hdr_t *)puVar4)->type_flags
-|
-- *(ushort *)puVar4
-+ ((uw_object_hdr_t *)puVar4)->type_flags
-|
-- puVar4[0]
-+ ((uw_object_hdr_t *)puVar4)->type_flags
-|
-- *puVar4
-+ ((uw_object_hdr_t *)puVar4)->type_flags
-)
-...>
-}
-
-@word_4_1@
-type R;
-identifier F =~ "^\(check_object_combination\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar4 + 2)
-+ ((uw_object_hdr_t *)puVar4)->position_word
-|
-- ((ushort *)puVar4)[1]
-+ ((uw_object_hdr_t *)puVar4)->position_word
-|
-- puVar4[1]
-+ ((uw_object_hdr_t *)puVar4)->position_word
-)
-...>
-}
-
-@word_4_2@
-type R;
-identifier F =~ "^\(check_object_combination\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar4 + 4)
-+ ((uw_object_hdr_t *)puVar4)->chain_word
-|
-- ((ushort *)puVar4)[2]
-+ ((uw_object_hdr_t *)puVar4)->chain_word
-|
-- puVar4[2]
-+ ((uw_object_hdr_t *)puVar4)->chain_word
-)
-...>
-}
-
-@word_4_3@
-type R;
-identifier F =~ "^\(check_object_combination\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)puVar4 + 6)
-+ ((uw_object_hdr_t *)puVar4)->link_word
-|
-- ((ushort *)puVar4)[3]
-+ ((uw_object_hdr_t *)puVar4)->link_word
-|
-- puVar4[3]
-+ ((uw_object_hdr_t *)puVar4)->link_word
-)
-...>
-}
-
 @word_5_0@
 type R;
 identifier F =~ "^\(spawn_and_prime_spell_effect_object\|spawn_random_variant_object_at_tile\)$";
@@ -1213,89 +1127,6 @@ R F(...) {
 ...>
 }
 
-@word_15_0@
-type R;
-identifier F =~ "^\(consume_linked_special_object_charge\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)iVar3 + 0)
-+ ((uw_object_hdr_t *)iVar3)->type_flags
-|
-- ((ushort *)iVar3)[0]
-+ ((uw_object_hdr_t *)iVar3)->type_flags
-|
-- *(ushort *)iVar3
-+ ((uw_object_hdr_t *)iVar3)->type_flags
-|
-- *(ushort *)(iVar3 + 0)
-+ ((uw_object_hdr_t *)iVar3)->type_flags
-)
-...>
-}
-
-@word_15_1@
-type R;
-identifier F =~ "^\(consume_linked_special_object_charge\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)iVar3 + 2)
-+ ((uw_object_hdr_t *)iVar3)->position_word
-|
-- ((ushort *)iVar3)[1]
-+ ((uw_object_hdr_t *)iVar3)->position_word
-|
-- *(ushort *)(iVar3 + 2)
-+ ((uw_object_hdr_t *)iVar3)->position_word
-)
-...>
-}
-
-@word_15_2@
-type R;
-identifier F =~ "^\(consume_linked_special_object_charge\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)iVar3 + 4)
-+ ((uw_object_hdr_t *)iVar3)->chain_word
-|
-- ((ushort *)iVar3)[2]
-+ ((uw_object_hdr_t *)iVar3)->chain_word
-|
-- *(ushort *)(iVar3 + 4)
-+ ((uw_object_hdr_t *)iVar3)->chain_word
-)
-...>
-}
-
-@word_15_3@
-type R;
-identifier F =~ "^\(consume_linked_special_object_charge\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)iVar3 + 6)
-+ ((uw_object_hdr_t *)iVar3)->link_word
-|
-- ((ushort *)iVar3)[3]
-+ ((uw_object_hdr_t *)iVar3)->link_word
-|
-- *(ushort *)(iVar3 + 6)
-+ ((uw_object_hdr_t *)iVar3)->link_word
-)
-...>
-}
-
 @word_16_0@
 type R;
 identifier F =~ "^\(spawn_effect_debris_burst\)$";
@@ -1760,6 +1591,459 @@ R F(...) {
 |
 - puVar1[3]
 + ((uw_object_hdr_t *)puVar1)->link_word
+)
+...>
+}
+
+@linked_word_0_0@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_header + 0)
++ ((uw_object_hdr_t *)object_header)->type_flags
+|
+- ((ushort *)object_header)[0]
++ ((uw_object_hdr_t *)object_header)->type_flags
+|
+- *(ushort *)object_header
++ ((uw_object_hdr_t *)object_header)->type_flags
+)
+...>
+}
+
+@linked_word_0_1@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_header + 2)
++ ((uw_object_hdr_t *)object_header)->position_word
+|
+- ((ushort *)object_header)[1]
++ ((uw_object_hdr_t *)object_header)->position_word
+)
+...>
+}
+
+@linked_word_0_2@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_header + 4)
++ ((uw_object_hdr_t *)object_header)->chain_word
+|
+- ((ushort *)object_header)[2]
++ ((uw_object_hdr_t *)object_header)->chain_word
+)
+...>
+}
+
+@linked_word_0_3@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_header + 6)
++ ((uw_object_hdr_t *)object_header)->link_word
+|
+- ((ushort *)object_header)[3]
++ ((uw_object_hdr_t *)object_header)->link_word
+)
+...>
+}
+
+@linked_word_1_0@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar4 + 0)
++ ((uw_object_hdr_t *)puVar4)->type_flags
+|
+- ((ushort *)puVar4)[0]
++ ((uw_object_hdr_t *)puVar4)->type_flags
+|
+- *(ushort *)puVar4
++ ((uw_object_hdr_t *)puVar4)->type_flags
+)
+...>
+}
+
+@linked_word_1_1@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar4 + 2)
++ ((uw_object_hdr_t *)puVar4)->position_word
+|
+- ((ushort *)puVar4)[1]
++ ((uw_object_hdr_t *)puVar4)->position_word
+)
+...>
+}
+
+@linked_word_1_2@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar4 + 4)
++ ((uw_object_hdr_t *)puVar4)->chain_word
+|
+- ((ushort *)puVar4)[2]
++ ((uw_object_hdr_t *)puVar4)->chain_word
+)
+...>
+}
+
+@linked_word_1_3@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)puVar4 + 6)
++ ((uw_object_hdr_t *)puVar4)->link_word
+|
+- ((ushort *)puVar4)[3]
++ ((uw_object_hdr_t *)puVar4)->link_word
+)
+...>
+}
+
+@linked_word_2_0@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- object[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@linked_word_2_1@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+|
+- object[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@linked_word_2_2@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- object[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@linked_word_2_3@
+type R;
+identifier F =~ "^\(check_object_combination\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+|
+- object[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@linked_word_3_0@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 0)
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- ((ushort *)object)[0]
++ ((uw_object_hdr_t *)object)->type_flags
+|
+- *(ushort *)object
++ ((uw_object_hdr_t *)object)->type_flags
+)
+...>
+}
+
+@linked_word_3_1@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 2)
++ ((uw_object_hdr_t *)object)->position_word
+|
+- ((ushort *)object)[1]
++ ((uw_object_hdr_t *)object)->position_word
+)
+...>
+}
+
+@linked_word_3_2@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 4)
++ ((uw_object_hdr_t *)object)->chain_word
+|
+- ((ushort *)object)[2]
++ ((uw_object_hdr_t *)object)->chain_word
+)
+...>
+}
+
+@linked_word_3_3@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object + 6)
++ ((uw_object_hdr_t *)object)->link_word
+|
+- ((ushort *)object)[3]
++ ((uw_object_hdr_t *)object)->link_word
+)
+...>
+}
+
+@linked_word_4_0@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)iVar3 + 0)
++ ((uw_object_hdr_t *)iVar3)->type_flags
+|
+- ((ushort *)iVar3)[0]
++ ((uw_object_hdr_t *)iVar3)->type_flags
+|
+- *(ushort *)iVar3
++ ((uw_object_hdr_t *)iVar3)->type_flags
+)
+...>
+}
+
+@linked_word_4_1@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)iVar3 + 2)
++ ((uw_object_hdr_t *)iVar3)->position_word
+|
+- ((ushort *)iVar3)[1]
++ ((uw_object_hdr_t *)iVar3)->position_word
+)
+...>
+}
+
+@linked_word_4_2@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)iVar3 + 4)
++ ((uw_object_hdr_t *)iVar3)->chain_word
+|
+- ((ushort *)iVar3)[2]
++ ((uw_object_hdr_t *)iVar3)->chain_word
+)
+...>
+}
+
+@linked_word_4_3@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)iVar3 + 6)
++ ((uw_object_hdr_t *)iVar3)->link_word
+|
+- ((ushort *)iVar3)[3]
++ ((uw_object_hdr_t *)iVar3)->link_word
+)
+...>
+}
+
+@linked_word_5_0@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- ((ushort *)object_ptr)[0]
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)object_ptr
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+|
+- *(ushort *)(object_ptr + 0)
++ ((uw_object_hdr_t *)object_ptr)->type_flags
+)
+...>
+}
+
+@linked_word_5_1@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- ((ushort *)object_ptr)[1]
++ ((uw_object_hdr_t *)object_ptr)->position_word
+|
+- *(ushort *)(object_ptr + 2)
++ ((uw_object_hdr_t *)object_ptr)->position_word
+)
+...>
+}
+
+@linked_word_5_2@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- ((ushort *)object_ptr)[2]
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+|
+- *(ushort *)(object_ptr + 4)
++ ((uw_object_hdr_t *)object_ptr)->chain_word
+)
+...>
+}
+
+@linked_word_5_3@
+type R;
+identifier F =~ "^\(consume_linked_special_object_charge\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- ((ushort *)object_ptr)[3]
++ ((uw_object_hdr_t *)object_ptr)->link_word
+|
+- *(ushort *)(object_ptr + 6)
++ ((uw_object_hdr_t *)object_ptr)->link_word
 )
 ...>
 }

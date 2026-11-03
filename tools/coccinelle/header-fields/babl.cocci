@@ -9904,1115 +9904,6 @@ R F(...) {
 ...>
 }
 
-@field_21_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-|
-- ((ushort *)obj_rec)[0] & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-|
-- *(ushort *)obj_rec & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-|
-- *(ushort *)(obj_rec + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-|
-- CONCAT11(obj_rec[1], *obj_rec) & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-|
-- CONCAT11(obj_rec[1], obj_rec[0]) & 0x1ff
-+ ((uw_object_hdr_t *)obj_rec)->object_id
-)
-...>
-}
-
-@field_21_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(ushort *)((char *)obj_rec + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (((ushort *)obj_rec)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (((ushort *)obj_rec)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(ushort *)obj_rec >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(ushort *)obj_rec & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(ushort *)(obj_rec + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(ushort *)(obj_rec + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (CONCAT11(obj_rec[1], *obj_rec) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (CONCAT11(obj_rec[1], *obj_rec) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(byte *)((char *)obj_rec + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(byte *)((char *)obj_rec + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(byte *)(obj_rec + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-|
-- (*(byte *)(obj_rec + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)obj_rec)->flags_res
-)
-...>
-}
-
-@field_21_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(ushort *)((char *)obj_rec + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (((ushort *)obj_rec)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (((ushort *)obj_rec)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(ushort *)obj_rec >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(ushort *)obj_rec & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(ushort *)(obj_rec + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(ushort *)(obj_rec + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (CONCAT11(obj_rec[1], *obj_rec) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (CONCAT11(obj_rec[1], *obj_rec) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(byte *)((char *)obj_rec + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(byte *)((char *)obj_rec + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(byte *)(obj_rec + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-|
-- (*(byte *)(obj_rec + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)obj_rec)->enchanted
-)
-...>
-}
-
-@field_21_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(ushort *)((char *)obj_rec + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (((ushort *)obj_rec)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (((ushort *)obj_rec)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(ushort *)obj_rec >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(ushort *)obj_rec & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(ushort *)(obj_rec + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(ushort *)(obj_rec + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (CONCAT11(obj_rec[1], *obj_rec) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (CONCAT11(obj_rec[1], *obj_rec) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(byte *)((char *)obj_rec + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(byte *)((char *)obj_rec + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(byte *)(obj_rec + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-|
-- (*(byte *)(obj_rec + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->doordir
-)
-...>
-}
-
-@field_21_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(ushort *)((char *)obj_rec + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (((ushort *)obj_rec)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (((ushort *)obj_rec)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(ushort *)obj_rec >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(ushort *)obj_rec & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(ushort *)(obj_rec + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(ushort *)(obj_rec + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (CONCAT11(obj_rec[1], *obj_rec) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (CONCAT11(obj_rec[1], *obj_rec) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(byte *)((char *)obj_rec + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(byte *)((char *)obj_rec + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(byte *)(obj_rec + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-|
-- (*(byte *)(obj_rec + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->invisible
-)
-...>
-}
-
-@field_21_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(ushort *)((char *)obj_rec + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (((ushort *)obj_rec)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (((ushort *)obj_rec)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(ushort *)obj_rec >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(ushort *)obj_rec & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(ushort *)(obj_rec + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(ushort *)(obj_rec + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (CONCAT11(obj_rec[1], *obj_rec) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (CONCAT11(obj_rec[1], *obj_rec) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (CONCAT11(obj_rec[1], obj_rec[0]) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(byte *)((char *)obj_rec + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(byte *)((char *)obj_rec + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- *(byte *)((char *)obj_rec + 0x1) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(byte *)(obj_rec + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- (*(byte *)(obj_rec + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-|
-- *(byte *)(obj_rec + 0x1) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->is_quant
-)
-...>
-}
-
-@field_21_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-|
-- ((ushort *)obj_rec)[1] & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-|
-- *(ushort *)(obj_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-|
-- *(byte *)((char *)obj_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-|
-- obj_rec[2] & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-|
-- *(byte *)(obj_rec + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_rec)->zpos
-)
-...>
-}
-
-@field_21_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-|
-- (*(ushort *)((char *)obj_rec + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-|
-- (((ushort *)obj_rec)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-|
-- (((ushort *)obj_rec)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-|
-- (*(ushort *)(obj_rec + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-|
-- (*(ushort *)(obj_rec + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_rec)->heading
-)
-...>
-}
-
-@field_21_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(ushort *)((char *)obj_rec + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (((ushort *)obj_rec)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (((ushort *)obj_rec)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(ushort *)(obj_rec + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(ushort *)(obj_rec + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(byte *)((char *)obj_rec + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(byte *)((char *)obj_rec + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(byte *)(obj_rec + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-|
-- (*(byte *)(obj_rec + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)obj_rec)->ypos
-)
-...>
-}
-
-@field_21_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(ushort *)((char *)obj_rec + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (((ushort *)obj_rec)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (((ushort *)obj_rec)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(ushort *)(obj_rec + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(ushort *)(obj_rec + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(byte *)((char *)obj_rec + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(byte *)((char *)obj_rec + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- *(byte *)((char *)obj_rec + 0x3) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(byte *)(obj_rec + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- (*(byte *)(obj_rec + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-|
-- *(byte *)(obj_rec + 0x3) >> 5
-+ ((uw_object_hdr_t *)obj_rec)->xpos
-)
-...>
-}
-
-@field_21_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-|
-- ((ushort *)obj_rec)[2] & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-|
-- *(ushort *)(obj_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-|
-- *(byte *)((char *)obj_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-|
-- obj_rec[4] & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-|
-- *(byte *)(obj_rec + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->quality
-)
-...>
-}
-
-@field_21_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->next
-|
-- (*(ushort *)((char *)obj_rec + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->next
-|
-- (((ushort *)obj_rec)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->next
-|
-- (((ushort *)obj_rec)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->next
-|
-- (*(ushort *)(obj_rec + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->next
-|
-- (*(ushort *)(obj_rec + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->next
-)
-...>
-}
-
-@field_21_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-|
-- ((ushort *)obj_rec)[3] & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-|
-- *(ushort *)(obj_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-|
-- *(byte *)((char *)obj_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-|
-- obj_rec[6] & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-|
-- *(byte *)(obj_rec + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_rec)->owner
-)
-...>
-}
-
-@field_21_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_rec + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->link
-|
-- (*(ushort *)((char *)obj_rec + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->link
-|
-- (((ushort *)obj_rec)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->link
-|
-- (((ushort *)obj_rec)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->link
-|
-- (*(ushort *)(obj_rec + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_rec)->link
-|
-- (*(ushort *)(obj_rec + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_rec)->link
-)
-...>
-}
-
-@field_22_object_id disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)obj_ptr)->object_id
-|
-- ((ushort *)obj_ptr)[0] & 0x1ff
-+ ((uw_object_hdr_t *)obj_ptr)->object_id
-|
-- *(ushort *)obj_ptr & 0x1ff
-+ ((uw_object_hdr_t *)obj_ptr)->object_id
-|
-- *(ushort *)(obj_ptr + 0x0) & 0x1ff
-+ ((uw_object_hdr_t *)obj_ptr)->object_id
-)
-...>
-}
-
-@field_22_flags_res disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(ushort *)((char *)obj_ptr + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (((ushort *)obj_ptr)[0] >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (((ushort *)obj_ptr)[0] & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(ushort *)obj_ptr >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(ushort *)obj_ptr & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(ushort *)(obj_ptr + 0x0) >> 9) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(ushort *)(obj_ptr + 0x0) & 0xe00) >> 9
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(byte *)((char *)obj_ptr + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(byte *)((char *)obj_ptr + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(byte *)(obj_ptr + 0x1) >> 1) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-|
-- (*(byte *)(obj_ptr + 0x1) & 0xe) >> 1
-+ ((uw_object_hdr_t *)obj_ptr)->flags_res
-)
-...>
-}
-
-@field_22_enchanted disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(ushort *)((char *)obj_ptr + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (((ushort *)obj_ptr)[0] >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (((ushort *)obj_ptr)[0] & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(ushort *)obj_ptr >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(ushort *)obj_ptr & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(ushort *)(obj_ptr + 0x0) >> 12) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(ushort *)(obj_ptr + 0x0) & 0x1000) >> 12
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(byte *)((char *)obj_ptr + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(byte *)((char *)obj_ptr + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(byte *)(obj_ptr + 0x1) >> 4) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-|
-- (*(byte *)(obj_ptr + 0x1) & 0x10) >> 4
-+ ((uw_object_hdr_t *)obj_ptr)->enchanted
-)
-...>
-}
-
-@field_22_doordir disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(ushort *)((char *)obj_ptr + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (((ushort *)obj_ptr)[0] >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (((ushort *)obj_ptr)[0] & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(ushort *)obj_ptr >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(ushort *)obj_ptr & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(ushort *)(obj_ptr + 0x0) >> 13) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(ushort *)(obj_ptr + 0x0) & 0x2000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(byte *)((char *)obj_ptr + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(byte *)((char *)obj_ptr + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(byte *)(obj_ptr + 0x1) >> 5) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-|
-- (*(byte *)(obj_ptr + 0x1) & 0x20) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->doordir
-)
-...>
-}
-
-@field_22_invisible disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(ushort *)((char *)obj_ptr + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (((ushort *)obj_ptr)[0] >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (((ushort *)obj_ptr)[0] & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(ushort *)obj_ptr >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(ushort *)obj_ptr & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(ushort *)(obj_ptr + 0x0) >> 14) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(ushort *)(obj_ptr + 0x0) & 0x4000) >> 14
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(byte *)((char *)obj_ptr + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(byte *)((char *)obj_ptr + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(byte *)(obj_ptr + 0x1) >> 6) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-|
-- (*(byte *)(obj_ptr + 0x1) & 0x40) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->invisible
-)
-...>
-}
-
-@field_22_is_quant disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(ushort *)((char *)obj_ptr + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (((ushort *)obj_ptr)[0] >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (((ushort *)obj_ptr)[0] & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(ushort *)obj_ptr >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(ushort *)obj_ptr & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(ushort *)(obj_ptr + 0x0) >> 15) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(ushort *)(obj_ptr + 0x0) & 0x8000) >> 15
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(byte *)((char *)obj_ptr + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(byte *)((char *)obj_ptr + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- *(byte *)((char *)obj_ptr + 0x1) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(byte *)(obj_ptr + 0x1) >> 7) & 0x1
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- (*(byte *)(obj_ptr + 0x1) & 0x80) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-|
-- *(byte *)(obj_ptr + 0x1) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->is_quant
-)
-...>
-}
-
-@field_22_zpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_ptr)->zpos
-|
-- ((ushort *)obj_ptr)[1] & 0x7f
-+ ((uw_object_hdr_t *)obj_ptr)->zpos
-|
-- *(ushort *)(obj_ptr + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_ptr)->zpos
-|
-- *(byte *)((char *)obj_ptr + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_ptr)->zpos
-|
-- *(byte *)(obj_ptr + 0x2) & 0x7f
-+ ((uw_object_hdr_t *)obj_ptr)->zpos
-)
-...>
-}
-
-@field_22_heading disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-|
-- (*(ushort *)((char *)obj_ptr + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-|
-- (((ushort *)obj_ptr)[1] >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-|
-- (((ushort *)obj_ptr)[1] & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-|
-- (*(ushort *)(obj_ptr + 0x2) >> 7) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-|
-- (*(ushort *)(obj_ptr + 0x2) & 0x380) >> 7
-+ ((uw_object_hdr_t *)obj_ptr)->heading
-)
-...>
-}
-
-@field_22_ypos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(ushort *)((char *)obj_ptr + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (((ushort *)obj_ptr)[1] >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (((ushort *)obj_ptr)[1] & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(ushort *)(obj_ptr + 0x2) >> 10) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(ushort *)(obj_ptr + 0x2) & 0x1c00) >> 10
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(byte *)((char *)obj_ptr + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(byte *)((char *)obj_ptr + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(byte *)(obj_ptr + 0x3) >> 2) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-|
-- (*(byte *)(obj_ptr + 0x3) & 0x1c) >> 2
-+ ((uw_object_hdr_t *)obj_ptr)->ypos
-)
-...>
-}
-
-@field_22_xpos disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(ushort *)((char *)obj_ptr + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (((ushort *)obj_ptr)[1] >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (((ushort *)obj_ptr)[1] & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(ushort *)(obj_ptr + 0x2) >> 13) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(ushort *)(obj_ptr + 0x2) & 0xe000) >> 13
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(byte *)((char *)obj_ptr + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(byte *)((char *)obj_ptr + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- *(byte *)((char *)obj_ptr + 0x3) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(byte *)(obj_ptr + 0x3) >> 5) & 0x7
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- (*(byte *)(obj_ptr + 0x3) & 0xe0) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-|
-- *(byte *)(obj_ptr + 0x3) >> 5
-+ ((uw_object_hdr_t *)obj_ptr)->xpos
-)
-...>
-}
-
-@field_22_quality disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->quality
-|
-- ((ushort *)obj_ptr)[2] & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->quality
-|
-- *(ushort *)(obj_ptr + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->quality
-|
-- *(byte *)((char *)obj_ptr + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->quality
-|
-- *(byte *)(obj_ptr + 0x4) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->quality
-)
-...>
-}
-
-@field_22_next disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->next
-|
-- (*(ushort *)((char *)obj_ptr + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->next
-|
-- (((ushort *)obj_ptr)[2] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->next
-|
-- (((ushort *)obj_ptr)[2] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->next
-|
-- (*(ushort *)(obj_ptr + 0x4) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->next
-|
-- (*(ushort *)(obj_ptr + 0x4) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->next
-)
-...>
-}
-
-@field_22_owner disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->owner
-|
-- ((ushort *)obj_ptr)[3] & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->owner
-|
-- *(ushort *)(obj_ptr + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->owner
-|
-- *(byte *)((char *)obj_ptr + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->owner
-|
-- *(byte *)(obj_ptr + 0x6) & 0x3f
-+ ((uw_object_hdr_t *)obj_ptr)->owner
-)
-...>
-}
-
-@field_22_link disable drop_cast, is_zero, isnt_zero@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, byte, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- (*(ushort *)((char *)obj_ptr + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->link
-|
-- (*(ushort *)((char *)obj_ptr + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->link
-|
-- (((ushort *)obj_ptr)[3] >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->link
-|
-- (((ushort *)obj_ptr)[3] & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->link
-|
-- (*(ushort *)(obj_ptr + 0x6) >> 6) & 0x3ff
-+ ((uw_object_hdr_t *)obj_ptr)->link
-|
-- (*(ushort *)(obj_ptr + 0x6) & 0xffc0) >> 6
-+ ((uw_object_hdr_t *)obj_ptr)->link
-)
-...>
-}
-
 @field_23_object_id disable drop_cast, is_zero, isnt_zero@
 type R;
 identifier F =~ "^\(redraw_barter_slot_icon\)$";
@@ -15368,6 +14259,1170 @@ R F(...) {
 |
 - puVar2[3] >> 6
 + ((uw_object_hdr_t *)puVar2)->link
+)
+...>
+}
+
+@barter_click_field_0_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)obj_rec)->object_id
+|
+- ((ushort *)obj_rec)[0] & 0x1ff
++ ((uw_object_hdr_t *)obj_rec)->object_id
+|
+- *(ushort *)obj_rec & 0x1ff
++ ((uw_object_hdr_t *)obj_rec)->object_id
+)
+...>
+}
+
+@barter_click_field_0_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (*(ushort *)((char *)obj_rec + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (((ushort *)obj_rec)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (((ushort *)obj_rec)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (*(ushort *)obj_rec >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (*(ushort *)obj_rec & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (*(byte *)((char *)obj_rec + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+|
+- (*(byte *)((char *)obj_rec + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)obj_rec)->flags_res
+)
+...>
+}
+
+@barter_click_field_0_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (*(ushort *)((char *)obj_rec + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (((ushort *)obj_rec)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (((ushort *)obj_rec)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (*(ushort *)obj_rec >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (*(ushort *)obj_rec & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (*(byte *)((char *)obj_rec + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+|
+- (*(byte *)((char *)obj_rec + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)obj_rec)->enchanted
+)
+...>
+}
+
+@barter_click_field_0_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (*(ushort *)((char *)obj_rec + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (((ushort *)obj_rec)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (((ushort *)obj_rec)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (*(ushort *)obj_rec >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (*(ushort *)obj_rec & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (*(byte *)((char *)obj_rec + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->doordir
+|
+- (*(byte *)((char *)obj_rec + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)obj_rec)->doordir
+)
+...>
+}
+
+@barter_click_field_0_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (*(ushort *)((char *)obj_rec + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (((ushort *)obj_rec)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (((ushort *)obj_rec)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (*(ushort *)obj_rec >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (*(ushort *)obj_rec & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (*(byte *)((char *)obj_rec + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->invisible
+|
+- (*(byte *)((char *)obj_rec + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)obj_rec)->invisible
+)
+...>
+}
+
+@barter_click_field_0_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (*(ushort *)((char *)obj_rec + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (((ushort *)obj_rec)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (((ushort *)obj_rec)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (*(ushort *)obj_rec >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (*(ushort *)obj_rec & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (*(byte *)((char *)obj_rec + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- (*(byte *)((char *)obj_rec + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+|
+- *(byte *)((char *)obj_rec + 0x1) >> 7
++ ((uw_object_hdr_t *)obj_rec)->is_quant
+)
+...>
+}
+
+@barter_click_field_0_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)obj_rec)->zpos
+|
+- ((ushort *)obj_rec)[1] & 0x7f
++ ((uw_object_hdr_t *)obj_rec)->zpos
+|
+- *(byte *)((char *)obj_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)obj_rec)->zpos
+)
+...>
+}
+
+@barter_click_field_0_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->heading
+|
+- (*(ushort *)((char *)obj_rec + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)obj_rec)->heading
+|
+- (((ushort *)obj_rec)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->heading
+|
+- (((ushort *)obj_rec)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)obj_rec)->heading
+)
+...>
+}
+
+@barter_click_field_0_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->ypos
+|
+- (*(ushort *)((char *)obj_rec + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)obj_rec)->ypos
+|
+- (((ushort *)obj_rec)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->ypos
+|
+- (((ushort *)obj_rec)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)obj_rec)->ypos
+|
+- (*(byte *)((char *)obj_rec + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->ypos
+|
+- (*(byte *)((char *)obj_rec + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)obj_rec)->ypos
+)
+...>
+}
+
+@barter_click_field_0_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- (*(ushort *)((char *)obj_rec + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- (((ushort *)obj_rec)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- (((ushort *)obj_rec)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- (*(byte *)((char *)obj_rec + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- (*(byte *)((char *)obj_rec + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)obj_rec)->xpos
+|
+- *(byte *)((char *)obj_rec + 0x3) >> 5
++ ((uw_object_hdr_t *)obj_rec)->xpos
+)
+...>
+}
+
+@barter_click_field_0_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->quality
+|
+- ((ushort *)obj_rec)[2] & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->quality
+|
+- *(byte *)((char *)obj_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->quality
+)
+...>
+}
+
+@barter_click_field_0_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_rec)->next
+|
+- (*(ushort *)((char *)obj_rec + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_rec)->next
+|
+- (((ushort *)obj_rec)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_rec)->next
+|
+- (((ushort *)obj_rec)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_rec)->next
+)
+...>
+}
+
+@barter_click_field_0_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->owner
+|
+- ((ushort *)obj_rec)[3] & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->owner
+|
+- *(byte *)((char *)obj_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)obj_rec)->owner
+)
+...>
+}
+
+@barter_click_field_0_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_rec + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_rec)->link
+|
+- (*(ushort *)((char *)obj_rec + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_rec)->link
+|
+- (((ushort *)obj_rec)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_rec)->link
+|
+- (((ushort *)obj_rec)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_rec)->link
+)
+...>
+}
+
+@barter_click_field_1_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)split_rec)->object_id
+|
+- ((ushort *)split_rec)[0] & 0x1ff
++ ((uw_object_hdr_t *)split_rec)->object_id
+|
+- *(ushort *)split_rec & 0x1ff
++ ((uw_object_hdr_t *)split_rec)->object_id
+)
+...>
+}
+
+@barter_click_field_1_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (*(ushort *)((char *)split_rec + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (((ushort *)split_rec)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (((ushort *)split_rec)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (*(ushort *)split_rec >> 9) & 0x7
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (*(ushort *)split_rec & 0xe00) >> 9
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (*(byte *)((char *)split_rec + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)split_rec)->flags_res
+|
+- (*(byte *)((char *)split_rec + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)split_rec)->flags_res
+)
+...>
+}
+
+@barter_click_field_1_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (*(ushort *)((char *)split_rec + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (((ushort *)split_rec)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (((ushort *)split_rec)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (*(ushort *)split_rec >> 12) & 0x1
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (*(ushort *)split_rec & 0x1000) >> 12
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (*(byte *)((char *)split_rec + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)split_rec)->enchanted
+|
+- (*(byte *)((char *)split_rec + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)split_rec)->enchanted
+)
+...>
+}
+
+@barter_click_field_1_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (*(ushort *)((char *)split_rec + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (((ushort *)split_rec)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (((ushort *)split_rec)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (*(ushort *)split_rec >> 13) & 0x1
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (*(ushort *)split_rec & 0x2000) >> 13
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (*(byte *)((char *)split_rec + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)split_rec)->doordir
+|
+- (*(byte *)((char *)split_rec + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)split_rec)->doordir
+)
+...>
+}
+
+@barter_click_field_1_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (*(ushort *)((char *)split_rec + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (((ushort *)split_rec)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (((ushort *)split_rec)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (*(ushort *)split_rec >> 14) & 0x1
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (*(ushort *)split_rec & 0x4000) >> 14
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (*(byte *)((char *)split_rec + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)split_rec)->invisible
+|
+- (*(byte *)((char *)split_rec + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)split_rec)->invisible
+)
+...>
+}
+
+@barter_click_field_1_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (*(ushort *)((char *)split_rec + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (((ushort *)split_rec)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (((ushort *)split_rec)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (*(ushort *)split_rec >> 15) & 0x1
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (*(ushort *)split_rec & 0x8000) >> 15
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (*(byte *)((char *)split_rec + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- (*(byte *)((char *)split_rec + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)split_rec)->is_quant
+|
+- *(byte *)((char *)split_rec + 0x1) >> 7
++ ((uw_object_hdr_t *)split_rec)->is_quant
+)
+...>
+}
+
+@barter_click_field_1_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)split_rec)->zpos
+|
+- ((ushort *)split_rec)[1] & 0x7f
++ ((uw_object_hdr_t *)split_rec)->zpos
+|
+- *(byte *)((char *)split_rec + 0x2) & 0x7f
++ ((uw_object_hdr_t *)split_rec)->zpos
+)
+...>
+}
+
+@barter_click_field_1_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)split_rec)->heading
+|
+- (*(ushort *)((char *)split_rec + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)split_rec)->heading
+|
+- (((ushort *)split_rec)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)split_rec)->heading
+|
+- (((ushort *)split_rec)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)split_rec)->heading
+)
+...>
+}
+
+@barter_click_field_1_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)split_rec)->ypos
+|
+- (*(ushort *)((char *)split_rec + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)split_rec)->ypos
+|
+- (((ushort *)split_rec)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)split_rec)->ypos
+|
+- (((ushort *)split_rec)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)split_rec)->ypos
+|
+- (*(byte *)((char *)split_rec + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)split_rec)->ypos
+|
+- (*(byte *)((char *)split_rec + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)split_rec)->ypos
+)
+...>
+}
+
+@barter_click_field_1_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- (*(ushort *)((char *)split_rec + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- (((ushort *)split_rec)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- (((ushort *)split_rec)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- (*(byte *)((char *)split_rec + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- (*(byte *)((char *)split_rec + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)split_rec)->xpos
+|
+- *(byte *)((char *)split_rec + 0x3) >> 5
++ ((uw_object_hdr_t *)split_rec)->xpos
+)
+...>
+}
+
+@barter_click_field_1_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)split_rec)->quality
+|
+- ((ushort *)split_rec)[2] & 0x3f
++ ((uw_object_hdr_t *)split_rec)->quality
+|
+- *(byte *)((char *)split_rec + 0x4) & 0x3f
++ ((uw_object_hdr_t *)split_rec)->quality
+)
+...>
+}
+
+@barter_click_field_1_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_rec)->next
+|
+- (*(ushort *)((char *)split_rec + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_rec)->next
+|
+- (((ushort *)split_rec)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_rec)->next
+|
+- (((ushort *)split_rec)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_rec)->next
+)
+...>
+}
+
+@barter_click_field_1_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)split_rec)->owner
+|
+- ((ushort *)split_rec)[3] & 0x3f
++ ((uw_object_hdr_t *)split_rec)->owner
+|
+- *(byte *)((char *)split_rec + 0x6) & 0x3f
++ ((uw_object_hdr_t *)split_rec)->owner
+)
+...>
+}
+
+@barter_click_field_1_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)split_rec + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_rec)->link
+|
+- (*(ushort *)((char *)split_rec + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_rec)->link
+|
+- (((ushort *)split_rec)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)split_rec)->link
+|
+- (((ushort *)split_rec)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)split_rec)->link
+)
+...>
+}
+
+@barter_click_field_2_object_id disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 0x0) & 0x1ff
++ ((uw_object_hdr_t *)obj_ptr)->object_id
+|
+- ((ushort *)obj_ptr)[0] & 0x1ff
++ ((uw_object_hdr_t *)obj_ptr)->object_id
+|
+- *(ushort *)obj_ptr & 0x1ff
++ ((uw_object_hdr_t *)obj_ptr)->object_id
+)
+...>
+}
+
+@barter_click_field_2_flags_res disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x0) >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (*(ushort *)((char *)obj_ptr + 0x0) & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (((ushort *)obj_ptr)[0] >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (((ushort *)obj_ptr)[0] & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (*(ushort *)obj_ptr >> 9) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (*(ushort *)obj_ptr & 0xe00) >> 9
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (*(byte *)((char *)obj_ptr + 0x1) >> 1) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+|
+- (*(byte *)((char *)obj_ptr + 0x1) & 0xe) >> 1
++ ((uw_object_hdr_t *)obj_ptr)->flags_res
+)
+...>
+}
+
+@barter_click_field_2_enchanted disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x0) >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (*(ushort *)((char *)obj_ptr + 0x0) & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (((ushort *)obj_ptr)[0] >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (((ushort *)obj_ptr)[0] & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (*(ushort *)obj_ptr >> 12) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (*(ushort *)obj_ptr & 0x1000) >> 12
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (*(byte *)((char *)obj_ptr + 0x1) >> 4) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+|
+- (*(byte *)((char *)obj_ptr + 0x1) & 0x10) >> 4
++ ((uw_object_hdr_t *)obj_ptr)->enchanted
+)
+...>
+}
+
+@barter_click_field_2_doordir disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x0) >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (*(ushort *)((char *)obj_ptr + 0x0) & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (((ushort *)obj_ptr)[0] >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (((ushort *)obj_ptr)[0] & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (*(ushort *)obj_ptr >> 13) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (*(ushort *)obj_ptr & 0x2000) >> 13
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (*(byte *)((char *)obj_ptr + 0x1) >> 5) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+|
+- (*(byte *)((char *)obj_ptr + 0x1) & 0x20) >> 5
++ ((uw_object_hdr_t *)obj_ptr)->doordir
+)
+...>
+}
+
+@barter_click_field_2_invisible disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x0) >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (*(ushort *)((char *)obj_ptr + 0x0) & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (((ushort *)obj_ptr)[0] >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (((ushort *)obj_ptr)[0] & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (*(ushort *)obj_ptr >> 14) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (*(ushort *)obj_ptr & 0x4000) >> 14
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (*(byte *)((char *)obj_ptr + 0x1) >> 6) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+|
+- (*(byte *)((char *)obj_ptr + 0x1) & 0x40) >> 6
++ ((uw_object_hdr_t *)obj_ptr)->invisible
+)
+...>
+}
+
+@barter_click_field_2_is_quant disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x0) >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (*(ushort *)((char *)obj_ptr + 0x0) & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (((ushort *)obj_ptr)[0] >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (((ushort *)obj_ptr)[0] & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (*(ushort *)obj_ptr >> 15) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (*(ushort *)obj_ptr & 0x8000) >> 15
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (*(byte *)((char *)obj_ptr + 0x1) >> 7) & 0x1
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- (*(byte *)((char *)obj_ptr + 0x1) & 0x80) >> 7
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+|
+- *(byte *)((char *)obj_ptr + 0x1) >> 7
++ ((uw_object_hdr_t *)obj_ptr)->is_quant
+)
+...>
+}
+
+@barter_click_field_2_zpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 0x2) & 0x7f
++ ((uw_object_hdr_t *)obj_ptr)->zpos
+|
+- ((ushort *)obj_ptr)[1] & 0x7f
++ ((uw_object_hdr_t *)obj_ptr)->zpos
+|
+- *(byte *)((char *)obj_ptr + 0x2) & 0x7f
++ ((uw_object_hdr_t *)obj_ptr)->zpos
+)
+...>
+}
+
+@barter_click_field_2_heading disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x2) >> 7) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->heading
+|
+- (*(ushort *)((char *)obj_ptr + 0x2) & 0x380) >> 7
++ ((uw_object_hdr_t *)obj_ptr)->heading
+|
+- (((ushort *)obj_ptr)[1] >> 7) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->heading
+|
+- (((ushort *)obj_ptr)[1] & 0x380) >> 7
++ ((uw_object_hdr_t *)obj_ptr)->heading
+)
+...>
+}
+
+@barter_click_field_2_ypos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x2) >> 10) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+|
+- (*(ushort *)((char *)obj_ptr + 0x2) & 0x1c00) >> 10
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+|
+- (((ushort *)obj_ptr)[1] >> 10) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+|
+- (((ushort *)obj_ptr)[1] & 0x1c00) >> 10
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+|
+- (*(byte *)((char *)obj_ptr + 0x3) >> 2) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+|
+- (*(byte *)((char *)obj_ptr + 0x3) & 0x1c) >> 2
++ ((uw_object_hdr_t *)obj_ptr)->ypos
+)
+...>
+}
+
+@barter_click_field_2_xpos disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x2) >> 13) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- (*(ushort *)((char *)obj_ptr + 0x2) & 0xe000) >> 13
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- (((ushort *)obj_ptr)[1] >> 13) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- (((ushort *)obj_ptr)[1] & 0xe000) >> 13
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- (*(byte *)((char *)obj_ptr + 0x3) >> 5) & 0x7
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- (*(byte *)((char *)obj_ptr + 0x3) & 0xe0) >> 5
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+|
+- *(byte *)((char *)obj_ptr + 0x3) >> 5
++ ((uw_object_hdr_t *)obj_ptr)->xpos
+)
+...>
+}
+
+@barter_click_field_2_quality disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 0x4) & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->quality
+|
+- ((ushort *)obj_ptr)[2] & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->quality
+|
+- *(byte *)((char *)obj_ptr + 0x4) & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->quality
+)
+...>
+}
+
+@barter_click_field_2_next disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x4) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_ptr)->next
+|
+- (*(ushort *)((char *)obj_ptr + 0x4) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_ptr)->next
+|
+- (((ushort *)obj_ptr)[2] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_ptr)->next
+|
+- (((ushort *)obj_ptr)[2] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_ptr)->next
+)
+...>
+}
+
+@barter_click_field_2_owner disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 0x6) & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->owner
+|
+- ((ushort *)obj_ptr)[3] & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->owner
+|
+- *(byte *)((char *)obj_ptr + 0x6) & 0x3f
++ ((uw_object_hdr_t *)obj_ptr)->owner
+)
+...>
+}
+
+@barter_click_field_2_link disable drop_cast, is_zero, isnt_zero@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, byte, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- (*(ushort *)((char *)obj_ptr + 0x6) >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_ptr)->link
+|
+- (*(ushort *)((char *)obj_ptr + 0x6) & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_ptr)->link
+|
+- (((ushort *)obj_ptr)[3] >> 6) & 0x3ff
++ ((uw_object_hdr_t *)obj_ptr)->link
+|
+- (((ushort *)obj_ptr)[3] & 0xffc0) >> 6
++ ((uw_object_hdr_t *)obj_ptr)->link
 )
 ...>
 }

@@ -692,7 +692,7 @@ void process_nearby_background_traps(int target_present)
   /* find_object_in_world/resolve_object_link now return real pointers (ushort-pointer /
      void-pointer) -- was `int iVar2`/`iVar3`, truncating them on this 64-bit host exactly like the
      sibling fix in objects.c's find_object_in_world/find_object_in_chain. iVar3 keeps its later... */
-  ushort *pObj;
+  uw_object_hdr_t *pObj;
   char *pbVar5;
   int iVar3;
   int iVar4;
@@ -703,8 +703,8 @@ void process_nearby_background_traps(int target_present)
   local_12 = 0;
   pObj = find_object_in_world(6,0,7,&local_14,&local_12);
   while (pObj != 0) {
-    if ((((uw_object_hdr_t *)pObj)->type_flags_high & 0x1e) == 0) {
-      pbVar5 = resolve_object_link((char *)pObj + 6);
+    if ((pObj->flags_res == 0 && pObj->enchanted == 0)) {
+      pbVar5 = (char *)resolve_object_link(&pObj->link_word);
       /* HACK: was a bare `object_ptr_in_arena();` -- dropped argument, the same class of bug fixed
          repeatedly elsewhere in this file. object_ptr_in_arena takes exactly one argument at every
          other call site in this codebase... */
@@ -715,7 +715,7 @@ void process_nearby_background_traps(int target_present)
         *(byte *)(pbVar5 + 0xe) = (byte)((ushort)uVar1 >> 8) | 1;
         iVar3 = is_out_of_player_range(target_present,(int)local_14,(int)local_12);
         if (iVar3 != 0) {
-          dispatch_trap_type_effect(pObj,(int)local_14,(int)local_12);
+          dispatch_trap_type_effect((ushort *)pObj,(int)local_14,(int)local_12);
         }
       }
     }

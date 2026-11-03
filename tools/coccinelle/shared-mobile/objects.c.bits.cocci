@@ -7,14 +7,14 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (((uw_mobile_object_t *)puVar9)->movement_flags & 0xf) >> 0
-+ ((uw_mobile_object_t *)puVar9)->tick_phase
+- (((uw_mobile_object_t *)mobile)->movement_flags & 0xf) >> 0
++ ((uw_mobile_object_t *)mobile)->tick_phase
 |
-- (((uw_mobile_object_t *)puVar9)->movement_flags >> 0) & 0xf
-+ ((uw_mobile_object_t *)puVar9)->tick_phase
+- (((uw_mobile_object_t *)mobile)->movement_flags >> 0) & 0xf
++ ((uw_mobile_object_t *)mobile)->tick_phase
 |
-- ((uw_mobile_object_t *)puVar9)->movement_flags & 0xf
-+ ((uw_mobile_object_t *)puVar9)->tick_phase
+- ((uw_mobile_object_t *)mobile)->movement_flags & 0xf
++ ((uw_mobile_object_t *)mobile)->tick_phase
 )
 
 ...>
@@ -29,17 +29,17 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (byte)(((uw_mobile_object_t *)puVar9)->movement_flags >> 4) & 0x7
-+ ((uw_mobile_object_t *)puVar9)->movement_mode
+- (byte)(((uw_mobile_object_t *)mobile)->movement_flags >> 4) & 0x7
++ ((uw_mobile_object_t *)mobile)->movement_mode
 |
-- (((uw_mobile_object_t *)puVar9)->movement_flags >> 4) & 0x7
-+ ((uw_mobile_object_t *)puVar9)->movement_mode
+- (((uw_mobile_object_t *)mobile)->movement_flags >> 4) & 0x7
++ ((uw_mobile_object_t *)mobile)->movement_mode
 |
-- (((uw_mobile_object_t *)puVar9)->movement_flags & 0x70) >> 4
-+ ((uw_mobile_object_t *)puVar9)->movement_mode
+- (((uw_mobile_object_t *)mobile)->movement_flags & 0x70) >> 4
++ ((uw_mobile_object_t *)mobile)->movement_mode
 |
-- ((uw_mobile_object_t *)puVar9)->movement_flags & 0x70
-+ (((uw_mobile_object_t *)puVar9)->movement_mode << 4)
+- ((uw_mobile_object_t *)mobile)->movement_flags & 0x70
++ (((uw_mobile_object_t *)mobile)->movement_mode << 4)
 )
 
 ...>
@@ -54,14 +54,14 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (((uw_mobile_object_t *)puVar9)->motion_flags & 0x7f) >> 0
-+ ((uw_mobile_object_t *)puVar9)->speed
+- (((uw_mobile_object_t *)mobile)->motion_flags & 0x7f) >> 0
++ ((uw_mobile_object_t *)mobile)->speed
 |
-- (((uw_mobile_object_t *)puVar9)->motion_flags >> 0) & 0x7f
-+ ((uw_mobile_object_t *)puVar9)->speed
+- (((uw_mobile_object_t *)mobile)->motion_flags >> 0) & 0x7f
++ ((uw_mobile_object_t *)mobile)->speed
 |
-- ((uw_mobile_object_t *)puVar9)->motion_flags & 0x7f
-+ ((uw_mobile_object_t *)puVar9)->speed
+- ((uw_mobile_object_t *)mobile)->motion_flags & 0x7f
++ ((uw_mobile_object_t *)mobile)->speed
 )
 
 ...>
@@ -76,20 +76,20 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (byte)(((uw_mobile_object_t *)puVar9)->motion_flags >> 7) & 0x1
-+ ((uw_mobile_object_t *)puVar9)->gravity_flag
+- (byte)(((uw_mobile_object_t *)mobile)->motion_flags >> 7) & 0x1
++ ((uw_mobile_object_t *)mobile)->gravity_flag
 |
-- (((uw_mobile_object_t *)puVar9)->motion_flags >> 7) & 0x1
-+ ((uw_mobile_object_t *)puVar9)->gravity_flag
+- (((uw_mobile_object_t *)mobile)->motion_flags >> 7) & 0x1
++ ((uw_mobile_object_t *)mobile)->gravity_flag
 |
-- (((uw_mobile_object_t *)puVar9)->motion_flags & 0x80) >> 7
-+ ((uw_mobile_object_t *)puVar9)->gravity_flag
+- (((uw_mobile_object_t *)mobile)->motion_flags & 0x80) >> 7
++ ((uw_mobile_object_t *)mobile)->gravity_flag
 |
-- ((uw_mobile_object_t *)puVar9)->motion_flags >> 7
-+ ((uw_mobile_object_t *)puVar9)->gravity_flag
+- ((uw_mobile_object_t *)mobile)->motion_flags >> 7
++ ((uw_mobile_object_t *)mobile)->gravity_flag
 |
-- ((uw_mobile_object_t *)puVar9)->motion_flags & 0x80
-+ (((uw_mobile_object_t *)puVar9)->gravity_flag << 7)
+- ((uw_mobile_object_t *)mobile)->motion_flags & 0x80
++ (((uw_mobile_object_t *)mobile)->gravity_flag << 7)
 )
 
 ...>
@@ -104,20 +104,20 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (byte)(((uw_mobile_object_t *)puVar9)->attack_pitch >> 3) & 0x1f
-+ ((uw_mobile_object_t *)puVar9)->pitch
+- (byte)(((uw_mobile_object_t *)mobile)->attack_pitch >> 3) & 0x1f
++ ((uw_mobile_object_t *)mobile)->pitch
 |
-- (((uw_mobile_object_t *)puVar9)->attack_pitch >> 3) & 0x1f
-+ ((uw_mobile_object_t *)puVar9)->pitch
+- (((uw_mobile_object_t *)mobile)->attack_pitch >> 3) & 0x1f
++ ((uw_mobile_object_t *)mobile)->pitch
 |
-- (((uw_mobile_object_t *)puVar9)->attack_pitch & 0xf8) >> 3
-+ ((uw_mobile_object_t *)puVar9)->pitch
+- (((uw_mobile_object_t *)mobile)->attack_pitch & 0xf8) >> 3
++ ((uw_mobile_object_t *)mobile)->pitch
 |
-- ((uw_mobile_object_t *)puVar9)->attack_pitch >> 3
-+ ((uw_mobile_object_t *)puVar9)->pitch
+- ((uw_mobile_object_t *)mobile)->attack_pitch >> 3
++ ((uw_mobile_object_t *)mobile)->pitch
 |
-- ((uw_mobile_object_t *)puVar9)->attack_pitch & 0xf8
-+ (((uw_mobile_object_t *)puVar9)->pitch << 3)
+- ((uw_mobile_object_t *)mobile)->attack_pitch & 0xf8
++ (((uw_mobile_object_t *)mobile)->pitch << 3)
 )
 
 ...>
@@ -132,14 +132,14 @@ typedef byte, uw_mobile_object_t;
 R F(...) {
 <...
 (
-- (((uw_mobile_object_t *)puVar9)->heading_flags & 0x1f) >> 0
-+ ((uw_mobile_object_t *)puVar9)->fine_heading
+- (((uw_mobile_object_t *)mobile)->heading_flags & 0x1f) >> 0
++ ((uw_mobile_object_t *)mobile)->fine_heading
 |
-- (((uw_mobile_object_t *)puVar9)->heading_flags >> 0) & 0x1f
-+ ((uw_mobile_object_t *)puVar9)->fine_heading
+- (((uw_mobile_object_t *)mobile)->heading_flags >> 0) & 0x1f
++ ((uw_mobile_object_t *)mobile)->fine_heading
 |
-- ((uw_mobile_object_t *)puVar9)->heading_flags & 0x1f
-+ ((uw_mobile_object_t *)puVar9)->fine_heading
+- ((uw_mobile_object_t *)mobile)->heading_flags & 0x1f
++ ((uw_mobile_object_t *)mobile)->fine_heading
 )
 
 ...>

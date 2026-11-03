@@ -1,0 +1,125 @@
+"""Remove reviewed, unread spawn byte captures; preserve all live temporaries."""
+from pathlib import Path
+import json
+import re
+from apply_exact_source_rules import NONCODE
+HERE = Path(__file__).resolve().parent
+FUNCTION = 'spawn_object_near_player'
+ORIGINAL = ('uw_object_hdr_t *spawn_object_near_player()\n'
+ '\n'
+ '{\n'
+ '  byte bVar1;\n'
+ '  byte bVar2;\n'
+ '  byte bVar3;\n'
+ '  char cVar4;\n'
+ '  short sVar5;\n'
+ '  uw_projectile_object_t *puVar6;\n'
+ '  uint uVar7;\n'
+ '  int iVar8;\n'
+ '  char *pbTile;\n'
+ '  ushort uVar9;\n'
+ '\n'
+ '  puVar6 = (uw_projectile_object_t *)alloc_object_slot(1);\n'
+ '  if (puVar6 == NULL) {\n'
+ 'LAB_0004b06c:\n'
+ '    puVar6 = NULL;\n'
+ '  }\n'
+ '  else {\n'
+ '    puVar6->hdr.next = 0;\n'
+ '    uVar7 = puVar6->hdr.type_flags | 0x8000;\n'
+ '    puVar6->hdr.is_quant = 1;\n'
+ '    puVar6->hdr.link = 1;\n'
+ '    puVar6->hdr.object_id = (int)DAT_00202a38 & 0x1ff;\n'
+ '    uVar7 = puVar6->hdr.type_flags;\n'
+ '    uVar9 = 0;\n'
+ '    if (DAT_00202a54 != 0) {\n'
+ '      uVar9 = ((uw_projectile_object_t *)DAT_00202a44)->fine_heading;\n'
+ '    }\n'
+ '    DAT_00202a54 = (((uw_object_hdr_t *)DAT_00202a44)->heading << 5) + DAT_00202a40 + uVar9 & 0xff;\n'
+ '    compute_object_placement_fields(puVar6,(int)DAT_00202a4c,(int)DAT_00202a50);\n'
+ '    puVar6->hdr.heading = (DAT_00202a54 >> 5) & 7;\n'
+ '    uVar7 = puVar6->hdr.position_word;\n'
+ '    puVar6->fine_heading = (byte)DAT_00202a54 & 0x1f;\n'
+ '    puVar6->heading = (byte)(char)DAT_00202a54;\n'
+ '    uVar9 = puVar6->hdr.type_flags;\n'
+ '    puVar6->hdr.doordir = 0;\n'
+ '    puVar6->hdr.zpos = ((uw_object_hdr_t *)DAT_00202a44)->zpos;\n'
+ '    uVar7 = puVar6->hdr.position_word;\n'
+ '    puVar6->hdr.xpos = ((uw_object_hdr_t *)DAT_00202a44)->xpos;\n'
+ '    uVar7 = puVar6->hdr.position_word;\n'
+ '    bVar1 = (byte)uVar7;\n'
+ '    bVar2 = (byte)(uVar7 >> 8);\n'
+ '    puVar6->hdr.ypos = ((uw_object_hdr_t *)DAT_00202a44)->ypos;\n'
+ '    bVar2 = puVar6->hdr.position_word_high;\n'
+ '    if ((byte) g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height != 0) {\n'
+ '      cVar4 = ordint_divmod(6,\n'
+ '                            (uint)(byte) g_object_type_props[(((uw_object_hdr_t '
+ '*)DAT_00202a44)->object_id)].height * 5).quot;\n'
+ "      puVar6->hdr.zpos = cVar4 + (char)DAT_00202a3c * '\\x02' + (bVar1 & 0x7f);\n"
+ '      bVar3 = puVar6->hdr.position_word_low;\n'
+ '      if ((DAT_00202a44 == g_player_object) && (0x50 < *(byte *)(DAT_00086df8 + 0xb9))) {\n'
+ "        puVar6->hdr.zpos = ((char)DAT_00202a3c * '\\x02' - (*(byte *)(DAT_00086df8 + 0xb9) >> 3)) + "
+ 'g_object_type_props[(((uw_object_hdr_t *)DAT_00202a44)->object_id)].height + (bVar1 & 0x7f);\n'
+ '      }\n'
+ '      iVar8 = check_object_drop_height((ushort *)puVar6, DAT_00202a44);\n'
+ '      if (iVar8 == 0) {\n'
+ '        free_object_slot(&puVar6->hdr);\n'
+ '        goto LAB_0004b06c;\n'
+ '      }\n'
+ '    }\n'
+ '    if ((puVar6->hdr.object_id & 0x1c0) != 0x40) {\n'
+ '      sVar5 = 0;\n'
+ '      iVar8 = (puVar6->hdr.xpos << 5) + (puVar6->tile_x << 8) + 0xf;\n'
+ '      puVar6->precise_x = (ushort)iVar8;\n'
+ '      iVar8 = (puVar6->hdr.ypos << 2) * 8 + (puVar6->tile_y << 8) + 0xf;\n'
+ '      puVar6->precise_y = (ushort)iVar8;\n'
+ '      iVar8 = (puVar6->hdr.zpos) << 3;\n'
+ '      puVar6->precise_z = (ushort)iVar8;\n'
+ '      if (((((uw_object_hdr_t *)DAT_00202a44)->object_id & 0x1c0) == 0x40) && (sVar5 = '
+ 'encode_object_slot_index(DAT_00202a44), 0xff < sVar5)) {\n'
+ '        sVar5 = 0;\n'
+ '      }\n'
+ '      puVar6->source_slot = (byte)(char)sVar5;\n'
+ '      puVar6->animation_flags = puVar6->animation_flags & 0x7f;\n'
+ '    }\n'
+ '    puVar6->pitch_flags = 1;\n'
+ '    puVar6->pitch = ((char)DAT_00202a3c + 16) & 0x1f;\n'
+ '    puVar6->speed = (byte)DAT_00202a48 & 0x7f;\n'
+ '    if (g_object_type_props[DAT_00202a38].can_have_owner) {\n'
+ '      uVar9 = puVar6->hdr.link_word;\n'
+ '      puVar6->hdr.owner = 0;\n'
+ '    }\n'
+ '    /* Was `iVar8 = tilemap_lookup(...); object_list_insert_head(iVar8 + 2,...)` -- tilemap_lookup\n'
+ '       returns a real 64-bit tile-record pointer, but iVar8 is `int` (used throughout this function\n'
+ '       for genuine small integer scratch math, so not safe to widen wholesale)... */\n'
+ '    pbTile = (char *)tilemap_lookup(puVar6->tile_x,puVar6->tile_y);\n'
+ '    DEBUG(INFO, "[throw] object id=0x%03x spawned at tile=(%d,%d)\\n",\n'
+ '          (unsigned)(puVar6->hdr.object_id), puVar6->tile_x,\n'
+ '          puVar6->tile_y);\n'
+ '    object_list_insert_head(pbTile + 2, &puVar6->hdr);\n'
+ '    play_sound_effect_at_object(10, (ushort *)puVar6, 0);\n'
+ '    /* The original FUN_0004ad10 returns the mobile object here.\n'
+ '       mobile_object_tick integrates its flight and sync_object_tile_position\n'
+ '       converts it to an immobile item only once its velocity reaches zero. */\n'
+ '  }\n'
+ '  return (uw_object_hdr_t *)puVar6;\n'
+ '}')
+REMOVALS = ['  byte bVar2;\n',
+ '  byte bVar3;\n',
+ '    bVar2 = (byte)(uVar7 >> 8);\n',
+ '    bVar2 = puVar6->hdr.position_word_high;\n',
+ '      bVar3 = puVar6->hdr.position_word_low;\n']
+
+def converted():
+    result=ORIGINAL
+    for statement in REMOVALS:
+        assert result.count(statement)==1,statement
+        result=result.replace(statement,'')
+    assert not re.search(r'\bbVar[23]\b',NONCODE.sub(' ',result))
+    return result
+
+def generate():
+    return json.dumps(dict(function=FUNCTION,before=ORIGINAL,after=converted()),indent=2)+'\n'
+
+if __name__ == '__main__':
+    (HERE/'dead-spawn-byte-views.json').write_text(generate())

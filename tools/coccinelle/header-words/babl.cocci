@@ -1642,172 +1642,6 @@ R F(...) {
 ...>
 }
 
-@word_21_0@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 0)
-+ ((uw_object_hdr_t *)obj_rec)->type_flags
-|
-- ((ushort *)obj_rec)[0]
-+ ((uw_object_hdr_t *)obj_rec)->type_flags
-|
-- *(ushort *)obj_rec
-+ ((uw_object_hdr_t *)obj_rec)->type_flags
-|
-- *(ushort *)(obj_rec + 0)
-+ ((uw_object_hdr_t *)obj_rec)->type_flags
-)
-...>
-}
-
-@word_21_1@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 2)
-+ ((uw_object_hdr_t *)obj_rec)->position_word
-|
-- ((ushort *)obj_rec)[1]
-+ ((uw_object_hdr_t *)obj_rec)->position_word
-|
-- *(ushort *)(obj_rec + 2)
-+ ((uw_object_hdr_t *)obj_rec)->position_word
-)
-...>
-}
-
-@word_21_2@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 4)
-+ ((uw_object_hdr_t *)obj_rec)->chain_word
-|
-- ((ushort *)obj_rec)[2]
-+ ((uw_object_hdr_t *)obj_rec)->chain_word
-|
-- *(ushort *)(obj_rec + 4)
-+ ((uw_object_hdr_t *)obj_rec)->chain_word
-)
-...>
-}
-
-@word_21_3@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_rec + 6)
-+ ((uw_object_hdr_t *)obj_rec)->link_word
-|
-- ((ushort *)obj_rec)[3]
-+ ((uw_object_hdr_t *)obj_rec)->link_word
-|
-- *(ushort *)(obj_rec + 6)
-+ ((uw_object_hdr_t *)obj_rec)->link_word
-)
-...>
-}
-
-@word_22_0@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 0)
-+ ((uw_object_hdr_t *)obj_ptr)->type_flags
-|
-- ((ushort *)obj_ptr)[0]
-+ ((uw_object_hdr_t *)obj_ptr)->type_flags
-|
-- *(ushort *)obj_ptr
-+ ((uw_object_hdr_t *)obj_ptr)->type_flags
-|
-- *(ushort *)(obj_ptr + 0)
-+ ((uw_object_hdr_t *)obj_ptr)->type_flags
-)
-...>
-}
-
-@word_22_1@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 2)
-+ ((uw_object_hdr_t *)obj_ptr)->position_word
-|
-- ((ushort *)obj_ptr)[1]
-+ ((uw_object_hdr_t *)obj_ptr)->position_word
-|
-- *(ushort *)(obj_ptr + 2)
-+ ((uw_object_hdr_t *)obj_ptr)->position_word
-)
-...>
-}
-
-@word_22_2@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 4)
-+ ((uw_object_hdr_t *)obj_ptr)->chain_word
-|
-- ((ushort *)obj_ptr)[2]
-+ ((uw_object_hdr_t *)obj_ptr)->chain_word
-|
-- *(ushort *)(obj_ptr + 4)
-+ ((uw_object_hdr_t *)obj_ptr)->chain_word
-)
-...>
-}
-
-@word_22_3@
-type R;
-identifier F =~ "^\(handle_barter_slot_click\)$";
-typedef ushort, uw_object_hdr_t;
-@@
-R F(...) {
-<...
-(
-- *(ushort *)((char *)obj_ptr + 6)
-+ ((uw_object_hdr_t *)obj_ptr)->link_word
-|
-- ((ushort *)obj_ptr)[3]
-+ ((uw_object_hdr_t *)obj_ptr)->link_word
-|
-- *(ushort *)(obj_ptr + 6)
-+ ((uw_object_hdr_t *)obj_ptr)->link_word
-)
-...>
-}
-
 @word_23_0@
 type R;
 identifier F =~ "^\(redraw_barter_slot_icon\)$";
@@ -2515,6 +2349,219 @@ R F(...) {
 |
 - puVar2[3]
 + ((uw_object_hdr_t *)puVar2)->link_word
+)
+...>
+}
+
+@barter_click_word_0_0@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 0)
++ ((uw_object_hdr_t *)obj_rec)->type_flags
+|
+- ((ushort *)obj_rec)[0]
++ ((uw_object_hdr_t *)obj_rec)->type_flags
+|
+- *(ushort *)obj_rec
++ ((uw_object_hdr_t *)obj_rec)->type_flags
+)
+...>
+}
+
+@barter_click_word_0_1@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 2)
++ ((uw_object_hdr_t *)obj_rec)->position_word
+|
+- ((ushort *)obj_rec)[1]
++ ((uw_object_hdr_t *)obj_rec)->position_word
+)
+...>
+}
+
+@barter_click_word_0_2@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 4)
++ ((uw_object_hdr_t *)obj_rec)->chain_word
+|
+- ((ushort *)obj_rec)[2]
++ ((uw_object_hdr_t *)obj_rec)->chain_word
+)
+...>
+}
+
+@barter_click_word_0_3@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_rec + 6)
++ ((uw_object_hdr_t *)obj_rec)->link_word
+|
+- ((ushort *)obj_rec)[3]
++ ((uw_object_hdr_t *)obj_rec)->link_word
+)
+...>
+}
+
+@barter_click_word_1_0@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 0)
++ ((uw_object_hdr_t *)split_rec)->type_flags
+|
+- ((ushort *)split_rec)[0]
++ ((uw_object_hdr_t *)split_rec)->type_flags
+|
+- *(ushort *)split_rec
++ ((uw_object_hdr_t *)split_rec)->type_flags
+)
+...>
+}
+
+@barter_click_word_1_1@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 2)
++ ((uw_object_hdr_t *)split_rec)->position_word
+|
+- ((ushort *)split_rec)[1]
++ ((uw_object_hdr_t *)split_rec)->position_word
+)
+...>
+}
+
+@barter_click_word_1_2@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 4)
++ ((uw_object_hdr_t *)split_rec)->chain_word
+|
+- ((ushort *)split_rec)[2]
++ ((uw_object_hdr_t *)split_rec)->chain_word
+)
+...>
+}
+
+@barter_click_word_1_3@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)split_rec + 6)
++ ((uw_object_hdr_t *)split_rec)->link_word
+|
+- ((ushort *)split_rec)[3]
++ ((uw_object_hdr_t *)split_rec)->link_word
+)
+...>
+}
+
+@barter_click_word_2_0@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 0)
++ ((uw_object_hdr_t *)obj_ptr)->type_flags
+|
+- ((ushort *)obj_ptr)[0]
++ ((uw_object_hdr_t *)obj_ptr)->type_flags
+|
+- *(ushort *)obj_ptr
++ ((uw_object_hdr_t *)obj_ptr)->type_flags
+)
+...>
+}
+
+@barter_click_word_2_1@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 2)
++ ((uw_object_hdr_t *)obj_ptr)->position_word
+|
+- ((ushort *)obj_ptr)[1]
++ ((uw_object_hdr_t *)obj_ptr)->position_word
+)
+...>
+}
+
+@barter_click_word_2_2@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 4)
++ ((uw_object_hdr_t *)obj_ptr)->chain_word
+|
+- ((ushort *)obj_ptr)[2]
++ ((uw_object_hdr_t *)obj_ptr)->chain_word
+)
+...>
+}
+
+@barter_click_word_2_3@
+type R;
+identifier F =~ "^\(handle_barter_slot_click\)$";
+typedef ushort, uw_object_hdr_t;
+@@
+R F(...) {
+<...
+(
+- *(ushort *)((char *)obj_ptr + 6)
++ ((uw_object_hdr_t *)obj_ptr)->link_word
+|
+- ((ushort *)obj_ptr)[3]
++ ((uw_object_hdr_t *)obj_ptr)->link_word
 )
 ...>
 }

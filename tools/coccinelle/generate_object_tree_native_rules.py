@@ -1,0 +1,19 @@
+"""Name common-header traversal/size fields without caching callback-visible links."""
+from pathlib import Path
+import json
+HERE = Path(__file__).resolve().parent
+ENTRIES = [{'function': 'walk_object_tree', 'before': "int walk_object_tree(void *object_ptr, int (*callback)())\n{\n  char *object = (char *)object_ptr;\n  int iVar1;\n  char *pcVar2;\n\n  /* Dropped argument (both call sites below): callback is a callback (object_exceeds_size_threshold\n     at every call site reached so far) that declares one parameter -- the object/link being tested,\n     i.e. this function's own object -- but was invoked bare... */\n  iVar1 = ((int (*)(void *))callback)(object);\n  while( true ) {\n    if (iVar1 != 0) {\n      return 1;\n    }\n    if (((*(byte *)(object + 1) & 0x80) == 0) && ((*(ushort *)(object + 6) & 0xffc0) != 0)) {\n      /* Was `undefined4 uVar2` -- truncated resolve_object_link's real\n         pointer return before forwarding it into the recursive call\n         just below, same class as object itself above. */\n      pcVar2 = (char *)resolve_object_link((ushort *)(object + 6)); /* confirmed via ARM disassembly, 0x52b54 */\n      iVar1 = walk_object_tree(pcVar2,callback);\n      if (iVar1 != 0) {\n        return 1;\n      }\n    }\n    if ((*(ushort *)(object + 4) & 0xffc0) == 0) break;\n    object = (char *)resolve_object_link((ushort *)(object + 4)); /* confirmed via ARM disassembly, 0x52b84 */\n    iVar1 = ((int (*)(void *))callback)(object);\n  }\n  return 0;\n}", 'replacements': [('  char *object = (char *)object_ptr;', '  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;'), ('  char *pcVar2;', '  uw_object_hdr_t *contents;'), ('((*(byte *)(object + 1) & 0x80) == 0) && ((*(ushort *)(object + 6) & 0xffc0) != 0)', '(object->is_quant == 0) && (object->link != 0)'), ('pcVar2 = (char *)resolve_object_link((ushort *)(object + 6));', 'contents = resolve_object_link(&object->link_word);'), ('iVar1 = walk_object_tree(pcVar2,callback);', 'iVar1 = walk_object_tree(contents,callback);'), ('if ((*(ushort *)(object + 4) & 0xffc0) == 0) break;', 'if (object->next == 0) break;'), ('object = (char *)resolve_object_link((ushort *)(object + 4));', 'object = resolve_object_link(&object->chain_word);')]}, {'function': 'object_exceeds_size_threshold', 'before': 'int object_exceeds_size_threshold(void *object_ptr)\n{\n  ushort *object = (ushort *)object_ptr;\n  ushort uVar1;\n  undefined4 uVar2;\n  short sVar3;\n  int iVar4;\n  \n  uVar1 = *object;\n  if ((uVar1 & 0x2000) == 0) {\n    if (((uVar1 & 0x8000) == 0) || ((object[3] & 0x8000) != 0)) {\n      sVar3 = 0;\n    }\n    else {\n      sVar3 = (object[3] >> 6) - 1;\n    }\n    iVar4 = (int)sVar3;\n    if (iVar4 < 0) {\n      iVar4 = iVar4 + 1;\n    }\n    uVar2 = 1;\n    if ((int)(((byte) g_object_type_props[(uVar1 & 0x1ff)].class_flags >> 2 & 0xf) + (iVar4 >> 1)) <=\n        (int)DAT_002046b0) {\n      uVar2 = 0;\n    }\n  }\n  else {\n    uVar2 = 1;\n  }\n  return uVar2;\n}', 'replacements': [('  ushort *object = (ushort *)object_ptr;', '  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;'), ('  uVar1 = *object;', '  uVar1 = object->type_flags;'), ('  if ((uVar1 & 0x2000) == 0) {', '  if (object->doordir == 0) {'), ('((uVar1 & 0x8000) == 0) || ((object[3] & 0x8000) != 0)', '(object->is_quant == 0) || ((object->link & 0x200) != 0)'), ('sVar3 = (object[3] >> 6) - 1;', 'sVar3 = object->link - 1;')]}]
+
+def recipe(entry):
+    result = entry['before']
+    for before, after in entry['replacements']:
+        assert result.count(before) == 1
+        result = result.replace(before, after)
+    return dict(function=entry['function'],before=entry['before'],after=result)
+
+def generate(entry):
+    return json.dumps(recipe(entry),indent=2)+'\n'
+
+if __name__ == '__main__':
+    for entry in ENTRIES:
+        (HERE/('object-tree-native-'+entry['function']+'.json')).write_text(generate(entry))

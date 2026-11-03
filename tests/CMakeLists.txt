@@ -1262,6 +1262,63 @@ add_test(NAME walk_target_fields
 add_test(NAME target_coordinate_fields
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_target_coordinate_fields.py")
+add_test(NAME linked_object_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_linked_object_fields.py")
+add_test(NAME effect_property_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_effect_property_fields.py")
+add_test(NAME consumer_view_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_consumer_view_fields.py")
+add_test(NAME container_state_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_container_state_fields.py")
+add_test(NAME npc_tick_animation_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_npc_tick_animation_fields.py")
+add_test(NAME default_npc_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_default_npc_fields.py")
+add_test(NAME barter_click_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_barter_click_fields.py")
+add_test(NAME interaction_stack_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_interaction_stack_fields.py")
+add_test(NAME equipment_id_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_equipment_id_fields.py")
+add_test(NAME rest_height_field
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_rest_height_field.py")
+add_test(NAME placement_class_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_placement_class_fields.py")
+add_test(NAME field_consumers
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_field_consumers.py")
+add_test(NAME inventory_native_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_inventory_native_fields.py")
+add_test(NAME save_relocation_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_save_relocation_fields.py")
+add_test(NAME placement_init_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_placement_init_fields.py")
+add_test(NAME world_placement_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_world_placement_fields.py")
+add_test(NAME object_init_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_object_init_fields.py")
+add_test(NAME settle_native_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_settle_native_fields.py")
+add_test(NAME object_tree_native_fields
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/test_object_tree_native_fields.py")
 # Coccinelle semantic-patch checks: they re-parse the whole of src/ with spatch
 # and take minutes where the rest of the suite takes seconds (530s against 6s
 # when measured on this tree). They are a tool for large type-conversion

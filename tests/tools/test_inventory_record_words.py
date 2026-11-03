@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/coccinelle'))
 from generate_inventory_record_rules import generate, changes
 from extract_functions import extract
+from generate_inventory_native_rules import ENTRIES as NATIVE_ENTRIES, recipe as native_recipe
+from apply_exact_source_rules import apply as apply_native
 PATCH = ROOT / 'tools/coccinelle/inventory-record-words.cocci'
 assert PATCH.read_text() == generate()
 SITES = {
@@ -20,6 +22,8 @@ SITES = {
 current = {name: extract((ROOT / 'src' / source).read_text(), name)
            for name, source in SITES.items()}
 original = dict(current)
+for entry in NATIVE_ENTRIES:
+    original[entry["function"]] = entry["before"]
 for change in changes():
     function = change['function']
     after, before = change['after'], change['before']
@@ -43,6 +47,12 @@ with tempfile.TemporaryDirectory() as tmp:
             '--all-includes', '--include-headers-for-types', '-I', str(ROOT),
             '-I', str(ROOT / 'src'), '--in-place'], capture_output=True, text=True)
         assert result.returncode == 0, result.stdout + result.stderr
+        # Compose the legacy byte-copy recipe with the separately reviewed
+        # native-pointer stage; retain both original conversion oracles.
+        text = path.read_text()
+        for entry in NATIVE_ENTRIES:
+            text, _ = apply_native(text, native_recipe(entry))
+        path.write_text(text)
     path.write_text('#include "src/headers/uw.h"\n' + '\n'.join(original.values()))
     apply()
     for name in SITES:
