@@ -11,6 +11,7 @@ int g_face_shade_active, g_face_shade_fixed;
 double g_face_shade_x0, g_face_shade_y0, g_face_shade_s0, g_face_shade_dx, g_face_shade_dy;
 int uw_fullscreen_scene_height(void) { return 168; }
 double uw_fullscreen_proj_cy(void) { return 84.0; }
+int uw_editor_active(void) { return 0; }
 int DAT_000c8c98;
 void *DAT_000c4838_backing[4096];
 void *g_tile_texptr_emit[UW_MAX_VIS_TILES], *g_tile_texptr_out[UW_MAX_VIS_TILES];

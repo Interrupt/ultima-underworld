@@ -32,6 +32,7 @@ void free_level_tile_arena();
 int load_level_object_table(byte *archive_handle, int level_number);
 void reset_level_object_arena();
 int load_level(int level_number);
+int load_level_from_archive(int level_number, char *archive_path);
 int transition_to_level(int from_level, int to_level);
 void save_or_restore_level_special_state(short level_number, short mode);
 int trigger_random_level_special_event(short chance_scale);

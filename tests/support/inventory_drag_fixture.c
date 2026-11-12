@@ -158,3 +158,4 @@ void inventory_drag_fixture_reset(void)
     DAT_00201b64 = DAT_00201c90 = DAT_00201c84 = g_force_flush = 0;
 }
 void inventory_drag_fixture_dispose(void) {}
+int uw_editor_active(void) { return 0; }

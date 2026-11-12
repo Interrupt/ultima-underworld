@@ -1,6 +1,7 @@
 /* Sprite blitting and the sprite-list system: raw/remapped sprite blitting, sprite-by-id drawing,
    and the sprite list's own entry allocation/positioning/lifetime management (the moving-object-
    overlay renderer used for HUD icons, thrown/dropped items, and other transient sprites). */
+#include "headers/editor.h"
 #include "headers/bitmap.h"
 #include "headers/options.h"
 #include "headers/debug.h"
@@ -761,6 +762,18 @@ int decode_tile_object_billboard_texture(short frame, uint unused)
   int resolved;
 
   (void)unused;
+  /* HACK: not original behaviour -- the level editor (editor.c) draws objects as editor sprites (an object's icon, or a marker for what has none)
+     in its Triggers and Markers view modes: frames in this range are those sprites, whose pixels it supplies. */
+  const unsigned char *editor_pixels = NULL;
+  int editor_w = 0, editor_h = 0;
+  if (frame >= UW_EDITOR_SPRITE_BASE && frame < UW_EDITOR_SPRITE_BASE + 0x200)
+    editor_pixels = uw_editor_marker_pixels(frame - UW_EDITOR_SPRITE_BASE, &editor_w, &editor_h);
+  if (editor_pixels) {
+    bVar1 = (byte)editor_w;
+    bVar2 = (byte)editor_h;
+    pcVar3 = (char *)editor_pixels;
+  }
+  else {
   if (frame < 0) {
     /* Escape hatch: a negative frame names an ABSOLUTE frame directly (-frame), bypassing
        resolve_sprite_id_to_frame's id-range resolution entirely. */
@@ -780,6 +793,7 @@ int decode_tile_object_billboard_texture(short frame, uint unused)
        all-zero (fully transparent) bitmap, so every object billboard sampled nothing. */
     pcVar3 = (char *)decompress_gr_bitmap(pcVar3 + 4,&DAT_00202520 + (uint)(byte)pcVar3[3] * 0x10,
                                   *pcVar3);
+  }
   }
   iVar5 = (int)(short)(ushort)bVar2 * (int)(short)(ushort)bVar1;
   /* decode this object's sprite into a fresh per-record buffer (keep the

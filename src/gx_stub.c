@@ -8,6 +8,7 @@
 #include "headers/demomode.h"
 #include "headers/democapture.h"
 #include "headers/debug_ui.h"
+#include "headers/editor.h"
 #include "headers/mouselook.h"
 #include "headers/audio.h"
 #include "headers/platform_music.h"
@@ -93,6 +94,12 @@ extern short g_movement_mode;             /* pending movement command (6/7 jump)
    uw_inject_key_down/up) can drive the same movement path -- SDL_PushEvent
    does not update SDL's own keyboard-state array. Indexed by SDL scancode. */
 static unsigned char g_synth_scancode_held[SDL_NUM_SCANCODES];
+
+/* Whether a key is held, physically or by an injected demo key (the editor flies the camera with these). */
+int uw_scancode_held(int sc)
+{
+    return (sc > 0 && sc < SDL_NUM_SCANCODES) && (SDL_GetKeyboardState(NULL)[sc] || g_synth_scancode_held[sc]);
+}
 
 static SDL_Window *g_win;
 static SDL_Renderer *g_ren;
@@ -188,7 +195,7 @@ static void poll_dungeon_movement_keys(int game_frame_due)
     /* With the debug console open, only injected (console command) keys count -- the human is
        typing into the console, not walking. */
     const Uint8 *ks = SDL_GetKeyboardState(NULL);
-    const int physical_keys = !dbgui_visible();
+    const int physical_keys = !dbgui_visible() && !uw_editor_active();
     #define UW_HELD(sc) ((physical_keys && ks[(sc)]) || g_synth_scancode_held[(sc)])
     /* Arrow keys: up forward (run), down backward, left/right turn -- the same held-key state as
        WASD/X, so they combine with a jump or each other exactly as those do. */
@@ -369,6 +376,7 @@ void uw_pump_events(void) {
     democapture_tick();
     demomode_pump();
     uw_mouselook_refresh();
+    uw_editor_tick();
     /* poll_dungeon_movement_keys() reads physical keyboard state directly (not the SDL event
        queue), so swallowing key EVENTS below (the dbgui_visible() checks in the
        SDL_KEYDOWN/TEXTINPUT cases) doesn't stop it on its own... */
@@ -419,6 +427,31 @@ void uw_pump_events(void) {
                    game function is bound to backtick to preserve. */
                 if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_BACKQUOTE) {
                     dbgui_toggle();
+                    return;
+                }
+                if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_s &&
+                    (ev.key.keysym.mod & KMOD_CTRL) && uw_editor_active()) {
+                    uw_editor_save();   /* Ctrl+S saves the level being edited */
+                    return;
+                }
+                if (ev.type == SDL_KEYDOWN && uw_editor_active() && !dbgui_visible()) {
+                    /* the editor's own keys: Escape and the menu it opens, Page Up and Page Down change level */
+                    if (uw_editor_menu_open()) { if (!ev.key.repeat || ev.key.keysym.sym == SDLK_UP || ev.key.keysym.sym == SDLK_DOWN) uw_editor_menu_key((int)ev.key.keysym.sym); return; }
+                    if (ev.key.keysym.sym == SDLK_ESCAPE) { uw_editor_escape(); return; }
+                    if (ev.key.keysym.sym == SDLK_BACKSPACE && !ev.key.repeat) { uw_editor_command(1); return; }
+                    if (ev.key.keysym.sym == SDLK_r && (ev.key.keysym.mod & KMOD_CTRL) && !ev.key.repeat) { uw_editor_command(0); return; }
+                    if (ev.key.keysym.sym == SDLK_PAGEUP && !ev.key.repeat) { uw_editor_page_level(1); return; }
+                    if (ev.key.keysym.sym == SDLK_PAGEDOWN && !ev.key.repeat) { uw_editor_page_level(-1); return; }
+                }
+                if (ev.type == SDL_KEYDOWN && (ev.key.keysym.mod & KMOD_CTRL) && uw_editor_active() &&
+                    (ev.key.keysym.sym == SDLK_z || ev.key.keysym.sym == SDLK_y)) {
+                    /* Ctrl+Z undoes, Ctrl+Y or Ctrl+Shift+Z redoes */
+                    if (ev.key.keysym.sym == SDLK_y || (ev.key.keysym.mod & KMOD_SHIFT)) uw_editor_redo();
+                    else uw_editor_undo();
+                    return;
+                }
+                if (ev.type == SDL_KEYDOWN && !ev.key.repeat && ev.key.keysym.sym == SDLK_F9) {
+                    uw_editor_toggle(0);   /* the level editor, see editor.c */
                     return;
                 }
                 /* While the debug UI is visible, it owns ALL keyboard input -- a debug/dev tool,
@@ -539,6 +572,9 @@ void uw_pump_events(void) {
                 }
                 return;
             }
+            case SDL_MOUSEWHEEL:
+                if (uw_editor_active()) uw_editor_wheel(g_mouse_x, g_mouse_y, ev.wheel.y);
+                return;
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
             case SDL_MOUSEMOTION: {
@@ -581,6 +617,13 @@ void uw_pump_events(void) {
                         landscape_x = cx;
                         landscape_y = cy;
                     }
+                }
+                if (uw_editor_active() && !dbgui_visible()) {
+                    /* The editor owns the mouse; plain motion still goes to the game so the cursor follows. */
+                    if (ev.type == SDL_MOUSEBUTTONDOWN) uw_editor_click(landscape_x, landscape_y, ev.button.button);
+                    else if (ev.type == SDL_MOUSEBUTTONUP) uw_editor_mouse_up(landscape_x, landscape_y, ev.button.button);
+                    else uw_editor_mouse_motion(landscape_x, landscape_y);
+                    if (ev.type != SDL_MOUSEMOTION) return;
                 }
                 if (dbgui_visible() && !(dbgui_console_active() && ev.button.which == UW_SYNTH_MOUSE)) {
                     if (ev.type == SDL_MOUSEBUTTONDOWN && ev.button.button == SDL_BUTTON_LEFT && !dbgui_console_active()) {
@@ -1243,7 +1286,7 @@ int GXEndDraw(void) {
     }
     /* HACK: not original behaviour -- the fullscreen view (fullscreen_view.c) presents its scene with
        the HUD overlays on top, unless a modal screen is up. */
-    if (!g_present_state.modal_depth) uw_fullscreen_compose(g_display_buf);
+    if (!g_present_state.modal_depth && !uw_editor_compose(g_display_buf)) uw_fullscreen_compose(g_display_buf);
     uw_composite_desktop_cursor(g_display_buf);
     SDL_UpdateTexture(g_tex, NULL, g_display_buf, GX_W * sizeof(unsigned short));
     SDL_RenderClear(g_ren);

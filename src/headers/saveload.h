@@ -28,6 +28,7 @@ void draw_save_load_slot_list();
 int write_level_quest_flags_to_archive(byte *archive, int level_number);
 int journey_onward_load_slot_menu();
 int commit_level_to_save_slot(int level_number);
+int commit_level_to_archive(int level_number, char *archive_path, int with_automap);
 void probe_save_slots(char *slot_descriptions, ushort *used_mask);
 void handle_save_load_menu_action(short action, int slot);
 int load_game_from_slot(char slot_digit);

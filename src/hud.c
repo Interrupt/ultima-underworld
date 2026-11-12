@@ -1,6 +1,7 @@
 /* The HUD: dirty-rect tracking/flush, mode icons, cursor-mode button clicks, the per-frame HUD
    draw/tick dispatch (vitals bar, dragon reaction, compass needle, panel transitions), and the
    message scroll panel (word-wrap, line-by-line scroll, draw). */
+#include "headers/editor.h"
 #include "headers/mouselook.h"
 #include "headers/hud.h"
 #include "headers/options.h"
@@ -5818,7 +5819,8 @@ void update_hotspot_cursor_icon()
   /* Mouselook pins the cursor to the viewport centre: show the plain default ('X') cursor, not
      whatever walk-arrow hotspot the (unused) real pointer position would select. Same override
      guard as the body below, so a held item / targeting icon keeps its own cursor. */
-  if (uw_mouselook_active()) {
+  /* The level editor always shows the plain cursor too: it has no walk-arrow hotspots. */
+  if (uw_mouselook_active() || uw_editor_active()) {
     if (DAT_00204858 < '\x01') {
       DAT_00086970 = -1;   /* force a fresh hotspot scan once mouselook ends */
       if (DAT_00204788 != 0x106c) set_cursor_sprite_id(0x106c);

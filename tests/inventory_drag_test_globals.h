@@ -31,3 +31,4 @@ extern int g_force_flush;
 #include "gx_pacing_test_api.h"
 #include <math.h>
 #include <math.h>
+int uw_editor_active(void);

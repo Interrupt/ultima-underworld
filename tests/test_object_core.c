@@ -7,6 +7,7 @@ static uw_object_hdr_t stationary[768];
 char *DAT_002046b8 = (char *)mobile;
 char *DAT_002046c4 = (char *)stationary;
 ushort *DAT_002046b4;
+char *DAT_002029cc;
 static int allocation_region;
 static int allocation_fails;
 
@@ -96,6 +97,40 @@ static void test_chain_search_follows_next_and_contents_words(void)
     stationary[1].is_quant = 1;
     cursor = &root;
     TEST_ASSERT_NULL(find_object_in_chain(&cursor, 1, 1, 0, 3));
+}
+/* find_object_in_world, the game's own find-next (the level editor's Find uses it): a scan of the tile chains in row order, into containers,
+   that leaves the cursor on the tile it found the object at; calling it again from the next tile finds the next object. */
+static void test_world_search_scans_tiles_in_order_and_into_containers(void)
+{
+    static uw_tile_t tiles[4096];
+    short x = 0, y = 0;
+    memset(tiles, 0, sizeof tiles);
+    DAT_002029cc = (char *)tiles;
+    mobile[2].hdr.object_id = 0x43;
+    mobile[3].hdr.object_id = 0x43;
+    mobile[4].hdr.object_id = 0x43;
+    stationary[0].object_id = 0x80;   /* a container holding slot 4 */
+    stationary[0].link = 4;
+    tiles[2 * 64 + 3].obj_head = 2;
+    tiles[2 * 64 + 5].obj_head = 256;
+    tiles[7 * 64 + 1].obj_head = 3;
+    TEST_ASSERT_EQUAL_PTR(&mobile[2].hdr, find_object_in_world(1, 0, 3, &x, &y));
+    TEST_ASSERT_EQUAL_INT(3, x);
+    TEST_ASSERT_EQUAL_INT(2, y);
+    x++;
+    TEST_ASSERT_EQUAL_PTR(&mobile[4].hdr, find_object_in_world(1, 0, 3, &x, &y));   /* inside the container on the next tile */
+    TEST_ASSERT_EQUAL_INT(5, x);
+    TEST_ASSERT_EQUAL_INT(2, y);
+    x++;
+    TEST_ASSERT_EQUAL_PTR(&mobile[3].hdr, find_object_in_world(1, 0, 3, &x, &y));
+    TEST_ASSERT_EQUAL_INT(1, x);
+    TEST_ASSERT_EQUAL_INT(7, y);
+    x++;
+    TEST_ASSERT_NULL(find_object_in_world(1, 0, 3, &x, &y));
+    x = 0; y = 0;
+    TEST_ASSERT_NULL(find_object_in_world(1, 0, 9, &x, &y));   /* nothing of that quality */
+    x = 0x40; y = 6;   /* a cursor past the end of a row continues on the next */
+    TEST_ASSERT_EQUAL_PTR(&mobile[3].hdr, find_object_in_world(1, 0, 3, &x, &y));
 }
 static void test_encoded_slot_search_handles_nested_and_sibling_objects(void)
 {
@@ -197,6 +232,7 @@ int main(void)
     RUN_TEST(test_creation_propagates_allocation_failure);
     RUN_TEST(test_link_resolution_preserves_both_slot_strides);
     RUN_TEST(test_chain_search_follows_next_and_contents_words);
+    RUN_TEST(test_world_search_scans_tiles_in_order_and_into_containers);
     RUN_TEST(test_encoded_slot_search_handles_nested_and_sibling_objects);
     RUN_TEST(test_insert_append_and_unlink_preserve_low_link_bits);
     RUN_TEST(test_contents_weight_distinguishes_quantity_from_links);

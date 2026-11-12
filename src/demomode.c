@@ -1,5 +1,6 @@
 /* See demomode.h. */
 #include "headers/demomode.h"
+#include "headers/editor.h"
 #include "headers/debug_ui.h"
 #include "headers/options.h"
 #include "headers/uw.h"
@@ -950,6 +951,26 @@ static void demo_exec_line(char *p, Uint32 now) {
         return;
     }
 
+    if (strcasecmp(p, "EDITOR") == 0 || strncasecmp(p, "EDITOR ", 7) == 0) {
+        /* EDITOR [on|off|validate|save|undo|redo|selftest|escape|level <n>] -- the level editor (editor.c); bare EDITOR toggles it (the console
+           command). validate checks the object lists; save writes the level into the master DATA\\LEV.ARK. */
+        const char *arg = p[6] ? p + 7 : "";
+        if (strncasecmp(arg, "validate", 8) == 0) uw_editor_validate();
+        else if (strncasecmp(arg, "save", 4) == 0) uw_editor_save();
+        else if (strncasecmp(arg, "undo", 4) == 0) uw_editor_undo();
+        else if (strncasecmp(arg, "escape", 6) == 0) uw_editor_escape();
+        else if (strncasecmp(arg, "level ", 6) == 0) uw_editor_page_level(atoi(arg + 6) - (int)DAT_00201b68);
+        else if (strncasecmp(arg, "redo", 4) == 0) uw_editor_redo();
+        else if (strncasecmp(arg, "back", 4) == 0) uw_editor_command(1);
+        else if (strncasecmp(arg, "replace", 7) == 0) uw_editor_command(0);
+        else if (strncasecmp(arg, "selftest", 8) == 0) uw_editor_selftest();
+        else if (strncasecmp(arg, "on", 2) == 0) uw_editor_set(1);
+        else if (strncasecmp(arg, "off", 3) == 0) uw_editor_set(0);
+        else uw_editor_toggle(0);
+        g_demo_next_tick = now;
+        return;
+    }
+
     if (strncasecmp(p, "CONSOLE ", 8) == 0) {
         /* CONSOLE <line> -- types <line> into the open debug console and presses Enter, as untagged
            (human-looking) SDL events so they reach the console rather than the game. For scripting
@@ -1222,6 +1243,7 @@ static void demo_exec_line(char *p, Uint32 now) {
                     "  LIGHTLEVEL <0-7>\n"
                     "  SETPLAYERPOS <x> <y> <z> <yaw> <pitch>\n"
                     "  CALLMANTRA | CASTALLSPELLS | TRIGGERSAVE\n"
+                    "  EDITOR [on|off|validate|save|undo|redo|selftest|escape|level <n>]  (no argument toggles the level editor)\n"
                     "console: CLEAR | HELP | PgUp/PgDn/Shift+Up/Down scroll | Up/Down history\n"
                     "  ESC back to panel | ` close\n");
         g_demo_next_tick = now;

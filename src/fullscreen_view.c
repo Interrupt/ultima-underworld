@@ -147,6 +147,11 @@ static void draw_vitals_and_runes(unsigned short *display)
   }
 }
 
+unsigned short *uw_fullscreen_scene_pixels(void)
+{
+  return g_scene;
+}
+
 int uw_fullscreen_compose(unsigned short *display)
 {
   const unsigned short *hud = (const unsigned short *)g_uw_framebuffer;

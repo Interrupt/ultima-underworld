@@ -228,3 +228,4 @@ void thrown_count_steps(void)
     thrown_steps += ((phase - last_phase) & 0xf) / speed;
     last_phase = phase;
 }
+int uw_editor_active(void) { return 0; }

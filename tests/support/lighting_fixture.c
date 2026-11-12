@@ -12,6 +12,7 @@ int g_view_fullscreen;
 int g_face_shade_active, g_face_shade_fixed;
 double g_face_shade_x0, g_face_shade_y0, g_face_shade_s0, g_face_shade_dx, g_face_shade_dy;
 double uw_fullscreen_proj_cy(void) { return 84.0; }
+int uw_editor_active(void) { return 0; }
 byte lighting_span_shade = 88;
 char *g_selected_object;
 undefined1 DAT_00086da8;
