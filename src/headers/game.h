@@ -14,7 +14,7 @@
    translation units see the same storage. */
 extern undefined1 *DAT_00084298;
 extern byte *g_draw_color_index;
-extern undefined1 DAT_000857a0_backing[16];
+extern char DAT_000857a0_backing[16];
 #define DAT_000857a0 DAT_000857a0_backing[0]
 extern undefined2 DAT_000868d8;
 extern ushort *DAT_000876bc;
@@ -31,7 +31,7 @@ extern void *DAT_0023c7a0_arr[0x140];
 #define DAT_0023c7a0 DAT_0023c7a0_arr[0]
 extern char *DAT_0023cca0;
 extern char *DAT_0023cca4;
-extern undefined1 DAT_0023cca8_backing[1024];
+extern char DAT_0023cca8_backing[1024];
 #define DAT_0023cca8 DAT_0023cca8_backing[0]
 extern char *DAT_00248410;
 extern int DAT_0024af60;
@@ -45,7 +45,7 @@ extern void * DAT_00202308_arr[128];
 #define DAT_00202308 DAT_00202308_arr[0]
 extern void (*const DAT_00085668_real_table[48])();
 #define DAT_00085668_backing ((undefined1 *)DAT_00085668_real_table)
-extern undefined1 DAT_00241f08_backing[1024];
+extern char DAT_00241f08_backing[1024];
 #define DAT_00241f08 DAT_00241f08_backing[0]
 
 

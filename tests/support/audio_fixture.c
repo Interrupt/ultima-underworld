@@ -17,7 +17,7 @@ int DAT_0023c378;
 char *DAT_0023c3b8;
 char s__SOUND__0008750c[] = "\\SOUND\\";
 char s_uw00_mod_00087514[] = "uw00.mod";
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 char *DAT_0023c3bc;
 undefined1 DAT_0023c3d4_backing[128];
 /* extern-declared by src/headers/game.h (pulled in via uw.h); game.c
@@ -27,7 +27,7 @@ undefined4 DAT_0023c540;
 /* Same situation for DAT_00241f08 (also game.h/game.c) -- only ever
    touched on play_numbered_voice_sample's own dead
    `DAT_0023c3b8 != 0` path. */
-undefined1 DAT_00241f08_backing[1024];
+char DAT_00241f08_backing[1024];
 
 /* DAT_00086df8/DAT_00101944 storage already comes from uw_test_support
    (character_storage.c/scheduler-adjacent fixtures don't apply here,
@@ -303,7 +303,7 @@ byte is_sfx_trigger_slot_active(void *player, int slot)
     TEST_FAIL_MESSAGE("Unexpected call to dead SFX engine is_sfx_trigger_slot_active");
     return 0;
 }
-byte *load_string_resource(char *text)
+char *load_string_resource(char *text)
 {
     (void)text;
     TEST_FAIL_MESSAGE("Unexpected call to dead SFX engine load_string_resource");

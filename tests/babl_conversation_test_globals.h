@@ -75,7 +75,8 @@ extern undefined2 DAT_000878bc;
 extern undefined1 DAT_0024af98_backing[4096], DAT_0024bfa0_backing[4096];
 extern undefined2 DAT_0024cfbc_backing[4];
 extern char *g_bfa2_real_ptrs[263168];
-extern undefined1 DAT_0023c698_backing[1024], DAT_00101968_backing[260];
+extern char DAT_0023c698_backing[1024];
+extern char DAT_00101968_backing[260];
 #define DAT_0024bfa0 DAT_0024bfa0_backing[0]
 #define DAT_0024af98 DAT_0024af98_backing[0]
 #define DAT_0024cfbc DAT_0024cfbc_backing[0]

@@ -1,5 +1,6 @@
 #include "src/headers/uw.h"
-extern undefined1 DAT_0023c698_backing[1024], DAT_00101968_backing[260];
+extern char DAT_0023c698_backing[1024];
+extern char DAT_00101968_backing[260];
 extern undefined4 DAT_0024bf98;
 extern unsigned short *DAT_0024cfb8;
 extern char *DAT_0024cfa8;
@@ -11,7 +12,7 @@ extern char *g_bfa2_real_ptrs[263168];
 extern undefined2 DAT_000890b0_backing[256];
 extern char font_header[12], font_glyphs[0x1080];
 extern char *DAT_000879b0 , *DAT_000890a4;
-extern char *g_font_glyph_data_base;
+extern byte *g_font_glyph_data_base;
 extern ushort g_font_line_height;
 extern short g_font_row_stride, DAT_000a85b8;
 extern undefined2 DAT_000a85b0;

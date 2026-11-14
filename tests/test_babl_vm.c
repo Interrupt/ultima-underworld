@@ -535,7 +535,7 @@ static void test_npc_events_survive_conversation_writeback_and_reentry(void)
     short attitude = 1, experience = 10;
     babl_set_variable("npc_attitude", (short *)&attitude, 1);
     babl_set_variable("new_player_exp", (short *)&experience, 1);
-    TEST_ASSERT_FALSE(sync_conv_vars_to_npc((char *)DAT_00100674));
+    TEST_ASSERT_FALSE(sync_conv_vars_to_npc(DAT_00100674));
     TEST_ASSERT_EQUAL_INT(10, babl_awarded_xp);
     TEST_ASSERT_EQUAL_INT(30, ((byte *)g_player_object)[8]);
     TEST_ASSERT_EQUAL_INT(80, DAT_00086df8[0x39]);
@@ -545,7 +545,7 @@ static void test_npc_events_survive_conversation_writeback_and_reentry(void)
     TEST_ASSERT_EQUAL_INT(1, babl_named_word("npc_attitude"));
     TEST_ASSERT_EQUAL_INT(0, babl_named_word("new_player_exp"));
     /* Reseeding for a second conversation must not grant the old reward. */
-    sync_conv_vars_to_npc((char *)DAT_00100674);
+    sync_conv_vars_to_npc(DAT_00100674);
     TEST_ASSERT_EQUAL_INT(10, babl_awarded_xp);
 }
 

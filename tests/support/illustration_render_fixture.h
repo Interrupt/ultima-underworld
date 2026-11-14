@@ -4,9 +4,9 @@
 #include "unity.h"
 #include "src/headers/uw.h"
 #include "src/headers/file_io.h"
-extern undefined1 DAT_00085448_backing[11];
-extern undefined1 DAT_0023c698_backing[1024];
-extern undefined1 DAT_00101968_backing[260];
+extern char DAT_00085448_backing[11];
+extern char DAT_0023c698_backing[1024];
+extern char DAT_00101968_backing[260];
 extern uintptr_t DAT_00101a70;
 extern ushort DAT_00101a6c, DAT_000853f8, DAT_000853fc, DAT_00085400;
 extern byte image[64000];

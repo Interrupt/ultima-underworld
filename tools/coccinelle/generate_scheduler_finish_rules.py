@@ -108,6 +108,8 @@ ORIGINAL = r"""void scheduler_finish_entry(int entry_slot)
 REPLACEMENTS = [('ushort *puVar4;', 'uw_object_hdr_t *puVar4;'),
  ('puVar4 = (ushort *)resolve_object_link', 'puVar4 = resolve_object_link'),
  ('puVar4 == (ushort *)0x0', 'puVar4 == NULL'),
+ ('resolve_object_link(&DAT_00250778 + iVar9)',
+  'resolve_object_link((uw_link_word_t *)(&DAT_00250778 + iVar9))'),
  ('uVar10 = (byte)((byte)((uw_object_hdr_t *)puVar4)->link_word >> 4) & 3;',
   'uVar10 = (((uw_object_hdr_t *)puVar4)->owner >> 4) & 3;'),
  ('((uw_object_hdr_t *)puVar4)->link_word_low = (bVar3 ^ (byte)uVar5) & 0x3f ^ bVar3;\n'

@@ -82,7 +82,7 @@ void test_critter_death_animation_finishes_and_leaves_a_corpse(void)
     *(ushort *)(tiles[2] + 2) = 2 << 6;
     critter[8] = 10;
     critter[0x14] = 4;
-    DAT_0010190c = objects[2];
+    DAT_0010190c = scheduler_mobile_object(2);
     DAT_00101938 = 12;
     DAT_0010193c = 9;
     TEST_ASSERT_EQUAL_UINT(1, initiate_npc_death((char *)critter));

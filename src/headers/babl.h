@@ -18,7 +18,7 @@ extern char DAT_00085248_backing[16];
 extern undefined4 DAT_00085c54;
 extern uw_mobile_object_t * DAT_00100674;
 extern undefined2 DAT_0024cfac;
-extern undefined1 DAT_0023c698_backing[1024];
+extern char DAT_0023c698_backing[1024];
 #define DAT_0023c698 DAT_0023c698_backing[0]
 extern uintptr_t DAT_00101a70;
 extern undefined2 DAT_00101960; // talking-portrait mouth-frame cycle count, reset by reset_dialogue_speech_state
@@ -151,7 +151,7 @@ int sum_barter_offer_value(int is_player_side, void *item_ids, void *counts, voi
 int compute_barter_item_value(short is_player_side, int item_id, int mode);
 int randomize_value_pct(short value, short min_pct, short max_pct);
 int collect_included_player_barter_items(void *out_item_ids, void *out_values);
-void add_item_to_npc_inventory(ushort *object);
+void add_item_to_npc_inventory(uw_object_hdr_t *object);
 void give_barter_item_by_item_id(short item_id);
 int remove_item_from_npc_inventory_by_id(short item_id);
 int babl_builtin_set_likes_dislikes(char *args);
@@ -179,8 +179,8 @@ int babl_builtin_identify_inv(char *args);
 ushort babl_builtin_count_inv(char *args);
 byte babl_builtin_check_inv_quality(char *args);
 int babl_builtin_set_inv_quality(char *args);
-void sync_conv_vars_from_npc(ushort *npc);
-bool sync_conv_vars_to_npc(char *npc);
+void sync_conv_vars_from_npc(uw_mobile_object_t *npc_object);
+bool sync_conv_vars_to_npc(uw_mobile_object_t *npc_object);
 void bubble_sort_indices_by_key_table(intptr_t key_table, uint count, intptr_t index_buffer);
 /* Native babl builtin (registered in the DAT_000bbf00 table) and conversation-text render opcode
    handler signatures; the real handlers vary in their own pointer params, so calls go through these. */

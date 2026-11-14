@@ -14,7 +14,7 @@ char s__DATA_cnv_ark_00084fc8[] = "\\DATA\\cnv.ark";
    typed them `int` and truncated the 64-bit pointer. Set in pick_object_under_cursor
    from the object-pick result, consumed by target_in_range / object_list_unlink. */
 char *DAT_002020b0;
-static char *DAT_002020a8;
+static uw_link_word_t *DAT_002020a8;  /* the picked tile's object-list head (tile word 1) */
 static undefined4 DAT_002020ec;
 short DAT_002020ac;
 
@@ -56,7 +56,7 @@ void interact_default()
   iVar2 = target_line_of_sight((int)DAT_000858c4,g_interact_target);
   if (DAT_002020ec == 0) {
     if (DAT_002020e0 != 0) {
-      iVar1 = object_ptr_in_arena(g_interact_target);
+      iVar1 = object_ptr_in_arena((uw_object_hdr_t *)g_interact_target);
       if ((iVar1 != 0) && ((*g_interact_target & 0x1c0) == 0x40)) {
         interact_talk_npc();
         return;
@@ -66,7 +66,7 @@ void interact_default()
     }
     if ((*g_interact_target & 0x1ff) == 0x1ca) {
       if ((iVar1 != 0) && (iVar2 == 0)) {
-        use_object_on_target(g_player_object,g_interact_target,0);
+        use_object_on_target((uw_unaligned_word_t *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
       }
       goto LAB_0003f11c;
     }
@@ -84,7 +84,7 @@ void interact_default()
           return;
         }
         if (puVar3 != g_interact_target) {
-          object_list_insert_head(g_interact_target + 2,puVar3);
+          object_list_insert_head(g_interact_target + 2,(uw_object_hdr_t *)puVar3);
         }
       }
       iVar1 = check_object_carry_weight(g_interact_target);
@@ -93,7 +93,7 @@ void interact_default()
           iVar1 = (g_interact_target[3] & 0xffc0) + (puVar3[3] & 0xffc0);
           *(byte *)(g_interact_target + 3) = (byte)iVar1 ^ (byte)g_interact_target[3] & 0x3f;
           *(char *)((char *)g_interact_target + 7) = (char)((uint)iVar1 >> 8);
-          object_list_unlink(g_interact_target + 2,puVar3);
+          object_list_unlink(g_interact_target + 2,(uw_object_hdr_t *)puVar3);
         }
         print_scroll_message_by_id(0x5f);
         return;
@@ -133,7 +133,7 @@ void interact_look()
   short sVar1;
   int iVar2;
   undefined4 uVar3;
-  uint local_18;
+  int local_18;
 
   DEBUG(INFO, "Interact Look");
   
@@ -148,13 +148,13 @@ void interact_look()
       local_18 = 1;
       sVar1 = prompt_yes_no_scroll(0,0xf4,&local_18);
       if ((sVar1 != 0) && (sVar1 < 4)) {
-        local_18 = (uint)(sVar1 == 2);
+        local_18 = (int)(sVar1 == 2);
         /* HACK: was a bare `echo_yes_no_to_scroll();` -- dropped argument, the same class of bug
            fixed repeatedly elsewhere in this file. local_18, just set on the line above from the
            prompt's own answer, is obviously the intended argument here. */
         echo_yes_no_to_scroll(local_18);
       }
-      message_scroll_print_wrapped(&s_scroll_newline_0008522c);
+      message_scroll_print_wrapped((char *)&s_scroll_newline_0008522c);
       if (local_18 != 0) {
         roll_container_trap_disarm_check(g_interact_target,*(undefined1 *)(DAT_00086df8 + 0x2b));
       }
@@ -193,7 +193,7 @@ void interact_use()
     }
   }
   else {
-    use_object_on_target(g_player_object,g_interact_target,0);
+    use_object_on_target((uw_unaligned_word_t *)g_player_object,g_interact_target,0);  /* item_use.h still takes the raw word view */
   }
 }
 
@@ -237,7 +237,7 @@ void quick_use_object_at_cursor(int unused)
   }
   /* A critter (object ids 0x40-0x7f, same test interact_default's talk branch uses): talk to it.
      Mouselook releases itself when the conversation screen takes over the view. */
-  if (object_ptr_in_arena(g_interact_target) != 0 && (*g_interact_target & 0x1c0) == 0x40) {
+  if (object_ptr_in_arena((uw_object_hdr_t *)g_interact_target) != 0 && (*g_interact_target & 0x1c0) == 0x40) {
     interact_talk_npc();
     return;
   }
@@ -346,30 +346,32 @@ int roll_container_trap_disarm_check(void *container_ptr, int skill)
   char *wptr_53956;
   char cVar1;
   short sVar2;
-  byte *pbVar3;
-  byte *pbVar4;
+  uw_object_hdr_t *pbVar3;
+  uw_object_hdr_t *pbVar4;
   char *pcVar5;
   char *pcVar6;
-  byte *pbVar7;
+  uw_object_hdr_t *pbVar7;
   undefined4 uVar8;
-  char acStackY_84f50 [544536];
+  /* Ghidra gave this function a phantom 544536-byte acStackY_84f50 as the destination of its three
+     "UNNAMED" copy loops (stack-frame-size artifact, see fix_stack_copy_loops.py); they really fill
+     acStack_2c, the name buffer printed right after each one. */
   ushort *local_34 [2];
   char acStack_2c [20];
   
   uVar8 = 0;
   if (((*(byte *)(container + 1) & 0x80) == 0) &&
      (local_34[0] = (ushort *)(container + 6), (*local_34[0] & 0xffc0) != 0)) {
-    pbVar3 = (byte *)find_object_in_chain(local_34,0,6,0xffffffff,0xffff);
-    if (pbVar3 != (byte *)0x0) {
-      if ((((uw_object_hdr_t *)pbVar3)->object_id & 0x30) < 0x20) {
-        pbVar7 = (byte *)0x0;
+    pbVar3 = find_object_in_chain(local_34,0,6,0xffffffff,0xffff);
+    if (pbVar3 != NULL) {
+      if ((pbVar3->object_id & 0x30) < 0x20) {
+        pbVar7 = NULL;
         pbVar4 = pbVar3;
       }
       else {
-        pbVar4 = (byte *)resolve_object_link(pbVar3 + 6);
+        pbVar4 = resolve_object_link(uw_link_word_ptr(pbVar3));  /* byte offset 6 */
         pbVar7 = pbVar3;
       }
-      if ((((uw_object_hdr_t *)pbVar4)->object_id & 0x3f) < 3) {
+      if ((pbVar4->object_id & 0x3f) < 3) {
         uVar8 = roll_skill_check(skill,8);
         if ((short)uVar8 < 1) {
           if ((short)uVar8 < 0) {
@@ -377,7 +379,7 @@ int roll_container_trap_disarm_check(void *container_ptr, int skill)
             sVar2 = build_object_display_name(acStack_2c,pbVar4,0,0);
             if (sVar2 == 0) {
               pcVar6 = s_UNNAMED_00084f24;
-    wptr_53920 = acStackY_84f50;
+    wptr_53920 = acStack_2c;
               do {
                 cVar1 = *pcVar6;
                 *wptr_53920 = cVar1; wptr_53920 = wptr_53920 + 1;
@@ -385,8 +387,8 @@ int roll_container_trap_disarm_check(void *container_ptr, int skill)
               } while (cVar1 != '\0');
             }
             message_scroll_print_wrapped(acStack_2c);
-            message_scroll_print_wrapped(&DAT_00084f20);
-            if (pbVar7 == (byte *)0x0) {
+            message_scroll_print_wrapped((char *)&DAT_00084f20);
+            if (pbVar7 == NULL) {
               apply_trap_or_link_effect(g_player_object,container,pbVar4,(int)DAT_002020a0,DAT_002020a4);
               refresh_object_link_chain(local_34[0],pbVar4);
             }
@@ -401,10 +403,10 @@ int roll_container_trap_disarm_check(void *container_ptr, int skill)
         else {
           sVar2 = build_object_display_name(acStack_2c,pbVar4,0,0);
           pcVar6 = s_UNNAMED_00084f24;
-    wptr_53956 = acStackY_84f50;
+    wptr_53956 = acStack_2c;
           if (sVar2 == 0) {
             pcVar5 = pcVar6;
-    wptr_53945 = acStackY_84f50;
+    wptr_53945 = acStack_2c;
             do {
               cVar1 = *pcVar5;
               *wptr_53945 = cVar1; wptr_53945 = wptr_53945 + 1;
@@ -442,7 +444,7 @@ uint resolve_skill_gated_unlock_or_use(void *object_ptr, void *key_item_ptr, voi
 {
   ushort *object = (ushort *)object_ptr;
   ushort *key_item = (ushort *)key_item_ptr;
-  ushort *lock_link = (ushort *)lock_link_ptr;
+  uw_unaligned_word_t *lock_link = (ushort *)lock_link_ptr;
   ushort uVar1;
   short sVar2;
   char *iVar3;  /* was `int` -- truncated resolve_object_link's real `void *` return */
@@ -490,7 +492,7 @@ uint resolve_skill_gated_unlock_or_use(void *object_ptr, void *key_item_ptr, voi
       }
       break;
     }
-    lock_link = (ushort *)resolve_object_link(lock_link + 2);
+    lock_link = (uw_unaligned_word_t *)resolve_object_link(lock_link + 2);
     bVar6 = (byte)*lock_link;
   }
   iVar3 = (char *)resolve_object_link(lock_link + 3);
@@ -546,20 +548,20 @@ int apply_trap_or_link_effect(void *trigger_object_ptr, void *trigger_link_ptr, 
    arguments */
 void purge_tagged_objects_from_chain(void *link_field_ptr)
 {
-  ushort *link_field = (ushort *)link_field_ptr;
-  ushort *puVar1;
+  uw_link_word_t *link_field = (uw_link_word_t *)link_field_ptr;
+  uw_object_hdr_t *puVar1;
   
-  for (puVar1 = (ushort *)resolve_object_link(link_field); puVar1 != (ushort *)0x0; /* confirmed via ARM disassembly, 0x7deec */
-      puVar1 = (ushort *)resolve_object_link(puVar1 + 2)) {
-    if (((((uw_object_hdr_t *)puVar1)->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(((uw_object_hdr_t *)puVar1)->link))) {
+  for (puVar1 = resolve_object_link(link_field); puVar1 != NULL; /* confirmed via ARM disassembly, 0x7deec */
+      puVar1 = resolve_object_link(uw_chain_word_ptr(puVar1))) {  /* byte offset 4 */
+    if (((puVar1->object_id & 0x1f0) == 0x1a0) && ((int)DAT_0024cfd0 == (uint)(puVar1->link))) {
       object_list_unlink(link_field,puVar1);
       free_object_slot(puVar1);
-      ((uw_object_hdr_t *)puVar1)->link_word_low = ((uw_object_hdr_t *)puVar1)->owner;
-      ((uw_object_hdr_t *)puVar1)->link_word_high = 0;
+      puVar1->link_word_low = puVar1->owner;
+      puVar1->link_word_high = 0;
       DAT_0024cfd8 = DAT_0024cfd8 + -1;
     }
-    if ((((uw_object_hdr_t *)puVar1)->is_quant == 0) && (((uw_object_hdr_t *)puVar1)->link != 0)) {
-      purge_tagged_objects_from_chain(puVar1 + 3); /* was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
+    if ((puVar1->is_quant == 0) && (puVar1->link != 0)) {
+      purge_tagged_objects_from_chain(uw_link_word_ptr(puVar1)); /* byte offset 6; was called with no argument; confirmed via ARM disassembly, 0x7dfbc */
     }
   }
 }
@@ -571,14 +573,15 @@ void purge_tagged_objects_from_chain(void *link_field_ptr)
 // use/pull action.
 void refresh_object_link_chain(void *chain_link_ptr, void *object_ptr)
 {
-  char *chain_link = (char *)chain_link_ptr;
-  char *object = (char *)object_ptr;
+  uw_link_word_t *chain_link = (uw_link_word_t *)chain_link_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   undefined4 uVar1;
   char *iVar2;
+  uw_object_hdr_t *found;
   short sVar3;
   ushort uVar4;
   
-  DAT_0024cfd8 = (short)((*(byte *)(object + 1) & 0x1e) >> 1);
+  DAT_0024cfd8 = (short)((object->type_flags_high & 0x1e) >> 1);  /* byte offset 1 */
   if (DAT_0024cfd8 != 0) {
     DAT_0024cfd0 = encode_object_slot_index(object);
     iVar2 = DAT_002029cc;
@@ -592,9 +595,9 @@ void refresh_object_link_chain(void *chain_link_ptr, void *object_ptr)
     }
   }
   uVar1 = encode_object_slot_index(object);
-  iVar2 = (char *)find_object_by_encoded_slot_in_chain(chain_link,1,uVar1);
-  if (iVar2 != 0) {
-    unlink_and_free_object(DAT_002046b4,iVar2);  /* ARM 0x7e0c0-0x7e0cc: r0 = DAT_002046b4, r1 = the find result */
+  found = find_object_by_encoded_slot_in_chain(chain_link,1,uVar1);
+  if (found != NULL) {
+    unlink_and_free_object(DAT_002046b4,found);  /* ARM 0x7e0c0-0x7e0cc: r0 = DAT_002046b4, r1 = the find result */
   }
 }
 
@@ -635,7 +638,7 @@ void attempt_talk_interaction(void *target_ptr)
     goto LAB_0002865c;
   }
   uVar6 = (ushort)(byte)target[0xd];
-  DAT_00100674 = target;
+  DAT_00100674 = (uw_mobile_object_t *)target_ptr;
   if (((uVar6 == 0x16) || (uVar6 == 0x8e)) || (uVar6 == 0xe7)) {
 LAB_000285e4:
     if (uVar6 == 0) {
@@ -643,7 +646,7 @@ LAB_000285e4:
     }
     DAT_001007c4 = uVar6;
     ce_memset(acStack_114,0,0x104);
-    pcVar4 = &DAT_0023cca8;
+    pcVar4 = (char *)&DAT_0023cca8;
     stack0xffdc3244_ptr = acStack_114;
     do {
       cVar1 = *pcVar4;
@@ -677,7 +680,7 @@ LAB_0002865c:
 // object is attached to the cursor.
 void finalize_object_pickup(void *object_ptr)
 {
-  char *object = (char *)object_ptr;
+  uw_object_hdr_t *object = (uw_object_hdr_t *)object_ptr;
   if (DAT_002020ec != 0) {
     trigger_object_trap_or_use_action(g_player_object,object,2,(int)DAT_002020a0,DAT_002020a4);
     object_list_unlink(DAT_002020a8,object);
@@ -738,12 +741,12 @@ int target_in_range(short range_squared, void *actor_ptr, char *target)
 /* was int -- truncated the tile-record pointer target_line_of_sight passes */
 uint object_chain_max_barrier(char *tile)
 {
-  ushort *puVar1;
+  uw_unaligned_word_t *puVar1;
   uint uVar2;
 
   uVar2 = 0xffffffff;
   puVar1 = (ushort *)(tile + 2);
-  while (puVar1 = (ushort *)resolve_object_link(puVar1), puVar1 != (ushort *)0x0) {
+  while (puVar1 = (uw_unaligned_word_t *)resolve_object_link(puVar1), puVar1 != (uw_unaligned_word_t *)0x0) {
     if ((*puVar1 & 0x1ff) == 0x164) {
       if ((short)uVar2 < (short)(puVar1[1] & 0x7f)) {
         uVar2 = (int)(short)puVar1[1] & 0x7f;
@@ -863,7 +866,7 @@ ushort *pick_object_under_cursor(int mode)
 {
   byte bVar1;
   int iVar2;
-  ushort *puVar3;
+  uw_unaligned_word_t *puVar3;
   uint uVar4;
   /* render_dungeon_view_frame() re-renders the HUD+3D view in "pick" mode so the per-pixel
      object/texture id buffer DAT_0023cca0 this function reads below is fresh for the current cursor
@@ -901,7 +904,7 @@ ushort *pick_object_under_cursor(int mode)
     puVar3 = (ushort *)0x0;
   }
   else {
-    puVar3 = (ushort *)get_object_record_by_slot_index(iVar2);
+    puVar3 = (uw_unaligned_word_t *)get_object_record_by_slot_index(iVar2);
 
     if(puVar3) {
       DEBUG(INFO, "[pick] found slot=%u -> objid=0x%03x", uVar4,
@@ -912,9 +915,10 @@ ushort *pick_object_under_cursor(int mode)
                 (void *)puVar3);
     }
 
-    DAT_002020a8 = DAT_002020b0 + 2;
+    /* tile word 1 (byte offset 2): obj_head in bits 6-15, the same layout as a link word */
+    DAT_002020a8 = (uw_link_word_t *)(DAT_002020b0 + 2);
     if (((g_object_type_props[(((uw_object_hdr_t *)puVar3)->object_id)].owner_flags & 0x20) != 0) &&
-        (iVar2 = object_ptr_in_arena(puVar3), iVar2 == 0)) {
+        (iVar2 = object_ptr_in_arena((uw_object_hdr_t *)puVar3), iVar2 == 0)) {
       DAT_002020ec = 1;
       return puVar3;
     }
@@ -967,6 +971,6 @@ void describe_picked_terrain(byte terrain_kind, short step_count)
     resolve_picked_terrain_texture(step_count,&desc);
     message_scroll_print_wrapped(s_You_see_000858fc);
     message_scroll_print_wrapped(desc);
-    message_scroll_print_wrapped(&DAT_00084f20);
+    message_scroll_print_wrapped((char *)&DAT_00084f20);
   }
 }

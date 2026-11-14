@@ -41,7 +41,7 @@ extern short DAT_00202a38;
 extern short DAT_00202a3c;
 extern short DAT_00202a40;
 /* FUN_0004ad10 reads word 1 (position) and word 12 (heading). */
-extern ushort * DAT_00202a44;
+extern uw_unaligned_word_t * DAT_00202a44;
 extern ushort DAT_00202a48;
 extern ushort DAT_00202a4c;
 extern undefined2 DAT_00202a50;
@@ -60,11 +60,23 @@ extern uw_light_type_props_t g_light_type_props[16];
 extern undefined1 DAT_00202c38_backing[1536];
 #define DAT_00202c38 DAT_00202c38_backing[0]
 
+/* Address of collision candidate `index`'s packed object link: bytes 2-3 of its 6-byte record. */
+static inline uw_link_word_t *collision_candidate_link_ptr(int index) {
+    return (uw_link_word_t *)(&DAT_00202c3a + index * 6);
+}
+
+/* Address of a tile record's object-list head: word 1 of uw_tile_t (byte offset 2), whose bits
+   6-15 (obj_head) use the same slot encoding as an object's chain/link word, so the chain
+   primitives walk a tile list exactly like a container's contents. */
+static inline uw_link_word_t *uw_tile_link_word_ptr(uw_tile_t *tile) {
+    return (uw_link_word_t *)((char *)tile + 2);
+}
+
 
 int reset_burnt_out_item_state(char *tile_link, void *object);
-int apply_object_destruction_effect(ushort *object, ushort *attacker, uint damage_type_mask, int tile_x, short tile_y);
-int find_placement_via_tile_flood_fill(ushort *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict);
-int clear_object_temp_flag_callback(ushort *object);
+int apply_object_destruction_effect(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, uint damage_type_mask, int tile_x, short tile_y);
+int find_placement_via_tile_flood_fill(uw_unaligned_word_t *object, short tile_x, short tile_y, short *out_x, short *out_y, int strict);
+int clear_object_temp_flag_callback(uw_object_hdr_t *object);
 void clear_temp_flags_on_all_objects();
 void load_class6_variant_effect_table(int file_handle);
 void load_class7_variant_effect_table(int file_handle);
@@ -80,37 +92,37 @@ void free_player_inventory_chain(char *link_field);
 uint calculate_object_weight(uw_object_hdr_t *object);
 uw_object_hdr_t *spawn_object_near_player();
 int place_object_in_world(uint tile_x, uint tile_y, int height, void *object, short radius, int skip_roll);
-int find_object_placement(ushort *object, uint tile_x, uint tile_y, short height, short radius);
+int find_object_placement(uw_unaligned_word_t *object, uint tile_x, uint tile_y, short height, short radius);
 int load_object_catalog_data();
 void *get_scanned_object_class_effect_ptr();
 int walk_object_tree(void *object, int (*callback)());
 int object_exceeds_size_threshold(void *object);
-int should_destroy_linked_object(int base_chance, ushort *link_field);
+int should_destroy_linked_object(int base_chance, uw_link_word_t *link_field);
 void despawn_objects_outside_radius(int keep_rows, short max_destroyed);
 uw_object_hdr_t *alloc_object_slot(int region);
 void free_object_slot(uw_object_hdr_t *object);
-void object_list_insert_head(ushort *link_field, uw_object_hdr_t *object);
-void object_list_append_tail(ushort *link_field, uw_object_hdr_t *object);
-void object_list_unlink(ushort *link_field, uw_object_hdr_t *object);
-ushort *discard_misplaced_object(void *tile_link, ushort *object, int skip_roll);
-void free_linked_object_recursive(ushort *link_field);
-void unlink_and_free_object(ushort *link_field, uw_object_hdr_t *object);
-uw_object_hdr_t *resolve_object_link(ushort *link_field);
+void object_list_insert_head(uw_link_word_t *link_field, uw_object_hdr_t *object);
+void object_list_append_tail(uw_link_word_t *link_field, uw_object_hdr_t *object);
+void object_list_unlink(uw_link_word_t *link_field, uw_object_hdr_t *object);
+ushort *discard_misplaced_object(void *tile_link, uw_unaligned_word_t *object, int skip_roll);
+void free_linked_object_recursive(uw_link_word_t *link_field);
+void unlink_and_free_object(uw_link_word_t *link_field, uw_object_hdr_t *object);
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link_field);
 int encode_object_slot_index(const uw_object_hdr_t *object);
 uw_object_hdr_t *get_object_record_by_slot_index(short slot_index);
-uw_object_hdr_t *find_object_by_encoded_slot_in_chain(ushort *link_field,
+uw_object_hdr_t *find_object_by_encoded_slot_in_chain(uw_link_word_t *link_field,
 						      int recurse, int slot);
 int object_ptr_in_arena(const uw_object_hdr_t *object);
 void active_mobile_list_add(byte slot);
 void active_mobile_list_remove(char slot);
-uw_object_hdr_t *find_object_in_chain(ushort **link_cursor, int recurse,
+uw_object_hdr_t *find_object_in_chain(uw_link_word_t **link_cursor, int recurse,
 				      int object_class, int subclass,
 				      short quality);
 int object_or_contents_has_type(void *object, ushort type_id);
 uw_object_hdr_t *find_object_in_world(int object_class, int subclass,
 				      short quality, short *out_x,
 				      short *out_y);
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object);
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *object);
 void compute_object_placement_fields(void *object, uint tile_x, uint tile_y);
 void randomize_settled_snapshot_position(void *snapshot);
 uw_object_hdr_t *settle_dropped_object(void *object, short tile_x,

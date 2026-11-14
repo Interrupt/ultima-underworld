@@ -1,5 +1,4 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-add_compile_options(-Wno-pointer-sign)
 # Several fixtures define the same stand-in globals (tentative definitions), and GNU ld, unlike
 # macOS's linker, pulls in every archive member in its link group and so reports them as multiple
 # definitions. Let the first definition win, as it does on macOS. Do NOT use -fcommon instead: it
@@ -11,6 +10,9 @@ endif()
 # unity is a PUBLIC dependency of several diamond-shaped static test libraries; the duplicate is harmless.
 if(APPLE)
   add_link_options(-Wl,-no_warn_duplicate_libraries)
+  # Fixtures define large arrays as tentative (common) symbols; ld64 aligns a common symbol to its
+  # size by default, which for a 32 KB array exceeds the segment's maximum alignment and warns.
+  add_link_options(-Wl,-max_default_common_align,0x4000)
 endif()
 add_custom_target(unit_tests)
 add_library(unity STATIC "${PROJECT_SOURCE_DIR}/third_party/unity/src/unity.c"

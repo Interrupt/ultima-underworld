@@ -5,7 +5,7 @@
  * uw.h itself so this header is self-contained for any caller. */
 #include "uw.h"
 
-extern undefined DAT_00202878;
+extern char DAT_00202878;
 extern unsigned char DAT_00084eff_backing[12];
 #define DAT_00084eff DAT_00084eff_backing[0]
 /* Globals defined in uw.c but also used by functions that now live in
@@ -48,9 +48,9 @@ void compute_attack_relative_facing();
 int process_melee_attack_swing();
 int resolve_equipped_weapon_attack(char * *out_attack_data, char * *out_weapon_object);
 void compute_player_weapon_attack_stats(char *weapon_stats, char *weapon_item, short attack_type);
-void apply_direct_object_hit(short hit_flag, void *attacker, ushort *target, short tile_x, short tile_y, short damage_dice, byte hit_type);
+void apply_direct_object_hit(short hit_flag, void *attacker, uw_unaligned_word_t *target, short tile_x, short tile_y, short damage_dice, byte hit_type);
 int resolve_npc_melee_attack(void *npc, short tile_x, byte tile_y, short offset_x, short offset_y);
-void award_monster_kill_experience(ushort *monster);
+void award_monster_kill_experience(uw_unaligned_word_t *monster);
 void load_combat_data_file();
 void load_monster_combat_stats(int file_handle);
 void npc_combat_approach_tick();
@@ -65,14 +65,14 @@ uint adjust_heading_away_from_player(uint heading, uint min_distance_sq);
 void npc_combat_disengage_tick();
 int check_npc_target_alignment(int mode);
 int check_npc_fine_facing_alignment(char delta_x, char delta_y);
-int apply_damage_to_object(ushort *target, byte damage, ushort *attacker);
-int resolve_damage_type_resistance(ushort *object, int damage, uint damage_type_mask);
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type);
-bool apply_object_durability_damage(ushort *object, ushort *attacker, short damage, int tile_x, short tile_y);
+int apply_damage_to_object(uw_unaligned_word_t *target, byte damage, uw_unaligned_word_t *attacker);
+int resolve_damage_type_resistance(uw_unaligned_word_t *object, int damage, uint damage_type_mask);
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type);
+bool apply_object_durability_damage(uw_unaligned_word_t *object, uw_unaligned_word_t *attacker, short damage, int tile_x, short tile_y);
 int is_valid_equipment_slot_item(ushort object_word, short slot);
 int damage_equipped_item_in_slot(int slot, byte damage, byte damage_type, short reaction_mode, int report_flag);
-int apply_object_collision_scatter(ushort *striker, ushort *object);
-void apply_trap_type_damage_effect(void *trap_object, ushort *target);
+int apply_object_collision_scatter(uw_unaligned_word_t *striker, uw_unaligned_word_t *object);
+void apply_trap_type_damage_effect(void *trap_object, uw_unaligned_word_t *target);
 int resolve_collision_candidate_interaction(short candidate_index, int mover_slot);
 
 #endif

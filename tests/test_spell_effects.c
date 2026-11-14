@@ -109,11 +109,11 @@ static void test_cached_path_round_trip_in_all_four_directions(void)
     save_walk_path_to_cache_slot(cache);
     TEST_ASSERT_EQUAL_HEX8(0xe4, cache[4]);
     for (int i=1;i<=4;i++) {
-        TEST_ASSERT_EQUAL_INT(1, advance_cached_path_step((char *)cache));
+        TEST_ASSERT_EQUAL_INT(1, advance_cached_path_step(cache));
         TEST_ASSERT_EQUAL_UINT8(points[i][0],cache[0]);
         TEST_ASSERT_EQUAL_UINT8(points[i][1],cache[1]);
     }
-    TEST_ASSERT_EQUAL_INT(0, advance_cached_path_step((char *)cache));
+    TEST_ASSERT_EQUAL_INT(0, advance_cached_path_step(cache));
 }
 static void test_diagonal_tile_lookup_accepts_matching_direction_only(void)
 {

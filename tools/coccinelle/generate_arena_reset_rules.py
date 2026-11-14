@@ -59,7 +59,10 @@ REPLACEMENTS = [('char *tile_record = DAT_002029cc;', 'uw_tile_t *tile_record = 
   'g_player_object->hdr.next = 0;'),
  ('g_player_object->hdr.link_word_low = g_player_object->hdr.owner;\n'
   '    g_player_object->hdr.link_word_high = 0;',
-  'g_player_object->hdr.link = 0;')]
+  'g_player_object->hdr.link = 0;'),
+ # The active-mobile list is a byte list carved out of the (char) arena buffer.
+ ('DAT_002046c0 = DAT_002046a0 + 2;\n  DAT_002046c8 = DAT_002046a0 + 2;',
+  'DAT_002046c0 = (byte *)DAT_002046a0 + 2;\n  DAT_002046c8 = (byte *)DAT_002046a0 + 2;')]
 
 def converted():
     result = ORIGINAL

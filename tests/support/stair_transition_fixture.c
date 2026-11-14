@@ -67,7 +67,7 @@ int check_object_placement_clearance(short type, short slot, short x, short y, s
 }
 uw_object_hdr_t *resolve_object_link(ushort *link) { return NULL; }
 int object_ptr_in_arena(const uw_object_hdr_t *object) { return 0; }
-ushort *discard_misplaced_object(void *head, ushort *object, int flag) { return NULL; }
+ushort *discard_misplaced_object(void *head, uw_unaligned_word_t *object, int flag) { return NULL; }
 void tick_weapon_swing_state(short flag) {}
 void set_hud_status_value(byte slot, ushort value) { if (slot == 0) hud_hp = value; }
 void handle_starvation_penalty(void) { deaths++; }
@@ -77,14 +77,14 @@ void update_player_tick_effects(void) {}
 long ce_rand(void) { return 1; }
 void apply_level9_random_hazard_tick(void) {}
 void debug_print(char *format, ...) {}
-uw_object_hdr_t *find_object_in_chain(ushort **link, int recursive, int group,
+uw_object_hdr_t *find_object_in_chain(uw_link_word_t **link, int recursive, int group,
                                       int subclass, short type)
 {
     TEST_ASSERT_EQUAL_INT(7, group);
     TEST_ASSERT_EQUAL_INT(0, subclass);
     TEST_ASSERT_EQUAL_INT(10, type);
     scan_calls++;
-    return resurrection_object;
+    return (uw_object_hdr_t *)resurrection_object; /* raw 8-byte record viewed as a header */
 }
 
 void stair_transition_fixture_reset(void)

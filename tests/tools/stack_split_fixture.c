@@ -85,7 +85,7 @@ void repopulate_container_grid_slots(void) { observe(9); }
 void refresh_container_view(void) { observe(10); }
 void redraw_inventory_widget(int widget) { observe(11); argument(widget); }
 void refresh_player_equipment_effects(void) { observe(12); }
-ushort *extract_and_refresh_slot_item(int category,int subcategory,int quality,short slot_,ushort flag_)
+uw_unaligned_word_t *extract_and_refresh_slot_item(int category,int subcategory,int quality,short slot_,ushort flag_)
 {
     assert(reduction && category==-1 && subcategory==-1 && quality==-1);
     assert(slot_==slot && flag_==(ushort)amount); observe(13);

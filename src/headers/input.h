@@ -64,7 +64,7 @@ int register_click_region(int left, int bottom, int right, int top, short arg, s
 int register_key_binding(int key_code, int arg, int mode_mask, void *handler);
 void unregister_key_binding(short binding_id);
 void poll_input_bindings(void *input_state);
-void dispatch_key_binding(char *input_state, short key_code);
+void dispatch_key_binding(byte *input_state, short key_code);
 void dispatch_sticky_mode_handlers();
 void wait_for_click_release(int mode);
 int poll_mouse_event();

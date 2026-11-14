@@ -49,7 +49,7 @@ void spawn_effect_debris_burst(void *p, uint x, int y)
 {
     assert(p == object(0)); observe(3); argument(x); argument(y); ++debris; change(3);
 }
-int spawn_scheduled_effect_object(ushort *p, int group, int delay, byte frame, short heading, short x, short y)
+int spawn_scheduled_effect_object(uw_unaligned_word_t *p, int group, int delay, byte frame, short heading, short x, short y)
 {
     assert((void *)p == object(0) && group == 6 && delay == 3 && frame == 0 && heading == 0);
     observe(4); argument(x); argument(y); ++schedules; change(4); return -1;
@@ -79,7 +79,7 @@ void set_ambient_bias_without_light(char level)
 {
     assert(level == 0); observe(11); ++lights; change(11); destination()->type_flags ^= 0x5555;
 }
-ushort *discard_misplaced_object(void *link, ushort *p, int skip)
+ushort *discard_misplaced_object(void *link, uw_unaligned_word_t *p, int skip)
 {
     observe(12); pointer(p); argument(skip); argument(link != NULL); ++frees; change(12);
     if (p) ((uw_object_hdr_t *)p)->link_word ^= 0xaaaa;
@@ -91,7 +91,7 @@ void object_list_insert_head(ushort *link, uw_object_hdr_t *p)
     observe(13); pointer(p); ++inserts; argument(*link); change(13);
     p->next = *link >> 6; *link = (*link & 63) | (257 << 6);
 }
-int activate_area_hazard_object(ushort *p, uint x, int y, int damage)
+int activate_area_hazard_object(uw_unaligned_word_t *p, uint x, int y, int damage)
 {
     observe(14); pointer(p); argument(x); argument(y); argument(damage); ++hazards; change(14);
     return mode == 14 ? 0 : 1;

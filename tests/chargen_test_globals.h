@@ -8,7 +8,7 @@
 extern undefined1 DAT_000fb860_backing[];
 #define DAT_000fb860 DAT_000fb860_backing[0]
 #define DAT_000fb863 DAT_000fb860_backing[3]
-extern undefined1 DAT_000fb8f0_backing[];
+extern char DAT_000fb8f0_backing[];
 #define DAT_000fb8f0 DAT_000fb8f0_backing[0]
 
 #define DAT_00086da8 DAT_00086da8_backing[0]

@@ -100,7 +100,7 @@ void refresh_player_equipment_effects(void);
 void full_dungeon_redraw(void);
 void weapon_overlay_and_full_redraw(void);
 void enter_pause_menu_state(short state);
-void get_mouse_position(ushort *out_x, ushort *out_y);
+void get_mouse_position(short *out_x, short *out_y);
 void handle_pause_menu_region_click(int region, short click_y);
 void handle_pause_menu_dpad_navigation(short key_code);
 void close_ui_panel_return_to_game(void);

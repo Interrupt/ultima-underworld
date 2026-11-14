@@ -78,7 +78,8 @@ static int resolve_path(const char *win_path, char *out, size_t out_sz) {
             snprintf(resolved, sizeof(resolved), "%s", comp);
         }
         char next[4096];
-        snprintf(next, sizeof(next), "%s/%s", cur, resolved);
+        int written = snprintf(next, sizeof(next), "%s/%s", cur, resolved);
+        if (written < 0 || (size_t)written >= sizeof(next)) break; /* path too long: stop at what resolved so far */
         snprintf(cur, sizeof(cur), "%s", next);
     }
 

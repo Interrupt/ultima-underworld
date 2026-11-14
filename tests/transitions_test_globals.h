@@ -1,7 +1,7 @@
 #include "src/headers/uw.h"
-extern undefined1 DAT_00085448_backing[11];
-extern undefined1 DAT_0023c698_backing[1024];
-extern undefined1 DAT_00101968_backing[260];
+extern char DAT_00085448_backing[11];
+extern char DAT_0023c698_backing[1024];
+extern char DAT_00101968_backing[260];
 extern uintptr_t DAT_00101a70;
 extern ushort DAT_00101a6c, DAT_000853f8, DAT_000853fc, DAT_00085400;
 extern byte image[64000];
@@ -76,8 +76,9 @@ extern void *DAT_0023c430;
 extern undefined1 DAT_0023cdb0_backing[32];
 extern short DAT_00201c84;
 extern char *DAT_001005c4, *DAT_001005c8, *DAT_000fb858;
-extern undefined1 DAT_000fb860_backing[32], DAT_000fb8f0_backing[1680];
-extern undefined1 DAT_0023cca8_backing[1024];
+extern undefined1 DAT_000fb860_backing[32];
+extern char DAT_000fb8f0_backing[1680];
+extern char DAT_0023cca8_backing[1024];
 extern int DAT_00201c98;
 extern char s_chrbtns_00084ef8[];
 extern char s__DATA_skills_dat_00084ee4[];
@@ -93,8 +94,8 @@ extern int g_text_input_active;
 extern undefined4 g_scroll_control_codes_enabled;
 extern short DAT_0025070c;
 extern undefined *DAT_00250704;
-extern undefined s_dash_000879a4_backing[8192];
-extern undefined s_scroll_prompt_arrow_000879a8_backing[8192];
+extern char s_dash_000879a4_backing[8192];
+extern char s_scroll_prompt_arrow_000879a8_backing[8192];
 extern short prompt_panel[16], prompt_font[8];
 #include <math.h>
 

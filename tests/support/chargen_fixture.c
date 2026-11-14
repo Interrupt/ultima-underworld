@@ -21,7 +21,7 @@ short DAT_00201b68;
 
 undefined1 DAT_000fb860_backing[32];
 
-undefined1 DAT_000fb8f0_backing[1680];
+char DAT_000fb8f0_backing[1680];
 
 int random_values[64], random_count, random_index;
 
@@ -136,5 +136,5 @@ int DAT_00086db8_backing[256], DAT_0023bc94;
 undefined4 DAT_0023bc9c, DAT_0023bc98, DAT_002020dc;
 undefined4 DAT_002020d0, DAT_002020d4, DAT_002020d8;
 short DAT_000858c4;
-void reduce_item_quality_on_use(ushort *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected quality decay"); }
+void reduce_item_quality_on_use(uw_unaligned_word_t *object, char dice_count) { (void)object; (void)dice_count; TEST_FAIL_MESSAGE("Unexpected quality decay"); }
 uint calculate_object_weight(uw_object_hdr_t *object) { return 25; }

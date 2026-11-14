@@ -4,7 +4,7 @@
 #include "../lighting_test_globals.h"
 uw_object_hdr_t *get_equipped_item_at_slot(short slot);
 void *get_scanned_object_class_effect_ptr(void);
-int compute_object_weight(ushort *object);
+int compute_object_weight(uw_unaligned_word_t *object);
 void request_weapon_swing_graphic(char category);
 void reset_player_derived_state(void);
 int is_valid_equipment_slot_item(ushort id, short slot);
@@ -16,8 +16,8 @@ void update_screen_flicker_effect(int active);
 void force_locomotion_state_refresh(void);
 void apply_movement_mode_profile(byte mode);
 int find_or_assign_object_widget(void *object);
-void decrement_object_count(ushort *object);
-int place_object_in_backpack_slot(ushort *object, short slot);
+void decrement_object_count(uw_unaligned_word_t *object);
+int place_object_in_backpack_slot(uw_unaligned_word_t *object, short slot);
 void redraw_container_icon_slot(void);
 void redraw_backpack_slot_widget(short slot);
 void print_scroll_message_by_id(uint id);

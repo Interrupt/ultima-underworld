@@ -77,6 +77,8 @@ LAB_00081254:
   }
 }""".replace('@BLANK@', '  ')
 REPLACEMENTS = [('(int)(uVar8 & 0x3f)', '(int)((uw_object_hdr_t *)puVar4)->owner'),
+ ('resolve_object_link(&DAT_00250778 + (short)entry_slot * 6)',
+  'resolve_object_link((uw_link_word_t *)(&DAT_00250778 + (short)entry_slot * 6))'),
  ('ushort *puVar4;', 'uw_object_hdr_t *puVar4;'),
  ('puVar4 = (ushort *)resolve_object_link', 'puVar4 = resolve_object_link'),
  ('puVar4 == (ushort *)0x0', 'puVar4 == NULL'),

@@ -1,5 +1,5 @@
 @spawn_scheduled_door_texture_object_exact disable paren, optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@
-typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t;
+typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t, uw_link_word_t;
 @@
  int spawn_scheduled_door_texture_object()
  {
@@ -68,7 +68,7 @@ typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t;
    return 0;
  }
 @spawn_scheduled_effect_object_exact disable paren, optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@
-typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t;
+typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t, uw_link_word_t;
 @@
  int spawn_scheduled_effect_object(ushort *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y)
  {
@@ -131,6 +131,7 @@ typedef byte, ushort, uint, undefined1, undefined2, undefined4, uw_object_hdr_t;
      return 0;
    }
    iVar8 = (char *)tilemap_lookup((int)tile_x,(int)tile_y);
-   object_list_append_tail(iVar8 + 2,iVar5);
+-   object_list_append_tail(iVar8 + 2,iVar5);
++   object_list_append_tail((uw_link_word_t *)(iVar8 + 2), iVar5);
    return 1;
  }

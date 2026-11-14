@@ -493,7 +493,7 @@ R F(...) {
 ...>
 }
 @marker_exact disable optional_qualifier, drop_cast, plus_comm, mult_comm, plus_assoc, minus_assoc, plus_minus_assoc1, plus_minus_assoc2, times_assoc, bitand_comm, bitor_comm@
-typedef byte, ushort, uint, undefined1, undefined2, uw_object_hdr_t;
+typedef byte, ushort, uint, undefined1, undefined2, uw_object_hdr_t, uw_link_word_t;
 @@
  void remove_trap_chain_marker(char *link_field, char *trap_object)
  {
@@ -504,7 +504,7 @@ typedef byte, ushort, uint, undefined1, undefined2, uw_object_hdr_t;
    char *iVar5;  /* was `int` -- truncated tilemap_lookup's real `void *` return */
  
 -   puVar4 = (ushort *)resolve_object_link(trap_object + 6);
-+   puVar4 = (ushort *)resolve_object_link((char *)&((uw_object_hdr_t *)trap_object)->link_word);
++   puVar4 = (ushort *)resolve_object_link(uw_link_word_ptr((uw_object_hdr_t *)trap_object));
    uVar2 = ((uw_object_hdr_t *)puVar4)->type_flags;
    uVar1 = (uVar2 & 0x1e00) >> 9;
    if ((short)uVar1 == 1) {
@@ -516,9 +516,11 @@ typedef byte, ushort, uint, undefined1, undefined2, uw_object_hdr_t;
      bVar3 = (byte)(uVar2 >> 8);
 -     ((uw_object_hdr_t *)puVar4)->type_flags_low = (byte)(char)uVar2;
 -     ((uw_object_hdr_t *)puVar4)->type_flags_high = ((byte)((uVar1 * 0x200 + -1) >> 8) ^ bVar3) & 0x1e ^ bVar3;
+-     object_list_unlink(link_field,trap_object);
+-     free_object_slot(trap_object);
 +     ((uw_object_hdr_t *)puVar4)->flags_res = (uVar1 - 1) & 7;
 +     ((uw_object_hdr_t *)puVar4)->enchanted = ((uVar1 - 1) >> 3) & 1;
-     object_list_unlink(link_field,trap_object);
-     free_object_slot(trap_object);
++     object_list_unlink((uw_link_word_t *)link_field, (uw_object_hdr_t *)trap_object);
++     free_object_slot((uw_object_hdr_t *)trap_object);
    }
  }

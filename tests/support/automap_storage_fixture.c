@@ -8,8 +8,9 @@ short DAT_000bbef0, DAT_000ba9d0;
 int DAT_000bbefc;
 undefined2 DAT_000b99c0, DAT_000b99c8;
 undefined4 DAT_000b99c4, DAT_000bbef4, DAT_000bbef8, DAT_00204844;
-undefined1 DAT_000ba9d8_backing[32768];
-undefined1 DAT_000b98b8_backing[32768], DAT_000b58b8_backing[8448];
+char DAT_000ba9d8_backing[32768];
+char DAT_000b98b8_backing[32768];
+undefined1 DAT_000b58b8_backing[8448];
 char s__SAVE0_lev_ark_000842fc[]="\\SAVE0\\lev.ark";
 char s__arc_tmp_000842b4[]="_arc.tmp";
 char s_font4x5p_sys_0008431c[]="font4x5p.sys", s_font5x6p_sys_0008430c[]="font5x6p.sys";
@@ -85,8 +86,8 @@ void clear_screen_and_restore_cursor(void) {}
 void automap_fixture_add_note(const char *text,short x,short y)
 {
     TEST_ASSERT_LESS_THAN_INT(100,DAT_000bbef0);
-    byte *note=DAT_000ba9d8_backing+DAT_000bbef0++*54;
-    snprintf((char *)note,50,"%s",text);
+    char *note=DAT_000ba9d8_backing+DAT_000bbef0++*54;
+    snprintf(note,50,"%s",text);
     memcpy(note+50,&x,2);
     memcpy(note+52,&y,2);
     DAT_000b99c4=1;

@@ -18,7 +18,7 @@ int measure_text_width(char *text);
 int unpack_glyph_bitmap(byte *out_pixels, byte *glyph_bits, short bits_per_row);
 void load_font_metrics();
 uint pack_word_byte(uint word, uint new_byte, int into_high_byte);
-void itoa_radix(int value, byte *buffer, int radix);
+void itoa_radix(int value, char *buffer, int radix);
 void init_glyph_width_table();
 int get_catalog_sprite_width(int sprite_id);
 void save_draw_command_cursor();

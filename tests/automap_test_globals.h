@@ -8,13 +8,14 @@ extern short DAT_000bbef0, DAT_000ba9d0;
 extern int DAT_000bbefc;
 extern undefined2 DAT_000b99c0, DAT_000b99c8;
 extern undefined4 DAT_000b99c4;
-extern undefined1 DAT_000ba9d8_backing[32768];
+extern char DAT_000ba9d8_backing[32768];
 #define DAT_000ba9d8 DAT_000ba9d8_backing[0]
 #define DAT_000baa0a DAT_000ba9d8_backing[0x32]
 #define DAT_000baa0b DAT_000ba9d8_backing[0x33]
 #define DAT_000baa0c DAT_000ba9d8_backing[0x34]
 #define DAT_000baa0d DAT_000ba9d8_backing[0x35]
-extern undefined1 DAT_000b98b8_backing[32768], DAT_000b58b8_backing[8448];
+extern char DAT_000b98b8_backing[32768];
+extern undefined1 DAT_000b58b8_backing[8448];
 #define DAT_000b98b8 DAT_000b98b8_backing[0]
 #define DAT_000b98b9 DAT_000b98b8_backing[1]
 #define DAT_000b58b8 DAT_000b58b8_backing[0]

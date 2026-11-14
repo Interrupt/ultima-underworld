@@ -12,7 +12,8 @@ extern undefined1 DAT_00204980_backing[32];
 extern undefined2 DAT_00204990_backing[16], DAT_002049b0_backing[16];
 extern uw_ranged_type_props_t g_ranged_type_props[16];
 #define DAT_000853d8 DAT_000853d8_backing[0]
-extern char *DAT_00101400, *DAT_00101438;
+extern char *DAT_00101400;
+extern byte *DAT_00101438;
 extern uw_monster_type_props_t *DAT_00101404;
 extern void *DAT_0010172c;
 extern char DAT_00101408, DAT_00101410, DAT_0010143c, DAT_0010173c;

@@ -12,13 +12,13 @@ char *DAT_00086df8;
 /* These 4 were zero-initialized "backing" buffers standing in for unrecovered string constants,
    passed straight into draw_text_string by draw_chargen_attribute_summary as the row labels for the
    4 values it draws. */
-static undefined DAT_00084e40_backing[16] = "Vit:";
+static char DAT_00084e40_backing[16] = "Vit:";
 #define DAT_00084e40 DAT_00084e40_backing[0]
-static undefined DAT_00084e48_backing[16] = "Int:";
+static char DAT_00084e48_backing[16] = "Int:";
 #define DAT_00084e48 DAT_00084e48_backing[0]
-static undefined DAT_00084e50_backing[16] = "Dex:";
+static char DAT_00084e50_backing[16] = "Dex:";
 #define DAT_00084e50 DAT_00084e50_backing[0]
-static undefined DAT_00084e58_backing[16] = "Str:";
+static char DAT_00084e58_backing[16] = "Str:";
 #define DAT_00084e58 DAT_00084e58_backing[0]
 char *DAT_001005c8;
 /* Was `undefined4` (4 bytes), but assigned real char* pointers (DAT_001005c4/DAT_001005c8)
@@ -48,7 +48,7 @@ static short DAT_001005c0;
 /* Sizing-audit pass: investigated, NOT shrunk -- SKILLS.DAT+CHRGEN.DAT (the real shipped assets)
    only need 441 bytes together, which made a smaller size look safe, but
    tests/test_chargen.c:128-130 asserts against DAT_000fb8f0_backing[1000]/[1002]... */
-static undefined1 DAT_000fb8f0_backing[1680];
+static char DAT_000fb8f0_backing[1680];
 char s_FONT5X6P_SYS_00084e9c[] = "FONT5X6P.SYS";
 static char s__DATA_CHARGEN_BYT_00084eac[] = "\\DATA\\CHARGEN.BYT";
 static char s_FONTCHAR_SYS_00084ec0[] = "FONTCHAR.SYS";
@@ -184,8 +184,8 @@ int character_generator_loop(char *tree_data, char *scratch_data, char *field_re
   /* local_5c and local_58 were separate Ghidra locals (`undefined4 local_5c` + 6 more `undefined1
      local_58/57/56/55/54/53` scalars), but their names encode adjacent stack offsets (-0x5c then
      -0x58, 4 bytes apart) and the code writes across both as one flowing buffer... */
-  undefined1 local_5c_buf [10];
-  undefined1 auStack_4c [32];
+  char local_5c_buf [10];
+  char auStack_4c [32];
 
   local_64[0] = 0;
   sVar8 = 0;
@@ -441,7 +441,7 @@ int run_character_generator()
   uint uVar5;
   char *pcVar6;
   uint uVar7;
-  undefined *puVar8;
+  char *puVar8;
   char *pcVar9;
   undefined2 uVar10;
   char acStack_128 [260];
@@ -790,7 +790,7 @@ int advance_skill_tree_node(byte *cursor, char *picked_skills, char *record, cha
 void draw_chargen_attribute_summary()
 {
   int iVar1;
-  undefined1 auStack_14 [12];
+  char auStack_14 [12];
   
   set_draw_color(0x1a);
   rect_fill_or_save_restore(0x5d,0x32,0x8c,0x7a);
@@ -826,7 +826,7 @@ void draw_selected_skills_list()
   char *uVar3;
   int iVar4;
   int iVar5;
-  undefined1 auStack_24 [12];
+  char auStack_24 [12];
 
   set_draw_color(0x1a);
   rect_fill_or_save_restore(0x1e,0x85,0x7d,0xbc);

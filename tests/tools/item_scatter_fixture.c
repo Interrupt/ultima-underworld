@@ -79,7 +79,7 @@ int place_object_in_world(uint x, uint y, int z, void *p, short radius, int skip
     if (mutation) { object(0)->type_flags ^= 0x0080; object(attempts)->position_word ^= 0x3333; }
     return seed&1;
 }
-ushort *discard_misplaced_object(void *link, ushort *p, int skip)
+ushort *discard_misplaced_object(void *link, uw_unaligned_word_t *p, int skip)
 {
     assert((byte *)link==tile+2 && p==(ushort *)object(0) && skip==1);
     observe(10); ++discarded; return p;

@@ -33,7 +33,7 @@ byte *DAT_0024af7c;
 char *DAT_0023cca0;
 /* Not `static` -- also used by game.c (app_main_loop, main_menu_loop); see the extern declaration
    and DAT_0023cca8 macro alias in uw.h. */
-undefined1 DAT_0023cca8_backing[1024];
+char DAT_0023cca8_backing[1024];
 static undefined1 DAT_00084298_backing[128];
 undefined1 *DAT_00084298 = DAT_00084298_backing;
 /* Was `undefined4` despite being assigned a real malloc'd pointer (`DAT_00248410 = DAT_0023c44c;`,
@@ -51,7 +51,7 @@ static char s__DATA_COPYRIGHT_BYT_0008576c[] = "\\DATA\\COPYRIGHT.BYT";
 static char s__DATA_pres2_byt_00085780[] = "\\DATA\\pres2.byt";
 /* Not `static` -- also used by game.c (app_main_loop, main_menu_loop); see the extern declaration
    and DAT_000857a0 macro alias in uw.h. */
-undefined1 DAT_000857a0_backing[16] = "\\SAVE0";
+char DAT_000857a0_backing[16] = "\\SAVE0";
 static undefined2 DAT_00201b6c;
 /* Per-(redraw-mode, dirty-bit) handler dispatch table read by
    dispatch_sticky_mode_handlers/enter_dungeon_view/handle_player_death_and_menu_transition/change_game_mode... */
@@ -88,7 +88,7 @@ static char s_Underworld_can_no_longer_run__Er_0008585c[] = "Underworld can no l
 /* Sizing-audit pass: fatal-error message buffer, written via ce_strncpy from either a 42-byte stack
    buffer (report_fatal_error_ and_exit) or an unbounded caller string (report_fatal_error_
    message_and_exit)... */
-static undefined DAT_00201b70_backing[64];
+static char DAT_00201b70_backing[64];
 /* Sizing-audit pass: shutdown_game_resources's own teardown loop is a
    HARD exact `iVar1 = 0x80` (128) count. Down from 256. */
 void *DAT_00202308_arr[128];
@@ -179,7 +179,7 @@ static char *g_weapon_swing_startup_scratch_buffer;
 /* Sizing-audit pass: a third sibling of DAT_0023cca8/DAT_0023c698 (same registry-install-dir-lookup
    pattern, right above/at line 1889/1891) -- written from the same 520-byte (0x208) stack buffer
    (auStack_228) as those two, which were already sized to 1024 for this exact reason. */
-undefined1 DAT_00241f08_backing[1024];
+char DAT_00241f08_backing[1024];
 static undefined2 DAT_0023c59e;
 static undefined2 DAT_0023c5a0;
 static char *DAT_0023c44c;
@@ -203,43 +203,61 @@ static char s__Program_Files_ZIO_Interactive_U_00087774[] = "\\Program Files\\ZI
 // (dispatch_window_message walks msg_id entries from &DAT_000830b0 via an `int*`, and reads the
 // matching handler from UNK_000830b4 + index*8 -- exactly DAT_000830b0's own address + 4)...
 /* Recovered ARM window handlers (0x778f4/0x779f0/0x77a10/0x77a30).
-   The focus handlers call the GAPI suspend/resume imports; create/activate return 0. */
-static int FUN_000778f4(void)
+   The focus handlers call the GAPI suspend/resume imports; create/activate return 0.
+   Every table entry is called with the window procedure's four register arguments
+   (ARM 0x778e8: r0-r3 still hold them); each handler consumes its own subset. */
+static int FUN_000778f4(undefined4 window, int message, undefined4 wparam, int lparam)
 {
   return 0;
 }
-static int FUN_000779f0(void)
+static int FUN_000779f0(undefined4 window, int message, undefined4 wparam, int lparam)
 {
   GXSuspend();
   return 0;
 }
-static int FUN_00077a10(void)
+static int FUN_00077a10(undefined4 window, int message, undefined4 wparam, int lparam)
 {
   GXResume();
   return 0;
 }
-static int FUN_00077a30(void)
+static int FUN_00077a30(undefined4 window, int message, undefined4 wparam, int lparam)
 {
   return 0;
 }
-/* UU.exe .rdata 0x830b0: native pointers replace the original 32-bit ARM addresses.
-   Keep the legacy callback declarations: each handler consumes its own subset of
-   the window procedure's four register arguments. */
+/* Adapters giving the native callbacks the table's common signature; they forward the
+   register arguments each callback actually reads. */
+static int window_message_paint(undefined4 window, int message, undefined4 wparam, int lparam)
+{
+  return blit_framebuffer_to_gx_display();
+}
+static int window_message_destroy(undefined4 window, int message, undefined4 wparam, int lparam)
+{
+  return shutdown_game_resources();
+}
+static int window_message_keyboard(undefined4 window, int message, undefined4 wparam, int lparam)
+{
+  return handle_keyboard_message((int)window, message, (uint)wparam);
+}
+static int window_message_mouse(undefined4 window, int message, undefined4 wparam, int lparam)
+{
+  return handle_mouse_message((int)window, (uint)message, (uint)wparam, lparam);
+}
+/* UU.exe .rdata 0x830b0: native pointers replace the original 32-bit ARM addresses. */
 struct uw_window_message_handler {
   uint message;
-  int (*handler)();
+  int (*handler)(undefined4 window, int message, undefined4 wparam, int lparam);
 };
 static const struct uw_window_message_handler DAT_000830b0[] = {
-  {0x001, FUN_000778f4}, {0x00f, blit_framebuffer_to_gx_display},
+  {0x001, FUN_000778f4}, {0x00f, window_message_paint},
   {0x008, FUN_000779f0}, {0x007, FUN_00077a10},
-  {0x006, FUN_00077a30}, {0x002, shutdown_game_resources},
-  {0x100, handle_keyboard_message}, {0x101, handle_keyboard_message},
-  {0x102, handle_keyboard_message}, {0x103, handle_keyboard_message},
-  {0x106, handle_keyboard_message}, {0x107, handle_keyboard_message},
-  {0x104, handle_keyboard_message}, {0x105, handle_keyboard_message},
-  {0x201, handle_mouse_message}, {0x204, handle_mouse_message},
-  {0x202, handle_mouse_message}, {0x205, handle_mouse_message},
-  {0x200, handle_mouse_message},
+  {0x006, FUN_00077a30}, {0x002, window_message_destroy},
+  {0x100, window_message_keyboard}, {0x101, window_message_keyboard},
+  {0x102, window_message_keyboard}, {0x103, window_message_keyboard},
+  {0x106, window_message_keyboard}, {0x107, window_message_keyboard},
+  {0x104, window_message_keyboard}, {0x105, window_message_keyboard},
+  {0x201, window_message_mouse}, {0x204, window_message_mouse},
+  {0x202, window_message_mouse}, {0x205, window_message_mouse},
+  {0x200, window_message_mouse},
 };
 
 
@@ -384,7 +402,7 @@ void main_menu_loop(int is_first_entry)
   int iVar9;
   int iVar10;
   bool bVar11;
-  short local_83c [2];
+  ushort local_83c [2];
   int local_838;
   /* Was `int`, holds the same ce_malloc(0x10000) pointer as
      DAT_0023bf70 (see its comment), passed to LocalFree (free) --
@@ -399,7 +417,7 @@ void main_menu_loop(int is_first_entry)
      0x10-byte-stride records (plus an overlapping 4-byte-stride array access)... */
   char local_82c [256];
   char acStack_7ec [264];
-  undefined1 auStack_4d4 [160];
+  char auStack_4d4 [160];
   
   /* local_82c is now a real array (see its declaration) -- zero the whole thing rather than just
      its first 4 bytes, since it's read back as a multi-record table. */
@@ -658,7 +676,7 @@ void init_gameplay_session()
   g_player_object = (uw_mobile_object_t *)(ushort *)DAT_0023b82c;
   load_shading_level_config(0);
   DAT_0023be8c = 0;
-  DAT_00086df8 = &DAT_0023bca8;
+  DAT_00086df8 = (char *)&DAT_0023bca8;
   /* HACK, same silently-zero class as DAT_0024af60 above and DAT_00086e68 / DAT_0008589c elsewhere
      in this file: g_npc_tick_enabled is read exactly once in this whole file... */
   g_npc_tick_enabled = 1;
@@ -667,7 +685,7 @@ void init_gameplay_session()
   DAT_000879ac = 1;
   reset_player_object_record();
   iVar1 = (g_player_object->hdr.object_id & 0x3f) * 0x30;
-  DAT_0023be74 = &DAT_001007d0 + iVar1;
+  DAT_0023be74 = (char *)(&DAT_001007d0 + iVar1);
   ((ushort *)g_player_object)[8] = g_monster_type_props[(iVar1) / 0x30].max_hp;
   if (DAT_00201c74 == 0) {
     DAT_00201c74 = register_interned_string(DAT_00086df8,0x7d);
@@ -799,7 +817,7 @@ void print_player_position_debug()
 
 {
   int iVar1;
-  undefined1 auStack_2c [40];
+  char auStack_2c [40];
   
   iVar1 = (int)DAT_00201c70;
   if (iVar1 < 0) {
@@ -1171,8 +1189,8 @@ void animate_title_palette_cycle()
 // "Journey Onward" main-menu option.
 void update_journey_onward_availability(short check_saves)
 {
-  short local_ac [4];
-  undefined1 auStack_a4 [160];
+  ushort local_ac [4];
+  char auStack_a4 [160];
 
   if ((check_saves != 0) && (probe_save_slots(auStack_a4,local_ac), local_ac[0] == 0)) {
     display_book_or_scroll_page(0);
@@ -1554,9 +1572,9 @@ int create_main_window_and_init_display(int instance, int show_command)
   undefined1 auStack_7b0 [24];
   undefined1 auStack_798 [96];
   undefined1 auStack_738 [256];
-  undefined1 auStack_638 [520];
-  undefined1 auStack_430 [520];
-  undefined1 auStack_228 [520];
+  char auStack_638 [520];
+  char auStack_430 [520];
+  char auStack_228 [520];
   
   GetSystemMetrics(1);
   GetSystemMetrics(0);
@@ -1922,8 +1940,8 @@ void run_game_startup_sequence()
   char *pcVar6;
   char acStack_62c [264];
   char acStack_524 [264];
-  undefined1 auStack_41c [520];
-  undefined1 auStack_214 [520];
+  char auStack_41c [520];
+  char auStack_214 [520];
   
   start_ambient_sound_effect(2);
   init_string_resource_cache();
@@ -2010,7 +2028,7 @@ void run_game_startup_sequence()
     pcVar4 = pcVar4 + 1;
   } while (cVar1 != '\0');
   ce_strcat(acStack_62c,s__DATA_lev_ark_00085734);
-  uVar5 = load_string_resource(acStack_62c);
+  uVar5 = (char *)load_string_resource(acStack_62c);
   ce_wcscpy(auStack_214,uVar5);
   ce_memset(acStack_524,0,0x104);
   do {
@@ -2019,7 +2037,7 @@ void run_game_startup_sequence()
     pcVar6 = pcVar6 + 1;
   } while (cVar1 != '\0');
   ce_strcat(acStack_524,s__SAVE0_lev_ark_000842fc);
-  uVar5 = load_string_resource(acStack_524);
+  uVar5 = (char *)load_string_resource(acStack_524);
   ce_wcscpy(auStack_41c,uVar5);
   CopyFileW(auStack_214,auStack_41c,0);
   sVar2 = seed_conversation_globals_for_new_game();
@@ -2501,8 +2519,8 @@ bool start_game_with_current_character()
 {
     char save_directory[264];
     char destination_path[264];
-    undefined1 source_copy_path[520];
-    undefined1 destination_copy_path[520];
+    char source_copy_path[520];
+    char destination_copy_path[520];
     char *converted_path;
     char *source;
     char *destination;

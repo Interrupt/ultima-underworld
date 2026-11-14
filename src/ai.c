@@ -20,7 +20,7 @@ short DAT_00100608;
 /* Reused-global-holding-a-real-string pattern (see the s_scroll_newline_0008522c comment in
    player.h) -- interact.c, ai.c and player.c all pass `&DAT_00084f20` straight into
    message_scroll_print_wrapped/ce_strcat with no write beforehand... */
- undefined DAT_00084f20_backing[128] = ".\n";
+ char DAT_00084f20_backing[128] = ".\n";
 ushort DAT_00101414;
 char *DAT_00101904;
 undefined4 DAT_00101560;
@@ -36,7 +36,7 @@ static undefined DAT_000853c0_backing[9] = {0xff,3,0xff,2,0xff,0,0xff,1,0xff};
 /* ARM 0x853cc: diagonal tile types accepted for each cached direction. */
 static undefined DAT_000853cc_backing[4] = {6,8,7,9};
 #define DAT_000853cc DAT_000853cc_backing[0]
-char *DAT_00101438;
+byte *DAT_00101438; /* NPC collision-profile record (halfword flag words at +0/+2/+4/+6) */
 static undefined1 DAT_0010142c;
 /* NPC waypoints are contiguous 7-byte records at the original 0x101740.
    Alias the adjacent field symbols into this array so recording later
@@ -150,7 +150,7 @@ static char DAT_00085919;
 /* Sizing-audit pass: a filename template with digit pokes at fixed offsets 8,9,0x10,0x11 (via
    DAT_00085910/11/18/19) -- hard lower bound 18 bytes. Real template text recovered
    (bug-fixes-pass-2): "\CRIT\CR00PAGE.N00". Sized to 32 for headroom; down from 8192. */
-static undefined DAT_00085908_backing[32] = "\\CRIT\\CR00PAGE.N00";
+static char DAT_00085908_backing[32] = "\\CRIT\\CR00PAGE.N00";
 static char s__CRIT_assoc_anm_00085934[] = "\\CRIT\\assoc.anm";
 /* Sizing-audit pass: load_critter_association_tables's own per-level write is `puVar6[iVar7]` where
    `iVar7 = iVar10*3 + iVar5`, iVar10 bounded to 32 levels (`< 0x20`) and iVar5 bounded to 3 (`if
@@ -204,7 +204,7 @@ int mobile_object_tick()
     tile_rec = (char *)tilemap_lookup(((uw_projectile_object_t *)DAT_0010190c)->tile_x,
                                       ((uw_projectile_object_t *)DAT_0010190c)->tile_y);
     tile_rec = (char *)discard_misplaced_object(tile_rec + 2,
-                                                ((uw_projectile_object_t *)DAT_0010190c),
+                                                (uw_unaligned_word_t *)DAT_0010190c,
                                                 0);
     if (tile_rec == 0) {
       return 0;
@@ -215,12 +215,12 @@ int mobile_object_tick()
   if ((g_object_type_props[(((uw_projectile_object_t *)DAT_0010190c)->hdr.object_id)].flags & 8) == 0) {
     DAT_002049a0 = 0;
   }
-  build_object_placement_snapshot(((uw_projectile_object_t *)DAT_0010190c),
+  build_object_placement_snapshot((uw_unaligned_word_t *)DAT_0010190c,
                                   &DAT_00204920);
   apply_placement_collision_sweep(&DAT_00204920, &DAT_002049a0);
   DAT_0010144c = (ushort)(((uw_projectile_object_t *)DAT_0010190c)->tile_x);
   DAT_00101454 = (undefined2)(((uw_projectile_object_t *)DAT_0010190c)->tile_y);
-  iVar2 = sync_object_tile_position(((uw_projectile_object_t *)DAT_0010190c),
+  iVar2 = sync_object_tile_position((uw_unaligned_word_t *)DAT_0010190c,
                                     &DAT_00204920);
   if (iVar2 != 0) {
     bVar1 = ((uw_projectile_object_t *)DAT_0010190c)->movement_flags;
@@ -669,7 +669,7 @@ int npc_ai_tick()
      (get_object_record_by_slot_index(1) and tilemap_lookup() both return real pointers, and the two
      dereferences below and the object_list_unlink(iVar5+2,...) call both need the full address)... */
   int iVar5;
-  char *player_rec;
+  uw_object_hdr_t *player_rec;
   char *tile_pos;
   int iVar6;
   undefined4 uVar7;
@@ -679,9 +679,9 @@ int npc_ai_tick()
   short extraout_r1_01;
   uint uVar9;
   uint uVar10;
-  ushort *puVar11;
+  uw_mobile_object_t *puVar11;
 
-  DAT_00101738 = encode_object_slot_index(DAT_0010190c);
+  DAT_00101738 = encode_object_slot_index(&DAT_0010190c->hdr);
   DAT_00101404 = &g_monster_type_props[(DAT_0010190c->hdr.object_id & 0x3f)];
   DAT_00101918 = DAT_0010190c->npc_xhome;
   DAT_001013f8 = DAT_0010190c->npc_yhome;
@@ -741,17 +741,17 @@ int npc_ai_tick()
     DAT_0010190c->animation_flags = DAT_0010190c->animation_flags & 0x7f;
   }
   if ((((DAT_0010190c->animation_flags & 0x40) == 0) ||
-       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((ushort *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
-    build_object_placement_snapshot(DAT_0010190c,DAT_0010172c);
+       ((DAT_0010190c->motion_flags & 0x7f) != 0)) || ((((uw_unaligned_word_t *)DAT_0010190c)[10] & 0xf8) != 0x80)) {
+    build_object_placement_snapshot((uw_unaligned_word_t *)DAT_0010190c,DAT_0010172c);
     bVar3 = DAT_0010190c->full_heading;
     /* Was `build_collision_height_field_for_object()` -- a dropped argument (K&R declared, relying
        on whatever register-content reuse the real ARM code got for free).
        build_collision_height_field_for_object's own single param is dereferenced the exact same... */
-    DAT_00101414 = build_collision_height_field_for_object(DAT_0010190c);
+    DAT_00101414 = build_collision_height_field_for_object((uw_unaligned_word_t *)DAT_0010190c);
     apply_placement_collision_sweep(DAT_0010172c,DAT_00101438);
     DAT_0010144c = (ushort)(DAT_0010190c->npc_xhome);
     DAT_00101454 = (undefined2)(DAT_0010190c->npc_yhome);
-    sync_object_tile_position(DAT_0010190c,DAT_0010172c);
+    sync_object_tile_position((uw_unaligned_word_t *)DAT_0010190c,DAT_0010172c);
     if (DAT_0010190c->full_heading != bVar3) {
       DAT_00101430 = 1;
     }
@@ -796,13 +796,13 @@ LAB_00033830:
       /* ARM 0x3343c..0x33470 passes the dead NPC's tile x/y in r0/r1.
          Dropping these arguments leaves its final frame in the old tile list. */
       tile_pos = tilemap_lookup(DAT_0010144c,DAT_00101454);
-      object_list_unlink(tile_pos + 2,DAT_0010190c);
-      spawn_creature_death_loot(DAT_0010190c);
+      object_list_unlink((uw_link_word_t *)(tile_pos + 2),&DAT_0010190c->hdr);
+      spawn_creature_death_loot((uw_unaligned_word_t *)DAT_0010190c);
       drop_monster_loot(DAT_0010190c,
                         (byte)*(char *)&DAT_00101404->effects_flags >> 5,
                         (byte)*(char *)&DAT_00101404->movement_flags >> 2 & 7);
       drop_creature_inventory_on_death(DAT_0010190c);
-      free_object_slot(DAT_0010190c);
+      free_object_slot(&DAT_0010190c->hdr);
       return 0;
     }
 LAB_00033810:
@@ -871,7 +871,7 @@ LAB_00033834:
      see that comment. Compute the remainder directly instead. */
   bVar8 = ((DAT_0010190c->attack_pitch & 7) + (bVar3 & 0xf)) % 0x10;
 LAB_00033860:
-  ((uw_mobile_object_t *)puVar11)->movement_flags = (bVar3 ^ bVar8) & 0xf ^ bVar3;
+  puVar11->movement_flags = (bVar3 ^ bVar8) & 0xf ^ bVar3;
   return 1;
 }
 
@@ -995,7 +995,7 @@ void tick_mobile_objects(char elapsed)
 LAB_00034a98:
       pbVar2 = pbVar2 + 1;
     } while (pbVar2 < DAT_002046c8);
-    if (DAT_0010190c != (ushort *)0x0) {
+    if (DAT_0010190c != (uw_mobile_object_t *)0x0) {
       set_pending_update_flags(2);
     }
   }
@@ -1021,7 +1021,7 @@ void build_creature_look_text(ushort *creature, char *out_text)
   /* format_object_display_name's real return type is `undefined1 *` -- was captured into `uVar7`
      (undefined4/int), which also does double duty as a plain 0/1 flag a few lines down. */
   char *pcVar_desc;
-  undefined1 *puVar8;
+  char *puVar8;
 
   pcVar3 = (char *)get_message_string(*creature & 0x1ff | 0x800);
   bVar1 = (byte)creature[0xd];
@@ -1126,7 +1126,7 @@ int roll_object_destroy_chance(short base_chance, void *object_ptr)
 
 
 // was FUN_00054f6c.
-int sync_object_tile_position(ushort *object, void *position_ptr)
+int sync_object_tile_position(uw_unaligned_word_t *object, void *position_ptr)
 {
   ushort *position = (ushort *)position_ptr;
   int uw_ord2005_rem_118 = 0;
@@ -1154,13 +1154,13 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
        whatever's still in r0/r1 from an immediately preceding, equivalent computation... */
     tile_cell = tilemap_lookup(DAT_0010144c,DAT_00101454);
     if (tile_cell != 0) {
-      object_list_unlink((char *)tile_cell + 2,object);
+      object_list_unlink((uw_link_word_t *)((char *)tile_cell + 2),(uw_object_hdr_t *)object);
     }
     DAT_0010144c = (ushort)(char)(*position >> 8);
     DAT_00101454 = (short)(char)(position[1] >> 8);
     tile_cell = tilemap_lookup(DAT_0010144c,DAT_00101454);
     if (tile_cell != 0) {
-      object_list_insert_head((char *)tile_cell + 2,object);
+      object_list_insert_head((uw_link_word_t *)((char *)tile_cell + 2),(uw_object_hdr_t *)object);
     }
   }
   uVar7 = (uint)((uw_object_hdr_t *)object)->position_word;
@@ -1213,7 +1213,7 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
   if ((((uw_object_hdr_t *)object)->object_id & 0x1c0) != 0x40) {
     if (DAT_002046c4 < (char *)object) {
       if ((position[10] != 0 || position[8] != 0) || position[5] != 0) {
-        object = (ushort *)reallocate_object_to_arena(object);
+        object = (uw_unaligned_word_t *)reallocate_object_to_arena(object);
       }
     }
     else if ((position[10] == 0 && position[8] == 0) && position[5] == 0) {
@@ -1222,7 +1222,7 @@ int sync_object_tile_position(ushort *object, void *position_ptr)
       if (settled == 0) {
         return 0;
       }
-      object = (ushort *)settle_dropped_object(settled,(int)(short)DAT_0010144c,(int)DAT_00101454,0);
+      object = (uw_unaligned_word_t *)settle_dropped_object(settled,(int)(short)DAT_0010144c,(int)DAT_00101454,0);
       if (object == (ushort *)0x0) {
         return 0;
       }
@@ -1295,7 +1295,7 @@ LAB_0005559c:
 
 
 // was FUN_0005596c.
-ushort *settle_mobile_to_immobile(ushort *object)
+uw_unaligned_word_t *settle_mobile_to_immobile(uw_unaligned_word_t *object)
 {
   ushort uVar1;
   undefined2 uVar2;
@@ -1305,7 +1305,8 @@ ushort *settle_mobile_to_immobile(ushort *object)
   undefined4 uVar6;
   undefined4 uVar7;
   int iVar8;
-  char *pbTile;
+  char *tile_rec;
+  uw_link_word_t *pbTile;
   uw_object_hdr_t *puVar9;
   uw_object_hdr_t *header = (uw_object_hdr_t *)object;
   int iVar10;
@@ -1378,14 +1379,14 @@ ushort *settle_mobile_to_immobile(ushort *object)
   }
   /* Was `iVar8 = tilemap_lookup(...); iVar8 = iVar8 + 2;` -- same pointer- truncation-into-`int`
      bug fixed in FUN_0004ad10 just above... */
-  pbTile = (char *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
+  tile_rec = (char *)tilemap_lookup((int)DAT_0010144c,(int)DAT_00101454);
   /* Off-map landing tile (a projectile carried past the map edge -- sync_object_tile_position
      already skipped its own unlink/insert on the same NULL). */
-  if (pbTile == (char *)0x0) {
+  if (tile_rec == (char *)0x0) {
     discard_misplaced_object((char *)0x0,object,1);
     return (ushort *)0x0;
   }
-  pbTile = pbTile + 2;
+  pbTile = (uw_link_word_t *)(tile_rec + 2);
   if ((bVar3) && (puVar9 = alloc_object_slot(0), puVar9 != (uw_object_hdr_t *)0x0)) {
     puVar9->type_flags = header->type_flags;
     puVar9->position_word = header->position_word;
@@ -1427,10 +1428,10 @@ ushort *settle_mobile_to_immobile(ushort *object)
     object_list_insert_head(pbTile,puVar9);
   }
   if ((bVar13 == 9) &&
-     (iVar10 = activate_area_hazard_object((ushort *)puVar9,(int)DAT_0010144c,(int)DAT_00101454,local_2c), iVar10 == 0)) {
-    puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pbTile,(ushort *)puVar9,0);
+     (iVar10 = activate_area_hazard_object((uw_unaligned_word_t *)puVar9,(int)DAT_0010144c,(int)DAT_00101454,local_2c), iVar10 == 0)) {
+    puVar9 = (uw_object_hdr_t *)discard_misplaced_object(pbTile,(uw_unaligned_word_t *)puVar9,0);
   }
-  return (ushort *)puVar9;
+  return (uw_unaligned_word_t *)puVar9;
 }
 
 
@@ -1522,7 +1523,7 @@ void spawn_creature_treasure_drop(void *creature_ptr)
     if (0 < (int)uVar2) {
       pObj = spawn_new_object((short)cVar4 + 0xa0,0);
       pObj->link = uVar2 & 0x3ff;
-      object_list_insert_head(&creature->link_word,pObj);
+      object_list_insert_head(uw_link_word_ptr(creature),pObj);
     }
   }
 }
@@ -1550,7 +1551,7 @@ void spawn_creature_special_item_drop(void *creature_ptr)
   uw_ord2005_rem_160 = ((int)(uVar2)) % (0x10);
   if (uw_ord2005_rem_160 < (int)(bVar1 & 0xf)) {
     pObj = spawn_new_object((bVar1 >> 4) + 0xb0,0);
-    object_list_insert_head(&creature->link_word,pObj);
+    object_list_insert_head(uw_link_word_ptr(creature),pObj);
   }
 }
 
@@ -1605,7 +1606,7 @@ void spawn_creature_equipment_drop(void *creature_ptr)
           pbVar4->link = uVar7 & 0x3ff;
         }
       }
-      object_list_insert_head(&creature->link_word,pbVar4);
+      object_list_insert_head(uw_link_word_ptr(creature),pbVar4);
     }
     uVar8 = uVar8 + 1 & 0xff;
   } while (uVar8 < 2);
@@ -1659,7 +1660,7 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
       uVar2 = iVar6->chain_word;
       bVar3 = (byte)uVar2;
       iVar6->quality = bVar7 & 0x3f;
-      object_list_insert_head(&creature->link_word,iVar6);
+      object_list_insert_head(uw_link_word_ptr(creature),iVar6);
     }
     uVar8 = uVar8 + 1 & 0xff;
   } while (uVar8 < 2);
@@ -1672,7 +1673,7 @@ void spawn_creature_misc_item_drop(void *creature_ptr)
 // was FUN_000798c4 -- the creature death-loot orchestrator, gated on a "already dropped" flag
 // (param_1[7] bit 0x10, set at the end): points g_despawn_creature_record at this creature's own
 // per-class record in the same table as g_monster_max_stats_table...
-void spawn_creature_death_loot(ushort *creature)
+void spawn_creature_death_loot(uw_unaligned_word_t *creature)
 {
   uw_mobile_object_t *npc = (uw_mobile_object_t *)creature;
   if (!npc->npc_loot_spawned) {
@@ -1689,7 +1690,7 @@ void spawn_creature_death_loot(ushort *creature)
 // was FUN_000816e0 -- morphs a trap/hazard object (class id 0x14 or 0x15) into its "active"
 // counterpart (0x1c2 or 0x1c5 respectively -- 0x1c2 is the same spell-effect id
 // cast_area_spell_effect spawns), schedules it (type 4, delay 0)...
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage)
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage)
 {
   int iVar1;
   ushort uVar2;
@@ -1714,7 +1715,7 @@ int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int dam
     uVar5 = (local_24[iVar1 + 2] ^ uVar2) & 0x1ff ^ (uint)uVar2;
     *(char *)hazard = (char)uVar5;
     *(char *)((char *)hazard + 1) = (char)(uVar5 >> 8);
-    uVar4 = encode_object_slot_index(hazard);
+    uVar4 = encode_object_slot_index((uw_object_hdr_t *)hazard);
     sVar3 = scheduler_add_entry(uVar4,4,0,tile_x & 0xff,(char)tile_y);
     if (sVar3 != -1) {
       if (iVar1 == 0) {
@@ -1765,7 +1766,7 @@ void drop_monster_loot(void *monster_ptr, ushort gold_nibble, ushort item_nibble
     pDropObj->zpos = monster->hdr.zpos;
     uVar6 = pDropObj->chain_word & 0xffe8;
     pDropObj->quality = 0x28;
-    object_list_insert_head(iVar4 + 2,pDropObj);
+    object_list_insert_head((uw_link_word_t *)(iVar4 + 2),pDropObj);
     settle_dropped_object(pDropObj,(int)DAT_0010144c,(int)DAT_00101454,1);
   }
   if ((item_nibble & 0xff) != 0) {
@@ -2163,7 +2164,7 @@ int record_line_walk_step(byte x, byte y)
     if (uVar1 == 2) {
       iVar2 = tile_pair_los_blocked(0,0,DAT_00101740,DAT_00101741,DAT_00101747,DAT_00101748,
                            *(undefined2 *)(DAT_00101438 + 4),*(undefined2 *)(DAT_00101438 + 6),
-                           DAT_00101742,&DAT_00101749,auStack_14);
+                           DAT_00101742,(byte *)&DAT_00101749,auStack_14);
     }
     else {
       /* ARM 0x2dac4..0x2db24 uses DAT_00101740 + count*7 with
@@ -2214,13 +2215,13 @@ void reset_npc_path_cache()
 
 {
   /* Was `int`, truncating get_object_record_by_slot_index's real pointer return. */
-  char *iVar1;
+  uw_mobile_object_t *iVar1;
   int iVar2;
 
   iVar2 = 2;
   do {
-    iVar1 = get_object_record_by_slot_index(iVar2);
-    ((uw_mobile_object_t *)iVar1)->animation_flags = ((uw_mobile_object_t *)iVar1)->animation_flags & 0x7f;
+    iVar1 = (uw_mobile_object_t *)get_object_record_by_slot_index(iVar2);
+    iVar1->animation_flags = iVar1->animation_flags & 0x7f;
     iVar2 = (iVar2 + 1) * 0x10000 >> 0x10;
   } while (iVar2 < 0x100);
   DAT_000853b8 = 0xffff;
@@ -2288,7 +2289,7 @@ void save_walk_path_to_cache_slot(byte *record)
 // was FUN_0002dd4c -- advances a cached NPC walk path (the 28-byte per-slot record
 // save_walk_path_to_cache_slot writes, keyed on the current step index at param_1[2]&0x7f vs the
 // total step count at param_1[3]) by one step...
-int advance_cached_path_step(char *record)
+int advance_cached_path_step(byte *record)
 {
   int uw_ord2005_rem_14 = 0; int uw_ord2005_rem_15 = 0;
   int iVar1;
@@ -2616,7 +2617,7 @@ void npc_arrival_interaction(void *npc_ptr)
     if (*(char *)&DAT_00101404->door_skill != '\0') {
       DAT_002020a0 = (ushort)DAT_00101424;
       DAT_002020a4 = (ushort)DAT_00101428;
-      use_object_on_target(DAT_0010190c,npc,0);
+      use_object_on_target((uw_unaligned_word_t *)DAT_0010190c,npc,0);
     }
     if (((*npc & 0x1f0) == 0x140) && ((*npc & 0xf) < 8)) {
       if (*(char *)&DAT_00101404->door_skill != '\0') {
@@ -2637,7 +2638,7 @@ void npc_arrival_interaction(void *npc_ptr)
            fabricated-remainder bug fixed throughout this session (this port's ordint_divmod never
            populates extraout_r1). ordint_divmod(divisor,dividend).quot here divides the... */
         uw_ord2005_rem_21 = (int)uVar1 % (int)(uint)(DAT_00101404->attacks[0].damage);
-        apply_typed_damage_to_object(npc,DAT_0010190c,DAT_00101424,DAT_00101428,uw_ord2005_rem_21,uVar2);
+        apply_typed_damage_to_object(npc,(uw_unaligned_word_t *)DAT_0010190c,DAT_00101424,DAT_00101428,uw_ord2005_rem_21,uVar2);
       }
     }
   }
@@ -2882,7 +2883,7 @@ void setup_npc_ai_tick_state(uw_mobile_object_t *npc)
   /* Was a dropped argument -- was `encode_object_slot_index();` with no args. npc (just stashed
      above as DAT_0010190c, the "current NPC" this whole per-tick setup is for) is the obvious
      intended argument. */
-  DAT_00101738 = encode_object_slot_index(npc);
+  DAT_00101738 = encode_object_slot_index(&npc->hdr);
   iVar3 = (DAT_0010190c->hdr.object_id & 0x3f) * 0x30;
   DAT_00101404 = &g_monster_type_props[(iVar3) / 0x30];
   DAT_00101918 = DAT_0010190c->npc_xhome;
@@ -2902,16 +2903,16 @@ void setup_npc_ai_tick_state(uw_mobile_object_t *npc)
   if ((g_monster_type_props[(iVar3) / 0x30].movement_flags & 0x80) == 0) {
     if ((g_monster_type_props[(iVar3) / 0x30].movement_flags & 0x40) == 0) {
       DAT_0010172c = &DAT_002048c0;
-      DAT_00101438 = (char *)&DAT_00204980;
+      DAT_00101438 = (byte *)&DAT_00204980;
     }
     else {
       DAT_0010172c = (undefined2 *)&DAT_00204950;
-      DAT_00101438 = (char *)&DAT_002049b0;
+      DAT_00101438 = (byte *)&DAT_002049b0;
     }
   }
   else {
     DAT_0010172c = (undefined2 *)&DAT_002048f0;
-    DAT_00101438 = (char *)&DAT_00204990;
+    DAT_00101438 = (byte *)&DAT_00204990;
   }
 }
 
@@ -2930,7 +2931,7 @@ void npc_ai_default_tick()
   uint uVar5;
   undefined4 uVar6;
   int iVar7;
-  char *npc_rec;
+  uw_mobile_object_t *npc_rec;
   ushort *puVar8;
   undefined1 extraout_r1;
   undefined1 uVar9;
@@ -3018,7 +3019,7 @@ LAB_000339fc:
       if ((cVar4 != '\0') &&
          (((cVar4 == '\x01' && ((DAT_0010190c->npc_ai_flags & 0x40) == 0)) ||
            (((DAT_0010190c->npc_ai_flags & 0x40) != 0 ||
-             (npc_rec = get_object_record_by_slot_index(cVar4), (npc_rec != 0) && (*(byte *)(npc_rec + 0x19) & 0x40) != 0)))))) {
+             (npc_rec = (uw_mobile_object_t *)get_object_record_by_slot_index(cVar4), (npc_rec != 0) && (npc_rec->npc_ai_flags & 0x40) != 0)))))) {
         if ((uint) DAT_0010190c->damage_source != (DAT_0010190c->npc_gtarg)) {
           uVar11 = DAT_0010190c->goal_word & 0xf00f |
                    (uint) DAT_0010190c->damage_source << 4;
@@ -3116,10 +3117,10 @@ LAB_00033e9c:
   case 0xb:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch & 0xfc | 4;
     uVar6 = ce_rand();
-    npc_rec = (char *)DAT_0010190c;
+    npc_rec = DAT_0010190c;
     bVar10 = DAT_0010190c->motion_flags;
     uw_ord2005_rem_93 = ((int)(uVar6)) % (2);
-    ((uw_mobile_object_t *)npc_rec)->motion_flags = (uw_ord2005_rem_93 ^ bVar10) & 0x7f ^ bVar10;
+    npc_rec->motion_flags = (uw_ord2005_rem_93 ^ bVar10) & 0x7f ^ bVar10;
     uVar6 = ce_rand();
     uw_ord2005_rem_94 = ((int)(uVar6)) % (0x100);
     DAT_0010190c->full_heading = uw_ord2005_rem_94;
@@ -3127,7 +3128,7 @@ LAB_00033e9c:
     uw_ord2005_rem_95 = ((int)(uVar6)) % (3);
     DAT_0010190c->attack_pitch =
       DAT_0010190c->attack_pitch & 7 ^ (uw_ord2005_rem_95 + '\x0f') * '\b';
-    npc_rec = (char *)DAT_0010190c;
+    npc_rec = DAT_0010190c;
     uVar2 = DAT_0010190c->goal_word;
     uw_ord2005_rem_96 = ((int)(DAT_0010190c->npc_animation_frame + 1)) % (4);
     uVar11 = uVar2 & 0xfff;
@@ -3140,7 +3141,7 @@ LAB_00033e9c:
   default:
     DAT_0010190c->attack_pitch = DAT_0010190c->attack_pitch | 7;
   }
-  npc_rec = (char *)DAT_0010190c;
+  npc_rec = DAT_0010190c;
   /* HACK: same ushort-vs-byte pointer-arithmetic scaling bug as process_visible_tile_cell's sibling
      npc_notice_and_idle_tick (fixed earlier this session) -- DAT_0010190c is `ushort *`, so bare
      `DAT_0010190c + 2` scales to byte offset 4... */
@@ -3163,11 +3164,11 @@ LAB_00033e9c:
     uVar11 = uVar11 & 0xff;
   }
   uVar5 = uVar2 & 0xfc7f | (uVar11 & 0xffe0) << 2;
-  ((uw_object_hdr_t *)npc_rec)->position_word_low = (byte)(char)uVar5;
+  npc_rec->hdr.position_word_low = (byte)(char)uVar5;
   DAT_0010190c->hdr.position_word_high = (byte)(char)(uVar5 >> 8);
   DAT_0010190c->heading_flags =
     (DAT_0010190c->heading_flags ^ (byte)uVar11) & 0x1f ^ DAT_0010190c->heading_flags;
-  npc_rec = (char *)DAT_0010190c;
+  npc_rec = DAT_0010190c;
   /* Was `if (DAT_00101430 == 0)` -- an inverted condition, confirmed via real disassembly (`cmp
      r0,#0x0; beq 0x326a4`, where r0 is DAT_00101430 and 0x326a4 is the simple "just copy
      DAT_00101458" branch this decompile currently has as the ELSE)... */
@@ -3182,7 +3183,7 @@ LAB_00033e9c:
     uVar5 = (uint)DAT_00101458;
     uVar11 = ((bVar10 - uVar5) + 0x100) & 0xff;
     if ((uVar11 < 0x20) || (0xe0 < uVar11)) {
-      ((uw_mobile_object_t *)npc_rec)->full_heading = bVar10;
+      npc_rec->full_heading = bVar10;
       return;
     }
     if (uVar11 < 0x40) {
@@ -3190,12 +3191,12 @@ LAB_00033e9c:
     }
     else {
       if (uVar11 < 0xc1) {
-        ((uw_mobile_object_t *)npc_rec)->motion_flags = bVar1 & 0x80;
+        npc_rec->motion_flags = bVar1 & 0x80;
         goto LAB_00032690;
       }
       uVar9 = (uVar5 + 0xe0) & 0xff;
     }
-    ((uw_mobile_object_t *)npc_rec)->full_heading = uVar9;
+    npc_rec->full_heading = uVar9;
   }
   else {
 LAB_00032690:
@@ -3219,7 +3220,7 @@ int refresh_npc_target_delta()
   uw_mobile_object_t *target_object;
   int iVar5;
   
-  DAT_00101400 = get_object_record_by_slot_index(DAT_0010190c->npc_gtarg);
+  DAT_00101400 = (char *)get_object_record_by_slot_index(DAT_0010190c->npc_gtarg);
   target_object = (uw_mobile_object_t *)DAT_00101400;
   if ((DAT_00101400 == 0) || (target_object->hit_points == 0)) {
     uVar1 = 0;
@@ -3285,7 +3286,7 @@ LAB_000342b0:
 int compute_pathfind_search_radius()
 
 {
-  char *iVar1;
+  uw_monster_type_props_t *iVar1;
   uint uVar2;
   
   iVar1 = DAT_00101404;
@@ -3294,7 +3295,7 @@ int compute_pathfind_search_radius()
       ((DAT_00201b68 != 6 || (*(char *)&DAT_0010190c->npc_whoami != '\x16')))) {
     uVar2 = ordint_divmod(*(char *)&DAT_00101404->max_hp,
                           (uint) DAT_0010190c->npc_hp << 2).quot;
-    return (uVar2 & 0xff) + (*(byte *)(iVar1 + 0x1c) >> 2 & 3);
+    return (uVar2 & 0xff) + (iVar1->morale_flags >> 2 & 3);
   }
   return 0;
 }
@@ -3458,7 +3459,7 @@ void npc_movement_tick(ushort *npc_object, char *scratch)
   uVar11 = npc_object[0xb] >> 4 & 0x3f;
   local_28 = (char *)tilemap_lookup(uVar9,uVar11);
   if ((npc_object[7] & 1) != 0) {
-    unlink_and_free_object(local_28 + 2,npc_object);
+    unlink_and_free_object((uw_link_word_t *)(local_28 + 2),(uw_object_hdr_t *)npc_object);
     return;
   }
   *(byte *)((char *)npc_object + 0x19) = *(byte *)((char *)npc_object + 0x19) & 0xc;
@@ -3496,15 +3497,15 @@ LAB_00034db4:
     else {
       uVar9 = (int)(((byte)((byte)*puVar4 >> 4) + 0x10) * 8) >> 1;
     }
-    uVar2 = encode_object_slot_index(npc_object);
+    uVar2 = encode_object_slot_index((uw_object_hdr_t *)npc_object);
     iVar6 = check_object_placement_clearance(*npc_object & 0x1ff,uVar2,
                          (int)(((uint)local_2c + uVar10 * 8) * 0x10000) >> 0x10,
                          (int)(((uint)local_2b[0] + uVar8 * 8) * 0x10000) >> 0x10,(short)uVar9,
                          (byte) g_monster_type_props[(iVar6) / 0x30].movement_flags >> 7,
                          8);
     if (iVar6 != 0) {
-      object_list_unlink(local_28 + 2,npc_object);
-      object_list_insert_head(puVar4 + 1,npc_object);
+      object_list_unlink((uw_link_word_t *)(local_28 + 2),(uw_object_hdr_t *)npc_object);
+      object_list_insert_head(puVar4 + 1,(uw_object_hdr_t *)npc_object);
       uVar8 = uVar8 | uVar10 << 6;
       *(byte *)(npc_object + 0xb) = (byte)npc_object[0xb] & 0xf | (byte)(uVar8 << 4);
       *(byte *)((char *)npc_object + 0x17) = (byte)((uVar8 << 0x14) >> 0x18);
@@ -3526,10 +3527,10 @@ int settle_misplaced_mobile_object(char *object)
   byte bVar2;
   byte bVar3;
   byte *pbVar4;
-  char *iVar5;
+  uw_object_hdr_t *iVar5;
   int iVar6;
   uint uVar7;
-  byte *pbVar8;
+  uw_link_word_t *pbVar8;
 
   bVar3 = *(byte *)(object + 0x17) >> 2;
   DAT_0010144c = (ushort)bVar3;
@@ -3538,17 +3539,17 @@ int settle_misplaced_mobile_object(char *object)
   DAT_00101454 = (undefined2)uVar7;
   bVar2 = *(byte *)(object + 3);
   pbVar4 = (byte *)tilemap_lookup(DAT_0010144c,DAT_00101454);
-  pbVar8 = pbVar4 + 2;
-  iVar5 = (char *)discard_misplaced_object(pbVar8,(ushort *)object,0);
-  if ((iVar5 != 0) && (iVar5 = (char *)settle_mobile_to_immobile((ushort *)object), iVar5 != 0)) {
+  pbVar8 = (uw_link_word_t *)(pbVar4 + 2);
+  iVar5 = (uw_object_hdr_t *)discard_misplaced_object(pbVar8,(ushort *)object,0);
+  if ((iVar5 != 0) && (iVar5 = (uw_object_hdr_t *)settle_mobile_to_immobile((ushort *)object), iVar5 != 0)) {
     object_list_unlink(pbVar8,iVar5);
     DAT_00202c84 = 1;
-    iVar6 = find_object_placement((ushort *)iVar5,(uint)(bVar1 >> 5) + (uint)bVar3 * 8,
+    iVar6 = find_object_placement((uw_unaligned_word_t *)iVar5,(uint)(bVar1 >> 5) + (uint)bVar3 * 8,
                          ((bVar2 & 0x1c) >> 2) + uVar7 * 8,(uint)(*pbVar4 >> 4) << 3,6);
     if (iVar6 == 0) {
-      uVar7 = *(ushort *)(iVar5 + 2) & 0xff80;
-      *(byte *)(iVar5 + 2) = *pbVar4 >> 1 & 0x78 | (byte)uVar7;
-      *(char *)(iVar5 + 3) = (char)(uVar7 >> 8);
+      uVar7 = iVar5->position_word & 0xff80;
+      iVar5->position_word_low = *pbVar4 >> 1 & 0x78 | (byte)uVar7;
+      iVar5->position_word_high = (byte)(uVar7 >> 8);
       object_list_insert_head(pbVar8,iVar5);
     }
   }
@@ -3632,8 +3633,8 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
   ushort uVar4;
   short sVar5;
   undefined4 uVar6;
-  ushort *puVar7;
-  ushort *puVar8;
+  uw_unaligned_word_t *puVar7;
+  uw_unaligned_word_t *puVar8;
   uint uVar9;
   int extraout_r1;
   uint extraout_r1_00;
@@ -3650,12 +3651,12 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
   byte local_27 [3];
   
   uVar16 = (undefined1)((ushort)in_stack_ffffffcc >> 8);
-  sVar5 = encode_object_slot_index(object);
+  sVar5 = encode_object_slot_index((uw_object_hdr_t *)object);
   if ((sVar5 != 1) && ((object[7] & 0xc0) == 0)) {
     uVar6 = ce_rand();
     uw_ord2005_rem_101 = ((int)(uVar6)) % (2);
     if (uw_ord2005_rem_101 != 0) {
-      setup_npc_ai_tick_state(object);
+      setup_npc_ai_tick_state((uw_mobile_object_t *)object);
       uVar4 = g_player_object->tile_word;
       iVar13 = (uint)DAT_001013f8 - ((uVar4 & 0x3f0) >> 4);
       iVar11 = (uint)DAT_00101918 - (uint)(uVar4 >> 10);
@@ -3677,10 +3678,10 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
             tile_ptr = tilemap_lookup((&DAT_00101740)[iVar11],(&DAT_00101741)[iVar11]);
             for (puVar7 = (ushort *)((char *)tile_ptr + 2); (*puVar7 & 0xffc0) != 0; puVar7 = puVar7 + 2)
             {
-              puVar7 = (ushort *)resolve_object_link(puVar7);
+              puVar7 = (uw_unaligned_word_t *)resolve_object_link(puVar7);
               if ((((*puVar7 & 0x1c0) == 0x180) && ((*puVar7 & 0x30) == 0x20)) &&
                  ((puVar7[3] & 0xffc0) != 0)) {
-                puVar8 = (ushort *)resolve_object_link(puVar7 + 3);
+                puVar8 = (uw_unaligned_word_t *)resolve_object_link(puVar7 + 3);
                 uVar9 = (uint)((uw_object_hdr_t *)puVar8)->type_flags;
                 if ((uVar9 & 0x1c0) == 0x180) {
                   uVar10 = uVar9 & 0x30;
@@ -3705,7 +3706,7 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
         iVar11 = resolve_tile_entry_offset(*puVar7 & 0xf,&local_28,local_27);
         if (iVar11 != 0) {
           bVar3 = (&DAT_0023cf0a)[((int)(short)(ushort)bVar1 + (short)(ushort)bVar2 * 0x40) * 5];
-          uVar6 = encode_object_slot_index(object);
+          uVar6 = encode_object_slot_index((uw_object_hdr_t *)object);
           iVar11 = check_object_placement_clearance(*object & 0x1ff,uVar6,
                                 (int)(((uint)local_28 + (short)(ushort)bVar2 * 8) * 0x10000) >> 0x10
                                 ,(int)(((uint)local_27[0] + (short)(ushort)bVar1 * 8) * 0x10000) >>
@@ -3716,8 +3717,8 @@ int spawn_rest_interrupt_monster_callback(int scan_x, int scan_y, ushort *object
                int arithmetic) -- truncated tilemap_lookup's real
                `void *` return */
             char *_tile11 = (char *)tilemap_lookup(DAT_00101918,DAT_001013f8);
-            object_list_unlink(_tile11 + 2,object);
-            object_list_insert_head(puVar7 + 1,object);
+            object_list_unlink((uw_link_word_t *)(_tile11 + 2),(uw_object_hdr_t *)object);
+            object_list_insert_head(puVar7 + 1,(uw_object_hdr_t *)object);
             uVar9 = bVar1 & 0x3f | (uint)bVar2 << 6;
             *(byte *)(object + 0xb) = (byte)object[0xb] & 0xf | (byte)(uVar9 << 4);
             *(char *)((char *)object + 0x17) = (char)(uVar9 >> 4);
@@ -3823,7 +3824,7 @@ int alert_npc_to_noise_callback(int scan_x, int scan_y, ushort *npc)
   int iVar10;
   int iVar11;
   int iVar12;
-  undefined1 auStack_74 [80];
+  char auStack_74 [80];
   
   iVar10 = (((uw_object_hdr_t *)npc)->object_id & 0x3f) * 0x30;
   if ((((g_monster_type_props[(iVar10) / 0x30].race_flags == (DAT_0010195c & 0x1f)) &&
@@ -3875,7 +3876,7 @@ int alert_npc_to_noise_callback(int scan_x, int scan_y, ushort *npc)
 // was FUN_00035cb0 -- makes noise at object param_1 (e.g. a trap triggering, a loud action):
 // resolves the noise type/volume to use (param_2, or if 0 and the object is a container, a
 // class-specific field off the object itself), and if nonzero...
-void emit_noise_alert(ushort *source, byte noise_type)
+void emit_noise_alert(uw_unaligned_word_t *source, byte noise_type)
 {
   byte bVar1;
   uint uVar2;
@@ -4006,7 +4007,7 @@ int load_critter_association_tables(int file_handle)
   byte local_130_arr[2];
 #define local_130 local_130_arr[0]
 #define local_12f local_130_arr[1]
-  undefined1 *local_12c;
+  char *local_12c;
   char acStack_128 [260];
   
   iVar8 = 0;
@@ -4032,8 +4033,8 @@ int load_critter_association_tables(int file_handle)
     /* Was pointed at the placeholder stack0xffdc3230 scalar (from an earlier undeclared-identifier
        pass) instead of the real 260-byte path buffer acStack_128 that both copy loops below (and
        the ce_strcat/open_file_for_read calls right after) actually operate on. */
-    local_12c = (undefined1 *)acStack_128;
-    pcVar4 = &DAT_0023cca8;
+    local_12c = acStack_128;
+    pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     wptr_26821 = local_12c;
     do {
       cVar2 = *pcVar4;
@@ -4065,7 +4066,7 @@ int load_critter_association_tables(int file_handle)
         DAT_00085919 = uw_ord2005_rem_112 + '0';
         uVar9 = 0xa0;
         ce_memset(acStack_128,0,0x104);
-        pcVar4 = &DAT_0023cca8;
+        pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     wptr_26852 = local_12c;
         do {
           cVar2 = *pcVar4;
@@ -4136,7 +4137,7 @@ void spawn_npc_thrown_weapon(void *attacker_ptr, short launch_offset, short laun
   DAT_00202a50 = (undefined2)((*(ushort *)(attacker + 0x16) & 0x3f0) >> 4);
   DAT_00202a54 = 1;
   DAT_00202a40 = 0;
-  DAT_00202a44 = (ushort *)attacker;
+  DAT_00202a44 = (uw_unaligned_word_t *)attacker;
   DAT_00202a48 = launch_flags;
   spawn_object_near_player();
 }
@@ -4612,8 +4613,8 @@ int tile_pair_los_blocked(byte tile_a_x, byte tile_a_y, byte tile_b_x, byte tile
   bool bVar6;
   ushort *puVar7;
   byte *pbVar8;
-  ushort *puVar9;
-  ushort *puVar10;
+  uw_unaligned_word_t *puVar9;
+  uw_unaligned_word_t *puVar10;
   uint extraout_r1;
   uint uVar11;
   uint uVar12;
@@ -4701,7 +4702,7 @@ int tile_pair_los_blocked(byte tile_a_x, byte tile_a_y, byte tile_b_x, byte tile
        before the loop... */
     puVar10 = puVar7 + 1;
     while (((uVar2 & 0xffc0) != 0 && (uVar11 == 0))) {
-      puVar9 = (ushort *)resolve_object_link(puVar10);
+      puVar9 = (uw_unaligned_word_t *)resolve_object_link(puVar10);
       iVar13 = (*puVar9 & 0x1ff) * 0xd;
       if ((g_object_type_props[iVar13 / 0xd].flags & 2) != 0) {
         uVar11 = (int)(((byte)puVar9[1] & 0x7f) + (uint)(byte) g_object_type_props[iVar13 / 0xd].height) >> 3;
@@ -4783,7 +4784,7 @@ LAB_0002c220:
      unchanged on every iteration instead of advancing through the object chain... */
   ushort *puVar_link2 = puVar7 + 1;
   while (((uVar14 & 0xffc0) != 0 && (local_50 == 0))) {
-    puVar10 = (ushort *)resolve_object_link(puVar_link2);
+    puVar10 = (uw_unaligned_word_t *)resolve_object_link(puVar_link2);
     uVar19 = (uint)*puVar10;
     iVar13 = (uVar19 & 0x1ff) * 0xd;
     if (((uVar19 & 0x1c0) != 0x140) || (((*puVar10 & 0x30) != 0 || (7 < (uVar19 & 0xf))))) {
@@ -5023,7 +5024,7 @@ LAB_0002c8cc:
 
 
 // was FUN_00054a00.
-void build_object_placement_snapshot(ushort *object, byte *snapshot)
+void build_object_placement_snapshot(uw_unaligned_word_t *object, byte *snapshot)
 {
   ushort uVar1;
   undefined2 uVar2;
@@ -5036,7 +5037,7 @@ void build_object_placement_snapshot(ushort *object, byte *snapshot)
   
   bVar8 = true;
   iVar5 = (((uw_object_hdr_t *)object)->object_id) * 0xd;
-  uVar2 = encode_object_slot_index(object);
+  uVar2 = encode_object_slot_index((uw_object_hdr_t *)object);
   snapshot[0x23] = (byte)uVar2;
   snapshot[0x24] = (byte)((ushort)uVar2 >> 8);
   uVar1 = g_object_type_props[iVar5 / 0xd].size_weight;

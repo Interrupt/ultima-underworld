@@ -9,7 +9,7 @@ void movement_tick(int elapsed, int bob, int mode);
 void scheduler_tick(int elapsed);
 int GXEndDraw(void);
 void push_cursor_icon(int type);
-void get_mouse_position(ushort *x, ushort *y);
+void get_mouse_position(short *x, short *y);
 int hit_test_inventory_widget(short x, short y);
 int erase_cursor_icon(void);
 void pop_cursor_icon(ushort mode);

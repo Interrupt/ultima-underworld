@@ -27,7 +27,7 @@ extern int DAT_0023bf64, g_npc_tick_enabled;
 extern short g_movement_mode;
 extern undefined1 DAT_00204880_backing[128];
 extern int destination_ticks;
-int find_placement_via_tile_flood_fill(ushort *object, short x, short y, short *out_x, short *out_y, int fallback);
+int find_placement_via_tile_flood_fill(uw_unaligned_word_t *object, short x, short y, short *out_x, short *out_y, int fallback);
 void after_level_change(void);
 void teleport_fixture_reset(void);
 void teleport_fixture_dispose(void);

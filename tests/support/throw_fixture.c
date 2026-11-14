@@ -27,9 +27,9 @@ short fine(ushort *object, int offset)
 { short value; memcpy(&value, (byte *)object + offset, 2); return value; }
 uw_object_hdr_t *alloc_object_slot(int mobile)
 {
-    if (mobile) { mobile_allocations++; return (char *)arena + 0x4000 + 2 * 27; }
+    if (mobile) { mobile_allocations++; return (uw_object_hdr_t *)((char *)arena + 0x4000 + 2 * 27); }
     static_allocations++;
-    return (char *)arena + 0x5b00 + 8;
+    return (uw_object_hdr_t *)((char *)arena + 0x5b00 + 8);
 }
 void free_object_slot(uw_object_hdr_t *object)
 {
@@ -44,14 +44,14 @@ int encode_object_slot_index(const uw_object_hdr_t *object)
 }
 void *tilemap_lookup(short x, short y)
 { TEST_ASSERT_TRUE(x>=0 && x<64 && y>=0 && y<64); return (byte *)arena + (y*64+x)*4; }
-uw_object_hdr_t *resolve_object_link(ushort *head_)
-{ ushort *head = (ushort *)head_;
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *head)
+{
     unsigned slot=*head>>6;
-    return !slot ? NULL : slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8;
+    return !slot ? NULL : (uw_object_hdr_t *)(slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8);
 }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
-{ return slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8; }
-void get_mouse_position(ushort *x, ushort *y) { *x=141; *y=cursor_y; }
+{ return (uw_object_hdr_t *)(slot<256 ? DAT_002046b8+slot*27 : DAT_002046c4+(slot-256)*8); }
+void get_mouse_position(short *x, short *y) { *x=141; *y=cursor_y; }
 long ce_rand(void) { return 0; }
 void angle_to_screen_delta(uint heading, void *x_, void *y_)
 { short *x = (short *)x_; short *y = (short *)y_;
@@ -89,7 +89,7 @@ void collision_height_envelope(int mode, int collision)
             record[1]=bridge_heights[i]-2; /* underside */
             *(ushort *)(record+2)=(300+i)<<6;
             *(short *)(record+4)=0; /* same tile */
-            ushort *bridge=get_object_record_by_slot_index(300+i);
+            uw_unaligned_word_t *bridge=(uw_unaligned_word_t *)get_object_record_by_slot_index(300+i);
             bridge[0]=0x164;
             bridge[1]=bridge_heights[i]-2;
         }
@@ -97,29 +97,29 @@ void collision_height_envelope(int mode, int collision)
     }
 }
 void resolve_wall_slide_corner(void) { DAT_002049da=9; }
-int check_object_drop_height(ushort *object, ushort *reference) { (void)object; (void)reference; return 1; }
+int check_object_drop_height(uw_unaligned_word_t *object, uw_unaligned_word_t *reference) { (void)object; (void)reference; return 1; }
 int object_ptr_in_arena(const uw_object_hdr_t *object) { (void)object; return 1; }
-int play_sound_effect_at_object(int sound_id, ushort *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 0; }
+int play_sound_effect_at_object(int sound_id, uw_unaligned_word_t *object, int volume_bias) { (void)sound_id; (void)object; (void)volume_bias; return 0; }
 int play_sound_effect_with_pan(uint sound_id, byte pan, uint volume_bias) { (void)sound_id; (void)pan; (void)volume_bias; return 0; }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; return 0; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; return 0; }
 int roll_object_destroy_chance(short base_chance, void *object) { (void)base_chance; (void)object; return 0; }
-int spawn_scheduled_effect_object(ushort *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y) { (void)source_object; (void)effect_group; (void)delay; (void)animation_offset; (void)heading_adjust; (void)tile_x; (void)tile_y; return 0; }
+int spawn_scheduled_effect_object(uw_unaligned_word_t *source_object, int effect_group, int delay, byte animation_offset, short heading_adjust, short tile_x, short tile_y) { (void)source_object; (void)effect_group; (void)delay; (void)animation_offset; (void)heading_adjust; (void)tile_x; (void)tile_y; return 0; }
 void print_scroll_message_by_id(uint message_id) { (void)message_id;}
 void set_pending_update_flags(ushort flags) { (void)flags;}
 void spawn_effect_debris_burst(void *template, uint tile_x, int tile_y) { (void)template; (void)tile_x; (void)tile_y;}
 void scheduler_relink_entry(void *new_object, void *old_object) { (void)new_object; (void)old_object;}
 void set_ambient_bias_without_light(char light_level) { (void)light_level;}
-int activate_area_hazard_object(ushort *hazard, uint tile_x, int tile_y, int damage) { (void)hazard; (void)tile_x; (void)tile_y; (void)damage; return 1; }
-ushort *discard_misplaced_object(void *list, ushort *object, int destroy)
+int activate_area_hazard_object(uw_unaligned_word_t *hazard, uint tile_x, int tile_y, int damage) { (void)hazard; (void)tile_x; (void)tile_y; (void)damage; return 1; }
+ushort *discard_misplaced_object(void *list, uw_unaligned_word_t *object, int destroy)
 {
     if (!destroy) return object;
-    object_list_unlink(list,object);
-    free_object_slot(object);
+    object_list_unlink(list,(uw_object_hdr_t *)object);
+    free_object_slot((uw_object_hdr_t *)object);
     return NULL;
 }
 uw_object_hdr_t *settle_dropped_object(void *object, short x, short y,
 				       int mode) { return object; }
-uw_object_hdr_t *reallocate_object_to_arena(ushort *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected reallocation during flight"); return NULL; }
+uw_object_hdr_t *reallocate_object_to_arena(uw_unaligned_word_t *object) { (void)object; TEST_FAIL_MESSAGE("Unexpected reallocation during flight"); return NULL; }
 void project_position_by_heading(int heading, short distance, void *x, void *y) { (void)heading; (void)distance; (void)x; (void)y; TEST_FAIL_MESSAGE("Throw took the ground-drop path"); }
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit) { (void)catalog_type; (void)ignore_slot; (void)position_x; (void)position_y; (void)height; (void)check_mode; (void)step_limit; return 1; }
 
@@ -132,7 +132,7 @@ int resolve_collision_candidate_interaction(short contact, int slot)
     return 4;
 }
 void randomize_settled_snapshot_position(void *snapshot) { (void)snapshot;}
-void object_list_append_tail(ushort *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Throw took the ground-drop path"); }
+void object_list_append_tail(uw_link_word_t *link_field, uw_object_hdr_t *object) { (void)link_field; (void)object; TEST_FAIL_MESSAGE("Throw took the ground-drop path"); }
 int play_positional_sound_effect(uint sound_id, short world_x, short world_y, uint volume_bias) { (void)sound_id; (void)world_x; (void)world_y; (void)volume_bias; return 0; }
 
 bool apply_swim_wade_pose(ushort collision_mask) { (void)collision_mask; TEST_FAIL_MESSAGE("Unexpected water"); return false; }
@@ -199,7 +199,7 @@ void launch(void)
     TEST_ASSERT_EQUAL_UINT16(0x80,thrown[0]&0x1ff);
 }
 void tick(void)
-{ DAT_0010190c=thrown; mobile_object_tick(); }
+{ DAT_0010190c=(uw_mobile_object_t *)thrown; mobile_object_tick(); }
 
 /* One main-loop pass per 60Hz game frame, as uw_pump_events() + dispatch_sticky_mode_handlers() run
    it: the game clock is serviced against a monotonic microsecond time (uw_service_game_clock), then

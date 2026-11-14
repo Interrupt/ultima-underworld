@@ -14,7 +14,7 @@ int win_file_exists(char *path, int reserved)
 {
   /* BUG FIX (unit-testing-framework merge): the converted path was held in an `undefined4`,
      truncating load_string_resource's real pointer -- same class as that function's own fix. */
-  char *converted_path = load_string_resource(path);
+  char *converted_path = (char *)load_string_resource(path);
   int handle = CreateFileW(converted_path, 0x80000000, 1, 0, 3, 0x80, 0);
 
   if (handle == -1) {

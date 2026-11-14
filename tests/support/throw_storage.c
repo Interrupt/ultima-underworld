@@ -17,7 +17,7 @@ short DAT_00101454;
 short DAT_00202a38;
 short DAT_00202a3c;
 short DAT_00202a40;
-ushort * DAT_00202a44;
+uw_unaligned_word_t * DAT_00202a44;
 ushort DAT_00202a48;
 ushort DAT_00202a4c;
 undefined2 DAT_00202a50;

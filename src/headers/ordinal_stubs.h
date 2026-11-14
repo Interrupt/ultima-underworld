@@ -3,6 +3,7 @@
 
 /* The CE ordinal stubs below reuse the names of MSVC CRT functions that mingw declares with
  * different signatures. Pull the CRT headers in first, then rename ours so both coexist. */
+#include <stdint.h>
 #ifdef _WIN32
 #include <stdlib.h>
 #include <string.h>
@@ -114,8 +115,8 @@ long RegQueryValueExW(long key, const unsigned short *value_name, long reserved,
 long RegSetValueExW(long key, const unsigned short *value_name, long reserved, long type, const void *data, long data_size);
 long Sleep(unsigned int ms);
 long GetLastError();
-long FindResourceW(long module, long resource_id, long resource_type);
-long LoadResource(long resource);
+intptr_t FindResourceW(intptr_t module, intptr_t resource_id, intptr_t resource_type);
+intptr_t LoadResource(intptr_t resource);
 long GetTickCount();
 long CloseHandle(int handle);
 long GetDlgItemTextW(long dialog, long item_id, void *text, long max_count);
@@ -130,7 +131,7 @@ long PostQuitMessage(long exit_code);
 int PostMessageW(void *hwnd, unsigned int msg, unsigned int wparam, int lparam);
 long TranslateMessage(const void *message);
 long GetSystemMetrics(long index);
-long DeleteObject(long object);
+intptr_t DeleteObject(intptr_t object);
 long GetStockObject(long object_id);
 int ce_atoi(const char *text);
 long ordfloat_cos(unsigned long long x);

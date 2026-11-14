@@ -36,12 +36,12 @@ uw_object_hdr_t *get_equipped_item_at_slot(short slot)
     /* Non-null records make the decompiler's extraout_r3 scratch dead. */
     return (uw_object_hdr_t *)(slot == 6 ? (byte *)object() : records[1] + 4);
 }
-void decrement_object_count(ushort *p)
+void decrement_object_count(uw_unaligned_word_t *p)
 {
     assert(p == object()); observe(3, 0);
     if (mode == 3) p[0] ^= 0xc003;
 }
-int place_object_in_backpack_slot(ushort *p, short slot)
+int place_object_in_backpack_slot(uw_unaligned_word_t *p, short slot)
 {
     assert(p == object()); observe(4, slot);
     if (mode == 3) p[0] ^= 0x3008;

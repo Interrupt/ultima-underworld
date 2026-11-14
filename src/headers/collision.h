@@ -18,12 +18,12 @@ int compute_floor_height_at_position(ushort x_in_tile, ushort y_in_tile);
 bool collision_classify_corner_wall(uint corner, uint step_limit);
 bool collision_corner_flags(uint step_limit);
 void collision_build_height_field(uint step_limit);
-void collision_add_candidate_object(ushort *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised);
+void collision_add_candidate_object(uw_unaligned_word_t *object, ushort slot_index, char tile_dx, char tile_dy, int is_raised);
 void collision_height_envelope(int mode, int collision);
 void swap_collision_candidates(uint index);
 void sort_collision_candidates();
 int check_object_placement_clearance(short catalog_type, short ignore_slot, short position_x, short position_y, short height, int check_mode, byte step_limit);
-int build_collision_height_field_for_object(ushort *object); // was FUN_0002b7a0
+int build_collision_height_field_for_object(uw_unaligned_word_t *object); // was FUN_0002b7a0
 int apply_placement_collision_sweep(void *snapshot, void *sweep_flags); // was FUN_0002bd70
 
 #endif

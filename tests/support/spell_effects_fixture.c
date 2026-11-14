@@ -27,9 +27,14 @@ int execute_spell_effect(uint type, uint parameter, void *actor, void *context)
     fx.dispatched_actor=(uintptr_t)actor; fx.dispatched_context=(intptr_t)context;
     return 1;
 }
+/* The fixture lays objects out as raw words; this is the single boundary
+ * where that storage is viewed as a game object record. */
+static uw_object_hdr_t *raw_object(ushort *words)
+{ return (uw_object_hdr_t *)words; }
+
 int encode_object_slot_index(const uw_object_hdr_t *object)
 {
-    if (object == fx.effect) return 2;
+    if (object == raw_object(fx.effect)) return 2;
     TEST_ASSERT_EQUAL_PTR(g_player_object, object);
     return 1;
 }
@@ -48,17 +53,17 @@ void scan_area_for_matching_objects(char count, byte owner, int (*callback)(), c
     TEST_ASSERT_EQUAL_INT(30, x); TEST_ASSERT_EQUAL_INT(0, y);
     TEST_ASSERT_EQUAL_INT(5, width); TEST_ASSERT_EQUAL_INT(5, height);
     fx.scans++;
-    if (callback) callback(32, 2, fx.target, fx.tile, owner);
+    if (callback) ((int (*)(int,int,void *,void *,int))callback)(32, 2, fx.target, fx.tile, owner);
 }
 int roll_dice_sum(int count, short sides)
 { fx.dice_count=count; fx.dice_sides=sides; return count*sides; }
 void * tilemap_lookup(short x, short y)
 { return x == fx.los_x && y == fx.los_y ? fx.los_tile : fx.tile; }
-uw_object_hdr_t *resolve_object_link(ushort *link)
-{ return link == fx.tile+2 ? fx.target : NULL; }
+uw_object_hdr_t *resolve_object_link(uw_link_word_t *link)
+{ return (byte *)link == fx.tile+2 ? raw_object(fx.target) : NULL; }
 uw_object_hdr_t *get_object_record_by_slot_index(short slot)
-{ TEST_ASSERT_EQUAL_INT(1, slot); return g_player_object; }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int x, short y, byte damage, byte type)
+{ TEST_ASSERT_EQUAL_INT(1, slot); return &g_player_object->hdr; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int x, short y, byte damage, byte type)
 {
     TEST_ASSERT_EQUAL_PTR(fx.target, target);
     TEST_ASSERT_EQUAL_PTR(g_player_object, attacker);
@@ -81,24 +86,24 @@ uint scheduler_add_entry(uint slot, int type, byte delay, byte x, byte y)
 }
 void free_object_slot(uw_object_hdr_t *object)
 { (void)object; TEST_FAIL_MESSAGE("Unexpected allocation failure"); }
-void object_list_insert_head(ushort *head, uw_object_hdr_t *object)
+void object_list_insert_head(uw_link_word_t *head, uw_object_hdr_t *object)
 {
     TEST_ASSERT_EQUAL_PTR(fx.tile+2, head); TEST_ASSERT_EQUAL_PTR(fx.effect, object);
     fx.links++;
 }
 void spawn_effect_debris_burst(void *object, uint x, int y)
 { TEST_ASSERT_EQUAL_PTR(fx.effect, object); (void)x; (void)y; }
-uw_object_hdr_t *find_object_in_chain(ushort **head, int a, int b, int c,
+uw_object_hdr_t *find_object_in_chain(uw_link_word_t **head, int a, int b, int c,
 				      short d)
-{ (void)head; (void)a; (void)b; (void)c; (void)d; return fx.target+3; }
+{ (void)head; (void)a; (void)b; (void)c; (void)d; return raw_object(fx.target+3); }
 uint resolve_skill_gated_unlock_or_use(void *actor, void *target, void *link, ushort mode)
 {
     TEST_ASSERT_EQUAL_PTR(g_player_object, actor); TEST_ASSERT_EQUAL_PTR(fx.target, target);
     TEST_ASSERT_EQUAL_PTR(fx.target+3, link); TEST_ASSERT_EQUAL_INT(5, mode); fx.unlocks++; return 1;
 }
-int resolve_damage_type_resistance(ushort *object, int damage, uint type)
+int resolve_damage_type_resistance(uw_unaligned_word_t *object, int damage, uint type)
 { TEST_ASSERT_EQUAL_PTR(fx.target, object); (void)damage; (void)type; return fx.resist; }
-int spawn_scheduled_effect_object(ushort *object, int group, int variant, byte a, short b, short x, short y)
+int spawn_scheduled_effect_object(uw_unaligned_word_t *object, int group, int variant, byte a, short b, short x, short y)
 {
     TEST_ASSERT_EQUAL_PTR(fx.target, object);
     TEST_ASSERT_EQUAL_INT(7, group); fx.variant=variant; fx.effects++;

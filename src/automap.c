@@ -58,7 +58,7 @@ char s_font4x5p_sys_0008431c[] = "font4x5p.sys";
 /* Sizing pass: hard-capped at 100 records (`if (DAT_000bbef0 != 100)` guard) with a 0x36 (54)-byte
    stride, and the literal 0x1518 (5400 = 100*54) total is baked directly into a ce_memmove call on
    this array -- an airtight, exact real size. */
-static undefined1 DAT_000ba9d8_backing[5400];
+static char DAT_000ba9d8_backing[5400]; /* 100 x {char text[50]; short x, y} note records */
 #define DAT_000ba9d8 DAT_000ba9d8_backing[0]
 /* DAT_000baa0a/b (and the parallel DAT_000baa0c/d pair below) are a note label's X (resp. Y) screen
    position, written as separate low/high bytes at the same index... */
@@ -406,12 +406,12 @@ void draw_automap_screen(int level_number)
   void *uVar3;
   char *pcVar4;
   int iVar5;
-  undefined1 auStack_124 [8];
+  char auStack_124 [8];
   char acStack_11c [260];
 
   uVar3 = ce_malloc(64000);
   decrement_cursor_hide_depth();
-  pcVar4 = &DAT_0023cca8;
+  pcVar4 = (char *)&DAT_0023cca8; /* install-dir string (global typed undefined1[]) */
     stack0xffdc323c_ptr = acStack_11c;
   do {
     cVar1 = *pcVar4;
@@ -712,7 +712,12 @@ LAB_000170bc:
       do {
         sVar3 = next_input_event();
       } while (sVar3 != 1);
-      get_mouse_position(&local_5e,&local_60);
+      {
+        short mouse_x, mouse_y;
+        get_mouse_position(&mouse_x,&mouse_y);
+        local_5e = (short)mouse_x;
+        local_60 = (short)mouse_y;
+      }
       set_cursor_confine_rect(0,199,0x13f,0);
       pop_cursor_icon(1);
     }
@@ -771,8 +776,8 @@ LAB_000170bc:
             }
             else {
               iVar10 = (short)iVar7 * 0x36;
-              (&DAT_000baa0a)[iVar10] = 0xff;
-              (&DAT_000baa0b)[iVar10] = 0xff;
+              (&DAT_000baa0a)[iVar10] = '\xff';
+              (&DAT_000baa0b)[iVar10] = '\xff';
             }
             draw_automap_notes();
           }

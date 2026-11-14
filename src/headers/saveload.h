@@ -7,7 +7,7 @@
 #include "uw.h"
 
 extern char s__SAVE0_lev_ark_000842fc[];
-extern char * g_save_record_buffer;
+extern byte * g_save_record_buffer;
 /* Globals defined in uw.c but also used by functions that now live in
    saveload.c (save/load) -- extern'd here so both translation units
    see the same storage. */

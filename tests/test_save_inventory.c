@@ -91,11 +91,11 @@ static void check_restored_inventory(void)
 {
     /* A valid root must refer to the stationary table, even before a level load. */
     TEST_ASSERT_TRUE(g_player_object->hdr.link >= 256);
-    uw_object_hdr_t *bag = resolve_object_link(&g_player_object->hdr.link_word);
+    uw_object_hdr_t *bag = resolve_object_link(uw_link_word_ptr(&g_player_object->hdr));
     TEST_ASSERT_NOT_NULL(bag);
     TEST_ASSERT_EQUAL_HEX16(0x15f, bag->object_id);
-    uw_object_hdr_t *stack = resolve_object_link(&bag->chain_word);
-    uw_object_hdr_t *key = resolve_object_link(&bag->link_word);
+    uw_object_hdr_t *stack = resolve_object_link(uw_chain_word_ptr(bag));
+    uw_object_hdr_t *key = resolve_object_link(uw_link_word_ptr(bag));
     TEST_ASSERT_NOT_NULL(stack);
     TEST_ASSERT_NOT_NULL(key);
     TEST_ASSERT_EQUAL_HEX16(0x81, stack->object_id);
@@ -159,7 +159,7 @@ static void test_all_header_word_values_survive_inventory_and_cursor_copies(void
         TEST_ASSERT_EQUAL_INT(held->quality, cursor->quality);
         TEST_ASSERT_EQUAL_INT(held->owner, cursor->owner);
         if (held->is_quant) TEST_ASSERT_EQUAL_INT(7, cursor->link);
-        else TEST_ASSERT_EQUAL_HEX16(0x106, resolve_object_link(&cursor->link_word)->object_id);
+        else TEST_ASSERT_EQUAL_HEX16(0x106, resolve_object_link(uw_link_word_ptr(cursor))->object_id);
         build_player_save_record(snapshot);
         TEST_ASSERT_EQUAL_INT(1, cursor_frees);
         TEST_ASSERT_EQUAL_HEX16(held->type_flags, ((uw_object_hdr_t *)(snapshot + 0x1b))->type_flags);

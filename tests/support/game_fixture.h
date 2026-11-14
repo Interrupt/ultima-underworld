@@ -9,7 +9,7 @@ enum { UW_TEST_CHARACTER_SIZE = 256, UW_TEST_LEVEL_SIZE = 0x7c08 };
 extern bool uw_test_creating_character;
 /* Both character buffers need UW_TEST_CHARACTER_SIZE bytes; object needs
    at least 0x1b bytes, matching a mobile/player record. */
-void uw_test_create_character(char *record, char *attributes, ushort *object);
+void uw_test_create_character(char *record, char *attributes, uw_unaligned_word_t *object);
 FILE *uw_test_open_data(const char *relative_path);
 void uw_test_read_data(const char *path, void *destination, size_t size,
                        long offset, int origin);

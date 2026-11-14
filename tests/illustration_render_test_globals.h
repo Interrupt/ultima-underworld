@@ -2,9 +2,9 @@
 /* Real storage for babl.c scratch buffers lives in test_illustration_render.c
    (see movement_test_globals.h's comment for why these need fixtures now);
    this just makes them visible to illustration_render_functions.c too. */
-extern undefined1 DAT_00085448_backing[];
+extern char DAT_00085448_backing[];
 #define DAT_00085448 DAT_00085448_backing[0]
-extern undefined1 DAT_00101968_backing[];
+extern char DAT_00101968_backing[];
 #define DAT_00101968 DAT_00101968_backing[0]
 extern ushort DAT_00101a6c, DAT_000853f8, DAT_000853fc, DAT_00085400;
 extern const babl_render_op_fn PTR_FUN_00085408[16];

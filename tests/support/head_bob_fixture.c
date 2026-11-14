@@ -81,6 +81,6 @@ int play_sound_effect_with_pan(uint sound, byte pan, uint volume) { return 0; }
 uint read_realtime_clock_units(void) { return 0; }
 unsigned int uw_frame_clock_ms(void) { return g_uw_frame_clock_units; }
 long ce_rand(void) { return random_value; }
-int apply_typed_damage_to_object(ushort *target, ushort *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected hazard damage"); return 0; }
+int apply_typed_damage_to_object(uw_unaligned_word_t *target, uw_unaligned_word_t *attacker, int tile_x, short tile_y, byte damage, byte damage_type) { (void)target; (void)attacker; (void)tile_x; (void)tile_y; (void)damage; (void)damage_type; TEST_FAIL_MESSAGE("Unexpected hazard damage"); return 0; }
 void angle_to_screen_delta(uint angle, void *x, void *y)
 { TEST_FAIL_MESSAGE("Unexpected alternate camera subject"); }
